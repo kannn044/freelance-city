@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* === Cyberpunk Dark Theme === */
+@theme {
+  --color-bg-primary: #0a0e17;
+  --color-bg-secondary: #111827;
+  --color-bg-glass: rgba(17, 24, 39, 0.6);
+  --color-bg-glass-hover: rgba(17, 24, 39, 0.8);
+  --color-border-glass: rgba(99, 102, 241, 0.2);
+  --color-border-glow: rgba(99, 102, 241, 0.5);
+  --color-neon-indigo: #818cf8;
+  --color-neon-violet: #a78bfa;
+  --color-neon-cyan: #22d3ee;
+  --color-neon-emerald: #34d399;
+  --color-neon-amber: #fbbf24;
+  --color-neon-rose: #fb7185;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-provider-primary: #34d399;
+  --color-provider-glow: rgba(52, 211, 153, 0.4);
+  --color-chef-primary: #fb923c;
+  --color-chef-glow: rgba(251, 146, 60, 0.4);
+}
+
+/* === Base Styles === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+/* === Animated Background Grid === */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* === Glassmorphism Card === */
+.glass-card {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border-glass);
+  border-radius: 1rem;
+}
+
+/* === Glow Effects === */
+.glow-indigo {
+  box-shadow:
+    0 0 20px rgba(99, 102, 241, 0.15),
+    0 0 40px rgba(99, 102, 241, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glow-provider {
+  box-shadow:
+    0 0 30px var(--color-provider-glow),
+    0 0 60px rgba(52, 211, 153, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glow-chef {
+  box-shadow:
+    0 0 30px var(--color-chef-glow),
+    0 0 60px rgba(251, 146, 60, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* === Input Styles === */
+.input-cyber {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  width: 100%;
+}
+
+.input-cyber:focus {
+  border-color: var(--color-neon-indigo);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-cyber::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* === Button Styles === */
+.btn-cyber {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-cyber:hover {
+  box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-cyber:active {
+  transform: translateY(0);
+}
+
+.btn-cyber:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 3px;
+}
+
+/* === Keyframe Animations === */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
