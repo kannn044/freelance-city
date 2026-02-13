@@ -25,7 +25,20 @@ const MarketPanel = () => {
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                height: '100%',
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0.5rem',
+                margin: 0,
+                boxSizing: 'border-box',
+            }}
+        >
             {/* Tabs */}
             <div
                 style={{

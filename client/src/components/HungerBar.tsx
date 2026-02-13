@@ -18,7 +18,20 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
     const info = getHungerState(hunger, maxHunger);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                height: '100%',
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0.5rem',
+                margin: 0,
+                boxSizing: 'border-box',
+            }}
+        >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
                     Hunger (Kcal)

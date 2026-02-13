@@ -22,6 +22,7 @@ import HungerBar from '../components/HungerBar';
 import InventoryGrid from '../components/InventoryGrid';
 import WorkspacePanel from '../components/WorkspacePanel';
 import MarketPanel from '../components/MarketPanel';
+import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 
 const DashboardPage = () => {
     const navigate = useNavigate();
@@ -353,13 +354,41 @@ const DashboardPage = () => {
                     zIndex: 1,
                 }}
             >
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(4, 1fr)',
-                        gap: '1.5rem',
-                    }}
-                >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <motion.section
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.45 }}
+                        className="glass-card"
+                        style={{
+                            padding: '1rem 1.1rem',
+                            border: '1px solid rgba(99, 102, 241, 0.15)',
+                            background: 'rgba(99, 102, 241, 0.04)',
+                        }}
+                    >
+                        <h2
+                            style={{
+                                fontSize: '1rem',
+                                fontWeight: 700,
+                                color: '#e2e8f0',
+                                marginBottom: '0.85rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                            }}
+                        >
+                            <span>📋</span> Active Orders by Occupation
+                        </h2>
+                        <ActiveOrdersGrid />
+                    </motion.section>
+
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(4, 1fr)',
+                            gap: '1.5rem',
+                        }}
+                    >
                     {/* ═══════ Column 1: Profile & Stats ═══════ */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -418,7 +447,7 @@ const DashboardPage = () => {
                             </div>
 
                             {/* Hunger Stat */}
-                            <div style={{ marginBottom: '1.25rem' }}>
+                            <div style={{ marginBottom: '1.25rem', height: '36rem', minHeight: '36rem', overflow: 'hidden' }}>
                                 <HungerBar hunger={hunger} maxHunger={2400} />
                             </div>
 
@@ -518,6 +547,7 @@ const DashboardPage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
+                        style={{ height: '36rem', minHeight: '36rem' }}
                     >
                         <section
                             className="glass-card"
@@ -526,6 +556,7 @@ const DashboardPage = () => {
                                 padding: '1.5rem',
                                 display: 'flex',
                                 flexDirection: 'column',
+                                overflow: 'hidden',
                             }}
                         >
                             <h2
@@ -541,7 +572,7 @@ const DashboardPage = () => {
                             >
                                 <span>🎒</span> Inventory
                             </h2>
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                                 <InventoryGrid />
                             </div>
                         </section>
@@ -552,6 +583,7 @@ const DashboardPage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.15 }}
+                        style={{ height: '36rem', minHeight: '36rem' }}
                     >
                         <section
                             className="glass-card"
@@ -582,7 +614,7 @@ const DashboardPage = () => {
                                     <span>🏗️</span> Workspace
                                 </h2>
                             </div>
-                            <div style={{ flex: 1, padding: '1.25rem 1.5rem' }}>
+                            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '1.25rem 1.5rem' }}>
                                 <WorkspacePanel />
                             </div>
                         </section>
@@ -593,6 +625,7 @@ const DashboardPage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
+                        style={{ height: '36rem', minHeight: '36rem' }}
                     >
                         <section
                             className="glass-card"
@@ -623,23 +656,24 @@ const DashboardPage = () => {
                                     <span>🏪</span> Marketplace
                                 </h2>
                             </div>
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                                 <MarketPanel />
                             </div>
                         </section>
                     </motion.div>
+                    </div>
                 </div>
             </main>
 
             {/* ─── Responsive override for mobile ────────────────── */}
             <style>{`
                 @media (max-width: 1024px) {
-                    main > div {
+                    main > div > div:last-child {
                         grid-template-columns: 1fr 1fr !important;
                     }
                 }
                 @media (max-width: 640px) {
-                    main > div {
+                    main > div > div:last-child {
                         grid-template-columns: 1fr !important;
                     }
                 }

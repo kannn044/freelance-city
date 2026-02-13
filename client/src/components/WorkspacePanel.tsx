@@ -1,27 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
-import type { WorkOrder } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import { Clock, CheckCircle, Sprout, ChefHat, Play, TrendingUp, Lock } from 'lucide-react';
+import { Sprout, ChefHat, Play, TrendingUp, Lock } from 'lucide-react';
 import { getExpProgress } from '../lib/gameConstants';
-
-function formatTimeLeft(completesAt: string): string {
-    const diff = new Date(completesAt).getTime() - Date.now();
-    if (diff <= 0) return 'Ready!';
-    const mins = Math.floor(diff / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
-    if (mins > 0) return `${mins}m ${secs}s`;
-    return `${secs}s`;
-}
-
-function getProgress(order: WorkOrder): number {
-    const start = new Date(order.started_at).getTime();
-    const end = new Date(order.completes_at).getTime();
-    const now = Date.now();
-    if (now >= end) return 100;
-    return Math.min(100, ((now - start) / (end - start)) * 100);
-}
 
 /** Mini EXP bar for the workspace header */
 const MiniExpBar = ({ label, icon, level, exp, color }: {
@@ -110,16 +92,9 @@ const MiniExpBar = ({ label, icon, level, exp, color }: {
 };
 
 const WorkspacePanel = () => {
-    const { workOrders, inventory, shopItems, recipes, collectWork, startFarm, startCook, buyFromShop } = useGameStore();
+    const { inventory, shopItems, recipes, startFarm, startCook, buyFromShop } = useGameStore();
     const user = useAuthStore((s) => s.user);
-    const [, setTick] = useState(0);
     const [showStartForm, setShowStartForm] = useState(false);
-
-    // Tick every second for timer updates
-    useEffect(() => {
-        const interval = setInterval(() => setTick((t) => t + 1), 1000);
-        return () => clearInterval(interval);
-    }, []);
 
     const canFarm = (user?.provider_level ?? 0) > 0;
     const canCook = (user?.chef_level ?? 0) > 0;
@@ -130,7 +105,20 @@ const WorkspacePanel = () => {
     const seedShopItems = shopItems.filter((i) => i.type === 'SEED');
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                height: '100%',
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0.5rem',
+                margin: 0,
+                boxSizing: 'border-box',
+            }}
+        >
             {/* Level / EXP Section */}
             <div style={{ display: 'flex', gap: '0.4rem' }}>
                 <MiniExpBar
@@ -147,117 +135,6 @@ const WorkspacePanel = () => {
                     exp={user?.chef_exp ?? 0}
                     color="#fb7185"
                 />
-            </div>
-
-            {/* Active Orders */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <AnimatePresence>
-                    {workOrders.length === 0 && (
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            style={{
-                                fontSize: '0.8rem',
-                                color: 'rgba(255,255,255,0.3)',
-                                textAlign: 'center',
-                                padding: '1.5rem 0',
-                            }}
-                        >
-                            No active tasks. Start one below!
-                        </motion.p>
-                    )}
-                    {workOrders.map((order) => {
-                        const progress = getProgress(order);
-                        const ready = progress >= 100;
-
-                        return (
-                            <motion.div
-                                key={order.id}
-                                layout
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                style={{
-                                    background: 'rgba(255,255,255,0.03)',
-                                    border: ready
-                                        ? '1px solid rgba(52, 211, 153, 0.3)'
-                                        : '1px solid rgba(255,255,255,0.06)',
-                                    borderRadius: '0.75rem',
-                                    padding: '0.75rem',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '0.5rem',
-                                }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <span style={{ fontSize: '1.1rem' }}>{order.item.icon}</span>
-                                        <div>
-                                            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
-                                                {order.type === 'FARM' ? 'Growing' : 'Cooking'} {order.item.name}
-                                            </div>
-                                            <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                x{order.quantity}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                        {ready ? (
-                                            <CheckCircle style={{ width: '0.85rem', height: '0.85rem', color: '#34d399' }} />
-                                        ) : (
-                                            <Clock style={{ width: '0.85rem', height: '0.85rem', color: '#fbbf24' }} />
-                                        )}
-                                        <span style={{
-                                            fontSize: '0.7rem',
-                                            fontWeight: 600,
-                                            color: ready ? '#34d399' : '#fbbf24',
-                                        }}>
-                                            {formatTimeLeft(order.completes_at)}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Progress bar */}
-                                <div style={{
-                                    height: '0.25rem',
-                                    borderRadius: '0.25rem',
-                                    background: 'rgba(255,255,255,0.06)',
-                                    overflow: 'hidden',
-                                }}>
-                                    <div style={{
-                                        height: '100%',
-                                        width: `${progress}%`,
-                                        borderRadius: '0.25rem',
-                                        background: ready
-                                            ? 'linear-gradient(90deg, #34d399, #10b981)'
-                                            : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                                        transition: 'width 1s linear',
-                                    }} />
-                                </div>
-
-                                {ready && (
-                                    <motion.button
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => collectWork(order.id)}
-                                        style={{
-                                            padding: '0.4rem 0.75rem',
-                                            borderRadius: '0.5rem',
-                                            border: 'none',
-                                            background: 'linear-gradient(135deg, #34d399, #10b981)',
-                                            color: 'white',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        ✅ Collect
-                                    </motion.button>
-                                )}
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
             </div>
 
             {/* Start new task */}
@@ -365,7 +242,7 @@ const WorkspacePanel = () => {
                                             }}
                                         >
                                             <span>{slot.item?.icon} {slot.item?.name} (x{slot.quantity})</span>
-                                            <span>🌱 Plant</span>
+                                            {/* <span>🌱 Plant</span> */}
                                         </motion.button>
                                     ))
                                 )}
