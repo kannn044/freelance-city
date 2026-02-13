@@ -56,6 +56,7 @@ model User {
   work_orders    WorkOrder[]
   sell_listings  MarketListing[] @relation("seller")
   buy_history    MarketListing[] @relation("buyer")
+  recipe_unlocks UserRecipeUnlock[]
 
   @@map("users")
 }
@@ -98,9 +99,11 @@ model Recipe {
   output_item_id Int
   output_qty  Int    @default(1)
   cook_mins   Int    @default(5)   // Cooking time in real minutes
+  unlock_price Int   @default(300)
 
   output_item  Item              @relation("recipeOutput", fields: [output_item_id], references: [id])
   ingredients  RecipeIngredient[]
+  unlocked_by  UserRecipeUnlock[]
 
   @@map("recipes")
 }
@@ -116,6 +119,19 @@ model RecipeIngredient {
 
   @@unique([recipe_id, item_id])
   @@map("recipe_ingredients")
+}
+
+model UserRecipeUnlock {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  recipe_id  Int
+  unlocked_at DateTime @default(now())
+
+  user   User   @relation(fields: [user_id], references: [id])
+  recipe Recipe @relation(fields: [recipe_id], references: [id])
+
+  @@unique([user_id, recipe_id])
+  @@map("user_recipe_unlocks")
 }
 
 // ─── Inventory ───────────────────────────────────────────

@@ -1,10 +1,183 @@
 import { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { syncHunger } from "../services/hunger.service";
 import { getHungerTier, getLevelFromExp } from "../config/game.config";
 
 interface AuthRequest extends Request {
     userId?: number;
+}
+
+async function isRecipeUnlocked(userId: number, recipeId: number): Promise<boolean> {
+    const rows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
+        SELECT COUNT(*) as cnt
+        FROM user_recipe_unlocks
+        WHERE user_id = ${userId} AND recipe_id = ${recipeId}
+    `;
+    const count = rows[0] ? Number(rows[0].cnt) : 0;
+    return count > 0;
+}
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
+
+async function getOrderOutput(order: { type: "FARM" | "COOK"; item_id: number; quantity: number }, db: DbClient) {
+    if (order.type === "FARM") {
+        const seedItem = await db.item.findUnique({ where: { id: order.item_id } });
+        if (!seedItem?.yield_item_id) {
+            throw new Error("Seed has no yield configured");
+        }
+        return {
+            outputItemId: seedItem.yield_item_id,
+            outputQty: (seedItem.yield_qty ?? 1) * order.quantity,
+        };
+    }
+
+    return {
+        outputItemId: order.item_id,
+        outputQty: order.quantity,
+    };
+}
+
+async function placeOutputInInventory(
+    userId: number,
+    outputItemId: number,
+    outputQty: number,
+    db: DbClient
+): Promise<boolean> {
+    const outputItem = await db.item.findUnique({ where: { id: outputItemId } });
+    if (!outputItem) throw new Error("Output item not found");
+
+    const slots = await db.inventorySlot.findMany({
+        where: { user_id: userId },
+        orderBy: { slot: "asc" },
+    });
+
+    const maxStack = outputItem.max_stack;
+    const stackCapacity = slots
+        .filter((s) => s.item_id === outputItemId)
+        .reduce((sum, s) => sum + Math.max(0, maxStack - s.quantity), 0);
+    const emptySlots = slots.filter((s) => s.item_id === null).length;
+    const totalCapacity = stackCapacity + emptySlots * maxStack;
+
+    if (totalCapacity < outputQty) return false;
+
+    let remaining = outputQty;
+
+    // Fill existing stacks first
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== outputItemId) continue;
+
+        const canAdd = Math.max(0, maxStack - slot.quantity);
+        if (canAdd <= 0) continue;
+
+        const add = Math.min(canAdd, remaining);
+        remaining -= add;
+
+        await db.inventorySlot.update({
+            where: { id: slot.id },
+            data: { quantity: slot.quantity + add },
+        });
+    }
+
+    // Use empty slots
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== null) continue;
+
+        const put = Math.min(maxStack, remaining);
+        remaining -= put;
+
+        await db.inventorySlot.update({
+            where: { id: slot.id },
+            data: { item_id: outputItemId, quantity: put },
+        });
+    }
+
+    return remaining === 0;
+}
+
+async function awardOrderExp(
+    userId: number,
+    orderType: "FARM" | "COOK",
+    outputItem: { exp_value: number; name: string },
+    outputQty: number,
+    db: DbClient
+) {
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) throw new Error("User not found");
+
+    const occupation = orderType === "FARM" ? "provider" : "chef";
+    const levelField = occupation === "provider" ? "provider_level" : "chef_level";
+    const expField = occupation === "provider" ? "provider_exp" : "chef_exp";
+
+    let expGained = 0;
+    let levelUp = false;
+    let newLevel = user[levelField];
+
+    if (user[levelField] >= 1) {
+        expGained = Math.floor(outputItem.exp_value * outputQty * 10);
+        if (expGained > 0) {
+            const newExp = user[expField] + expGained;
+            newLevel = getLevelFromExp(newExp);
+            levelUp = newLevel > user[levelField];
+
+            const updateData: Record<string, number> = {
+                [expField]: newExp,
+                [levelField]: newLevel,
+            };
+
+            await db.user.update({
+                where: { id: userId },
+                data: updateData,
+            });
+        }
+    }
+
+    return { expGained, levelUp, newLevel };
+}
+
+async function collectSingleReadyOrder(userId: number, orderId: number) {
+    return prisma.$transaction(async (tx) => {
+        const order = await tx.workOrder.findFirst({
+            where: { id: orderId, user_id: userId, collected: false },
+        });
+
+        if (!order) {
+            return { ok: false as const, reason: "not_found" as const };
+        }
+
+        if (new Date() < order.completes_at) {
+            return { ok: false as const, reason: "not_ready" as const };
+        }
+
+        const { outputItemId, outputQty } = await getOrderOutput(order, tx);
+        const outputItem = await tx.item.findUnique({ where: { id: outputItemId } });
+        if (!outputItem) {
+            return { ok: false as const, reason: "output_missing" as const };
+        }
+
+        const placed = await placeOutputInInventory(userId, outputItemId, outputQty, tx);
+        if (!placed) {
+            return { ok: false as const, reason: "inventory_full" as const, itemName: outputItem.name, qty: outputQty };
+        }
+
+        await tx.workOrder.update({
+            where: { id: orderId },
+            data: { collected: true },
+        });
+
+        const exp = await awardOrderExp(userId, order.type, outputItem, outputQty, tx);
+
+        return {
+            ok: true as const,
+            itemName: outputItem.name,
+            qty: outputQty,
+            expGained: exp.expGained,
+            levelUp: exp.levelUp,
+            newLevel: exp.newLevel,
+        };
+    });
 }
 
 /**
@@ -100,6 +273,13 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             // Requires Chef occupation
             if (user.chef_level < 1) {
                 res.status(403).json({ error: "You need the Chef occupation to cook" });
+                return;
+            }
+
+            const recipeUnlocked = await isRecipeUnlocked(req.userId!, recipeId);
+
+            if (!recipeUnlocked) {
+                res.status(403).json({ error: "Recipe is locked. Buy it from NPC recipe shop first" });
                 return;
             }
 
@@ -202,132 +382,27 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
         const orderId = parseInt(req.params.orderId);
-        const order = await prisma.workOrder.findFirst({
-            where: { id: orderId, user_id: req.userId!, collected: false },
-            include: { item: true },
-        });
+        const result = await collectSingleReadyOrder(req.userId!, orderId);
 
-        if (!order) {
-            res.status(404).json({ error: "Work order not found" });
-            return;
-        }
-
-        if (new Date() < order.completes_at) {
-            const remaining = Math.ceil(
-                (order.completes_at.getTime() - Date.now()) / (1000 * 60)
-            );
-            res.status(400).json({ error: `Not ready yet. ${remaining} minutes remaining.` });
-            return;
-        }
-
-        // Determine output item
-        let outputItemId: number;
-        let outputQty: number;
-
-        if (order.type === "FARM") {
-            const seedItem = await prisma.item.findUnique({
-                where: { id: order.item_id },
-            });
-            if (!seedItem?.yield_item_id) {
-                res.status(500).json({ error: "Seed has no yield configured" });
+        if (!result.ok) {
+            if (result.reason === "not_found") {
+                res.status(404).json({ error: "Work order not found" });
                 return;
             }
-            outputItemId = seedItem.yield_item_id;
-            outputQty = (seedItem.yield_qty ?? 1) * order.quantity;
-        } else {
-            outputItemId = order.item_id;
-            outputQty = order.quantity;
-        }
-
-        // Find a slot to put the output
-        const outputItem = await prisma.item.findUnique({ where: { id: outputItemId } });
-        if (!outputItem) {
-            res.status(500).json({ error: "Output item not found" });
-            return;
-        }
-
-        // Try to stack into existing slot with same item
-        let placed = false;
-        const existingSlot = await prisma.inventorySlot.findFirst({
-            where: {
-                user_id: req.userId!,
-                item_id: outputItemId,
-                quantity: { lt: outputItem.max_stack },
-            },
-        });
-
-        if (existingSlot) {
-            const newQty = Math.min(existingSlot.quantity + outputQty, outputItem.max_stack);
-            await prisma.inventorySlot.update({
-                where: { id: existingSlot.id },
-                data: { quantity: newQty },
-            });
-            placed = true;
-        }
-
-        if (!placed) {
-            // Find empty slot
-            const emptySlot = await prisma.inventorySlot.findFirst({
-                where: { user_id: req.userId!, item_id: null },
-            });
-
-            if (!emptySlot) {
-                res.status(400).json({ error: "Inventory full! Free up a slot first." });
+            if (result.reason === "not_ready") {
+                res.status(400).json({ error: "Not ready yet." });
                 return;
             }
-
-            await prisma.inventorySlot.update({
-                where: { id: emptySlot.id },
-                data: { item_id: outputItemId, quantity: outputQty },
-            });
-        }
-
-        // Mark order as collected
-        await prisma.workOrder.update({
-            where: { id: orderId },
-            data: { collected: true },
-        });
-
-        // ─── Award EXP ──────────────────────────────────────
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
-        if (!user) {
-            res.status(500).json({ error: "User not found" });
+            if (result.reason === "inventory_full") {
+                res.status(400).json({ error: `Inventory full. Not enough space for ${result.qty}x ${result.itemName}.` });
+                return;
+            }
+            res.status(500).json({ error: "Failed to collect work" });
             return;
         }
 
-        const occupation = order.type === "FARM" ? "provider" : "chef";
-        const levelField = occupation === "provider" ? "provider_level" : "chef_level";
-        const expField = occupation === "provider" ? "provider_exp" : "chef_exp";
-
-        let expMessage = "";
-        let levelUpMessage = "";
-
-        // Only award EXP if the occupation is unlocked (level >= 1)
-        if (user[levelField] >= 1) {
-            const expGained = Math.floor(outputItem.exp_value * outputQty * 10);
-
-            if (expGained > 0) {
-                const oldLevel = user[levelField];
-                const newExp = user[expField] + expGained;
-                const newLevel = getLevelFromExp(newExp);
-                const levelUp = newLevel > oldLevel;
-
-                const updateData: Record<string, number> = {
-                    [expField]: newExp,
-                    [levelField]: newLevel,
-                };
-
-                await prisma.user.update({
-                    where: { id: req.userId! },
-                    data: updateData,
-                });
-
-                expMessage = ` (+${expGained} EXP)`;
-                if (levelUp) {
-                    levelUpMessage = ` 🎉 Level up! Now Lvl ${newLevel}!` + levelUpMessage;
-                }
-            }
-        }
+        const expMessage = result.expGained > 0 ? ` (+${result.expGained} EXP)` : "";
+        const levelUpMessage = result.levelUp ? ` 🎉 Level up! Now Lvl ${result.newLevel}!` : "";
 
         // Return updated inventory + user
         const slots = await prisma.inventorySlot.findMany({
@@ -339,7 +414,7 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
         const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
 
         res.json({
-            message: `Collected ${outputQty}x ${outputItem.name}!${expMessage}${levelUpMessage}`,
+            message: `Collected ${result.qty}x ${result.itemName}!${expMessage}${levelUpMessage}`,
             slots,
             user: {
                 id: updatedUser!.id,
@@ -357,5 +432,74 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
     } catch (error) {
         console.error("collectWork error:", error);
         res.status(500).json({ error: "Failed to collect work" });
+    }
+};
+
+/**
+ * POST /game/workspace/collect-ready — Collect all ready orders if inventory has space
+ */
+export const collectReadyWork = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const readyOrders = await prisma.workOrder.findMany({
+            where: {
+                user_id: req.userId!,
+                collected: false,
+                completes_at: { lte: new Date() },
+            },
+            orderBy: { completes_at: "asc" },
+        });
+
+        if (readyOrders.length === 0) {
+            res.json({ message: "No ready orders to collect." });
+            return;
+        }
+
+        let collectedCount = 0;
+        let blockedByInventory: string | null = null;
+
+        for (const order of readyOrders) {
+            const result = await collectSingleReadyOrder(req.userId!, order.id);
+            if (!result.ok) {
+                if (result.reason === "inventory_full") {
+                    blockedByInventory = `Stopped: not enough inventory space for ${result.qty}x ${result.itemName}.`;
+                    break;
+                }
+                continue;
+            }
+            collectedCount += 1;
+        }
+
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+
+        const message = collectedCount > 0
+            ? `Collected ${collectedCount} ready order(s).${blockedByInventory ? ` ${blockedByInventory}` : ""}`
+            : blockedByInventory ?? "No orders were collected.";
+
+        res.json({
+            message,
+            collectedCount,
+            slots,
+            user: {
+                id: updatedUser!.id,
+                email: updatedUser!.email,
+                role: updatedUser!.role,
+                money: updatedUser!.money,
+                hunger: updatedUser!.hunger,
+                provider_level: updatedUser!.provider_level,
+                provider_exp: updatedUser!.provider_exp,
+                chef_level: updatedUser!.chef_level,
+                chef_exp: updatedUser!.chef_exp,
+                satiety_buff: updatedUser!.satiety_buff,
+            },
+        });
+    } catch (error) {
+        console.error("collectReadyWork error:", error);
+        res.status(500).json({ error: "Failed to collect ready work" });
     }
 };

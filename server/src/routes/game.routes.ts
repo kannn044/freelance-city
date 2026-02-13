@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { getInventory, eatItem } from "../controllers/inventory.controller";
-import { getWorkOrders, startWork, collectWork } from "../controllers/workspace.controller";
+import { getWorkOrders, startWork, collectWork, collectReadyWork } from "../controllers/workspace.controller";
 import { getListings, createListing, buyListing } from "../controllers/market.controller";
-import { getShop, buyFromShop, getRecipes } from "../controllers/shop.controller";
+import { getShop, buyFromShop, getRecipes, getRecipeShop, buyRecipeUnlock } from "../controllers/shop.controller";
 
 const router = Router();
 
@@ -18,6 +18,7 @@ router.post("/eat/:slotId", eatItem);
 router.get("/workspace", getWorkOrders);
 router.post("/workspace/start", startWork);
 router.post("/workspace/collect/:orderId", collectWork);
+router.post("/workspace/collect-ready", collectReadyWork);
 
 // ─── Market ──────────────────────────────────────────
 router.get("/market", getListings);
@@ -27,6 +28,8 @@ router.post("/market/buy/:listingId", buyListing);
 // ─── Shop & Recipes ──────────────────────────────────
 router.get("/shop", getShop);
 router.post("/shop/buy", buyFromShop);
+router.get("/shop/recipes", getRecipeShop);
+router.post("/shop/recipes/buy", buyRecipeUnlock);
 router.get("/recipes", getRecipes);
 
 export default router;

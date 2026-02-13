@@ -5,6 +5,26 @@ interface AuthRequest extends Request {
     userId?: number;
 }
 
+async function getUnlockedRecipeIds(userId: number): Promise<number[]> {
+    const rows = await prisma.$queryRaw<Array<{ recipe_id: number }>>`
+        SELECT recipe_id
+        FROM user_recipe_unlocks
+        WHERE user_id = ${userId}
+    `;
+    return rows.map((r) => Number(r.recipe_id));
+}
+
+async function hasRecipeUnlocked(userId: number, recipeId: number): Promise<boolean> {
+    const rows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
+        SELECT COUNT(*) as cnt
+        FROM user_recipe_unlocks
+        WHERE user_id = ${userId} AND recipe_id = ${recipeId}
+    `;
+
+    const count = rows[0] ? Number(rows[0].cnt) : 0;
+    return count > 0;
+}
+
 /**
  * GET /game/shop — List items available for purchase from NPC shop
  * Filtered by user's unlocked occupations:
@@ -185,7 +205,15 @@ export const getRecipes = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
+        const unlockedRecipeIds = await getUnlockedRecipeIds(req.userId!);
+
+        if (unlockedRecipeIds.length === 0) {
+            res.json({ recipes: [] });
+            return;
+        }
+
         const recipes = await prisma.recipe.findMany({
+            where: { id: { in: unlockedRecipeIds } },
             include: {
                 output_item: true,
                 ingredients: { include: { item: true } },
@@ -196,5 +224,119 @@ export const getRecipes = async (req: AuthRequest, res: Response): Promise<void>
     } catch (error) {
         console.error("getRecipes error:", error);
         res.status(500).json({ error: "Failed to fetch recipes" });
+    }
+};
+
+/**
+ * GET /game/shop/recipes — List locked recipes available to buy from NPC shop
+ */
+export const getRecipeShop = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        if (!user || user.chef_level < 1) {
+            res.json({ recipes: [] });
+            return;
+        }
+
+        const unlockedRecipeIds = await getUnlockedRecipeIds(req.userId!);
+
+        const recipes = await prisma.recipe.findMany({
+            where: unlockedRecipeIds.length > 0 ? { id: { notIn: unlockedRecipeIds } } : undefined,
+            include: {
+                output_item: true,
+                ingredients: { include: { item: true } },
+            },
+            orderBy: ({ unlock_price: "asc" } as any),
+        });
+
+        res.json({ recipes });
+    } catch (error) {
+        console.error("getRecipeShop error:", error);
+        res.status(500).json({ error: "Failed to fetch recipe shop" });
+    }
+};
+
+/**
+ * POST /game/shop/recipes/buy — Buy and unlock a recipe
+ * Body: { recipeId: number }
+ */
+export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { recipeId } = req.body as { recipeId?: number };
+
+        if (!recipeId || recipeId <= 0) {
+            res.status(400).json({ error: "Invalid recipe ID" });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+
+        if (user.chef_level < 1) {
+            res.status(403).json({ error: "You need the Chef occupation to unlock recipes" });
+            return;
+        }
+
+        const recipe = await prisma.recipe.findUnique({
+            where: { id: recipeId },
+            include: {
+                output_item: true,
+                ingredients: { include: { item: true } },
+            },
+        });
+
+        if (!recipe) {
+            res.status(404).json({ error: "Recipe not found" });
+            return;
+        }
+
+        const existing = await hasRecipeUnlocked(req.userId!, recipeId);
+
+        if (existing) {
+            res.status(400).json({ error: "Recipe already unlocked" });
+            return;
+        }
+
+        const unlockPrice = (recipe as any).unlock_price ?? 300;
+
+        if (user.money < unlockPrice) {
+            res.status(400).json({ error: `Not enough credits. Need ${unlockPrice}, have ${user.money}` });
+            return;
+        }
+
+        await prisma.$transaction([
+            prisma.user.update({
+                where: { id: req.userId! },
+                data: { money: { decrement: unlockPrice } },
+            }),
+            prisma.$executeRaw`
+                INSERT INTO user_recipe_unlocks (user_id, recipe_id, unlocked_at)
+                VALUES (${req.userId!}, ${recipeId}, NOW())
+            `,
+        ]);
+
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+
+        res.json({
+            message: `Unlocked recipe: ${recipe.name} for ${unlockPrice} credits`,
+            recipe,
+            user: {
+                id: updatedUser!.id,
+                email: updatedUser!.email,
+                role: updatedUser!.role,
+                money: updatedUser!.money,
+                hunger: updatedUser!.hunger,
+                provider_level: updatedUser!.provider_level,
+                provider_exp: updatedUser!.provider_exp,
+                chef_level: updatedUser!.chef_level,
+                chef_exp: updatedUser!.chef_exp,
+            },
+        });
+    } catch (error) {
+        console.error("buyRecipeUnlock error:", error);
+        res.status(500).json({ error: "Failed to unlock recipe" });
     }
 };

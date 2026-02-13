@@ -155,12 +155,13 @@ async function main() {
     // Chicken Salad: 1 Chicken Meat + 2 Vegetable
     const saladRecipe = await prisma.recipe.upsert({
         where: { name: "Chicken Salad" },
-        update: {},
+        update: { unlock_price: 250 },
         create: {
             name: "Chicken Salad",
             output_item_id: chickenSalad.id,
             output_qty: 1,
             cook_mins: 5,
+            unlock_price: 250,
         },
     });
 
@@ -178,12 +179,13 @@ async function main() {
     // Beef Steak: 1 Beef Meat + 1 Vegetable + 1 Salt
     const steakRecipe = await prisma.recipe.upsert({
         where: { name: "Beef Steak" },
-        update: {},
+        update: { unlock_price: 600 },
         create: {
             name: "Beef Steak",
             output_item_id: beefSteak.id,
             output_qty: 1,
             cook_mins: 10,
+            unlock_price: 600,
         },
     });
 
