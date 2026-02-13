@@ -36,6 +36,84 @@ Players must choose one role upon first login. Dependencies enforce trading.
 * **Products:** Cooked Meals (Steak, Salad).
 * **Buffs:** Meals provide Kcal + "Satiety Buff" (Slows down hunger decay).
 
+### 2.4 Equipment System (New)
+* เพิ่ม Item Type ใหม่: **EQUIPMENT**
+* จำนวนสล็อตสวมใส่: **6 Slots**
+    * `HEAD`, `UPPER_BODY`, `LOWER_BODY`, `ARM`, `GLOVE`, `SHOE`
+* แนวคิด: เพิ่มความแตกต่างเชิงอาชีพผ่าน Passive/Stat เฉพาะทาง
+
+#### 1) 🧢 Headgear — Focus & Management
+* **Provider: Sun Hat**
+    * Passive: ลดผลกระทบ Hunger Penalty ลง 1 ขั้น
+* **Chef: Toque Blanche**
+    * Passive: โอกาส 10% ที่การทำอาหารจะไม่เสียวัตถุดิบรอง
+
+#### 2) 👕 Top — Capacity & Endurance
+* **Provider: Field Shirt**
+    * Stat: เพิ่ม Max Hunger +200 ถึง +500 Kcal
+* **Chef: Apron**
+    * Stat: เพิ่ม Max Hunger +150 Kcal และเพิ่มผล Satiety Buff +10%
+
+#### 3) 👖 Bottom — Storage & Logistics
+* **Provider: Cargo Pants**
+    * Passive: เพิ่ม Stack ของผลผลิต Raw Meat / Veg ต่อช่อง
+* **Chef: Slack Pants**
+    * Passive: เพิ่ม Stack ของ Ingredient ต่อช่อง
+
+#### 4) 💪 Armband — Strength & Speed
+* **Provider: Sweatband**
+    * Stat: ลดเวลา Harvest/Slaughter ลง 5-15%
+* **Chef: Wrist Support**
+    * Stat: ลดเวลา Cook ลง 5-15%
+
+#### 5) 🧤 Gloves — Dexterity & Luck
+* **Provider: Work Gloves**
+    * Passive: โอกาส 5-10% ได้ผลผลิต x2 (Double Yield)
+* **Chef: Latex Gloves**
+    * Passive: โอกาส 5-10% ทำอาหารระดับ Gourmet
+
+#### 6) 👟 Shoes — Metabolism & Conservation
+* **Provider: Mud Boots**
+    * Stat: ลด Real-time Hunger Decay ลง 1-2 Kcal/นาที
+* **Chef: Anti-Slip Shoes**
+    * Stat: ระหว่าง Cooking ลดอัตราการเผาผลาญความหิวลง 20%
+
+#### 💎 Set Bonus (Idea)
+* **The Great Provider (ครบ 6 ชิ้น)**: เร่งการเติบโตพืช/สัตว์ +10%
+* **The Master Chef (ครบ 6 ชิ้น)**: เพิ่มราคาขายอาหาร +5% หรือมองเห็น Demand ล่วงหน้า
+
+#### ⚖️ Balance Note
+* แนะนำระบบ Tier: `Common`, `Rare`, `Legendary`
+* Tier ที่สูงขึ้นจะเพิ่ม % ของ Stat/Passive ให้มากขึ้น
+
+### 2.5 Equipment Box (Gacha)
+* ของสวมใส่ **ไม่ขายตรงใน NPC Shop**
+* ผู้เล่นซื้อ **Equipment Box** แล้วเปิดสุ่ม
+* 1 กล่อง = 1 ไอเทม EQUIPMENT
+* สามารถสุ่มได้ของที่ไม่ตรงอาชีพตัวเอง
+
+**สูตรสุ่ม**
+* `Final Chance(ชิ้นส่วน+อาชีพ) = Role Bias × Slot Weight`
+
+**Role Bias (ตามอาชีพหลักผู้เล่น)**
+* ผู้เล่นสาย Provider: Provider 70% / Chef 30%
+* ผู้เล่นสาย Chef: Provider 30% / Chef 70%
+* ผู้เล่นยังไม่เลือกอาชีพ: Provider 50% / Chef 50%
+
+**Slot Weight (รวม 100%)**
+* Head 14%
+* Upper Body 18%
+* Lower Body 18%
+* Arm 16%
+* Glove 16%
+* Shoe 18%
+
+ตัวอย่าง (ผู้เล่นสาย Provider):
+* Provider Head = 70% × 14% = **9.8%**
+* Chef Head = 30% × 14% = **4.2%**
+* Provider Upper Body = 70% × 18% = **12.6%**
+* Chef Upper Body = 30% × 18% = **5.4%**
+
 ---
 
 ## 3. Economy & Logic

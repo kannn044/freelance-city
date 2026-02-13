@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, CheckCircle, Sprout, ChefHat } from 'lucide-react';
 import { useGameStore } from '../stores/gameStore';
 import type { WorkOrder } from '../stores/gameStore';
+import { renderItemIcon } from '../lib/itemVisual';
 
 const ORDERS_COLUMN_HEIGHT = '20rem';
 
@@ -28,7 +29,7 @@ function getProgress(order: WorkOrder): number {
 }
 
 const ActiveOrdersGrid = () => {
-    const { workOrders, collectWork } = useGameStore();
+    const { workOrders, collectWork, collectReadyWork } = useGameStore();
     const [, setTick] = useState(0);
 
     useEffect(() => {
@@ -43,6 +44,8 @@ const ActiveOrdersGrid = () => {
     const chefOrders = workOrders
         .filter((o) => o.type === 'COOK')
         .sort((a, b) => getRemainingMs(a.completes_at) - getRemainingMs(b.completes_at));
+
+    const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at) <= 0).length;
 
     const renderOrderCard = (order: WorkOrder, accent: 'provider' | 'chef') => {
         const progress = getProgress(order);
@@ -74,7 +77,7 @@ const ActiveOrdersGrid = () => {
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
-                        <span style={{ fontSize: '1rem', lineHeight: 1 }}>{order.item.icon}</span>
+                        {renderItemIcon(order.item, 16)}
                         <div style={{ minWidth: 0 }}>
                             <div
                                 style={{
@@ -153,13 +156,35 @@ const ActiveOrdersGrid = () => {
     };
 
     return (
-        <div
-            style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                gap: '0.9rem',
-            }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <motion.button
+                    whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
+                    whileTap={{ scale: readyCount > 0 ? 0.98 : 1 }}
+                    onClick={() => collectReadyWork()}
+                    disabled={readyCount === 0}
+                    style={{
+                        padding: '0.4rem 0.7rem',
+                        borderRadius: '0.45rem',
+                        border: '1px solid rgba(52,211,153,0.35)',
+                        background: readyCount > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
+                        color: readyCount > 0 ? '#34d399' : 'rgba(255,255,255,0.45)',
+                        fontSize: '0.7rem',
+                        fontWeight: 700,
+                        cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
+                    }}
+                >
+                    ✅ Collect All Ready ({readyCount})
+                </motion.button>
+            </div>
+
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                    gap: '0.9rem',
+                }}
+            >
             <div
                 style={{
                     display: 'flex',
@@ -254,6 +279,7 @@ const ActiveOrdersGrid = () => {
                         )}
                     </AnimatePresence>
                 </div>
+            </div>
             </div>
         </div>
     );

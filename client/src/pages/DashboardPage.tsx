@@ -98,6 +98,7 @@ const DashboardPage = () => {
             // Re-fetch game data to show new shop items
             useGameStore.getState().fetchShop();
             useGameStore.getState().fetchRecipes();
+            useGameStore.getState().fetchRecipeShop();
         } catch {
             // Error is handled in the store
         }
@@ -396,12 +397,19 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '36rem' }}
                         >
                             {/* Character Card */}
                             <section
                                 className="glass-card glow-indigo"
-                                style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}
+                                style={{
+                                    padding: '1.25rem',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                }}
                             >
                                 {/* Decorative blur */}
                                 <div
@@ -417,131 +425,134 @@ const DashboardPage = () => {
                                     }}
                                 />
 
-                                {/* Avatar + Name */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                                    <motion.div
-                                        whileHover={{ scale: 1.05 }}
-                                        style={{
-                                            display: 'flex',
-                                            height: '3.5rem',
-                                            width: '3.5rem',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            borderRadius: '1rem',
-                                            background: 'linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(31, 41, 55, 0.8))',
-                                            border: '1px solid rgba(99, 102, 241, 0.2)',
-                                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-                                        }}
-                                    >
-                                        <UserIcon size={28} style={{ color: '#a5b4fc' }} />
-                                    </motion.div>
-                                    <div>
-                                        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>
-                                            {user.email.split('@')[0]}
-                                        </h2>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
-                                            <Crown size={12} style={{ color: '#fbbf24' }} />
-                                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#fbbf24' }}>
-                                                {user.role}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Hunger Stat */}
-                                <div style={{ marginBottom: '1.25rem', height: 'auto', overflow: 'hidden' }}>
-                                    <HungerBar hunger={hunger} maxHunger={2400} />
-                                </div>
-
-                                {/* Occupation Stats */}
-                                <div
-                                    style={{
-                                        paddingTop: '1.25rem',
-                                        borderTop: '1px solid rgba(99, 102, 241, 0.1)',
-                                    }}
-                                >
-                                    <h3
-                                        style={{
-                                            fontSize: '0.8rem',
-                                            fontWeight: 600,
-                                            color: '#94a3b8',
-                                            marginBottom: '0.75rem',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.4rem',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.05em',
-                                        }}
-                                    >
-                                        <Briefcase size={13} /> Occupations
-                                    </h3>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                        {/* Provider Stat */}
-                                        <OccupationCard
-                                            name="Provider"
-                                            icon={<Sprout size={16} />}
-                                            level={providerLevel}
-                                            progress={providerProgress}
-                                            color="#fbbf24"
-                                            bgColor="rgba(251, 191, 36, 0.08)"
-                                            borderColor="rgba(251, 191, 36, 0.2)"
-                                            glowColor="rgba(251, 191, 36, 0.15)"
-                                            canUnlock={secondaryOccupation === 'provider' && canUnlockSecond}
-                                            onUnlock={handleUnlock}
-                                        />
-
-                                        {/* Chef Stat */}
-                                        <OccupationCard
-                                            name="Chef"
-                                            icon={<ChefHat size={16} />}
-                                            level={chefLevel}
-                                            progress={chefProgress}
-                                            color="#fb7185"
-                                            bgColor="rgba(251, 113, 133, 0.08)"
-                                            borderColor="rgba(251, 113, 133, 0.2)"
-                                            glowColor="rgba(251, 113, 133, 0.15)"
-                                            canUnlock={secondaryOccupation === 'chef' && canUnlockSecond}
-                                            onUnlock={handleUnlock}
-                                        />
-                                    </div>
-                                </div>
-                            </section>
-
-                            {/* Active Buff */}
-                            <AnimatePresence>
-                                {user.satiety_buff > 0 && (
-                                    <motion.section
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        className="glass-card"
-                                        style={{
-                                            padding: '1rem',
-                                            border: '1px solid rgba(99, 102, 241, 0.3)',
-                                            background: 'rgba(99, 102, 241, 0.08)',
-                                            boxShadow: '0 0 20px rgba(99, 102, 241, 0.1)',
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <motion.div
-                                                animate={{ rotate: [0, 10, -10, 0] }}
-                                                transition={{ duration: 2, repeat: Infinity }}
-                                            >
-                                                <Zap size={18} style={{ color: '#818cf8' }} />
-                                            </motion.div>
-                                            <div>
-                                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#a5b4fc' }}>
-                                                    Well Fed
-                                                </div>
-                                                <div style={{ fontSize: '0.7rem', color: 'rgba(165, 180, 252, 0.7)' }}>
-                                                    Hunger decay reduced by {user.satiety_buff * 100}%
-                                                </div>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '0.25rem' }}>
+                                    {/* Avatar + Name */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                                        <motion.div
+                                            whileHover={{ scale: 1.05 }}
+                                            style={{
+                                                display: 'flex',
+                                                height: '3.5rem',
+                                                width: '3.5rem',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                borderRadius: '1rem',
+                                                background: 'linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(31, 41, 55, 0.8))',
+                                                border: '1px solid rgba(99, 102, 241, 0.2)',
+                                                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                                            }}
+                                        >
+                                            <UserIcon size={28} style={{ color: '#a5b4fc' }} />
+                                        </motion.div>
+                                        <div>
+                                            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>
+                                                {user.email.split('@')[0]}
+                                            </h2>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
+                                                <Crown size={12} style={{ color: '#fbbf24' }} />
+                                                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#fbbf24' }}>
+                                                    {user.role}
+                                                </span>
                                             </div>
                                         </div>
-                                    </motion.section>
-                                )}
-                            </AnimatePresence>
+                                    </div>
+
+                                    {/* Hunger Stat */}
+                                    <div style={{ marginBottom: '1.25rem', height: 'auto', overflow: 'hidden' }}>
+                                        <HungerBar hunger={hunger} maxHunger={2400} />
+                                    </div>
+
+                                    {/* Occupation Stats */}
+                                    <div
+                                        style={{
+                                            paddingTop: '1.25rem',
+                                            borderTop: '1px solid rgba(99, 102, 241, 0.1)',
+                                        }}
+                                    >
+                                        <h3
+                                            style={{
+                                                fontSize: '0.8rem',
+                                                fontWeight: 600,
+                                                color: '#94a3b8',
+                                                marginBottom: '0.75rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.4rem',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em',
+                                            }}
+                                        >
+                                            <Briefcase size={13} /> Occupations
+                                        </h3>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                            {/* Provider Stat */}
+                                            <OccupationCard
+                                                name="Provider"
+                                                icon={<Sprout size={16} />}
+                                                level={providerLevel}
+                                                progress={providerProgress}
+                                                color="#fbbf24"
+                                                bgColor="rgba(251, 191, 36, 0.08)"
+                                                borderColor="rgba(251, 191, 36, 0.2)"
+                                                glowColor="rgba(251, 191, 36, 0.15)"
+                                                canUnlock={secondaryOccupation === 'provider' && canUnlockSecond}
+                                                onUnlock={handleUnlock}
+                                            />
+
+                                            {/* Chef Stat */}
+                                            <OccupationCard
+                                                name="Chef"
+                                                icon={<ChefHat size={16} />}
+                                                level={chefLevel}
+                                                progress={chefProgress}
+                                                color="#fb7185"
+                                                bgColor="rgba(251, 113, 133, 0.08)"
+                                                borderColor="rgba(251, 113, 133, 0.2)"
+                                                glowColor="rgba(251, 113, 133, 0.15)"
+                                                canUnlock={secondaryOccupation === 'chef' && canUnlockSecond}
+                                                onUnlock={handleUnlock}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Active Buff */}
+                                    <AnimatePresence>
+                                        {user.satiety_buff > 0 && (
+                                            <motion.section
+                                                initial={{ opacity: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.95 }}
+                                                className="glass-card"
+                                                style={{
+                                                    marginTop: '1rem',
+                                                    padding: '1rem',
+                                                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                                                    background: 'rgba(99, 102, 241, 0.08)',
+                                                    boxShadow: '0 0 20px rgba(99, 102, 241, 0.1)',
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                    <motion.div
+                                                        animate={{ rotate: [0, 10, -10, 0] }}
+                                                        transition={{ duration: 2, repeat: Infinity }}
+                                                    >
+                                                        <Zap size={18} style={{ color: '#818cf8' }} />
+                                                    </motion.div>
+                                                    <div>
+                                                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#a5b4fc' }}>
+                                                            Well Fed
+                                                        </div>
+                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(165, 180, 252, 0.7)' }}>
+                                                            Hunger decay reduced by {user.satiety_buff * 100}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.section>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </section>
                         </motion.div>
 
                         {/* ═══════ Column 2: Inventory ═══════ */}
@@ -549,12 +560,12 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            style={{ height: 'auto' }}
+                            style={{ height: '36rem' }}
                         >
                             <section
                                 className="glass-card"
                                 style={{
-                                    height: 'auto',
+                                    height: '100%',
                                     padding: '1rem',
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -574,7 +585,9 @@ const DashboardPage = () => {
                                 >
                                     <span>🎒</span> Inventory
                                 </h2>
-                                <InventoryGrid />
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                                    <InventoryGrid />
+                                </div>
 
                             </section>
                         </motion.div>
@@ -584,12 +597,12 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.15 }}
-                            style={{ height: 'auto' }}
+                            style={{ height: '36rem' }}
                         >
                             <section
                                 className="glass-card"
                                 style={{
-                                    height: 'auto',
+                                    height: '100%',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     overflow: 'hidden',
@@ -615,7 +628,7 @@ const DashboardPage = () => {
                                         <span>🏗️</span> Workspace
                                     </h2>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '1.25rem 1.5rem' }}>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
                                     <WorkspacePanel />
                                 </div>
                             </section>
@@ -626,12 +639,12 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            style={{ height: 'auto' }}
+                            style={{ height: '36rem' }}
                         >
                             <section
                                 className="glass-card"
                                 style={{
-                                    height: 'auto',
+                                    height: '100%',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     overflow: 'hidden',
@@ -657,7 +670,7 @@ const DashboardPage = () => {
                                         <span>🏪</span> Marketplace
                                     </h2>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                                     <MarketPanel />
                                 </div>
                             </section>

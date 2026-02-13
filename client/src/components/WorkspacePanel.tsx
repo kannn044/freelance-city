@@ -4,6 +4,7 @@ import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
 import { Sprout, ChefHat, Play, TrendingUp, Lock } from 'lucide-react';
 import { getExpProgress } from '../lib/gameConstants';
+import { renderItemIcon } from '../lib/itemVisual';
 
 /** Mini EXP bar for the workspace header */
 const MiniExpBar = ({ label, icon, level, exp, color }: {
@@ -92,7 +93,7 @@ const MiniExpBar = ({ label, icon, level, exp, color }: {
 };
 
 const WorkspacePanel = () => {
-    const { inventory, shopItems, recipes, startFarm, startCook, buyFromShop } = useGameStore();
+    const { inventory, shopItems, recipes, recipeShop, startFarm, startCook, buyFromShop } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [showStartForm, setShowStartForm] = useState(false);
 
@@ -221,7 +222,9 @@ const WorkspacePanel = () => {
                                                         cursor: 'pointer',
                                                     }}
                                                 >
-                                                    <span>{item.icon} {item.name}</span>
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                        {renderItemIcon(item, 15)} {item.name}
+                                                    </span>
                                                     <span style={{ color: '#fbbf24' }}>💰 {item.buy_price}</span>
                                                 </motion.button>
                                             ))
@@ -248,7 +251,9 @@ const WorkspacePanel = () => {
                                                 cursor: 'pointer',
                                             }}
                                         >
-                                            <span>{slot.item?.icon} {slot.item?.name} (x{slot.quantity})</span>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                {renderItemIcon(slot.item, 15)} {slot.item?.name} (x{slot.quantity})
+                                            </span>
                                             {/* <span>🌱 Plant</span> */}
                                         </motion.button>
                                     ))
@@ -261,11 +266,8 @@ const WorkspacePanel = () => {
                                 <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                                     <ChefHat style={{ width: '0.7rem', height: '0.7rem' }} /> Cook a recipe
                                 </div>
-                                {recipes.length === 0 ? (
-                                    <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
-                                        Loading recipes...
-                                    </p>
-                                ) : (
+
+                                {recipes.length > 0 && (
                                     recipes.map((recipe) => (
                                         <motion.button
                                             key={recipe.id}
@@ -294,6 +296,18 @@ const WorkspacePanel = () => {
                                             </span>
                                         </motion.button>
                                     ))
+                                )}
+
+                                {recipeShop.length > 0 && (
+                                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.42)' }}>
+                                        Some recipes are locked. Buy recipe scrolls in NPC Shop.
+                                    </div>
+                                )}
+
+                                {recipes.length === 0 && recipeShop.length === 0 && (
+                                    <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
+                                        No recipes available.
+                                    </p>
                                 )}
                             </>
                         )}
