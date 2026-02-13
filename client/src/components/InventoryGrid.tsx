@@ -5,6 +5,7 @@ import { UtensilsCrossed, Package } from 'lucide-react';
 
 const InventoryGrid = () => {
     const { inventory, eatItem } = useGameStore();
+    const occupiedSlots = inventory.filter((s) => s.item && s.quantity > 0).length;
 
     const handleSlotClick = (slot: InventorySlot) => {
         if (!slot.item) return;
@@ -14,20 +15,27 @@ const InventoryGrid = () => {
     };
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-                height: '100%',
-                minHeight: 0,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '0.5rem',
-                margin: 0,
-                boxSizing: 'border-box',
-            }}
-        >
+        <>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderRadius: '0.5rem',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '0.4rem 0.5rem',
+                    marginBottom: '0.6rem',
+                }}
+            >
+                <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
+                    Capacity
+                </span>
+                <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
+                    {occupiedSlots}/8 slots
+                </span>
+            </div>
+
             <div
                 style={{
                     display: 'grid',
@@ -49,20 +57,20 @@ const InventoryGrid = () => {
                             style={{
                                 position: 'relative',
                                 aspectRatio: '1',
-                                borderRadius: '0.75rem',
+                                borderRadius: '0.6rem',
                                 background: hasItem
-                                    ? 'rgba(99, 102, 241, 0.08)'
-                                    : 'rgba(255, 255, 255, 0.02)',
+                                    ? 'rgba(255, 255, 255, 0.06)'
+                                    : 'rgba(255, 255, 255, 0.03)',
                                 border: hasItem
-                                    ? '1px solid rgba(99, 102, 241, 0.2)'
-                                    : '1px dashed rgba(255, 255, 255, 0.08)',
+                                    ? '1px solid rgba(255, 255, 255, 0.14)'
+                                    : '1px dashed rgba(255, 255, 255, 0.12)',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: canEat ? 'pointer' : 'default',
                                 transition: 'all 0.2s',
-                                padding: '0.25rem',
+                                padding: '0.3rem',
                                 overflow: 'hidden',
                             }}
                         >
@@ -95,11 +103,11 @@ const InventoryGrid = () => {
                                                 right: '0.15rem',
                                                 fontSize: '0.55rem',
                                                 fontWeight: 700,
-                                                background: 'rgba(99, 102, 241, 0.5)',
+                                                background: 'rgba(15, 23, 42, 0.75)',
                                                 color: 'white',
                                                 borderRadius: '0.25rem',
                                                 padding: '0 0.25rem',
-                                                lineHeight: '1.2rem',
+                                                lineHeight: '1rem',
                                             }}
                                         >
                                             x{slot.quantity}
@@ -137,7 +145,7 @@ const InventoryGrid = () => {
                     );
                 })}
             </div>
-        </div>
+        </>
     );
 };
 

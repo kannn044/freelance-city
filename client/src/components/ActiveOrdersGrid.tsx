@@ -15,6 +15,10 @@ function formatTimeLeft(completesAt: string): string {
     return `${secs}s`;
 }
 
+function getRemainingMs(completesAt: string): number {
+    return Math.max(0, new Date(completesAt).getTime() - Date.now());
+}
+
 function getProgress(order: WorkOrder): number {
     const start = new Date(order.started_at).getTime();
     const end = new Date(order.completes_at).getTime();
@@ -32,8 +36,13 @@ const ActiveOrdersGrid = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const providerOrders = workOrders.filter((o) => o.type === 'FARM');
-    const chefOrders = workOrders.filter((o) => o.type === 'COOK');
+    const providerOrders = workOrders
+        .filter((o) => o.type === 'FARM')
+        .sort((a, b) => getRemainingMs(a.completes_at) - getRemainingMs(b.completes_at));
+
+    const chefOrders = workOrders
+        .filter((o) => o.type === 'COOK')
+        .sort((a, b) => getRemainingMs(a.completes_at) - getRemainingMs(b.completes_at));
 
     const renderOrderCard = (order: WorkOrder, accent: 'provider' | 'chef') => {
         const progress = getProgress(order);

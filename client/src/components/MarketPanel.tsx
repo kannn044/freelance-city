@@ -29,14 +29,17 @@ const MarketPanel = () => {
             style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.5rem',
+                gap: '0.6rem',
                 height: '100%',
                 minHeight: 0,
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0.5rem',
+                padding: '0.75rem',
                 margin: 0,
                 boxSizing: 'border-box',
+                borderRadius: '0.75rem',
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(255,255,255,0.02)',
             }}
         >
             {/* Tabs */}
@@ -44,9 +47,10 @@ const MarketPanel = () => {
                 style={{
                     display: 'flex',
                     borderRadius: '0.5rem',
-                    background: 'rgba(255,255,255,0.03)',
-                    padding: '0.2rem',
-                    gap: '0.2rem',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    padding: '0.25rem',
+                    gap: '0.25rem',
                 }}
             >
                 {(['market', 'shop'] as Tab[]).map((t) => (
@@ -65,8 +69,8 @@ const MarketPanel = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '0.3rem',
-                            background: tab === t ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
-                            color: tab === t ? '#818cf8' : 'rgba(255,255,255,0.4)',
+                            background: tab === t ? 'rgba(255,255,255,0.1)' : 'transparent',
+                            color: tab === t ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.5)',
                             transition: 'all 0.2s',
                         }}
                     >
@@ -91,11 +95,11 @@ const MarketPanel = () => {
                             gap: '0.3rem',
                             padding: '0.4rem',
                             borderRadius: '0.5rem',
-                            border: '1px dashed rgba(251, 191, 36, 0.3)',
-                            background: 'rgba(251, 191, 36, 0.05)',
-                            color: '#fbbf24',
+                            border: '1px solid rgba(255,255,255,0.14)',
+                            background: 'rgba(255,255,255,0.03)',
+                            color: 'rgba(255,255,255,0.9)',
                             fontSize: '0.7rem',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             cursor: 'pointer',
                         }}
                     >
@@ -115,10 +119,10 @@ const MarketPanel = () => {
                                     flexDirection: 'column',
                                     gap: '0.4rem',
                                     overflow: 'hidden',
-                                    padding: '0.5rem',
-                                    background: 'rgba(255,255,255,0.02)',
+                                    padding: '0.55rem',
+                                    background: 'rgba(255,255,255,0.03)',
                                     borderRadius: '0.5rem',
-                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
                                 }}
                             >
                                 <select
@@ -196,11 +200,11 @@ const MarketPanel = () => {
                                     style={{
                                         padding: '0.4rem',
                                         borderRadius: '0.35rem',
-                                        border: 'none',
-                                        background: sellSlotId !== null ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.14)',
+                                        background: sellSlotId !== null ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)',
                                         color: 'white',
                                         fontSize: '0.7rem',
-                                        fontWeight: 600,
+                                        fontWeight: 500,
                                         cursor: sellSlotId !== null ? 'pointer' : 'not-allowed',
                                     }}
                                 >
@@ -225,10 +229,10 @@ const MarketPanel = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    padding: '0.5rem',
+                                    padding: '0.6rem',
                                     borderRadius: '0.5rem',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    background: 'rgba(255,255,255,0.045)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -250,11 +254,11 @@ const MarketPanel = () => {
                                         style={{
                                             padding: '0.3rem 0.6rem',
                                             borderRadius: '0.35rem',
-                                            border: 'none',
-                                            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                            border: '1px solid rgba(255,255,255,0.14)',
+                                            background: 'rgba(255,255,255,0.08)',
                                             color: 'white',
                                             fontSize: '0.65rem',
-                                            fontWeight: 600,
+                                            fontWeight: 500,
                                             cursor: 'pointer',
                                         }}
                                     >
@@ -288,10 +292,10 @@ const MarketPanel = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    padding: '0.5rem',
+                                    padding: '0.6rem',
                                     borderRadius: '0.5rem',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    background: 'rgba(255,255,255,0.045)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -312,11 +316,11 @@ const MarketPanel = () => {
                                     style={{
                                         padding: '0.3rem 0.6rem',
                                         borderRadius: '0.35rem',
-                                        border: 'none',
-                                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                        border: '1px solid rgba(255,255,255,0.14)',
+                                        background: 'rgba(255,255,255,0.08)',
                                         color: 'white',
                                         fontSize: '0.65rem',
-                                        fontWeight: 600,
+                                        fontWeight: 500,
                                         cursor: 'pointer',
                                     }}
                                 >

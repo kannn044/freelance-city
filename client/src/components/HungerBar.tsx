@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useAuthStore } from '../stores/authStore';
 
 interface HungerBarProps {
     hunger: number;
@@ -14,27 +15,33 @@ function getHungerState(hunger: number, max: number) {
 }
 
 const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
+    const user = useAuthStore((s) => s.user);
     const pct = Math.max(0, Math.min(100, (hunger / maxHunger) * 100));
     const info = getHungerState(hunger, maxHunger);
+    const providerLevel = user?.provider_level ?? 0;
+    const chefLevel = user?.chef_level ?? 0;
 
     return (
         <div
             style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.5rem',
-                height: '100%',
-                minHeight: 0,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '0.5rem',
+                gap: '0.6rem',
+                // height: '100%',
+                // minHeight: 0,
+                // overflowY: 'auto',
+                // overflowX: 'hidden',
+                padding: '0.75rem',
                 margin: 0,
                 boxSizing: 'border-box',
+                borderRadius: '0.75rem',
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'rgba(255,255,255,0.02)',
             }}
         >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
-                    Hunger (Kcal)
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
+                    Hunger
                 </span>
                 <span
                     style={{
@@ -47,17 +54,25 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
                         border: `1px solid ${info.color}40`,
                     }}
                 >
-                    {info.state} • {info.multiplier}
+                    {info.state}
                 </span>
             </div>
 
-            {/* Bar track */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 700, color: info.color, lineHeight: 1 }}>
+                    {Math.round(hunger)}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>
+                    / {maxHunger} kcal
+                </span>
+            </div>
+
             <div
                 style={{
                     position: 'relative',
-                    height: '0.625rem',
-                    borderRadius: '0.5rem',
-                    background: 'rgba(255, 255, 255, 0.06)',
+                    height: '0.6rem',
+                    borderRadius: '9999px',
+                    background: 'rgba(255, 255, 255, 0.08)',
                     overflow: 'hidden',
                 }}
             >
@@ -67,23 +82,43 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
                         top: 0,
                         left: 0,
                         height: '100%',
-                        borderRadius: '0.5rem',
-                        background: `linear-gradient(90deg, ${info.color}, ${info.color}cc)`,
-                        boxShadow: `0 0 12px ${info.color}60`,
+                        borderRadius: '9999px',
+                        background: info.color,
                     }}
                     animate={{ width: `${pct}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: 700, color: info.color }}>
-                    {Math.round(hunger)}
-                </span>
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
-                    / {maxHunger} Kcal
-                </span>
+            <div style={{ display: 'flex', gap: '0.45rem' }}>
+                <div
+                    style={{
+                        flex: 1,
+                        fontSize: '0.65rem',
+                        color: 'rgba(255,255,255,0.8)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '0.45rem',
+                        padding: '0.35rem 0.45rem',
+                        background: 'rgba(255,255,255,0.02)',
+                    }}
+                >
+                    Provider Lv. {providerLevel}
+                </div>
+                <div
+                    style={{
+                        flex: 1,
+                        fontSize: '0.65rem',
+                        color: 'rgba(255,255,255,0.8)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '0.45rem',
+                        padding: '0.35rem 0.45rem',
+                        background: 'rgba(255,255,255,0.02)',
+                    }}
+                >
+                    Chef Lv. {chefLevel}
+                </div>
             </div>
+            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Decay multiplier: {info.multiplier}</span>
         </div>
     );
 };

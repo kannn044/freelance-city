@@ -109,14 +109,12 @@ const WorkspacePanel = () => {
             style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.5rem',
-                height: '100%',
-                minHeight: 0,
+                gap: '0.6rem',
+                height: 'auto',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0.5rem',
-                margin: 0,
                 boxSizing: 'border-box',
+                borderRadius: '0.75rem',
             }}
         >
             {/* Level / EXP Section */}
@@ -147,13 +145,13 @@ const WorkspacePanel = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '0.4rem',
-                    padding: '0.5rem',
+                    padding: '0.55rem',
                     borderRadius: '0.5rem',
-                    border: '1px dashed rgba(99, 102, 241, 0.3)',
-                    background: 'rgba(99, 102, 241, 0.05)',
-                    color: '#818cf8',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
+                    border: '1px solid rgba(255,255,255,0.14)',
+                    background: 'rgba(255,255,255,0.03)',
+                    color: 'rgba(255,255,255,0.9)',
+                    fontSize: '0.72rem',
+                    fontWeight: 500,
                     cursor: 'pointer',
                 }}
             >
@@ -167,7 +165,16 @@ const WorkspacePanel = () => {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', overflow: 'hidden' }}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.5rem',
+                            overflow: 'hidden',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '0.5rem',
+                            background: 'rgba(255,255,255,0.02)',
+                            padding: '0.55rem',
+                        }}
                     >
                         {!canFarm && !canCook && (
                             <p style={{
@@ -205,9 +212,9 @@ const WorkspacePanel = () => {
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'space-between',
-                                                        padding: '0.5rem',
+                                                        padding: '0.55rem 0.6rem',
                                                         borderRadius: '0.5rem',
-                                                        border: '1px solid rgba(255,255,255,0.06)',
+                                                        border: '1px solid rgba(255,255,255,0.08)',
                                                         background: 'rgba(255,255,255,0.03)',
                                                         color: 'rgba(255,255,255,0.8)',
                                                         fontSize: '0.7rem',
@@ -231,13 +238,13 @@ const WorkspacePanel = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'space-between',
-                                                padding: '0.5rem',
+                                                padding: '0.55rem 0.6rem',
                                                 borderRadius: '0.5rem',
-                                                border: '1px solid rgba(52, 211, 153, 0.2)',
-                                                background: 'rgba(52, 211, 153, 0.05)',
-                                                color: '#34d399',
+                                                border: '1px solid rgba(255,255,255,0.12)',
+                                                background: 'rgba(255,255,255,0.03)',
+                                                color: 'rgba(255,255,255,0.9)',
                                                 fontSize: '0.75rem',
-                                                fontWeight: 600,
+                                                fontWeight: 500,
                                                 cursor: 'pointer',
                                             }}
                                         >
@@ -269,17 +276,17 @@ const WorkspacePanel = () => {
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 gap: '0.25rem',
-                                                padding: '0.5rem',
+                                                padding: '0.55rem 0.6rem',
                                                 borderRadius: '0.5rem',
-                                                border: '1px solid rgba(251, 146, 60, 0.2)',
-                                                background: 'rgba(251, 146, 60, 0.05)',
+                                                border: '1px solid rgba(255,255,255,0.12)',
+                                                background: 'rgba(255,255,255,0.03)',
                                                 color: 'rgba(255,255,255,0.8)',
                                                 fontSize: '0.7rem',
                                                 cursor: 'pointer',
                                                 textAlign: 'left',
                                             }}
                                         >
-                                            <span style={{ fontWeight: 600, color: '#fb923c' }}>
+                                            <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
                                                 {recipe.output_item.icon} {recipe.name}
                                             </span>
                                             <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
