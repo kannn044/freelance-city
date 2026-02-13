@@ -102,6 +102,62 @@ async function main() {
         },
     });
 
+    // ─── Equipment ────────────────────────────────────────
+    const equipments: Array<{
+        name: string;
+        icon: string;
+        role: "PROVIDER" | "CHEF";
+        slot: "HEAD" | "UPPER_BODY" | "LOWER_BODY" | "ARM" | "GLOVE" | "SHOE";
+        buyPrice: number;
+        effectKey: string;
+        effectValue: number;
+        effectValue2?: number;
+    }> = [
+        { name: "Sun Hat", icon: "🧢", role: "PROVIDER", slot: "HEAD", buyPrice: 320, effectKey: "hunger_penalty_tier_reduction", effectValue: 1 },
+        { name: "Toque Blanche", icon: "👨‍🍳", role: "CHEF", slot: "HEAD", buyPrice: 360, effectKey: "cook_secondary_ingredient_save_chance", effectValue: 0.1 },
+        { name: "Field Shirt", icon: "👕", role: "PROVIDER", slot: "UPPER_BODY", buyPrice: 420, effectKey: "max_hunger_bonus", effectValue: 300 },
+        { name: "Apron", icon: "🥼", role: "CHEF", slot: "UPPER_BODY", buyPrice: 440, effectKey: "max_hunger_and_satiety_bonus", effectValue: 150, effectValue2: 0.1 },
+        { name: "Cargo Pants", icon: "👖", role: "PROVIDER", slot: "LOWER_BODY", buyPrice: 520, effectKey: "raw_stack_bonus", effectValue: 5 },
+        { name: "Slack Pants", icon: "🩳", role: "CHEF", slot: "LOWER_BODY", buyPrice: 520, effectKey: "ingredient_stack_bonus", effectValue: 5 },
+        { name: "Sweatband", icon: "💪", role: "PROVIDER", slot: "ARM", buyPrice: 600, effectKey: "farm_time_reduction_pct", effectValue: 0.1 },
+        { name: "Wrist Support", icon: "⌚", role: "CHEF", slot: "ARM", buyPrice: 600, effectKey: "cook_time_reduction_pct", effectValue: 0.1 },
+        { name: "Work Gloves", icon: "🧤", role: "PROVIDER", slot: "GLOVE", buyPrice: 650, effectKey: "farm_double_yield_chance", effectValue: 0.08 },
+        { name: "Latex Gloves", icon: "🧤", role: "CHEF", slot: "GLOVE", buyPrice: 650, effectKey: "gourmet_chance", effectValue: 0.08 },
+        { name: "Mud Boots", icon: "🥾", role: "PROVIDER", slot: "SHOE", buyPrice: 700, effectKey: "hunger_decay_reduction_per_min", effectValue: 1.5 },
+        { name: "Anti-Slip Shoes", icon: "👟", role: "CHEF", slot: "SHOE", buyPrice: 700, effectKey: "cook_state_hunger_decay_reduction_pct", effectValue: 0.2 },
+    ];
+
+    for (const eq of equipments) {
+        await prisma.item.upsert({
+            where: { name: eq.name },
+            update: {
+                type: "EQUIPMENT",
+                buy_price: eq.buyPrice,
+                max_stack: 1,
+                icon: eq.icon,
+                exp_value: 0,
+                equipment_role: eq.role,
+                equipment_slot: eq.slot,
+                effect_key: eq.effectKey,
+                effect_value: eq.effectValue,
+                effect_value2: eq.effectValue2 ?? null,
+            } as any,
+            create: {
+                name: eq.name,
+                type: "EQUIPMENT",
+                buy_price: eq.buyPrice,
+                max_stack: 1,
+                icon: eq.icon,
+                exp_value: 0,
+                equipment_role: eq.role,
+                equipment_slot: eq.slot,
+                effect_key: eq.effectKey,
+                effect_value: eq.effectValue,
+                effect_value2: eq.effectValue2 ?? null,
+            } as any,
+        });
+    }
+
     // ─── Link seeds to yields ────────────────────────────
     await prisma.item.update({
         where: { id: chickenSeed.id },

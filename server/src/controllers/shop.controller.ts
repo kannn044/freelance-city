@@ -5,6 +5,87 @@ interface AuthRequest extends Request {
     userId?: number;
 }
 
+const EQUIPMENT_BOX_PRICE = 420;
+const SLOT_WEIGHTS: Record<string, number> = {
+    HEAD: 14,
+    UPPER_BODY: 18,
+    LOWER_BODY: 18,
+    ARM: 16,
+    GLOVE: 16,
+    SHOE: 18,
+};
+
+function pickByWeight<T>(entries: Array<{ value: T; weight: number }>): T {
+    const total = entries.reduce((sum, e) => sum + e.weight, 0);
+    const rand = Math.random() * total;
+    let acc = 0;
+    for (const e of entries) {
+        acc += e.weight;
+        if (rand <= acc) return e.value;
+    }
+    return entries[entries.length - 1].value;
+}
+
+function getRoleBias(userRole: string) {
+    if (userRole === "PROVIDER") return { PROVIDER: 0.7, CHEF: 0.3 };
+    if (userRole === "CHEF") return { PROVIDER: 0.3, CHEF: 0.7 };
+    return { PROVIDER: 0.5, CHEF: 0.5 };
+}
+
+async function addItemToInventory(userId: number, itemId: number, qty: number): Promise<boolean> {
+    const item = await prisma.item.findUnique({ where: { id: itemId } });
+    if (!item) return false;
+
+    let remaining = qty;
+    const slots = await prisma.inventorySlot.findMany({
+        where: { user_id: userId },
+        orderBy: { slot: "asc" },
+    });
+
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== itemId || slot.quantity >= item.max_stack) continue;
+
+        const add = Math.min(item.max_stack - slot.quantity, remaining);
+        remaining -= add;
+        await prisma.inventorySlot.update({
+            where: { id: slot.id },
+            data: { quantity: slot.quantity + add },
+        });
+    }
+
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== null) continue;
+
+        const put = Math.min(item.max_stack, remaining);
+        remaining -= put;
+        await prisma.inventorySlot.update({
+            where: { id: slot.id },
+            data: { item_id: itemId, quantity: put },
+        });
+    }
+
+    return remaining === 0;
+}
+
+function buildEquipmentOdds(userRole: string) {
+    const roleBias = getRoleBias(userRole);
+    const slots = Object.entries(SLOT_WEIGHTS);
+    return slots.flatMap(([slot, slotWeight]) => [
+        {
+            role: "PROVIDER",
+            slot,
+            chancePct: Number(((slotWeight / 100) * roleBias.PROVIDER * 100).toFixed(2)),
+        },
+        {
+            role: "CHEF",
+            slot,
+            chancePct: Number(((slotWeight / 100) * roleBias.CHEF * 100).toFixed(2)),
+        },
+    ]);
+}
+
 async function getUnlockedRecipeIds(userId: number): Promise<number[]> {
     const rows = await prisma.$queryRaw<Array<{ recipe_id: number }>>`
         SELECT recipe_id
@@ -39,23 +120,27 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
             return;
         }
 
-        // Build filter based on unlocked occupations
-        const typeFilters: string[] = [];
-        if (user.provider_level >= 1) typeFilters.push("SEED");
-        if (user.chef_level >= 1) typeFilters.push("INGREDIENT");
+        const canProvider = user.provider_level >= 1;
+        const canChef = user.chef_level >= 1;
 
-        if (typeFilters.length === 0) {
+        if (!canProvider && !canChef) {
             res.json({ items: [] });
             return;
         }
 
-        const items = await prisma.item.findMany({
-            where: {
-                buy_price: { not: null },
-                type: { in: typeFilters as any },
-            },
-            orderBy: { type: "asc" },
-        });
+        const normalTypes: string[] = [];
+        if (canProvider) normalTypes.push("SEED");
+        if (canChef) normalTypes.push("INGREDIENT");
+
+        const items = normalTypes.length
+            ? await prisma.item.findMany({
+                where: {
+                    buy_price: { not: null },
+                    type: { in: normalTypes as any },
+                },
+                orderBy: { type: "asc" },
+            })
+            : [];
 
         res.json({ items });
     } catch (error) {
@@ -96,6 +181,10 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
         }
         if (item.type === "INGREDIENT" && user.chef_level < 1) {
             res.status(403).json({ error: "You need the Chef occupation to buy ingredients" });
+            return;
+        }
+        if ((item as any).type === "EQUIPMENT") {
+            res.status(400).json({ error: "Equipment cannot be bought directly. Use Equipment Box." });
             return;
         }
 
@@ -191,6 +280,134 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
     } catch (error) {
         console.error("buyFromShop error:", error);
         res.status(500).json({ error: "Failed to buy from shop" });
+    }
+};
+
+/**
+ * GET /game/shop/equipment-box — Box info + odds
+ */
+export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+
+        const odds = buildEquipmentOdds(user.role);
+        res.json({
+            box: {
+                name: "Equipment Box",
+                price: EQUIPMENT_BOX_PRICE,
+                description: "Open 1 box to receive 1 random equipment item.",
+            },
+            formula: {
+                roleBias: getRoleBias(user.role),
+                slotWeights: SLOT_WEIGHTS,
+                note: "Final chance = role_bias x slot_weight",
+            },
+            odds,
+        });
+    } catch (error) {
+        console.error("getEquipmentBoxInfo error:", error);
+        res.status(500).json({ error: "Failed to fetch equipment box info" });
+    }
+};
+
+/**
+ * POST /game/shop/equipment-box/open — Spend credits and roll one equipment
+ */
+export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+
+        if (user.money < EQUIPMENT_BOX_PRICE) {
+            res.status(400).json({ error: `Not enough credits. Need ${EQUIPMENT_BOX_PRICE}, have ${user.money}` });
+            return;
+        }
+
+        const roleBias = getRoleBias(user.role);
+        const rolledRole = pickByWeight([
+            { value: "PROVIDER" as const, weight: roleBias.PROVIDER },
+            { value: "CHEF" as const, weight: roleBias.CHEF },
+        ]);
+        const rolledSlot = pickByWeight(
+            Object.entries(SLOT_WEIGHTS).map(([slot, weight]) => ({ value: slot, weight }))
+        );
+
+        const candidates = await prisma.$queryRaw<Array<{ id: number }>>`
+            SELECT id
+            FROM items
+            WHERE type = 'EQUIPMENT'
+              AND equipment_role = ${rolledRole}
+              AND equipment_slot = ${rolledSlot}
+        `;
+
+        let rolledItemId = candidates[0]?.id;
+        if (!rolledItemId) {
+            const fallback = await prisma.$queryRaw<Array<{ id: number }>>`
+                SELECT id
+                FROM items
+                WHERE type = 'EQUIPMENT'
+                ORDER BY RAND()
+                LIMIT 1
+            `;
+            rolledItemId = fallback[0]?.id;
+        }
+
+        if (!rolledItemId) {
+            res.status(500).json({ error: "No equipment configured" });
+            return;
+        }
+
+        const added = await addItemToInventory(req.userId!, Number(rolledItemId), 1);
+        if (!added) {
+            res.status(400).json({ error: "Inventory full" });
+            return;
+        }
+
+        await prisma.user.update({
+            where: { id: req.userId! },
+            data: { money: { decrement: EQUIPMENT_BOX_PRICE } },
+        });
+
+        const rolledItem = await prisma.item.findUnique({ where: { id: Number(rolledItemId) } });
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+
+        res.json({
+            message: `Opened Equipment Box and got ${rolledItem?.name ?? "equipment"}!`,
+            boxPrice: EQUIPMENT_BOX_PRICE,
+            rolled: {
+                role: rolledRole,
+                slot: rolledSlot,
+                item: rolledItem,
+            },
+            user: {
+                id: updatedUser!.id,
+                email: updatedUser!.email,
+                role: updatedUser!.role,
+                money: updatedUser!.money,
+                hunger: updatedUser!.hunger,
+                provider_level: updatedUser!.provider_level,
+                provider_exp: updatedUser!.provider_exp,
+                chef_level: updatedUser!.chef_level,
+                chef_exp: updatedUser!.chef_exp,
+            },
+            slots,
+            odds: buildEquipmentOdds(user.role),
+        });
+    } catch (error) {
+        console.error("openEquipmentBox error:", error);
+        res.status(500).json({ error: "Failed to open equipment box" });
     }
 };
 

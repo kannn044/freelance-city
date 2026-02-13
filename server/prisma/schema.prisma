@@ -20,6 +20,7 @@ enum ItemType {
   RAW
   INGREDIENT
   MEAL
+  EQUIPMENT
 }
 
 enum WorkType {
@@ -33,30 +34,40 @@ enum ListingStatus {
   CANCELLED
 }
 
+enum EquipmentSlot {
+  HEAD
+  UPPER_BODY
+  LOWER_BODY
+  ARM
+  GLOVE
+  SHOE
+}
+
 // ─── User ────────────────────────────────────────────────
 
 model User {
-  id               Int      @id @default(autoincrement())
-  email            String   @unique
-  password_hash    String
-  role             Role     @default(NONE)
-  money            Int      @default(5000)
-  hunger           Float    @default(2400)
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  password_hash     String
+  role              Role     @default(NONE)
+  money             Int      @default(5000)
+  hunger            Float    @default(2400)
   hunger_updated_at DateTime @default(now())
-  satiety_buff     Float    @default(0)
-  buff_expires_at  DateTime?
-  provider_level   Int      @default(0)   // 0 = not unlocked, 1+ = active level
-  provider_exp     Int      @default(0)
-  chef_level       Int      @default(0)
-  chef_exp         Int      @default(0)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  satiety_buff      Float    @default(0)
+  buff_expires_at   DateTime?
+  provider_level    Int      @default(0) // 0 = not unlocked, 1+ = active level
+  provider_exp      Int      @default(0)
+  chef_level        Int      @default(0)
+  chef_exp          Int      @default(0)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   inventory      InventorySlot[]
   work_orders    WorkOrder[]
-  sell_listings  MarketListing[] @relation("seller")
-  buy_history    MarketListing[] @relation("buyer")
+  sell_listings  MarketListing[]   @relation("seller")
+  buy_history    MarketListing[]   @relation("buyer")
   recipe_unlocks UserRecipeUnlock[]
+  equipments     UserEquipment[]
 
   @@map("users")
 }
@@ -64,29 +75,34 @@ model User {
 // ─── Item Catalog ────────────────────────────────────────
 
 model Item {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  type        ItemType
-  buy_price   Int?          // NPC shop price (null = not buyable)
-  sell_price  Int?          // NPC sell price (null = not sellable to NPC)
-  kcal        Int?          // Kcal restored when eaten
-  buff_pct    Float?        // Hunger decay slowdown % (e.g. 0.05 = 5%)
-  buff_mins   Int?          // Buff duration in real minutes
-  max_stack   Int      @default(1)
-  grow_mins   Int?          // Growth time for seeds (real minutes)
-  yield_item_id Int?        // Item produced when harvested
-  yield_qty   Int?          // Quantity produced
-  exp_value   Float    @default(1.0)  // Base EXP multiplier for market sales
-  icon        String   @default("📦")
+  id              Int            @id @default(autoincrement())
+  name            String         @unique
+  type            ItemType
+  equipment_slot  EquipmentSlot?
+  equipment_role  Role?
+  effect_key      String?
+  effect_value    Float?
+  effect_value2   Float?
+  buy_price       Int? // NPC shop price (null = not buyable)
+  sell_price      Int? // NPC sell price (null = not sellable to NPC)
+  kcal            Int? // Kcal restored when eaten
+  buff_pct        Float? // Hunger decay slowdown % (e.g. 0.05 = 5%)
+  buff_mins       Int? // Buff duration in real minutes
+  max_stack       Int            @default(1)
+  grow_mins       Int? // Growth time for seeds (real minutes)
+  yield_item_id   Int? // Item produced when harvested
+  yield_qty       Int? // Quantity produced
+  exp_value       Float          @default(1.0) // Base EXP multiplier for market sales
+  icon            String         @default("📦")
 
-  yield_item     Item?    @relation("yield", fields: [yield_item_id], references: [id])
-  yielded_from   Item[]   @relation("yield")
-
-  inventory_slots InventorySlot[]
-  work_orders     WorkOrder[]
-  recipe_outputs  Recipe[]           @relation("recipeOutput")
+  yield_item         Item?                @relation("yield", fields: [yield_item_id], references: [id])
+  yielded_from       Item[]               @relation("yield")
+  inventory_slots    InventorySlot[]
+  work_orders        WorkOrder[]
+  recipe_outputs     Recipe[]             @relation("recipeOutput")
   recipe_ingredients RecipeIngredient[]
-  market_listings MarketListing[]
+  market_listings    MarketListing[]
+  equipped_on        UserEquipment[]
 
   @@map("items")
 }
@@ -94,16 +110,16 @@ model Item {
 // ─── Recipes ─────────────────────────────────────────────
 
 model Recipe {
-  id          Int    @id @default(autoincrement())
-  name        String @unique
+  id             Int    @id @default(autoincrement())
+  name           String @unique
   output_item_id Int
-  output_qty  Int    @default(1)
-  cook_mins   Int    @default(5)   // Cooking time in real minutes
-  unlock_price Int   @default(300)
+  output_qty     Int    @default(1)
+  cook_mins      Int    @default(5) // Cooking time in real minutes
+  unlock_price   Int    @default(300)
 
-  output_item  Item              @relation("recipeOutput", fields: [output_item_id], references: [id])
-  ingredients  RecipeIngredient[]
-  unlocked_by  UserRecipeUnlock[]
+  output_item Item               @relation("recipeOutput", fields: [output_item_id], references: [id])
+  ingredients RecipeIngredient[]
+  unlocked_by UserRecipeUnlock[]
 
   @@map("recipes")
 }
@@ -122,9 +138,9 @@ model RecipeIngredient {
 }
 
 model UserRecipeUnlock {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  recipe_id  Int
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  recipe_id   Int
   unlocked_at DateTime @default(now())
 
   user   User   @relation(fields: [user_id], references: [id])
@@ -137,11 +153,11 @@ model UserRecipeUnlock {
 // ─── Inventory ───────────────────────────────────────────
 
 model InventorySlot {
-  id       Int  @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   user_id  Int
-  slot     Int               // 0–7
+  slot     Int // 0–7
   item_id  Int?
-  quantity Int  @default(0)
+  quantity Int @default(0)
 
   user User  @relation(fields: [user_id], references: [id])
   item Item? @relation(fields: [item_id], references: [id])
@@ -150,18 +166,32 @@ model InventorySlot {
   @@map("inventory_slots")
 }
 
+model UserEquipment {
+  id         Int           @id @default(autoincrement())
+  user_id    Int
+  slot       EquipmentSlot
+  item_id    Int?
+  updated_at DateTime      @updatedAt
+
+  user User  @relation(fields: [user_id], references: [id])
+  item Item? @relation(fields: [item_id], references: [id])
+
+  @@unique([user_id, slot])
+  @@map("user_equipments")
+}
+
 // ─── Work Orders ─────────────────────────────────────────
 
 model WorkOrder {
-  id          Int      @id @default(autoincrement())
-  user_id     Int
-  type        WorkType
-  item_id     Int              // The seed/recipe item being worked
-  recipe_id   Int?             // Recipe ID if cooking
-  quantity    Int     @default(1)
-  started_at  DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  type         WorkType
+  item_id      Int // The seed/recipe item being worked
+  recipe_id    Int? // Recipe ID if cooking
+  quantity     Int      @default(1)
+  started_at   DateTime @default(now())
   completes_at DateTime
-  collected   Boolean @default(false)
+  collected    Boolean  @default(false)
 
   user User @relation(fields: [user_id], references: [id])
   item Item @relation(fields: [item_id], references: [id])
@@ -172,17 +202,17 @@ model WorkOrder {
 // ─── Market ──────────────────────────────────────────────
 
 model MarketListing {
-  id          Int           @id @default(autoincrement())
-  seller_id   Int
-  buyer_id    Int?
-  item_id     Int
-  quantity    Int
-  price       Int            // Total price
-  status      ListingStatus @default(ACTIVE)
-  created_at  DateTime      @default(now())
-  sold_at     DateTime?
+  id         Int           @id @default(autoincrement())
+  seller_id  Int
+  buyer_id   Int?
+  item_id    Int
+  quantity   Int
+  price      Int           // Total price
+  status     ListingStatus @default(ACTIVE)
+  created_at DateTime      @default(now())
+  sold_at    DateTime?
 
-  seller User @relation("seller", fields: [seller_id], references: [id])
+  seller User  @relation("seller", fields: [seller_id], references: [id])
   buyer  User? @relation("buyer", fields: [buyer_id], references: [id])
   item   Item  @relation(fields: [item_id], references: [id])
 
