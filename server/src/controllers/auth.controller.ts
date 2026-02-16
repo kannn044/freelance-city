@@ -22,6 +22,9 @@ function userResponse(user: any) {
         buff_expires_at: user.buff_expires_at,
         provider_level: user.provider_level,
         provider_exp: user.provider_exp,
+        provider_skill_veg: user.provider_skill_veg,
+        provider_skill_chicken: user.provider_skill_chicken,
+        provider_skill_beef: user.provider_skill_beef,
         chef_level: user.chef_level,
         chef_exp: user.chef_exp,
     };

@@ -2,10 +2,28 @@ import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { syncHunger } from "../services/hunger.service";
-import { getHungerTier, getLevelFromExp } from "../config/game.config";
+import {
+    CHEF_WORK_EXP_MULTIPLIER,
+    getHungerTier,
+    getLevelFromExp,
+    getProviderSkillPlotCount,
+    getProviderSkillTimeReduction,
+    HUNGER_TIERS,
+    PROVIDER_WORK_EXP_MULTIPLIER,
+} from "../config/game.config";
+import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 
 interface AuthRequest extends Request {
     userId?: number;
+}
+
+type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
+
+function getProviderBranchBySeedName(seedName: string): ProviderBranch | null {
+    if (seedName === "Vegetable Seed") return "VEGETABLE";
+    if (seedName === "Chicken Egg") return "CHICKEN";
+    if (seedName === "Beef Calf") return "BEEF";
+    return null;
 }
 
 async function isRecipeUnlocked(userId: number, recipeId: number): Promise<boolean> {
@@ -20,21 +38,46 @@ async function isRecipeUnlocked(userId: number, recipeId: number): Promise<boole
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
-async function getOrderOutput(order: { type: "FARM" | "COOK"; item_id: number; quantity: number }, db: DbClient) {
+function applyTierReduction(baseHunger: number, tierReduction: number) {
+    const baseTier = getHungerTier(baseHunger);
+    const idx = HUNGER_TIERS.findIndex((t) => t.state === baseTier.state);
+    if (idx < 0 || tierReduction <= 0) return baseTier;
+    const reducedIdx = Math.max(0, idx - Math.floor(tierReduction));
+    return HUNGER_TIERS[reducedIdx];
+}
+
+async function getOrderOutput(
+    order: { type: "FARM" | "COOK"; item_id: number; quantity: number },
+    userId: number,
+    db: DbClient
+) {
+    const effects = await getUserEquipmentEffects(userId, db);
+
     if (order.type === "FARM") {
         const seedItem = await db.item.findUnique({ where: { id: order.item_id } });
         if (!seedItem?.yield_item_id) {
             throw new Error("Seed has no yield configured");
         }
+
+        let outputQty = (seedItem.yield_qty ?? 1) * order.quantity;
+        if (effects.farmDoubleYieldChance > 0 && Math.random() < effects.farmDoubleYieldChance) {
+            outputQty *= 2;
+        }
+
         return {
             outputItemId: seedItem.yield_item_id,
-            outputQty: (seedItem.yield_qty ?? 1) * order.quantity,
+            outputQty,
         };
+    }
+
+    let outputQty = order.quantity;
+    if (effects.gourmetChance > 0 && Math.random() < effects.gourmetChance) {
+        outputQty += 1;
     }
 
     return {
         outputItemId: order.item_id,
-        outputQty: order.quantity,
+        outputQty,
     };
 }
 
@@ -46,13 +89,14 @@ async function placeOutputInInventory(
 ): Promise<boolean> {
     const outputItem = await db.item.findUnique({ where: { id: outputItemId } });
     if (!outputItem) throw new Error("Output item not found");
+    const effects = await getUserEquipmentEffects(userId, db);
 
     const slots = await db.inventorySlot.findMany({
         where: { user_id: userId },
         orderBy: { slot: "asc" },
     });
 
-    const maxStack = outputItem.max_stack;
+    const maxStack = getEffectiveMaxStack(outputItem.type, outputItem.max_stack, effects);
     const stackCapacity = slots
         .filter((s) => s.item_id === outputItemId)
         .reduce((sum, s) => sum + Math.max(0, maxStack - s.quantity), 0);
@@ -114,9 +158,10 @@ async function awardOrderExp(
     let expGained = 0;
     let levelUp = false;
     let newLevel = user[levelField];
+    const workExpMultiplier = occupation === "provider" ? PROVIDER_WORK_EXP_MULTIPLIER : CHEF_WORK_EXP_MULTIPLIER;
 
     if (user[levelField] >= 1) {
-        expGained = Math.floor(outputItem.exp_value * outputQty * 10);
+        expGained = Math.floor(outputItem.exp_value * outputQty * 10 * workExpMultiplier);
         if (expGained > 0) {
             const newExp = user[expField] + expGained;
             newLevel = getLevelFromExp(newExp);
@@ -151,7 +196,7 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             return { ok: false as const, reason: "not_ready" as const };
         }
 
-        const { outputItemId, outputQty } = await getOrderOutput(order, tx);
+        const { outputItemId, outputQty } = await getOrderOutput(order, userId, tx);
         const outputItem = await tx.item.findUnique({ where: { id: outputItemId } });
         if (!outputItem) {
             return { ok: false as const, reason: "output_missing" as const };
@@ -208,12 +253,23 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
         const { type, itemId, recipeId, quantity = 1 } = req.body;
         const user = await syncHunger(req.userId!);
 
+        const equipmentEffects = await getUserEquipmentEffects(req.userId!);
+
         if (type === "FARM") {
             // Requires Provider occupation
             if (user.provider_level < 1) {
                 res.status(403).json({ error: "You need the Provider occupation to farm" });
                 return;
             }
+
+            const activeFarmOrders = await prisma.workOrder.findMany({
+                where: {
+                    user_id: req.userId!,
+                    type: "FARM",
+                    collected: false,
+                },
+                orderBy: { started_at: "asc" },
+            });
 
             // Find the seed item in inventory
             const slot = await prisma.inventorySlot.findFirst({
@@ -235,9 +291,34 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
+            const branch = getProviderBranchBySeedName(slot.item.name);
+            const providerUser = user as any;
+            const branchSkillLevel = branch === "VEGETABLE"
+                ? Number(providerUser.provider_skill_veg ?? 0)
+                : branch === "CHICKEN"
+                    ? Number(providerUser.provider_skill_chicken ?? 0)
+                    : branch === "BEEF"
+                        ? Number(providerUser.provider_skill_beef ?? 0)
+                        : 0;
+
+            // Plot limit is controlled by game.config helper.
+            // Each plot holds 9 tasks.
+            const branchOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
+            const maxPlots = getProviderSkillPlotCount(branchSkillLevel);
+            const maxOrders = maxPlots * 9;
+            if (branchOrders.length >= maxOrders) {
+                res.status(400).json({
+                    error: `Plot limit reached for ${slot.item.name}. Max ${maxPlots} plot(s) (${maxOrders} tasks).`,
+                });
+                return;
+            }
+
             // Apply hunger penalty to grow time
-            const tier = getHungerTier(user.hunger);
-            const growMins = slot.item.grow_mins * tier.multiplier;
+            const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
+            const skillReduction = getProviderSkillTimeReduction(branchSkillLevel);
+            const equipmentTimeMultiplier = 1 - equipmentEffects.farmTimeReductionPct;
+            const skillTimeMultiplier = 1 - skillReduction;
+            const growMins = slot.item.grow_mins * tier.multiplier * skillTimeMultiplier * equipmentTimeMultiplier;
             const completesAt = new Date(Date.now() + growMins * 60 * 1000);
 
             // Reduce seed from inventory
@@ -254,7 +335,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             }
 
             // Create work order
-            const order = await prisma.workOrder.create({
+            let order = await prisma.workOrder.create({
                 data: {
                     user_id: req.userId!,
                     type: "FARM",
@@ -265,8 +346,37 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 include: { item: true },
             });
 
+            let message = `Started farming ${slot.item.name}. Ready in ${Math.ceil(growMins)} minutes.`;
+
+            // 3x3 full-plot bonus per seed type:
+            // when same-seed active orders reach a multiple of 9,
+            // apply bonus to the newest 9 orders of that seed plot
+            const sameSeedFarmOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
+            if ((sameSeedFarmOrders.length + 1) % 9 === 0) {
+                const now = Date.now();
+                const allOrders = [...sameSeedFarmOrders, order];
+                const plotOrders = allOrders.slice(-9);
+                const remainingMsList = plotOrders.map((o) => Math.max(0, new Date(o.completes_at).getTime() - now));
+                const avgRemainingMs = remainingMsList.reduce((sum, ms) => sum + ms, 0) / remainingMsList.length;
+                const reducedAvgMs = Math.max(1000, Math.floor(avgRemainingMs * 0.9));
+                const bonusCompletesAt = new Date(now + reducedAvgMs);
+                const plotIndex = Math.ceil((sameSeedFarmOrders.length + 1) / 9);
+
+                await prisma.workOrder.updateMany({
+                    where: { id: { in: plotOrders.map((o) => o.id) } },
+                    data: { completes_at: bonusCompletesAt },
+                });
+
+                order = await prisma.workOrder.findUnique({
+                    where: { id: order.id },
+                    include: { item: true },
+                }) as typeof order;
+
+                message = `Started farming ${slot.item.name}. Plot ${plotIndex} (9/9) full bonus activated: timers averaged and reduced by 10% (ready in ~${Math.ceil(reducedAvgMs / 60000)} minutes).`;
+            }
+
             res.json({
-                message: `Started farming ${slot.item.name}. Ready in ${Math.ceil(growMins)} minutes.`,
+                message,
                 order,
             });
         } else if (type === "COOK") {
@@ -317,7 +427,17 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             }
 
             // Deduct ingredients from inventory
-            for (const ingredient of recipe.ingredients) {
+            for (let idx = 0; idx < recipe.ingredients.length; idx++) {
+                const ingredient = recipe.ingredients[idx];
+                const isSecondary = idx > 0;
+                const savedByEffect = isSecondary
+                    && equipmentEffects.cookSecondaryIngredientSaveChance > 0
+                    && Math.random() < equipmentEffects.cookSecondaryIngredientSaveChance;
+
+                if (savedByEffect) {
+                    continue;
+                }
+
                 let remaining = ingredient.quantity;
                 for (const slot of userSlots) {
                     if (slot.item_id !== ingredient.item_id || remaining <= 0) continue;
@@ -343,8 +463,9 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             }
 
             // Apply hunger penalty to cook time
-            const tier = getHungerTier(user.hunger);
-            const cookMins = recipe.cook_mins * tier.multiplier;
+            const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
+            const equipmentCookMultiplier = 1 - equipmentEffects.cookTimeReductionPct;
+            const cookMins = recipe.cook_mins * tier.multiplier * equipmentCookMultiplier;
             const completesAt = new Date(Date.now() + cookMins * 60 * 1000);
 
             const order = await prisma.workOrder.create({

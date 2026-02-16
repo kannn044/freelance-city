@@ -24,6 +24,7 @@ import WorkspacePanel from '../components/WorkspacePanel';
 import MarketPanel from '../components/MarketPanel';
 import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
+import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
 type ProviderSkillBranch = 'VEGETABLE' | 'CHICKEN' | 'BEEF';
 
@@ -54,6 +55,7 @@ const DashboardPage = () => {
         equipment,
         tickHunger,
         fetchAll,
+        fetchWorkOrders,
         actionMessage,
         clearMessage
     } = useGameStore();
@@ -155,6 +157,7 @@ const DashboardPage = () => {
             } else {
                 await fetchMe();
             }
+            await fetchWorkOrders();
             useGameStore.getState().setActionMessage(data.message ?? 'Skill upgraded');
         } catch (err: any) {
             useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade skill');
@@ -177,8 +180,9 @@ const DashboardPage = () => {
 
     const formatEquipmentEffect = (eq: (typeof equipment)[number]) => {
         const key = eq.effect_key;
-        const v = Number(eq.effect_value ?? 0);
-        const v2 = Number(eq.effect_value2 ?? 0);
+        const m = getEquipmentRarityMultiplier(eq.item_rarity);
+        const v = Number(eq.effect_value ?? 0) * m;
+        const v2 = Number(eq.effect_value2 ?? 0) * m;
 
         if (!key) return null;
         if (key === 'hunger_penalty_tier_reduction') return `Hunger penalty tier -${v}`;
@@ -201,6 +205,8 @@ const DashboardPage = () => {
         .map((eq) => ({
             slot: eq.slot,
             name: eq.item_name ?? eq.slot,
+            rarity: getEquipmentRarityLabel(eq.item_rarity),
+            color: getEquipmentRarityColor(eq.item_rarity),
             description: formatEquipmentEffect(eq),
         }))
         .filter((row) => !!row.description);
@@ -656,7 +662,7 @@ const DashboardPage = () => {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                                                     {activeEquipmentBuffs.map((row) => (
                                                         <div key={`${row.slot}-${row.name}`} style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.78)' }}>
-                                                            • {row.name}: {row.description}
+                                                            • <span style={{ color: row.color, fontWeight: 700 }}>{row.name} ({row.rarity})</span>: {row.description}
                                                         </div>
                                                     ))}
                                                 </div>

@@ -1,17 +1,185 @@
 // ─── Game Constants ──────────────────────────────────────
 
+/**
+ * Real-time minutes that represent 1 in-game day.
+ * Higher value = slower daily loop.
+ */
 export const GAME_DAY_MINUTES = 180; // 1 game day = 3 real hours
-export const MAX_HUNGER = 2400;       // Max Kcal
+
+/**
+ * Player hunger cap (kcal-style resource).
+ * Most hunger calculations are normalized against this value.
+ */
+export const MAX_HUNGER = 2400;
+
+/**
+ * Passive hunger drain per real minute.
+ * Derived from MAX_HUNGER and GAME_DAY_MINUTES.
+ */
 export const HUNGER_DECAY_PER_MIN = MAX_HUNGER / GAME_DAY_MINUTES; // ~13.33 Kcal/min
+
+/**
+ * Initial total inventory slots for each user.
+ */
 export const INVENTORY_SLOTS = 8;
+
+// ─── Equipment Rarity ───────────────────────────────────
+
+export type EquipmentRarity = "NORMAL" | "RARE" | "EPIC" | "LEGENDARY";
+
+/**
+ * Drop rates for equipment box rarity.
+ * Sum must equal 1.0
+ */
+export const EQUIPMENT_RARITY_DROP_RATES: Record<EquipmentRarity, number> = {
+    NORMAL: 0.95,
+    RARE: 0.045,
+    EPIC: 0.0045,
+    LEGENDARY: 0.0005,
+};
+
+/**
+ * Buff scaler by rarity.
+ * Legendary keeps current baseline stats (1.0).
+ */
+export const EQUIPMENT_RARITY_BUFF_MULTIPLIER: Record<EquipmentRarity, number> = {
+    NORMAL: 0.25,
+    RARE: 0.5,
+    EPIC: 0.75,
+    LEGENDARY: 1.0,
+};
+
+export function getEquipmentRarityBuffMultiplier(rarity: EquipmentRarity): number {
+    return EQUIPMENT_RARITY_BUFF_MULTIPLIER[rarity] ?? 1.0;
+}
+
+// ─── EXP Balance ───────────────────────────────────────
+
+/**
+ * Occupation EXP tuning multipliers.
+ * Lowering Provider values helps slow early Provider leveling pace.
+ */
+export const PROVIDER_WORK_EXP_MULTIPLIER = 0.6;
+export const CHEF_WORK_EXP_MULTIPLIER = 1.0;
+export const PROVIDER_MARKET_EXP_MULTIPLIER = 0.6;
+export const CHEF_MARKET_EXP_MULTIPLIER = 1.0;
+
+// ─── Market Bot ─────────────────────────────────────────
+
+export interface MarketBotTuningConfig {
+    /** Enable/disable market bot buying logic globally. */
+    enabled: boolean;
+    /** Bot decision interval in milliseconds. */
+    tickMs: number;
+    /** Chance (0..1) that bot will attempt purchases each tick. */
+    buyChancePerTick: number;
+    /** Max number of listings bot can process in one tick. */
+    maxListingsPerTick: number;
+    /** Max quantity bot can buy from one listing per tick. */
+    maxQtyPerListing: number;
+    /** Anti-overprice guard: max accepted unit price ratio vs reference price. */
+    maxUnitPriceRatio: number;
+}
+
+/**
+ * Default economy tuning for market bot.
+ * These are safe baseline values to avoid aggressive buy pressure.
+ */
+export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
+    // Turn bot economy simulation on/off.
+    enabled: true,
+    // Run approximately every 10 seconds.
+    tickMs: 10_000,
+    // 50% chance to execute buy behavior each tick.
+    buyChancePerTick: 0.5,
+    // At most 2 listings handled per tick.
+    maxListingsPerTick: 2,
+    // At most 5 units purchased from one listing per tick.
+    maxQtyPerListing: 5,
+    // Bot ignores listings priced above 200% of reference unit price.
+    maxUnitPriceRatio: 2.00,
+};
+
+// ─── Provider Skill Tree ───────────────────────────────
+
+export type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
+
+export const PROVIDER_SKILL_MAX_LEVEL = 4;
+
+/**
+ * Time reduction buff by branch skill level.
+ * Lv1: 5% total, Lv3: 10% total.
+ */
+export function getProviderSkillTimeReduction(level: number): number {
+    if (level >= 3) return 0.10;
+    if (level >= 1) return 0.05;
+    return 0;
+}
+
+/**
+ * Plot count unlocked by branch skill level.
+ * Base: 1 plot, Lv2: 2 plots, Lv4: 3 plots.
+ */
+export function getProviderSkillPlotCount(level: number): number {
+    if (level >= 4) return 3;
+    if (level >= 2) return 2;
+    return 1;
+}
+
+export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
+    title: string;
+    color: string;
+    effects: {
+        level1: string;
+        level2: string;
+        level3: string;
+        level4: string;
+    };
+}> = {
+    VEGETABLE: {
+        title: "Vegetable Farming",
+        color: "#34d399",
+        effects: {
+            level1: "Lv.1: Reduce task waiting time by 5%",
+            level2: "Lv.2: Increase task plot capacity to 2 (base is 1)",
+            level3: "Lv.3: Reduce task waiting time by another 5% (10% total)",
+            level4: "Lv.4: Increase task plot capacity to 3",
+        },
+    },
+    CHICKEN: {
+        title: "Chicken Farming",
+        color: "#facc15",
+        effects: {
+            level1: "Lv.1: Reduce task waiting time by 5%",
+            level2: "Lv.2: Increase task plot capacity to 2 (base is 1)",
+            level3: "Lv.3: Reduce task waiting time by another 5% (10% total)",
+            level4: "Lv.4: Increase task plot capacity to 3",
+        },
+    },
+    BEEF: {
+        title: "Beef Farming",
+        color: "#f87171",
+        effects: {
+            level1: "Lv.1: Reduce task waiting time by 5%",
+            level2: "Lv.2: Increase task plot capacity to 2 (base is 1)",
+            level3: "Lv.3: Reduce task waiting time by another 5% (10% total)",
+            level4: "Lv.4: Increase task plot capacity to 3",
+        },
+    },
+};
 
 // ─── Hunger Penalty Tiers ────────────────────────────────
 
 export interface HungerTier {
+    /** Inclusive lower bound of hunger percent for this tier. */
     minPercent: number;
+    /** Inclusive upper bound of hunger percent for this tier. */
     maxPercent: number;
+    /** UI label for this hunger state. */
     state: string;
+    /** Time multiplier applied to work speed (higher = slower). */
     multiplier: number;
+    /** Human-readable effect description. */
     effect: string;
 }
 
@@ -23,6 +191,7 @@ export const HUNGER_TIERS: HungerTier[] = [
 ];
 
 export function getHungerTier(hunger: number): HungerTier {
+    // Convert absolute hunger to percentage and map into configured tier.
     const percent = (hunger / MAX_HUNGER) * 100;
     return (
         HUNGER_TIERS.find(
@@ -33,7 +202,12 @@ export function getHungerTier(hunger: number): HungerTier {
 
 // ─── Occupation Leveling ─────────────────────────────────
 
+/** Current hard cap for occupation levels. */
 export const MAX_LEVEL = 50;
+
+/**
+ * Minimum level in primary occupation required to unlock second occupation.
+ */
 export const UNLOCK_SECOND_OCCUPATION_LEVEL = 5;
 
 /**
@@ -52,6 +226,7 @@ export const LEVEL_THRESHOLDS: number[] = Array.from(
 );
 
 export function getLevelFromExp(exp: number): number {
+    // Scan backward for fastest lookup of highest unlocked level.
     for (let i = LEVEL_THRESHOLDS.length - 1; i >= 1; i--) {
         if (exp >= LEVEL_THRESHOLDS[i]) return i;
     }
@@ -59,6 +234,7 @@ export function getLevelFromExp(exp: number): number {
 }
 
 export function getExpForNextLevel(level: number): number | null {
+    // Return null when already at max level.
     if (level >= MAX_LEVEL) return null; // max level
     return LEVEL_THRESHOLDS[level + 1];
 }

@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import { ShoppingCart, Tag, Store, Gift, CircleHelp } from 'lucide-react';
+import { ShoppingCart, Tag, Store, Gift, CircleHelp, Sparkles } from 'lucide-react';
 import { renderItemIcon } from '../lib/itemVisual';
+import { getEquipmentRarityColor, getEquipmentRarityLabel } from '../lib/equipmentRarity';
 
 type Tab = 'market' | 'shop' | 'equipment';
 
@@ -34,6 +35,9 @@ const MarketPanel = () => {
     const [showSellForm, setShowSellForm] = useState(false);
     const [showSellPicker, setShowSellPicker] = useState(false);
     const [showOddsModal, setShowOddsModal] = useState(false);
+    const [showBoxOpenModal, setShowBoxOpenModal] = useState(false);
+    const [isBoxOpening, setIsBoxOpening] = useState(false);
+    const [boxOpenResult, setBoxOpenResult] = useState<Awaited<ReturnType<typeof openEquipmentBox>> | null>(null);
     const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
     const [otherSearch, setOtherSearch] = useState('');
     const [ownSearch, setOwnSearch] = useState('');
@@ -151,6 +155,70 @@ const MarketPanel = () => {
         const fn = confirmState.onConfirm;
         setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }));
         fn?.();
+    };
+
+    const formatEquipmentStatus = (
+        effectKey?: string | null,
+        effectValue?: number | null,
+        effectValue2?: number | null,
+        multiplier = 1
+    ) => {
+        if (!effectKey) return ['No special status'];
+
+        const v = Number(effectValue ?? 0) * multiplier;
+        const v2 = Number(effectValue2 ?? 0) * multiplier;
+
+        switch (effectKey) {
+            case 'hunger_penalty_tier_reduction':
+                return [`Hunger Penalty Tier -${Math.round(v)}`];
+            case 'cook_secondary_ingredient_save_chance':
+                return [`Secondary Ingredient Save Chance +${Math.round(v * 100)}%`];
+            case 'max_hunger_bonus':
+                return [`Max Hunger +${Math.round(v)}`];
+            case 'max_hunger_and_satiety_bonus':
+                return [
+                    `Max Hunger +${Math.round(v)}`,
+                    `Satiety Bonus +${Math.round(v2 * 100)}%`,
+                ];
+            case 'raw_stack_bonus':
+                return [`Raw Stack Capacity +${Math.round(v)}`];
+            case 'ingredient_stack_bonus':
+                return [`Ingredient Stack Capacity +${Math.round(v)}`];
+            case 'farm_time_reduction_pct':
+                return [`Farm Time Reduction +${Math.round(v * 100)}%`];
+            case 'cook_time_reduction_pct':
+                return [`Cook Time Reduction +${Math.round(v * 100)}%`];
+            case 'farm_double_yield_chance':
+                return [`Double Yield Chance +${Math.round(v * 100)}%`];
+            case 'gourmet_chance':
+                return [`Gourmet Chance +${Math.round(v * 100)}%`];
+            case 'hunger_decay_reduction_per_min':
+                return [`Hunger Decay Reduction ${v.toFixed(1)}/min`];
+            case 'cook_state_hunger_decay_reduction_pct':
+                return [
+                    `Cooking Hunger Decay Reduction +${Math.round(v * 100)}%`,
+                ].filter(Boolean);
+            default:
+                return [`${effectKey}: ${v}${effectValue2 != null ? ` / ${v2}` : ''}`];
+        }
+    };
+
+    const openEquipmentBoxWithReveal = async () => {
+        setShowBoxOpenModal(true);
+        setIsBoxOpening(true);
+        setBoxOpenResult(null);
+
+        const minRevealDelayMs = 1800;
+        const startedAt = Date.now();
+        const result = await openEquipmentBox();
+        const elapsed = Date.now() - startedAt;
+
+        if (elapsed < minRevealDelayMs) {
+            await new Promise((resolve) => setTimeout(resolve, minRevealDelayMs - elapsed));
+        }
+
+        setBoxOpenResult(result);
+        setIsBoxOpening(false);
     };
 
     const handleSell = () => {
@@ -811,7 +879,9 @@ const MarketPanel = () => {
                                         'Confirm Open Box',
                                         `Open 1 Equipment Box for ${equipmentBoxInfo?.box?.price ?? 420} credits?\nYou will receive 1 random equipment item.`,
                                         'Open Box',
-                                        () => openEquipmentBox()
+                                        () => {
+                                            void openEquipmentBoxWithReveal();
+                                        }
                                     )
                                 }
                                 style={{
@@ -905,6 +975,17 @@ const MarketPanel = () => {
                                     <div key={`${o.role}-${o.slot}`}>[{o.role}] {o.slot}: {o.chancePct}%</div>
                                 ))}
                             </div>
+
+                            <div style={{ marginTop: '0.6rem', fontSize: '0.66rem', color: '#c4b5fd', fontWeight: 700 }}>
+                                Rarity Odds
+                            </div>
+                            <div style={{ marginTop: '0.3rem', display: 'grid', gap: '0.2rem', fontSize: '0.62rem' }}>
+                                {(equipmentBoxInfo?.rarityOdds ?? []).map((r) => (
+                                    <div key={r.rarity} style={{ color: getEquipmentRarityColor(r.rarity) }}>
+                                        {getEquipmentRarityLabel(r.rarity)}: {r.chancePct}% (Buff x{r.buffMultiplier})
+                                    </div>
+                                ))}
+                            </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.65rem' }}>
                                 <button
                                     onClick={() => setShowOddsModal(false)}
@@ -921,6 +1002,192 @@ const MarketPanel = () => {
                                     Close
                                 </button>
                             </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showBoxOpenModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(2,6,23,0.65)',
+                            zIndex: 130,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '1rem',
+                        }}
+                        onClick={() => {
+                            if (!isBoxOpening) setShowBoxOpenModal(false);
+                        }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.94, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.94, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '100%',
+                                maxWidth: '22rem',
+                                borderRadius: '0.8rem',
+                                border: '1px solid rgba(167,139,250,0.35)',
+                                background: 'rgba(15,23,42,0.97)',
+                                padding: '1rem',
+                            }}
+                        >
+                            {isBoxOpening ? (
+                                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
+                                    <motion.div
+                                        animate={{ rotate: [0, 12, -12, 8, -8, 0], scale: [1, 1.08, 1] }}
+                                        transition={{ repeat: Infinity, duration: 0.9, ease: 'easeInOut' }}
+                                        style={{
+                                            width: '4.2rem',
+                                            height: '4.2rem',
+                                            borderRadius: '999px',
+                                            display: 'grid',
+                                            placeItems: 'center',
+                                            border: '1px solid rgba(167,139,250,0.45)',
+                                            background: 'rgba(167,139,250,0.12)',
+                                        }}
+                                    >
+                                        <Gift style={{ width: '2rem', height: '2rem', color: '#ddd6fe' }} />
+                                    </motion.div>
+                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ddd6fe' }}>Opening Equipment Box...</div>
+                                    <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.65)' }}>
+                                        Please wait... luck is rolling 🎲
+                                    </div>
+                                </div>
+                            ) : boxOpenResult?.ok && boxOpenResult.rolled?.item ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#c4b5fd', fontSize: '0.8rem', fontWeight: 700 }}>
+                                        <Sparkles style={{ width: '0.9rem', height: '0.9rem' }} />
+                                        Box Opened!
+                                    </div>
+
+                                    <div
+                                        style={{
+                                            borderRadius: '0.6rem',
+                                            border: '1px solid rgba(167,139,250,0.35)',
+                                            background: 'rgba(167,139,250,0.08)',
+                                            padding: '0.65rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.55rem',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                width: '2.2rem',
+                                                height: '2.2rem',
+                                                borderRadius: '0.5rem',
+                                                border: '1px solid rgba(255,255,255,0.14)',
+                                                display: 'grid',
+                                                placeItems: 'center',
+                                                background: 'rgba(255,255,255,0.05)',
+                                            }}
+                                        >
+                                            {renderItemIcon(boxOpenResult.rolled.item, 24)}
+                                        </div>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: '0.78rem',
+                                                    fontWeight: 700,
+                                                    color: getEquipmentRarityColor(boxOpenResult.rolled.rarity),
+                                                }}
+                                            >
+                                                {boxOpenResult.rolled.item.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.62)' }}>
+                                                Price Spent: {boxOpenResult.boxPrice ?? equipmentBoxInfo?.box?.price ?? 420} credits
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        style={{
+                                            borderRadius: '0.55rem',
+                                            border: '1px solid rgba(255,255,255,0.14)',
+                                            background: 'rgba(255,255,255,0.04)',
+                                            padding: '0.55rem',
+                                            display: 'grid',
+                                            gap: '0.3rem',
+                                            fontSize: '0.64rem',
+                                            color: 'rgba(255,255,255,0.82)',
+                                        }}
+                                    >
+                                        <div><b style={{ color: '#ddd6fe' }}>Role:</b> {boxOpenResult.rolled.role}</div>
+                                        <div><b style={{ color: '#ddd6fe' }}>Slot:</b> {boxOpenResult.rolled.slot}</div>
+                                        <div>
+                                            <b style={{ color: '#ddd6fe' }}>Rarity:</b>{' '}
+                                            <span style={{ color: getEquipmentRarityColor(boxOpenResult.rolled.rarity), fontWeight: 700 }}>
+                                                {getEquipmentRarityLabel(boxOpenResult.rolled.rarity)}
+                                            </span>{' '}
+                                            <span style={{ color: 'rgba(255,255,255,0.62)' }}>(Buff x{boxOpenResult.rolled.buffMultiplier ?? 1})</span>
+                                        </div>
+                                        <div style={{ display: 'grid', gap: '0.2rem' }}>
+                                            <b style={{ color: '#ddd6fe' }}>Status:</b>
+                                            {formatEquipmentStatus(
+                                                boxOpenResult.rolled.item.effect_key,
+                                                boxOpenResult.rolled.item.effect_value,
+                                                boxOpenResult.rolled.item.effect_value2,
+                                                boxOpenResult.rolled.buffMultiplier ?? 1
+                                            ).map((line, idx) => (
+                                                <div key={`${line}-${idx}`} style={{ color: 'rgba(255,255,255,0.72)' }}>
+                                                    • {line}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.35rem' }}>
+                                        <button
+                                            onClick={() => setShowBoxOpenModal(false)}
+                                            style={{
+                                                border: '1px solid rgba(167,139,250,0.5)',
+                                                background: 'rgba(167,139,250,0.2)',
+                                                color: '#ddd6fe',
+                                                borderRadius: '0.4rem',
+                                                fontSize: '0.66rem',
+                                                fontWeight: 700,
+                                                padding: '0.3rem 0.62rem',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Nice!
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gap: '0.6rem' }}>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fca5a5' }}>Open Box Failed</div>
+                                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.72)' }}>
+                                        {boxOpenResult?.error ?? 'Failed to open equipment box'}
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <button
+                                            onClick={() => setShowBoxOpenModal(false)}
+                                            style={{
+                                                border: '1px solid rgba(255,255,255,0.2)',
+                                                background: 'rgba(255,255,255,0.08)',
+                                                color: 'white',
+                                                borderRadius: '0.4rem',
+                                                fontSize: '0.64rem',
+                                                padding: '0.28rem 0.55rem',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </motion.div>
                     </motion.div>
                 )}

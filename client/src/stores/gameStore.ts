@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import api from '../lib/api';
 import { useAuthStore } from './authStore';
+import type { EquipmentRarity } from '../lib/equipmentRarity';
 
 // ─── Types ───────────────────────────────────────────
 
@@ -29,6 +30,7 @@ export interface InventorySlot {
     slot: number;
     item_id: number | null;
     quantity: number;
+    equipment_rarity?: EquipmentRarity | null;
     item: Item | null;
 }
 
@@ -37,6 +39,7 @@ export interface EquipmentSlotState {
     item_id: number | null;
     item_name: string | null;
     item_icon: string | null;
+    item_rarity?: EquipmentRarity | null;
     effect_key?: string | null;
     effect_value?: number | null;
     effect_value2?: number | null;
@@ -95,6 +98,12 @@ export interface EquipmentBoxOdds {
     chancePct: number;
 }
 
+export interface EquipmentBoxRarityOdds {
+    rarity: EquipmentRarity;
+    chancePct: number;
+    buffMultiplier: number;
+}
+
 export interface EquipmentBoxInfo {
     box: {
         name: string;
@@ -107,6 +116,21 @@ export interface EquipmentBoxInfo {
         note: string;
     };
     odds: EquipmentBoxOdds[];
+    rarityOdds?: EquipmentBoxRarityOdds[];
+}
+
+export interface EquipmentBoxOpenResult {
+    ok: boolean;
+    message?: string;
+    boxPrice?: number;
+    rolled?: {
+        role: 'PROVIDER' | 'CHEF';
+        slot: 'HEAD' | 'UPPER_BODY' | 'LOWER_BODY' | 'ARM' | 'GLOVE' | 'SHOE';
+        rarity: EquipmentRarity;
+        buffMultiplier: number;
+        item: Item | null;
+    };
+    error?: string;
 }
 
 interface GameState {
@@ -145,7 +169,7 @@ interface GameState {
     eatItem: (slotId: number) => Promise<void>;
     buyFromShop: (itemId: number, quantity: number) => Promise<void>;
     buyRecipeUnlock: (recipeId: number) => Promise<void>;
-    openEquipmentBox: () => Promise<void>;
+    openEquipmentBox: () => Promise<EquipmentBoxOpenResult>;
     startFarm: (itemId: number, quantity: number) => Promise<void>;
     startCook: (recipeId: number) => Promise<void>;
     collectWork: (orderId: number) => Promise<void>;
@@ -326,14 +350,29 @@ export const useGameStore = create<GameState>((set, get) => ({
                 inventory: data.slots ?? get().inventory,
                 actionMessage: data.message,
                 equipmentBoxInfo: get().equipmentBoxInfo
-                    ? { ...get().equipmentBoxInfo!, odds: data.odds ?? get().equipmentBoxInfo!.odds }
+                    ? {
+                        ...get().equipmentBoxInfo!,
+                        odds: data.odds ?? get().equipmentBoxInfo!.odds,
+                        rarityOdds: data.rarityOdds ?? get().equipmentBoxInfo!.rarityOdds,
+                    }
                     : get().equipmentBoxInfo,
             });
             if (data.user) {
                 useAuthStore.setState({ user: data.user });
             }
+            return {
+                ok: true,
+                message: data.message,
+                boxPrice: data.boxPrice,
+                rolled: data.rolled,
+            } satisfies EquipmentBoxOpenResult;
         } catch (err: any) {
-            set({ actionMessage: err.response?.data?.error || 'Failed to open equipment box' });
+            const errorMessage = err.response?.data?.error || 'Failed to open equipment box';
+            set({ actionMessage: errorMessage });
+            return {
+                ok: false,
+                error: errorMessage,
+            } satisfies EquipmentBoxOpenResult;
         }
     },
 

@@ -1,7 +1,9 @@
 import { prisma } from "../lib/prisma";
 import {
     MAX_HUNGER,
+    CHEF_MARKET_EXP_MULTIPLIER,
     getLevelFromExp,
+    PROVIDER_MARKET_EXP_MULTIPLIER,
 } from "../config/game.config";
 
 /**
@@ -31,13 +33,16 @@ export async function awardSaleExp(
 
     // Calculate EXP
     const hungerRatio = Math.max(0, user.hunger / MAX_HUNGER);
-    const expGained = Math.floor(hungerRatio * item.exp_value * salePrice);
+    const occupation = getOccupationForItem(item.type);
+    const expMultiplier = occupation === "provider"
+        ? PROVIDER_MARKET_EXP_MULTIPLIER
+        : CHEF_MARKET_EXP_MULTIPLIER;
+    const expGained = Math.floor(hungerRatio * item.exp_value * salePrice * expMultiplier);
 
     if (expGained <= 0) {
         return { expGained: 0, levelUp: false };
     }
 
-    const occupation = getOccupationForItem(item.type);
     const levelField = occupation === "provider" ? "provider_level" : "chef_level";
     const expField = occupation === "provider" ? "provider_exp" : "chef_exp";
 

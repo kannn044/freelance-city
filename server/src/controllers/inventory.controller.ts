@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { INVENTORY_SLOTS } from "../config/game.config";
+import { INVENTORY_SLOTS, type EquipmentRarity } from "../config/game.config";
 import { syncHunger, applyMealEffect } from "../services/hunger.service";
 
 interface AuthRequest extends Request {
@@ -13,8 +13,8 @@ const EQUIPMENT_SLOTS = ["HEAD", "UPPER_BODY", "LOWER_BODY", "ARM", "GLOVE", "SH
 async function ensureEquipmentRows(userId: number) {
     for (const slot of EQUIPMENT_SLOTS) {
         await prisma.$executeRaw`
-            INSERT INTO user_equipments (user_id, slot, item_id, updated_at)
-            VALUES (${userId}, ${slot}, NULL, NOW())
+            INSERT INTO user_equipments (user_id, slot, item_id, item_rarity, updated_at)
+            VALUES (${userId}, ${slot}, NULL, NULL, NOW())
             ON DUPLICATE KEY UPDATE updated_at = updated_at
         `;
     }
@@ -22,11 +22,24 @@ async function ensureEquipmentRows(userId: number) {
 
 async function getEquipmentState(userId: number) {
     await ensureEquipmentRows(userId);
-    return prisma.$queryRaw<Array<{ slot: string; item_id: number | null; item_name: string | null; item_icon: string | null }>>`
+    return prisma.$queryRaw<Array<{
+        slot: string;
+        item_id: number | null;
+        item_rarity: EquipmentRarity | null;
+        item_name: string | null;
+        item_icon: string | null;
+        effect_key: string | null;
+        effect_value: number | null;
+        effect_value2: number | null;
+    }>>`
         SELECT ue.slot,
                ue.item_id,
+             ue.item_rarity,
                i.name as item_name,
-               i.icon as item_icon
+               i.icon as item_icon,
+               i.effect_key as effect_key,
+               i.effect_value as effect_value,
+               i.effect_value2 as effect_value2
         FROM user_equipments ue
         LEFT JOIN items i ON i.id = ue.item_id
         WHERE ue.user_id = ${userId}
@@ -36,7 +49,13 @@ async function getEquipmentState(userId: number) {
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
-async function addItemToInventory(userId: number, itemId: number, qty: number, db: DbClient = prisma): Promise<boolean> {
+async function addItemToInventory(
+    userId: number,
+    itemId: number,
+    qty: number,
+    db: DbClient = prisma,
+    equipmentRarity: EquipmentRarity | null = null,
+): Promise<boolean> {
     const item = await db.item.findUnique({ where: { id: itemId } });
     if (!item) return false;
 
@@ -48,7 +67,8 @@ async function addItemToInventory(userId: number, itemId: number, qty: number, d
 
     for (const slot of slots) {
         if (remaining <= 0) break;
-        if (slot.item_id !== itemId || slot.quantity >= item.max_stack) continue;
+        const sameRarity = item.type !== "EQUIPMENT" || (slot as any).equipment_rarity === (equipmentRarity ?? "NORMAL");
+        if (slot.item_id !== itemId || slot.quantity >= item.max_stack || !sameRarity) continue;
 
         const add = Math.min(item.max_stack - slot.quantity, remaining);
         remaining -= add;
@@ -68,6 +88,19 @@ async function addItemToInventory(userId: number, itemId: number, qty: number, d
             where: { id: slot.id },
             data: { item_id: itemId, quantity: put },
         });
+        if (item.type === "EQUIPMENT") {
+            await db.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = ${equipmentRarity ?? "NORMAL"}
+                WHERE id = ${slot.id}
+            `;
+        } else {
+            await db.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = NULL
+                WHERE id = ${slot.id}
+            `;
+        }
     }
 
     return remaining === 0;
@@ -135,13 +168,14 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
             res.status(400).json({ error: "No item in selected slot" });
             return;
         }
+        const equippedItem = invSlot.item;
 
-        if (invSlot.item.type !== "EQUIPMENT" || !invSlot.item.equipment_slot) {
+        if (equippedItem.type !== "EQUIPMENT" || !equippedItem.equipment_slot) {
             res.status(400).json({ error: "Selected item is not equipment" });
             return;
         }
 
-        const equipSlot = invSlot.item.equipment_slot;
+        const equipSlot = equippedItem.equipment_slot;
 
         await prisma.$transaction(async (tx) => {
             await tx.$executeRaw`
@@ -158,6 +192,21 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
             `;
 
             const currentItemId = current[0]?.item_id ?? null;
+            const currentRow = await tx.$queryRaw<Array<{ item_rarity: EquipmentRarity | null }>>`
+                SELECT item_rarity
+                FROM user_equipments
+                WHERE user_id = ${req.userId!} AND slot = ${equipSlot}
+                LIMIT 1
+            `;
+            const currentRarity = currentRow[0]?.item_rarity ?? "NORMAL";
+
+            const invRarityRow = await tx.$queryRaw<Array<{ equipment_rarity: EquipmentRarity | null }>>`
+                SELECT equipment_rarity
+                FROM inventory_slots
+                WHERE id = ${invSlot.id}
+                LIMIT 1
+            `;
+            const equippedRarity = invRarityRow[0]?.equipment_rarity ?? "NORMAL";
 
             if (invSlot.quantity > 1) {
                 await tx.inventorySlot.update({
@@ -169,10 +218,15 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
                     where: { id: invSlot.id },
                     data: { item_id: null, quantity: 0 },
                 });
+                await tx.$executeRaw`
+                    UPDATE inventory_slots
+                    SET equipment_rarity = NULL
+                    WHERE id = ${invSlot.id}
+                `;
             }
 
             if (currentItemId) {
-                const movedBack = await addItemToInventory(req.userId!, Number(currentItemId), 1, tx);
+                const movedBack = await addItemToInventory(req.userId!, Number(currentItemId), 1, tx, currentRarity);
                 if (!movedBack) {
                     throw new Error("Inventory full. Unequip failed");
                 }
@@ -180,7 +234,7 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
 
             await tx.$executeRaw`
                 UPDATE user_equipments
-                SET item_id = ${invSlot.item.id}, updated_at = NOW()
+                SET item_id = ${equippedItem.id}, item_rarity = ${equippedRarity}, updated_at = NOW()
                 WHERE user_id = ${req.userId!} AND slot = ${equipSlot}
             `;
         });
@@ -193,7 +247,7 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
         const equipment = await getEquipmentState(req.userId!);
 
         res.json({
-            message: `Equipped ${invSlot.item.name}`,
+            message: `Equipped ${equippedItem.name}`,
             slots,
             equipment,
         });
@@ -216,20 +270,21 @@ export const unequipItem = async (req: AuthRequest, res: Response): Promise<void
         }
 
         await ensureEquipmentRows(req.userId!);
-        const row = await prisma.$queryRaw<Array<{ item_id: number | null }>>`
-            SELECT item_id
+        const row = await prisma.$queryRaw<Array<{ item_id: number | null; item_rarity: EquipmentRarity | null }>>`
+            SELECT item_id, item_rarity
             FROM user_equipments
             WHERE user_id = ${req.userId!} AND slot = ${slot}
             LIMIT 1
         `;
 
         const itemId = row[0]?.item_id ?? null;
+        const itemRarity = row[0]?.item_rarity ?? "NORMAL";
         if (!itemId) {
             res.status(400).json({ error: "No item equipped in this slot" });
             return;
         }
 
-        const moved = await addItemToInventory(req.userId!, Number(itemId), 1);
+        const moved = await addItemToInventory(req.userId!, Number(itemId), 1, prisma, itemRarity);
         if (!moved) {
             res.status(400).json({ error: "Inventory full" });
             return;
@@ -237,7 +292,7 @@ export const unequipItem = async (req: AuthRequest, res: Response): Promise<void
 
         await prisma.$executeRaw`
             UPDATE user_equipments
-            SET item_id = NULL, updated_at = NOW()
+            SET item_id = NULL, item_rarity = NULL, updated_at = NOW()
             WHERE user_id = ${req.userId!} AND slot = ${slot}
         `;
 

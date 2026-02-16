@@ -2,7 +2,15 @@ import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { getInventory, eatItem, equipItem, unequipItem } from "../controllers/inventory.controller";
 import { getWorkOrders, startWork, collectWork, collectReadyWork } from "../controllers/workspace.controller";
-import { getListings, createListing, buyListing } from "../controllers/market.controller";
+import {
+	getListings,
+	createListing,
+	buyListing,
+	getSalesHistory,
+	getMarketBotConfig,
+	updateMarketBotConfig,
+	runMarketBotTick,
+} from "../controllers/market.controller";
 import {
 	getShop,
 	buyFromShop,
@@ -12,6 +20,7 @@ import {
 	getEquipmentBoxInfo,
 	openEquipmentBox,
 } from "../controllers/shop.controller";
+import { getProviderSkills, upgradeProviderSkill } from "../controllers/skills.controller";
 
 const router = Router();
 
@@ -30,10 +39,18 @@ router.post("/workspace/start", startWork);
 router.post("/workspace/collect/:orderId", collectWork);
 router.post("/workspace/collect-ready", collectReadyWork);
 
+// ─── Skills ──────────────────────────────────────────
+router.get("/skills/provider", getProviderSkills);
+router.post("/skills/provider/upgrade", upgradeProviderSkill);
+
 // ─── Market ──────────────────────────────────────────
 router.get("/market", getListings);
+router.get("/market/sales-history", getSalesHistory);
 router.post("/market/sell", createListing);
 router.post("/market/buy/:listingId", buyListing);
+router.get("/market/bot/config", getMarketBotConfig);
+router.post("/market/bot/config", updateMarketBotConfig);
+router.post("/market/bot/tick", runMarketBotTick);
 
 // ─── Shop & Recipes ──────────────────────────────────
 router.get("/shop", getShop);

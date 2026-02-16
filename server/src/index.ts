@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import gameRoutes from "./routes/game.routes";
+import { marketBotService } from "./services/marketBot.service";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.get("/health", (_req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    marketBotService.start();
 });
 
 export default app;

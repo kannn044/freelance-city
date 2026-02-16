@@ -4,6 +4,7 @@ import { useGameStore } from '../stores/gameStore';
 import type { InventorySlot } from '../stores/gameStore';
 import { UtensilsCrossed, Package } from 'lucide-react';
 import { getEquipmentImageByName, renderItemIcon } from '../lib/itemVisual';
+import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
 const equipmentSlots = [
     { key: 'HEAD', label: 'Head', icon: '🪖' },
@@ -23,21 +24,25 @@ const InventoryGrid = () => {
         const item = slot?.item;
         if (!item || item.type !== 'EQUIPMENT') return null;
 
-        if (item.effect_key === 'hunger_penalty_tier_reduction') return `Reduce hunger penalty by ${item.effect_value ?? 0} tier`;
-        if (item.effect_key === 'cook_secondary_ingredient_save_chance') return `${Math.round((item.effect_value ?? 0) * 100)}% chance to save secondary ingredients`;
-        if (item.effect_key === 'max_hunger_bonus') return `Max Hunger +${item.effect_value ?? 0}`;
+        const m = getEquipmentRarityMultiplier(slot?.equipment_rarity);
+        const v = Number(item.effect_value ?? 0) * m;
+        const v2 = Number(item.effect_value2 ?? 0) * m;
+
+        if (item.effect_key === 'hunger_penalty_tier_reduction') return `Reduce hunger penalty by ${v} tier`;
+        if (item.effect_key === 'cook_secondary_ingredient_save_chance') return `${Math.round(v * 100)}% chance to save secondary ingredients`;
+        if (item.effect_key === 'max_hunger_bonus') return `Max Hunger +${v}`;
         if (item.effect_key === 'max_hunger_and_satiety_bonus') {
-            const satietyPct = Math.round((item.effect_value2 ?? 0) * 100);
-            return `Max Hunger +${item.effect_value ?? 0}, Satiety Buff +${satietyPct}%`;
+            const satietyPct = Math.round(v2 * 100);
+            return `Max Hunger +${v}, Satiety Buff +${satietyPct}%`;
         }
-        if (item.effect_key === 'raw_stack_bonus') return `Raw stack limit +${item.effect_value ?? 0}`;
-        if (item.effect_key === 'ingredient_stack_bonus') return `Ingredient stack limit +${item.effect_value ?? 0}`;
-        if (item.effect_key === 'farm_time_reduction_pct') return `Farm time -${Math.round((item.effect_value ?? 0) * 100)}%`;
-        if (item.effect_key === 'cook_time_reduction_pct') return `Cook time -${Math.round((item.effect_value ?? 0) * 100)}%`;
-        if (item.effect_key === 'farm_double_yield_chance') return `${Math.round((item.effect_value ?? 0) * 100)}% chance for double yield`;
-        if (item.effect_key === 'gourmet_chance') return `${Math.round((item.effect_value ?? 0) * 100)}% chance to cook Gourmet quality`;
-        if (item.effect_key === 'hunger_decay_reduction_per_min') return `Hunger decay -${item.effect_value ?? 0}/min`;
-        if (item.effect_key === 'cook_state_hunger_decay_reduction_pct') return `While cooking: decay -${Math.round((item.effect_value ?? 0) * 100)}%`;
+        if (item.effect_key === 'raw_stack_bonus') return `Raw stack limit +${v}`;
+        if (item.effect_key === 'ingredient_stack_bonus') return `Ingredient stack limit +${v}`;
+        if (item.effect_key === 'farm_time_reduction_pct') return `Farm time -${Math.round(v * 100)}%`;
+        if (item.effect_key === 'cook_time_reduction_pct') return `Cook time -${Math.round(v * 100)}%`;
+        if (item.effect_key === 'farm_double_yield_chance') return `${Math.round(v * 100)}% chance for double yield`;
+        if (item.effect_key === 'gourmet_chance') return `${Math.round(v * 100)}% chance to cook Gourmet quality`;
+        if (item.effect_key === 'hunger_decay_reduction_per_min') return `Hunger decay -${v}/min`;
+        if (item.effect_key === 'cook_state_hunger_decay_reduction_pct') return `While cooking: decay -${Math.round(v * 100)}%`;
 
         return null;
     };
@@ -126,12 +131,20 @@ const InventoryGrid = () => {
                             <span
                                 style={{
                                     fontSize: '0.58rem',
-                                    color: 'rgba(255,255,255,0.6)',
+                                    color: (() => {
+                                        const eq = equipment.find((e) => e.slot === slot.key);
+                                        return eq?.item_id ? getEquipmentRarityColor(eq.item_rarity) : 'rgba(255,255,255,0.6)';
+                                    })(),
                                     textAlign: 'center',
                                     lineHeight: 1.15,
                                 }}
                             >
-                                {equipment.find((e) => e.slot === slot.key)?.item_name || slot.label}
+                                {(() => {
+                                    const eq = equipment.find((e) => e.slot === slot.key);
+                                    if (!eq?.item_name) return slot.label;
+                                    const rarity = getEquipmentRarityLabel(eq.item_rarity);
+                                    return `${eq.item_name} (${rarity})`;
+                                })()}
                             </span>
                         </button>
                     ))}
@@ -207,7 +220,10 @@ const InventoryGrid = () => {
                                     <span
                                         style={{
                                             fontSize: '0.6rem',
-                                            color: 'rgba(255,255,255,0.6)',
+                                            color:
+                                                hasItem.type === 'EQUIPMENT'
+                                                    ? getEquipmentRarityColor(slot?.equipment_rarity)
+                                                    : 'rgba(255,255,255,0.6)',
                                             marginTop: '0.2rem',
                                             textAlign: 'center',
                                             lineHeight: 1.2,
@@ -217,7 +233,9 @@ const InventoryGrid = () => {
                                             whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {hasItem.name}
+                                        {hasItem.type === 'EQUIPMENT'
+                                            ? `${hasItem.name} (${getEquipmentRarityLabel(slot?.equipment_rarity)})`
+                                            : hasItem.name}
                                     </span>
                                     {/* Quantity badge */}
                                     {slot && slot.quantity > 1 && (
@@ -299,7 +317,16 @@ const InventoryGrid = () => {
                     <>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.2rem' }}>
                             {renderItemIcon(hoveredSlot.item, 16)}
-                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>
+                            <span
+                                style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    color:
+                                        hoveredSlot.item.type === 'EQUIPMENT'
+                                            ? getEquipmentRarityColor(hoveredSlot.equipment_rarity)
+                                            : 'rgba(255,255,255,0.9)',
+                                }}
+                            >
                                 {hoveredSlot.item.name}
                             </span>
                         </div>
@@ -320,6 +347,8 @@ const InventoryGrid = () => {
                                 <>
                                     <br />
                                     Role: {hoveredSlot.item.equipment_role ?? '-'} • Slot: {hoveredSlot.item.equipment_slot ?? '-'}
+                                    <br />
+                                    Rarity: {getEquipmentRarityLabel(hoveredSlot.equipment_rarity)}
                                     {formatEquipmentEffect(hoveredSlot) ? (
                                         <>
                                             <br />

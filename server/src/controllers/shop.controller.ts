@@ -1,5 +1,13 @@
 import { Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
+import {
+    EQUIPMENT_RARITY_BUFF_MULTIPLIER,
+    EQUIPMENT_RARITY_DROP_RATES,
+    getEquipmentRarityBuffMultiplier,
+    type EquipmentRarity,
+} from "../config/game.config";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -32,9 +40,17 @@ function getRoleBias(userRole: string) {
     return { PROVIDER: 0.5, CHEF: 0.5 };
 }
 
-async function addItemToInventory(userId: number, itemId: number, qty: number): Promise<boolean> {
+async function addItemToInventory(
+    userId: number,
+    itemId: number,
+    qty: number,
+    equipmentRarity: EquipmentRarity | null = null,
+): Promise<boolean> {
     const item = await prisma.item.findUnique({ where: { id: itemId } });
     if (!item) return false;
+    const isEquipment = (item as any).type === "EQUIPMENT";
+    const effects = await getUserEquipmentEffects(userId);
+    const maxStack = getEffectiveMaxStack(item.type, item.max_stack, effects);
 
     let remaining = qty;
     const slots = await prisma.inventorySlot.findMany({
@@ -44,9 +60,10 @@ async function addItemToInventory(userId: number, itemId: number, qty: number): 
 
     for (const slot of slots) {
         if (remaining <= 0) break;
-        if (slot.item_id !== itemId || slot.quantity >= item.max_stack) continue;
+        const sameRarity = !isEquipment || (slot as any).equipment_rarity === (equipmentRarity ?? "NORMAL");
+        if (slot.item_id !== itemId || slot.quantity >= maxStack || !sameRarity) continue;
 
-        const add = Math.min(item.max_stack - slot.quantity, remaining);
+        const add = Math.min(maxStack - slot.quantity, remaining);
         remaining -= add;
         await prisma.inventorySlot.update({
             where: { id: slot.id },
@@ -58,12 +75,86 @@ async function addItemToInventory(userId: number, itemId: number, qty: number): 
         if (remaining <= 0) break;
         if (slot.item_id !== null) continue;
 
-        const put = Math.min(item.max_stack, remaining);
+        const put = Math.min(maxStack, remaining);
         remaining -= put;
         await prisma.inventorySlot.update({
             where: { id: slot.id },
             data: { item_id: itemId, quantity: put },
         });
+        if (isEquipment) {
+            await prisma.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = ${equipmentRarity ?? "NORMAL"}
+                WHERE id = ${slot.id}
+            `;
+        } else {
+            await prisma.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = NULL
+                WHERE id = ${slot.id}
+            `;
+        }
+    }
+
+    return remaining === 0;
+}
+
+async function addItemToInventoryTx(
+    tx: Prisma.TransactionClient,
+    userId: number,
+    itemId: number,
+    qty: number,
+    maxStack: number,
+    equipmentRarity: EquipmentRarity | null = null,
+): Promise<boolean> {
+    const item = await tx.item.findUnique({ where: { id: itemId } });
+    if (!item) return false;
+    const isEquipment = (item as any).type === "EQUIPMENT";
+
+    let remaining = qty;
+    const slots = await tx.inventorySlot.findMany({
+        where: { user_id: userId },
+        orderBy: { slot: "asc" },
+    });
+
+    // Fill existing stacks first
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        const sameRarity = !isEquipment || (slot as any).equipment_rarity === (equipmentRarity ?? "NORMAL");
+        if (slot.item_id !== itemId || slot.quantity >= maxStack || !sameRarity) continue;
+
+        const add = Math.min(maxStack - slot.quantity, remaining);
+        remaining -= add;
+        await tx.inventorySlot.update({
+            where: { id: slot.id },
+            data: { quantity: slot.quantity + add },
+        });
+    }
+
+    // Use empty slots
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== null) continue;
+
+        const put = Math.min(maxStack, remaining);
+        remaining -= put;
+        await tx.inventorySlot.update({
+            where: { id: slot.id },
+            data: { item_id: itemId, quantity: put },
+        });
+        if (isEquipment) {
+            await tx.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = ${equipmentRarity ?? "NORMAL"}
+                WHERE id = ${slot.id}
+            `;
+        } else {
+            await tx.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = NULL
+                WHERE id = ${slot.id}
+            `;
+        }
     }
 
     return remaining === 0;
@@ -84,6 +175,22 @@ function buildEquipmentOdds(userRole: string) {
             chancePct: Number(((slotWeight / 100) * roleBias.CHEF * 100).toFixed(2)),
         },
     ]);
+}
+
+function buildRarityOdds() {
+    return (Object.entries(EQUIPMENT_RARITY_DROP_RATES) as Array<[EquipmentRarity, number]>).map(([rarity, rate]) => ({
+        rarity,
+        chancePct: Number((rate * 100).toFixed(4)),
+        buffMultiplier: EQUIPMENT_RARITY_BUFF_MULTIPLIER[rarity],
+    }));
+}
+
+function rollEquipmentRarity(): EquipmentRarity {
+    const pool = (Object.entries(EQUIPMENT_RARITY_DROP_RATES) as Array<[EquipmentRarity, number]>).map(([value, weight]) => ({
+        value,
+        weight,
+    }));
+    return pickByWeight(pool);
 }
 
 async function getUnlockedRecipeIds(userId: number): Promise<number[]> {
@@ -195,63 +302,26 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
 
-        // Check stack limit
-        if (quantity > item.max_stack) {
-            res.status(400).json({ error: `Cannot buy more than ${item.max_stack} at once` });
-            return;
-        }
+        const effects = await getUserEquipmentEffects(req.userId!);
+        const effectiveMaxStack = getEffectiveMaxStack(item.type, item.max_stack, effects);
 
-        // Find inventory slot (stack existing or use empty slot)
-        let targetSlot = await prisma.inventorySlot.findFirst({
-            where: {
-                user_id: req.userId!,
-                item_id: itemId,
-                quantity: { lt: item.max_stack },
-            },
-        });
-
-        if (targetSlot) {
-            const newQty = Math.min(targetSlot.quantity + quantity, item.max_stack);
-            const actualBuy = newQty - targetSlot.quantity;
-
-            if (actualBuy <= 0) {
-                res.status(400).json({ error: "Slot is full. Use another slot." });
-                return;
+        const purchaseOk = await prisma.$transaction(async (tx) => {
+            const placed = await addItemToInventoryTx(tx, req.userId!, itemId, quantity, effectiveMaxStack);
+            if (!placed) {
+                return false;
             }
 
-            const actualCost = item.buy_price * actualBuy;
-
-            await prisma.$transaction([
-                prisma.user.update({
-                    where: { id: req.userId! },
-                    data: { money: { decrement: actualCost } },
-                }),
-                prisma.inventorySlot.update({
-                    where: { id: targetSlot.id },
-                    data: { quantity: newQty },
-                }),
-            ]);
-        } else {
-            // Find empty slot
-            targetSlot = await prisma.inventorySlot.findFirst({
-                where: { user_id: req.userId!, item_id: null },
+            await tx.user.update({
+                where: { id: req.userId! },
+                data: { money: { decrement: totalCost } },
             });
 
-            if (!targetSlot) {
-                res.status(400).json({ error: "Inventory full!" });
-                return;
-            }
+            return true;
+        });
 
-            await prisma.$transaction([
-                prisma.user.update({
-                    where: { id: req.userId! },
-                    data: { money: { decrement: totalCost } },
-                }),
-                prisma.inventorySlot.update({
-                    where: { id: targetSlot.id },
-                    data: { item_id: itemId, quantity },
-                }),
-            ]);
+        if (!purchaseOk) {
+            res.status(400).json({ error: "Inventory full for requested quantity" });
+            return;
         }
 
         // Return updated data
@@ -307,6 +377,7 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
                 note: "Final chance = role_bias x slot_weight",
             },
             odds,
+            rarityOdds: buildRarityOdds(),
         });
     } catch (error) {
         console.error("getEquipmentBoxInfo error:", error);
@@ -364,7 +435,8 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             return;
         }
 
-        const added = await addItemToInventory(req.userId!, Number(rolledItemId), 1);
+        const rolledRarity = rollEquipmentRarity();
+        const added = await addItemToInventory(req.userId!, Number(rolledItemId), 1, rolledRarity);
         if (!added) {
             res.status(400).json({ error: "Inventory full" });
             return;
@@ -384,11 +456,13 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
         });
 
         res.json({
-            message: `Opened Equipment Box and got ${rolledItem?.name ?? "equipment"}!`,
+            message: `Opened Equipment Box and got ${rolledRarity} ${rolledItem?.name ?? "equipment"}!`,
             boxPrice: EQUIPMENT_BOX_PRICE,
             rolled: {
                 role: rolledRole,
                 slot: rolledSlot,
+                rarity: rolledRarity,
+                buffMultiplier: getEquipmentRarityBuffMultiplier(rolledRarity),
                 item: rolledItem,
             },
             user: {
@@ -404,6 +478,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             },
             slots,
             odds: buildEquipmentOdds(user.role),
+            rarityOdds: buildRarityOdds(),
         });
     } catch (error) {
         console.error("openEquipmentBox error:", error);

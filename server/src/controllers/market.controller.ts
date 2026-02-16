@@ -1,9 +1,61 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { awardSaleExp } from "../services/level.service";
+import { marketBotService } from "../services/marketBot.service";
+import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 
 interface AuthRequest extends Request {
     userId?: number;
+}
+
+async function placeItemInInventoryTx(
+    tx: any,
+    userId: number,
+    itemId: number,
+    quantity: number,
+    maxStack: number
+): Promise<boolean> {
+    const slots = await tx.inventorySlot.findMany({
+        where: { user_id: userId },
+        orderBy: { slot: "asc" },
+    });
+
+    const stackCapacity = slots
+        .filter((s: any) => s.item_id === itemId)
+        .reduce((sum: number, s: any) => sum + Math.max(0, maxStack - s.quantity), 0);
+    const emptySlots = slots.filter((s: any) => s.item_id === null).length;
+    const totalCapacity = stackCapacity + emptySlots * maxStack;
+    if (totalCapacity < quantity) return false;
+
+    let remaining = quantity;
+
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== itemId || slot.quantity >= maxStack) continue;
+
+        const add = Math.min(maxStack - slot.quantity, remaining);
+        remaining -= add;
+
+        await tx.inventorySlot.update({
+            where: { id: slot.id },
+            data: { quantity: slot.quantity + add },
+        });
+    }
+
+    for (const slot of slots) {
+        if (remaining <= 0) break;
+        if (slot.item_id !== null) continue;
+
+        const put = Math.min(maxStack, remaining);
+        remaining -= put;
+
+        await tx.inventorySlot.update({
+            where: { id: slot.id },
+            data: { item_id: itemId, quantity: put },
+        });
+    }
+
+    return remaining === 0;
 }
 
 /**
@@ -24,6 +76,45 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
     } catch (error) {
         console.error("getListings error:", error);
         res.status(500).json({ error: "Failed to fetch listings" });
+    }
+};
+
+/**
+ * GET /game/market/sales-history — Get sold listing history for current seller
+ */
+export const getSalesHistory = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const sales = await prisma.marketListing.findMany({
+            where: {
+                seller_id: req.userId!,
+                status: "SOLD",
+            },
+            include: {
+                item: true,
+                buyer: {
+                    select: { id: true, email: true, role: true },
+                },
+            },
+            orderBy: { sold_at: "desc" },
+            take: 100,
+        });
+
+        const history = sales.map((sale) => ({
+            id: sale.id,
+            item_id: sale.item_id,
+            quantity: sale.quantity,
+            price: sale.price,
+            sold_at: sale.sold_at,
+            item: sale.item,
+            buyer: sale.buyer,
+            buyer_name: sale.buyer?.email?.split("@")[0] ?? "Market Bot",
+            total: sale.quantity * sale.price,
+        }));
+
+        res.json({ history });
+    } catch (error) {
+        console.error("getSalesHistory error:", error);
+        res.status(500).json({ error: "Failed to fetch sales history" });
     }
 };
 
@@ -64,7 +155,7 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
             });
         }
 
-        // Create listing
+        // Create listing (price is unit price)
         const listing = await prisma.marketListing.create({
             data: {
                 seller_id: req.userId!,
@@ -76,12 +167,13 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
         });
 
         // Award EXP to seller
-        const expResult = await awardSaleExp(req.userId!, slot.item.id, price);
+        const totalValue = quantity * price;
+        const expResult = await awardSaleExp(req.userId!, slot.item.id, totalValue);
 
         // Get updated user for response
         const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
 
-        let message = `Listed ${quantity}x ${slot.item.name} for ${price} credits`;
+        let message = `Listed ${quantity}x ${slot.item.name} at ${price} credits each (total ${totalValue})`;
         if (expResult.expGained > 0) {
             message += ` (+${expResult.expGained} EXP)`;
         }
@@ -114,6 +206,7 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
 
 /**
  * POST /game/market/buy/:listingId — Buy from a market listing
+ * Body: { quantity?: number }
  */
 export const buyListing = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -138,70 +231,88 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
+        const requestedQtyRaw = Number(req.body?.quantity ?? listing.quantity);
+        const requestedQty = Math.max(1, Math.floor(requestedQtyRaw));
+        if (!Number.isFinite(requestedQtyRaw) || requestedQty <= 0) {
+            res.status(400).json({ error: "Invalid quantity" });
+            return;
+        }
+        if (requestedQty > listing.quantity) {
+            res.status(400).json({ error: `Not enough quantity in listing. Available: ${listing.quantity}` });
+            return;
+        }
+
+        const unitPrice = listing.price;
+        const totalCost = unitPrice * requestedQty;
+
         // Check buyer has enough money
         const buyer = await prisma.user.findUnique({ where: { id: req.userId! } });
-        if (!buyer || buyer.money < listing.price) {
+        if (!buyer || buyer.money < totalCost) {
             res.status(400).json({ error: "Not enough credits" });
             return;
         }
 
-        // Find slot for buyer's inventory
-        const existingSlot = await prisma.inventorySlot.findFirst({
-            where: {
-                user_id: req.userId!,
-                item_id: listing.item_id,
-                quantity: { lt: listing.item.max_stack },
-            },
-        });
+        await prisma.$transaction(async (tx) => {
+            const effects = await getUserEquipmentEffects(req.userId!, tx);
+            const effectiveMaxStack = getEffectiveMaxStack(listing.item.type, listing.item.max_stack, effects);
 
-        let targetSlot = existingSlot;
-        if (!targetSlot) {
-            targetSlot = await prisma.inventorySlot.findFirst({
-                where: { user_id: req.userId!, item_id: null },
-            });
-        }
+            const placed = await placeItemInInventoryTx(
+                tx,
+                req.userId!,
+                listing.item_id,
+                requestedQty,
+                effectiveMaxStack
+            );
 
-        if (!targetSlot) {
-            res.status(400).json({ error: "Inventory full!" });
-            return;
-        }
+            if (!placed) {
+                throw new Error("Inventory full!");
+            }
 
-        // Execute transaction
-        await prisma.$transaction([
-            // Transfer money
-            prisma.user.update({
+            await tx.user.update({
                 where: { id: req.userId! },
-                data: { money: { decrement: listing.price } },
-            }),
-            prisma.user.update({
+                data: { money: { decrement: totalCost } },
+            });
+            await tx.user.update({
                 where: { id: listing.seller_id },
-                data: { money: { increment: listing.price } },
-            }),
-            // Update listing
-            prisma.marketListing.update({
-                where: { id: listingId },
-                data: {
-                    status: "SOLD",
-                    buyer_id: req.userId!,
-                    sold_at: new Date(),
-                },
-            }),
-            // Add to buyer inventory
-            prisma.inventorySlot.update({
-                where: { id: targetSlot!.id },
-                data: {
-                    item_id: listing.item_id,
-                    quantity: existingSlot
-                        ? Math.min(existingSlot.quantity + listing.quantity, listing.item.max_stack)
-                        : listing.quantity,
-                },
-            }),
-        ]);
+                data: { money: { increment: totalCost } },
+            });
+
+            if (requestedQty === listing.quantity) {
+                await tx.marketListing.update({
+                    where: { id: listingId },
+                    data: {
+                        status: "SOLD",
+                        buyer_id: req.userId!,
+                        sold_at: new Date(),
+                    },
+                });
+            } else {
+                await tx.marketListing.update({
+                    where: { id: listingId },
+                    data: {
+                        quantity: { decrement: requestedQty },
+                    },
+                });
+
+                // Keep sale history accurate for partial fills
+                await tx.marketListing.create({
+                    data: {
+                        seller_id: listing.seller_id,
+                        buyer_id: req.userId!,
+                        item_id: listing.item_id,
+                        quantity: requestedQty,
+                        price: unitPrice,
+                        status: "SOLD",
+                        sold_at: new Date(),
+                    },
+                });
+            }
+        });
 
         const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
 
         res.json({
-            message: `Bought ${listing.quantity}x ${listing.item.name} for ${listing.price} credits`,
+            message: `Bought ${requestedQty}x ${listing.item.name} for ${totalCost} credits`,
             user: {
                 id: updatedUser!.id,
                 email: updatedUser!.email,
@@ -214,8 +325,56 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
                 chef_exp: updatedUser!.chef_exp,
             },
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error("buyListing error:", error);
+        if (error?.message === "Inventory full!") {
+            res.status(400).json({ error: "Inventory full!" });
+            return;
+        }
         res.status(500).json({ error: "Failed to buy listing" });
+    }
+};
+
+/**
+ * GET /game/market/bot/config — Get market bot config
+ */
+export const getMarketBotConfig = async (_req: AuthRequest, res: Response): Promise<void> => {
+    res.json({ config: marketBotService.getConfig() });
+};
+
+/**
+ * POST /game/market/bot/config — Update market bot config
+ * Body: { enabled?, tickMs?, buyChancePerTick?, maxListingsPerTick?, maxQtyPerListing?, maxUnitPriceRatio? }
+ */
+export const updateMarketBotConfig = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { enabled, tickMs, buyChancePerTick, maxListingsPerTick, maxQtyPerListing, maxUnitPriceRatio } = req.body ?? {};
+
+        const config = marketBotService.updateConfig({
+            enabled: typeof enabled === "boolean" ? enabled : undefined,
+            tickMs: typeof tickMs === "number" ? tickMs : undefined,
+            buyChancePerTick: typeof buyChancePerTick === "number" ? buyChancePerTick : undefined,
+            maxListingsPerTick: typeof maxListingsPerTick === "number" ? maxListingsPerTick : undefined,
+            maxQtyPerListing: typeof maxQtyPerListing === "number" ? maxQtyPerListing : undefined,
+            maxUnitPriceRatio: typeof maxUnitPriceRatio === "number" ? maxUnitPriceRatio : undefined,
+        });
+
+        res.json({ message: "Market bot config updated", config });
+    } catch (error) {
+        console.error("updateMarketBotConfig error:", error);
+        res.status(500).json({ error: "Failed to update market bot config" });
+    }
+};
+
+/**
+ * POST /game/market/bot/tick — Run one bot tick immediately
+ */
+export const runMarketBotTick = async (_req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        await marketBotService.runTickManually();
+        res.json({ message: "Market bot tick executed", config: marketBotService.getConfig() });
+    } catch (error) {
+        console.error("runMarketBotTick error:", error);
+        res.status(500).json({ error: "Failed to execute market bot tick" });
     }
 };
