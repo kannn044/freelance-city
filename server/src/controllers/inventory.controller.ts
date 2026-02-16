@@ -3,10 +3,13 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { INVENTORY_SLOTS, type EquipmentRarity } from "../config/game.config";
 import { syncHunger, applyMealEffect } from "../services/hunger.service";
+import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 
 interface AuthRequest extends Request {
     userId?: number;
 }
+
+type InventoryOrganizeMode = "combine" | "sort-az";
 
 const EQUIPMENT_SLOTS = ["HEAD", "UPPER_BODY", "LOWER_BODY", "ARM", "GLOVE", "SHOE"] as const;
 
@@ -144,6 +147,161 @@ export const getInventory = async (req: AuthRequest, res: Response): Promise<voi
     } catch (error) {
         console.error("getInventory error:", error);
         res.status(500).json({ error: "Failed to fetch inventory" });
+    }
+};
+
+/**
+ * POST /game/inventory/organize — Combine stacks or sort inventory
+ * Body: { mode: "combine" | "sort-az" }
+ */
+export const organizeInventory = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const mode = String(req.body?.mode ?? "combine") as InventoryOrganizeMode;
+        if (mode !== "combine" && mode !== "sort-az") {
+            res.status(400).json({ error: "Invalid organize mode" });
+            return;
+        }
+
+        type InventoryRow = {
+            id: number;
+            slot: number;
+            item_id: number | null;
+            quantity: number;
+            equipment_rarity: EquipmentRarity | null;
+            item_name: string | null;
+            item_type: string | null;
+            item_max_stack: number | null;
+        };
+
+        const rows = await prisma.$queryRaw<InventoryRow[]>`
+            SELECT s.id,
+                   s.slot,
+                   s.item_id,
+                   s.quantity,
+                   s.equipment_rarity,
+                   i.name AS item_name,
+                   i.type AS item_type,
+                   i.max_stack AS item_max_stack
+            FROM inventory_slots s
+            LEFT JOIN items i ON i.id = s.item_id
+            WHERE s.user_id = ${req.userId!}
+            ORDER BY s.slot ASC
+        `;
+
+        if (rows.length === 0) {
+            res.status(400).json({ error: "No inventory slots found" });
+            return;
+        }
+
+        const rarityRank: Record<string, number> = {
+            NORMAL: 0,
+            RARE: 1,
+            EPIC: 2,
+            LEGENDARY: 3,
+        };
+
+        const effects = await getUserEquipmentEffects(req.userId!);
+
+        type Bucket = {
+            itemId: number;
+            rarity: EquipmentRarity | null;
+            itemName: string;
+            itemType: string;
+            maxStack: number;
+            totalQty: number;
+            firstSlot: number;
+        };
+
+        const bucketMap = new Map<string, Bucket>();
+        for (const row of rows) {
+            if (!row.item_id || row.quantity <= 0 || !row.item_name || !row.item_max_stack || !row.item_type) continue;
+            const rarityKey = row.equipment_rarity ?? "";
+            const key = `${row.item_id}:${rarityKey}`;
+            const existing = bucketMap.get(key);
+            if (existing) {
+                existing.totalQty += row.quantity;
+                continue;
+            }
+            const effectiveMaxStack = getEffectiveMaxStack(row.item_type, row.item_max_stack, effects);
+            bucketMap.set(key, {
+                itemId: row.item_id,
+                rarity: row.equipment_rarity,
+                itemName: row.item_name,
+                itemType: row.item_type,
+                maxStack: effectiveMaxStack,
+                totalQty: row.quantity,
+                firstSlot: row.slot,
+            });
+        }
+
+        let buckets = Array.from(bucketMap.values());
+
+        if (mode === "sort-az") {
+            buckets = buckets.sort((a, b) => {
+                const nameCmp = a.itemName.localeCompare(b.itemName);
+                if (nameCmp !== 0) return nameCmp;
+                const ra = rarityRank[String(a.rarity ?? "")] ?? -1;
+                const rb = rarityRank[String(b.rarity ?? "")] ?? -1;
+                if (ra !== rb) return ra - rb;
+                return a.firstSlot - b.firstSlot;
+            });
+        } else {
+            buckets = buckets.sort((a, b) => a.firstSlot - b.firstSlot);
+        }
+
+        const normalized: Array<{ itemId: number; quantity: number; rarity: EquipmentRarity | null }> = [];
+        for (const b of buckets) {
+            let remain = b.totalQty;
+            while (remain > 0) {
+                const put = Math.min(remain, Math.max(1, b.maxStack));
+                normalized.push({ itemId: b.itemId, quantity: put, rarity: b.rarity });
+                remain -= put;
+            }
+        }
+
+        if (normalized.length > rows.length) {
+            res.status(400).json({ error: "Not enough inventory slots to reorganize" });
+            return;
+        }
+
+        await prisma.$transaction(async (tx) => {
+            for (let i = 0; i < rows.length; i++) {
+                const target = normalized[i];
+                if (target) {
+                    await tx.$executeRaw`
+                        UPDATE inventory_slots
+                        SET item_id = ${target.itemId},
+                            quantity = ${target.quantity},
+                            equipment_rarity = ${target.rarity}
+                        WHERE id = ${rows[i].id}
+                    `;
+                } else {
+                    await tx.$executeRaw`
+                        UPDATE inventory_slots
+                        SET item_id = NULL,
+                            quantity = 0,
+                            equipment_rarity = NULL
+                        WHERE id = ${rows[i].id}
+                    `;
+                }
+            }
+        });
+
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+        const equipment = await getEquipmentState(req.userId!);
+
+        res.json({
+            message: mode === "sort-az" ? "Inventory sorted A-Z" : "Inventory combined",
+            slots,
+            equipment,
+        });
+    } catch (error) {
+        console.error("organizeInventory error:", error);
+        res.status(500).json({ error: "Failed to organize inventory" });
     }
 };
 

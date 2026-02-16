@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { getInventory, eatItem, equipItem, unequipItem } from "../controllers/inventory.controller";
+import { getInventory, eatItem, equipItem, unequipItem, organizeInventory } from "../controllers/inventory.controller";
 import { getWorkOrders, startWork, collectWork, collectReadyWork } from "../controllers/workspace.controller";
 import {
 	getListings,
@@ -29,6 +29,7 @@ router.use(authMiddleware);
 
 // ─── Player State ────────────────────────────────────
 router.get("/inventory", getInventory);
+router.post("/inventory/organize", organizeInventory);
 router.post("/eat/:slotId", eatItem);
 router.post("/equipment/equip", equipItem);
 router.post("/equipment/unequip", unequipItem);

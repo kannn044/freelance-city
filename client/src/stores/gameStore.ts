@@ -176,6 +176,7 @@ interface GameState {
     collectReadyWork: () => Promise<void>;
     equipItem: (slotId: number) => Promise<void>;
     unequipItem: (slot: EquipmentSlotState['slot']) => Promise<void>;
+    organizeInventory: (mode: 'combine' | 'sort-az') => Promise<void>;
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
 
@@ -462,6 +463,19 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to unequip item' });
+        }
+    },
+
+    organizeInventory: async (mode) => {
+        try {
+            const { data } = await api.post('/game/inventory/organize', { mode });
+            set({
+                inventory: data.slots ?? get().inventory,
+                equipment: data.equipment ?? get().equipment,
+                actionMessage: data.message,
+            });
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to organize inventory' });
         }
     },
 

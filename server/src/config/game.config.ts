@@ -59,10 +59,10 @@ export function getEquipmentRarityBuffMultiplier(rarity: EquipmentRarity): numbe
  * Occupation EXP tuning multipliers.
  * Lowering Provider values helps slow early Provider leveling pace.
  */
-export const PROVIDER_WORK_EXP_MULTIPLIER = 0.6;
-export const CHEF_WORK_EXP_MULTIPLIER = 1.0;
-export const PROVIDER_MARKET_EXP_MULTIPLIER = 0.6;
-export const CHEF_MARKET_EXP_MULTIPLIER = 1.0;
+export const PROVIDER_WORK_EXP_MULTIPLIER = 0.2;
+export const CHEF_WORK_EXP_MULTIPLIER = 0.8;
+export const PROVIDER_MARKET_EXP_MULTIPLIER = 0.2;
+export const CHEF_MARKET_EXP_MULTIPLIER = 0.8;
 
 // ─── Market Bot ─────────────────────────────────────────
 
@@ -88,10 +88,10 @@ export interface MarketBotTuningConfig {
 export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     // Turn bot economy simulation on/off.
     enabled: true,
-    // Run approximately every 10 seconds.
-    tickMs: 10_000,
-    // 50% chance to execute buy behavior each tick.
-    buyChancePerTick: 0.5,
+    // Run approximately every 30 seconds.
+    tickMs: 30_000,
+    // 30% chance to execute buy behavior each tick.
+    buyChancePerTick: 0.3,
     // At most 2 listings handled per tick.
     maxListingsPerTick: 2,
     // At most 5 units purchased from one listing per tick.

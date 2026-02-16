@@ -2,21 +2,21 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import type { InventorySlot } from '../stores/gameStore';
-import { UtensilsCrossed, Package } from 'lucide-react';
+import { UtensilsCrossed, Package, ArrowDownAZ, Rows3 } from 'lucide-react';
 import { getEquipmentImageByName, renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
 const equipmentSlots = [
-    { key: 'HEAD', label: 'Head', icon: '🪖' },
-    { key: 'UPPER_BODY', label: 'Upper Body', icon: '👕' },
-    { key: 'LOWER_BODY', label: 'Lower Body', icon: '👖' },
-    { key: 'ARM', label: 'Arm', icon: '💪' },
-    { key: 'GLOVE', label: 'Glove', icon: '🧤' },
-    { key: 'SHOE', label: 'Shoe', icon: '👟' },
+    { key: 'HEAD', label: 'Head' },
+    { key: 'UPPER_BODY', label: 'Upper Body' },
+    { key: 'LOWER_BODY', label: 'Lower Body' },
+    { key: 'ARM', label: 'Arm' },
+    { key: 'GLOVE', label: 'Glove' },
+    { key: 'SHOE', label: 'Shoe' },
 ] as const;
 
 const InventoryGrid = () => {
-    const { inventory, equipment, eatItem, equipItem, unequipItem } = useGameStore();
+    const { inventory, equipment, eatItem, equipItem, unequipItem, organizeInventory } = useGameStore();
     const occupiedSlots = inventory.filter((s) => s.item && s.quantity > 0).length;
     const [hoveredSlot, setHoveredSlot] = useState<InventorySlot | null>(null);
 
@@ -126,7 +126,18 @@ const InventoryGrid = () => {
                                     return <span style={{ fontSize: '1rem', lineHeight: 1 }}>{eq.item_icon}</span>;
                                 }
 
-                                return <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>{slot.icon}</span>;
+                                return (
+                                    <span
+                                        aria-hidden="true"
+                                        style={{
+                                            width: '1rem',
+                                            height: '1rem',
+                                            borderRadius: '999px',
+                                            border: '1px dashed rgba(255,255,255,0.22)',
+                                            display: 'inline-block',
+                                        }}
+                                    />
+                                );
                             })()}
                             <span
                                 style={{
@@ -169,6 +180,56 @@ const InventoryGrid = () => {
                 <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
                     {occupiedSlots}/8 slots
                 </span>
+            </div>
+
+            <div
+                style={{
+                    display: 'flex',
+                    gap: '0.3rem',
+                    marginBottom: '0.6rem',
+                    justifyContent: 'flex-end',
+                }}
+            >
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => organizeInventory('combine')}
+                    title="Combine same items"
+                    style={{
+                        width: '1.9rem',
+                        height: '1.9rem',
+                        borderRadius: '0.4rem',
+                        border: '1px solid rgba(255,255,255,0.14)',
+                        background: 'rgba(255,255,255,0.04)',
+                        color: 'rgba(255,255,255,0.88)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                    }}
+                >
+                    <Rows3 style={{ width: '0.82rem', height: '0.82rem' }} />
+                </motion.button>
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => organizeInventory('sort-az')}
+                    title="Sort items A-Z"
+                    style={{
+                        width: '1.9rem',
+                        height: '1.9rem',
+                        borderRadius: '0.4rem',
+                        border: '1px solid rgba(147,197,253,0.34)',
+                        background: 'rgba(147,197,253,0.08)',
+                        color: '#bfdbfe',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                    }}
+                >
+                    <ArrowDownAZ style={{ width: '0.82rem', height: '0.82rem' }} />
+                </motion.button>
             </div>
 
             <div
