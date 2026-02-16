@@ -10,6 +10,7 @@ type Tab = 'market' | 'shop' | 'equipment';
 const MarketPanel = () => {
     const {
         marketListings,
+        salesHistory,
         shopItems,
         recipeShop,
         equipmentBoxInfo,
@@ -21,6 +22,7 @@ const MarketPanel = () => {
         createListing,
         fetchRecipeShop,
         fetchEquipmentBoxInfo,
+        fetchSalesHistory,
     } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [tab, setTab] = useState<Tab>('market');
@@ -29,6 +31,10 @@ const MarketPanel = () => {
     const [sellPrice, setSellPrice] = useState(100);
     const [showSellForm, setShowSellForm] = useState(false);
     const [showOddsModal, setShowOddsModal] = useState(false);
+    const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
+    const [otherSearch, setOtherSearch] = useState('');
+    const [ownSearch, setOwnSearch] = useState('');
+    const [salesSearch, setSalesSearch] = useState('');
     const [confirmState, setConfirmState] = useState<{
         open: boolean;
         title: string;
@@ -44,17 +50,49 @@ const MarketPanel = () => {
     });
 
     const sellableSlots = inventory.filter((s) => s.item && s.quantity > 0);
-    const ownListings = marketListings.filter((l) => l.seller_id === user?.id);
-    const otherListings = marketListings.filter((l) => l.seller_id !== user?.id);
+
+    const getUnitPrice = (price: number, quantity: number) => {
+        if (quantity <= 0) return price;
+        return price / quantity;
+    };
+
+    const containsText = (value: string, query: string) =>
+        value.toLowerCase().includes(query.trim().toLowerCase());
+
+    const otherListings = marketListings
+        .filter((l) => l.seller_id !== user?.id)
+        .filter((l) => containsText(`${l.item.name} ${l.seller.email}`, otherSearch))
+        .sort((a, b) => getUnitPrice(a.price, a.quantity) - getUnitPrice(b.price, b.quantity))
+        .slice(0, 5);
+
+    const ownListings = marketListings
+        .filter((l) => l.seller_id === user?.id)
+        .filter((l) => containsText(l.item.name, ownSearch))
+        .sort((a, b) => getUnitPrice(a.price, a.quantity) - getUnitPrice(b.price, b.quantity))
+        .slice(0, 5);
+
+    const filteredSalesHistory = salesHistory
+        .filter((s) => containsText(`${s.item.name} ${s.buyer_name}`, salesSearch))
+        .sort((a, b) => getUnitPrice(a.price, a.quantity) - getUnitPrice(b.price, b.quantity))
+        .slice(0, 5);
 
     useEffect(() => {
+        if (tab === 'market') {
+            fetchSalesHistory();
+        }
         if (tab === 'shop') {
             fetchRecipeShop();
         }
         if (tab === 'equipment') {
             fetchEquipmentBoxInfo();
         }
-    }, [tab, fetchRecipeShop, fetchEquipmentBoxInfo]);
+    }, [tab, fetchRecipeShop, fetchEquipmentBoxInfo, fetchSalesHistory]);
+
+    const formatSoldTime = (soldAt: string | null) => {
+        if (!soldAt) return '-';
+        const d = new Date(soldAt);
+        return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    };
 
     const askConfirm = (title: string, description: string, confirmLabel: string, onConfirm: () => void) => {
         setConfirmState({ open: true, title, description, confirmLabel, onConfirm });
@@ -73,7 +111,7 @@ const MarketPanel = () => {
             `List this item for sale?\nQuantity: ${sellQty}\nUnit Price: ${sellPrice}\nTotal: ${sellQty * sellPrice}`,
             'List Item',
             () => {
-                createListing(sellSlotId, sellQty, sellQty * sellPrice);
+                createListing(sellSlotId, sellQty, sellPrice);
                 setShowSellForm(false);
                 setSellSlotId(null);
             }
@@ -281,6 +319,21 @@ const MarketPanel = () => {
                         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>
                             Other Players Listings
                         </div>
+                        <input
+                            type="text"
+                            value={otherSearch}
+                            onChange={(e) => setOtherSearch(e.target.value)}
+                            placeholder="Search item/seller..."
+                            style={{
+                                width: '100%',
+                                padding: '0.35rem 0.45rem',
+                                borderRadius: '0.35rem',
+                                border: '1px solid rgba(255,255,255,0.12)',
+                                background: 'rgba(15,23,42,0.5)',
+                                color: 'white',
+                                fontSize: '0.65rem',
+                            }}
+                        />
                         {otherListings.length === 0 ? (
                             <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', padding: '0.35rem 0' }}>
                                 No listings from other players.
@@ -310,6 +363,9 @@ const MarketPanel = () => {
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.35)' }}>
                                                 by {listing.seller.email.split('@')[0]}
                                             </div>
+                                            <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
+                                                Unit(ref): {Math.ceil(getUnitPrice(listing.price, listing.quantity))}
+                                            </div>
                                         </div>
                                     </div>
                                     <motion.button
@@ -318,9 +374,9 @@ const MarketPanel = () => {
                                         onClick={() =>
                                             askConfirm(
                                                 'Confirm Purchase',
-                                                `Buy ${listing.quantity}x ${listing.item.name} for ${listing.price} credits?`,
-                                                'Buy',
-                                                () => buyListing(listing.id)
+                                                `Buy all ${listing.quantity}x ${listing.item.name} for ${listing.quantity * listing.price} credits?\n(Unit: ${listing.price})`,
+                                                'Buy All',
+                                                () => buyListing(listing.id, listing.quantity)
                                             )
                                         }
                                         style={{
@@ -346,6 +402,21 @@ const MarketPanel = () => {
                         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>
                             Your Listings
                         </div>
+                        <input
+                            type="text"
+                            value={ownSearch}
+                            onChange={(e) => setOwnSearch(e.target.value)}
+                            placeholder="Search your items..."
+                            style={{
+                                width: '100%',
+                                padding: '0.35rem 0.45rem',
+                                borderRadius: '0.35rem',
+                                border: '1px solid rgba(255,255,255,0.12)',
+                                background: 'rgba(15,23,42,0.5)',
+                                color: 'white',
+                                fontSize: '0.65rem',
+                            }}
+                        />
                         {ownListings.length === 0 ? (
                             <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', padding: '0.35rem 0' }}>
                                 You have no active listings.
@@ -375,10 +446,75 @@ const MarketPanel = () => {
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
                                                 Your listing
                                             </div>
+                                            <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
+                                                Unit(ref): {Math.ceil(getUnitPrice(listing.price, listing.quantity))}
+                                            </div>
                                         </div>
                                     </div>
                                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#93c5fd' }}>
                                         💰 {listing.price}
+                                    </span>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+
+                    {/* Sales History */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.25rem' }}>
+                        <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>
+                            Sales History
+                        </div>
+                        <input
+                            type="text"
+                            value={salesSearch}
+                            onChange={(e) => setSalesSearch(e.target.value)}
+                            placeholder="Search sold items/buyer..."
+                            style={{
+                                width: '100%',
+                                padding: '0.35rem 0.45rem',
+                                borderRadius: '0.35rem',
+                                border: '1px solid rgba(255,255,255,0.12)',
+                                background: 'rgba(15,23,42,0.5)',
+                                color: 'white',
+                                fontSize: '0.65rem',
+                            }}
+                        />
+                        {filteredSalesHistory.length === 0 ? (
+                            <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', padding: '0.35rem 0' }}>
+                                No sold history yet.
+                            </p>
+                        ) : (
+                            filteredSalesHistory.map((sale) => (
+                                <motion.div
+                                    key={`sale-history-${sale.id}`}
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '0.6rem',
+                                        borderRadius: '0.5rem',
+                                        background: 'rgba(74,222,128,0.06)',
+                                        border: '1px solid rgba(74,222,128,0.2)',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        {renderItemIcon(sale.item, 16)}
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
+                                                {sale.quantity}x {sale.item.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
+                                                Buyer: {sale.buyer_name} • {formatSoldTime(sale.sold_at)}
+                                            </div>
+                                            <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
+                                                Unit(ref): {Math.ceil(getUnitPrice(sale.price, sale.quantity))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#4ade80' }}>
+                                        💰 {sale.total}
                                     </span>
                                 </motion.div>
                             ))
@@ -481,14 +617,16 @@ const MarketPanel = () => {
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() =>
+                                    onClick={() => {
+                                        const qty = Math.max(1, shopBuyQty[item.id] ?? 1);
+                                        const unitPrice = item.buy_price ?? 0;
                                         askConfirm(
                                             'Confirm NPC Purchase',
-                                            `Buy 1x ${item.name} for ${item.buy_price ?? 0} credits?`,
+                                            `Buy ${qty}x ${item.name} for ${qty * unitPrice} credits?\n(Unit: ${unitPrice})`,
                                             'Buy',
-                                            () => buyFromShop(item.id, 1)
-                                        )
-                                    }
+                                            () => buyFromShop(item.id, qty)
+                                        );
+                                    }}
                                     style={{
                                         padding: '0.3rem 0.6rem',
                                         borderRadius: '0.35rem',
@@ -502,6 +640,29 @@ const MarketPanel = () => {
                                 >
                                     💰 {item.buy_price}
                                 </motion.button>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={item.max_stack}
+                                    value={shopBuyQty[item.id] ?? 1}
+                                    onChange={(e) => {
+                                        const next = Math.min(
+                                            Math.max(1, Number(e.target.value) || 1),
+                                            item.max_stack
+                                        );
+                                        setShopBuyQty((prev) => ({ ...prev, [item.id]: next }));
+                                    }}
+                                    style={{
+                                        width: '3.2rem',
+                                        marginLeft: '0.35rem',
+                                        padding: '0.22rem 0.3rem',
+                                        borderRadius: '0.35rem',
+                                        border: '1px solid rgba(255,255,255,0.14)',
+                                        background: 'rgba(15,23,42,0.45)',
+                                        color: 'white',
+                                        fontSize: '0.62rem',
+                                    }}
+                                />
                             </motion.div>
                         ))
                     )}

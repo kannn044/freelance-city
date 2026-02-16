@@ -63,6 +63,18 @@ export interface MarketListing {
     seller: { id: number; email: string; role: string };
 }
 
+export interface SaleHistoryEntry {
+    id: number;
+    item_id: number;
+    quantity: number;
+    price: number;
+    sold_at: string | null;
+    total: number;
+    buyer_name: string;
+    item: Item;
+    buyer?: { id: number; email: string; role: string } | null;
+}
+
 export interface Recipe {
     id: number;
     name: string;
@@ -100,6 +112,7 @@ interface GameState {
     equipment: EquipmentSlotState[];
     workOrders: WorkOrder[];
     marketListings: MarketListing[];
+    salesHistory: SaleHistoryEntry[];
     shopItems: Item[];
     recipes: Recipe[];
     recipeShop: Recipe[];
@@ -119,6 +132,7 @@ interface GameState {
     fetchInventory: () => Promise<void>;
     fetchWorkOrders: () => Promise<void>;
     fetchMarket: () => Promise<void>;
+    fetchSalesHistory: () => Promise<void>;
     fetchShop: () => Promise<void>;
     fetchRecipes: () => Promise<void>;
     fetchRecipeShop: () => Promise<void>;
@@ -136,7 +150,7 @@ interface GameState {
     equipItem: (slotId: number) => Promise<void>;
     unequipItem: (slot: EquipmentSlotState['slot']) => Promise<void>;
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
-    buyListing: (listingId: number) => Promise<void>;
+    buyListing: (listingId: number, quantity?: number) => Promise<void>;
 
     tickHunger: () => void;
     clearMessage: () => void;
@@ -149,6 +163,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     equipment: [],
     workOrders: [],
     marketListings: [],
+    salesHistory: [],
     shopItems: [],
     recipes: [],
     recipeShop: [],
@@ -184,6 +199,15 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({ marketListings: data.listings });
         } catch (err) {
             console.error('fetchMarket error', err);
+        }
+    },
+
+    fetchSalesHistory: async () => {
+        try {
+            const { data } = await api.get('/game/market/sales-history');
+            set({ salesHistory: data.history ?? [] });
+        } catch (err) {
+            console.error('fetchSalesHistory error', err);
         }
     },
 
@@ -236,6 +260,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             get().fetchInventory(),
             get().fetchWorkOrders(),
             get().fetchMarket(),
+            get().fetchSalesHistory(),
             get().fetchShop(),
             get().fetchRecipes(),
             get().fetchRecipeShop(),
@@ -403,6 +428,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({ actionMessage: data.message });
             get().fetchInventory();
             get().fetchMarket();
+            get().fetchSalesHistory();
 
             // Update user state (levels, exp)
             if (data.user) {
@@ -413,12 +439,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
-    buyListing: async (listingId) => {
+    buyListing: async (listingId, quantity = 1) => {
         try {
-            const { data } = await api.post(`/game/market/buy/${listingId}`);
+            const { data } = await api.post(`/game/market/buy/${listingId}`, { quantity });
             set({ actionMessage: data.message });
             get().fetchInventory();
             get().fetchMarket();
+            get().fetchSalesHistory();
 
             // Update user state (money)
             if (data.user) {
