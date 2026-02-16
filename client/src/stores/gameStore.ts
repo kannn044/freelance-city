@@ -37,6 +37,9 @@ export interface EquipmentSlotState {
     item_id: number | null;
     item_name: string | null;
     item_icon: string | null;
+    effect_key?: string | null;
+    effect_value?: number | null;
+    effect_value2?: number | null;
 }
 
 export interface WorkOrder {
@@ -153,6 +156,7 @@ interface GameState {
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
 
     tickHunger: () => void;
+    setActionMessage: (message: string | null) => void;
     clearMessage: () => void;
 }
 
@@ -470,5 +474,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ hunger: newHunger, hungerUpdatedAt: now });
     },
 
+    setActionMessage: (message) => set({ actionMessage: message }),
     clearMessage: () => set({ actionMessage: null }),
 }));

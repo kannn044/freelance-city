@@ -33,6 +33,20 @@ const PROVIDER_SEED_PLOTS = [
     },
 ] as const;
 
+function getProviderBranchSkillLevel(seedName: string, user: ReturnType<typeof useAuthStore.getState>['user']): number {
+    if (!user) return 0;
+    if (seedName === 'Vegetable Seed') return Number(user.provider_skill_veg ?? 0);
+    if (seedName === 'Chicken Egg') return Number(user.provider_skill_chicken ?? 0);
+    if (seedName === 'Beef Calf') return Number(user.provider_skill_beef ?? 0);
+    return 0;
+}
+
+function getUnlockedPlotCountBySkillLevel(level: number): number {
+    if (level >= 4) return 3;
+    if (level >= 2) return 2;
+    return 1;
+}
+
 function formatTimeLeft(completesAt: string): string {
     const diff = new Date(completesAt).getTime() - Date.now();
     if (diff <= 0) return 'Ready!';
@@ -78,6 +92,8 @@ const ActiveOrdersGrid = () => {
 
     const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at) <= 0).length;
     const providerPlotsByType = PROVIDER_SEED_PLOTS.map((seedType) => {
+        const branchSkillLevel = getProviderBranchSkillLevel(seedType.name, user);
+        const unlockedPlots = getUnlockedPlotCountBySkillLevel(branchSkillLevel);
         const typeOrders = providerOrders.filter((o) => o.item?.name === seedType.name);
         const slotMap = providerSlotBySeedRef.current[seedType.name] ?? new Map<number, number>();
         providerSlotBySeedRef.current[seedType.name] = slotMap;
@@ -114,7 +130,7 @@ const ActiveOrdersGrid = () => {
         }
 
         const highestSlotIndex = usedIndexes.size > 0 ? Math.max(...Array.from(usedIndexes)) : -1;
-        const plotCount = Math.max(1, Math.floor(highestSlotIndex / 9) + 1);
+        const plotCount = Math.max(unlockedPlots, Math.max(1, Math.floor(highestSlotIndex / 9) + 1));
         const allSlots = Array.from({ length: plotCount * 9 }, () => null as WorkOrder | null);
 
         for (const order of typeOrders) {
@@ -139,6 +155,8 @@ const ActiveOrdersGrid = () => {
 
         return {
             ...seedType,
+            branchSkillLevel,
+            unlockedPlots,
             ordersCount: typeOrders.length,
             plots,
         };

@@ -9,9 +9,13 @@ interface User {
     hunger: number;
     provider_level: number;
     provider_exp: number;
+    provider_skill_veg?: number;
+    provider_skill_chicken?: number;
+    provider_skill_beef?: number;
     chef_level: number;
     chef_exp: number;
     satiety_buff: number;
+    buff_expires_at?: string | null;
 }
 
 interface AuthState {

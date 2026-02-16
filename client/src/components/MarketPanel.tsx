@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
@@ -22,7 +22,9 @@ const MarketPanel = () => {
         createListing,
         fetchRecipeShop,
         fetchEquipmentBoxInfo,
+        fetchMarket,
         fetchSalesHistory,
+        setActionMessage,
     } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [tab, setTab] = useState<Tab>('market');
@@ -30,11 +32,14 @@ const MarketPanel = () => {
     const [sellQty, setSellQty] = useState(1);
     const [sellPrice, setSellPrice] = useState(100);
     const [showSellForm, setShowSellForm] = useState(false);
+    const [showSellPicker, setShowSellPicker] = useState(false);
     const [showOddsModal, setShowOddsModal] = useState(false);
     const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
     const [otherSearch, setOtherSearch] = useState('');
     const [ownSearch, setOwnSearch] = useState('');
     const [salesSearch, setSalesSearch] = useState('');
+    const knownSalesIdsRef = useRef<Set<number>>(new Set());
+    const salesBootstrappedRef = useRef(false);
     const [confirmState, setConfirmState] = useState<{
         open: boolean;
         title: string;
@@ -50,11 +55,12 @@ const MarketPanel = () => {
     });
 
     const sellableSlots = inventory.filter((s) => s.item && s.quantity > 0);
+    const selectedSellSlot = sellSlotId === null ? null : sellableSlots.find((s) => s.id === sellSlotId) ?? null;
 
-    const getUnitPrice = (price: number, quantity: number) => {
-        if (quantity <= 0) return price;
-        return price / quantity;
-    };
+    // NOTE: backend stores listing.price as unit price (credits per 1 item)
+    const getUnitPrice = (price: number) => price;
+
+    const getTotalPrice = (unitPrice: number, quantity: number) => unitPrice * Math.max(0, quantity);
 
     const containsText = (value: string, query: string) =>
         value.toLowerCase().includes(query.trim().toLowerCase());
@@ -62,18 +68,18 @@ const MarketPanel = () => {
     const otherListings = marketListings
         .filter((l) => l.seller_id !== user?.id)
         .filter((l) => containsText(`${l.item.name} ${l.seller.email}`, otherSearch))
-        .sort((a, b) => getUnitPrice(a.price, a.quantity) - getUnitPrice(b.price, b.quantity))
+        .sort((a, b) => getUnitPrice(a.price) - getUnitPrice(b.price))
         .slice(0, 5);
 
     const ownListings = marketListings
         .filter((l) => l.seller_id === user?.id)
         .filter((l) => containsText(l.item.name, ownSearch))
-        .sort((a, b) => getUnitPrice(a.price, a.quantity) - getUnitPrice(b.price, b.quantity))
+        .sort((a, b) => getUnitPrice(a.price) - getUnitPrice(b.price))
         .slice(0, 5);
 
     const filteredSalesHistory = salesHistory
         .filter((s) => containsText(`${s.item.name} ${s.buyer_name}`, salesSearch))
-        .sort((a, b) => getUnitPrice(a.price, a.quantity) - getUnitPrice(b.price, b.quantity))
+        .sort((a, b) => getUnitPrice(a.price) - getUnitPrice(b.price))
         .slice(0, 5);
 
     useEffect(() => {
@@ -87,6 +93,49 @@ const MarketPanel = () => {
             fetchEquipmentBoxInfo();
         }
     }, [tab, fetchRecipeShop, fetchEquipmentBoxInfo, fetchSalesHistory]);
+
+    // Realtime refresh for market/sales while player is on Market tab
+    useEffect(() => {
+        if (tab !== 'market') return;
+
+        const refresh = () => {
+            void Promise.all([fetchMarket(), fetchSalesHistory()]);
+        };
+
+        refresh();
+        const interval = setInterval(refresh, 5000);
+        return () => clearInterval(interval);
+    }, [tab, fetchMarket, fetchSalesHistory]);
+
+    // Notify when a new sale appears in seller history
+    useEffect(() => {
+        if (tab !== 'market') return;
+
+        if (!salesBootstrappedRef.current) {
+            knownSalesIdsRef.current = new Set(salesHistory.map((s) => s.id));
+            salesBootstrappedRef.current = true;
+            return;
+        }
+
+        const newSales = salesHistory.filter((s) => !knownSalesIdsRef.current.has(s.id));
+        if (newSales.length === 0) return;
+
+        for (const sale of salesHistory) {
+            knownSalesIdsRef.current.add(sale.id);
+        }
+
+        const newest = [...newSales].sort((a, b) => {
+            const at = a.sold_at ? new Date(a.sold_at).getTime() : 0;
+            const bt = b.sold_at ? new Date(b.sold_at).getTime() : 0;
+            return bt - at;
+        })[0];
+
+        const extraCount = newSales.length - 1;
+        const extraText = extraCount > 0 ? ` (+${extraCount} more)` : '';
+        setActionMessage(
+            `🔔 ${newest.buyer_name} bought ${newest.quantity}x ${newest.item.name} for ${newest.total} credits${extraText}`
+        );
+    }, [tab, salesHistory, setActionMessage]);
 
     const formatSoldTime = (soldAt: string | null) => {
         if (!soldAt) return '-';
@@ -113,6 +162,7 @@ const MarketPanel = () => {
             () => {
                 createListing(sellSlotId, sellQty, sellPrice);
                 setShowSellForm(false);
+                setShowSellPicker(false);
                 setSellSlotId(null);
             }
         );
@@ -225,30 +275,92 @@ const MarketPanel = () => {
                                     border: '1px solid rgba(255,255,255,0.08)',
                                 }}
                             >
-                                <select
-                                    value={sellSlotId ?? ''}
-                                    onChange={(e) => {
-                                        const slotId = Number(e.target.value);
-                                        setSellSlotId(slotId);
-                                        const slot = sellableSlots.find((s) => s.id === slotId);
-                                        if (slot) setSellQty(slot.quantity);
-                                    }}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSellPicker((v) => !v)}
                                     style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '0.5rem',
                                         padding: '0.4rem',
                                         borderRadius: '0.35rem',
                                         border: '1px solid rgba(255,255,255,0.1)',
                                         background: 'rgba(0,0,0,0.3)',
                                         color: 'white',
                                         fontSize: '0.7rem',
+                                        cursor: 'pointer',
                                     }}
                                 >
-                                    <option value="">Select item...</option>
-                                    {sellableSlots.map((s) => (
-                                        <option key={s.id} value={s.id}>
-                                            {s.item?.icon} {s.item?.name} (x{s.quantity})
-                                        </option>
-                                    ))}
-                                </select>
+                                    {selectedSellSlot?.item ? (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+                                            {renderItemIcon(selectedSellSlot.item, 16)}
+                                            <span>{selectedSellSlot.item.name} (x{selectedSellSlot.quantity})</span>
+                                        </span>
+                                    ) : (
+                                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Select item...</span>
+                                    )}
+                                    <span style={{ color: 'rgba(255,255,255,0.6)' }}>{showSellPicker ? '▲' : '▼'}</span>
+                                </button>
+
+                                <AnimatePresence>
+                                    {showSellPicker && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -4 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -4 }}
+                                            style={{
+                                                maxHeight: '10rem',
+                                                overflowY: 'auto',
+                                                borderRadius: '0.35rem',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                background: 'rgba(2,6,23,0.88)',
+                                                padding: '0.2rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '0.15rem',
+                                            }}
+                                        >
+                                            {sellableSlots.length === 0 ? (
+                                                <div style={{ padding: '0.4rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)' }}>
+                                                    No sellable item
+                                                </div>
+                                            ) : (
+                                                sellableSlots.map((s) => (
+                                                    <button
+                                                        key={s.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSellSlotId(s.id);
+                                                            setSellQty(s.quantity);
+                                                            setShowSellPicker(false);
+                                                        }}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            gap: '0.45rem',
+                                                            padding: '0.35rem 0.4rem',
+                                                            borderRadius: '0.3rem',
+                                                            border: s.id === sellSlotId ? '1px solid rgba(147,197,253,0.55)' : '1px solid transparent',
+                                                            background: s.id === sellSlotId ? 'rgba(147,197,253,0.16)' : 'rgba(255,255,255,0.03)',
+                                                            color: 'white',
+                                                            fontSize: '0.66rem',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+                                                            {s.item ? renderItemIcon(s.item, 16) : null}
+                                                            <span>{s.item?.name}</span>
+                                                        </span>
+                                                        <span style={{ color: 'rgba(255,255,255,0.65)' }}>x{s.quantity}</span>
+                                                    </button>
+                                                ))
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                                 <div style={{ display: 'flex', gap: '0.3rem' }}>
                                     <input
                                         type="number"
@@ -364,7 +476,7 @@ const MarketPanel = () => {
                                                 by {listing.seller.email.split('@')[0]}
                                             </div>
                                             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                Unit(ref): {Math.ceil(getUnitPrice(listing.price, listing.quantity))}
+                                                Unit: {listing.price} • Total: {getTotalPrice(listing.price, listing.quantity)}
                                             </div>
                                         </div>
                                     </div>
@@ -447,12 +559,12 @@ const MarketPanel = () => {
                                                 Your listing
                                             </div>
                                             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                Unit(ref): {Math.ceil(getUnitPrice(listing.price, listing.quantity))}
+                                                Unit: {listing.price} • Total: {getTotalPrice(listing.price, listing.quantity)}
                                             </div>
                                         </div>
                                     </div>
                                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#93c5fd' }}>
-                                        💰 {listing.price}
+                                        💰 {getTotalPrice(listing.price, listing.quantity)}
                                     </span>
                                 </motion.div>
                             ))
@@ -509,7 +621,7 @@ const MarketPanel = () => {
                                                 Buyer: {sale.buyer_name} • {formatSoldTime(sale.sold_at)}
                                             </div>
                                             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                Unit(ref): {Math.ceil(getUnitPrice(sale.price, sale.quantity))}
+                                                Unit: {sale.price} • Total: {getTotalPrice(sale.price, sale.quantity)}
                                             </div>
                                         </div>
                                     </div>

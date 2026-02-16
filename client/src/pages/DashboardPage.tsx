@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
@@ -23,17 +23,43 @@ import InventoryGrid from '../components/InventoryGrid';
 import WorkspacePanel from '../components/WorkspacePanel';
 import MarketPanel from '../components/MarketPanel';
 import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
+import api from '../lib/api';
+
+type ProviderSkillBranch = 'VEGETABLE' | 'CHICKEN' | 'BEEF';
+
+interface ProviderSkillTreeData {
+    points: {
+        total: number;
+        spent: number;
+        available: number;
+    };
+    branches: Record<ProviderSkillBranch, {
+        title: string;
+        level: number;
+        color: string;
+        effects: {
+            level1: string;
+            level2: string;
+            level3: string;
+            level4: string;
+        };
+    }>;
+}
 
 const DashboardPage = () => {
     const navigate = useNavigate();
     const { user, logout, fetchMe } = useAuthStore();
     const {
         hunger,
+        equipment,
         tickHunger,
         fetchAll,
         actionMessage,
         clearMessage
     } = useGameStore();
+    const [showProviderSkillModal, setShowProviderSkillModal] = useState(false);
+    const [providerSkillTree, setProviderSkillTree] = useState<ProviderSkillTreeData | null>(null);
+    const [skillLoading, setSkillLoading] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -103,6 +129,81 @@ const DashboardPage = () => {
             // Error is handled in the store
         }
     };
+
+    const fetchProviderSkillTree = async () => {
+        try {
+            setSkillLoading(true);
+            const { data } = await api.get('/game/skills/provider');
+            setProviderSkillTree(data.skillTree);
+        } finally {
+            setSkillLoading(false);
+        }
+    };
+
+    const openProviderSkillModal = async () => {
+        setShowProviderSkillModal(true);
+        await fetchProviderSkillTree();
+    };
+
+    const upgradeProviderSkill = async (branch: ProviderSkillBranch) => {
+        try {
+            setSkillLoading(true);
+            const { data } = await api.post('/game/skills/provider/upgrade', { branch });
+            setProviderSkillTree(data.skillTree);
+            if (data.user) {
+                useAuthStore.setState({ user: data.user });
+            } else {
+                await fetchMe();
+            }
+            useGameStore.getState().setActionMessage(data.message ?? 'Skill upgraded');
+        } catch (err: any) {
+            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade skill');
+        } finally {
+            setSkillLoading(false);
+        }
+    };
+
+    const formatDuration = (ms: number) => {
+        const totalSec = Math.max(0, Math.floor(ms / 1000));
+        const mins = Math.floor(totalSec / 60);
+        const secs = totalSec % 60;
+        return `${mins}m ${secs}s`;
+    };
+
+    const foodBuffRemainingMs = user.buff_expires_at
+        ? new Date(user.buff_expires_at).getTime() - Date.now()
+        : 0;
+    const hasActiveFoodBuff = Number(user.satiety_buff ?? 0) > 0 && foodBuffRemainingMs > 0;
+
+    const formatEquipmentEffect = (eq: (typeof equipment)[number]) => {
+        const key = eq.effect_key;
+        const v = Number(eq.effect_value ?? 0);
+        const v2 = Number(eq.effect_value2 ?? 0);
+
+        if (!key) return null;
+        if (key === 'hunger_penalty_tier_reduction') return `Hunger penalty tier -${v}`;
+        if (key === 'cook_secondary_ingredient_save_chance') return `Save secondary ingredients ${Math.round(v * 100)}%`;
+        if (key === 'max_hunger_bonus') return `Max hunger +${v}`;
+        if (key === 'max_hunger_and_satiety_bonus') return `Max hunger +${v}, extra satiety +${Math.round(v2 * 100)}%`;
+        if (key === 'raw_stack_bonus') return `Raw stack +${v}`;
+        if (key === 'ingredient_stack_bonus') return `Ingredient stack +${v}`;
+        if (key === 'farm_time_reduction_pct') return `Farm time -${Math.round(v * 100)}%`;
+        if (key === 'cook_time_reduction_pct') return `Cook time -${Math.round(v * 100)}%`;
+        if (key === 'farm_double_yield_chance') return `Farm double yield ${Math.round(v * 100)}%`;
+        if (key === 'gourmet_chance') return `Gourmet chance ${Math.round(v * 100)}%`;
+        if (key === 'hunger_decay_reduction_per_min') return `Hunger decay -${v}/min`;
+        if (key === 'cook_state_hunger_decay_reduction_pct') return `During cooking decay -${Math.round(v * 100)}%`;
+        return key;
+    };
+
+    const activeEquipmentBuffs = equipment
+        .filter((eq) => !!eq.item_id && !!eq.effect_key)
+        .map((eq) => ({
+            slot: eq.slot,
+            name: eq.item_name ?? eq.slot,
+            description: formatEquipmentEffect(eq),
+        }))
+        .filter((row) => !!row.description);
 
     return (
         <div
@@ -498,6 +599,7 @@ const DashboardPage = () => {
                                                 glowColor="rgba(251, 191, 36, 0.15)"
                                                 canUnlock={secondaryOccupation === 'provider' && canUnlockSecond}
                                                 onUnlock={handleUnlock}
+                                                onOpenSkills={!providerLevel ? undefined : openProviderSkillModal}
                                             />
 
                                             {/* Chef Stat */}
@@ -516,41 +618,55 @@ const DashboardPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Active Buff */}
-                                    <AnimatePresence>
-                                        {user.satiety_buff > 0 && (
-                                            <motion.section
-                                                initial={{ opacity: 0, scale: 0.95 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.95 }}
-                                                className="glass-card"
-                                                style={{
-                                                    marginTop: '1rem',
-                                                    padding: '1rem',
-                                                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                                                    background: 'rgba(99, 102, 241, 0.08)',
-                                                    boxShadow: '0 0 20px rgba(99, 102, 241, 0.1)',
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                                    <motion.div
-                                                        animate={{ rotate: [0, 10, -10, 0] }}
-                                                        transition={{ duration: 2, repeat: Infinity }}
-                                                    >
-                                                        <Zap size={18} style={{ color: '#818cf8' }} />
-                                                    </motion.div>
-                                                    <div>
-                                                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#a5b4fc' }}>
-                                                            Well Fed
-                                                        </div>
-                                                        <div style={{ fontSize: '0.7rem', color: 'rgba(165, 180, 252, 0.7)' }}>
-                                                            Hunger decay reduced by {user.satiety_buff * 100}%
-                                                        </div>
-                                                    </div>
+                                    {/* Buff Status */}
+                                    <section
+                                        className="glass-card"
+                                        style={{
+                                            marginTop: '1rem',
+                                            padding: '0.85rem',
+                                            border: '1px solid rgba(99, 102, 241, 0.22)',
+                                            background: 'rgba(99, 102, 241, 0.05)',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
+                                            <Zap size={14} style={{ color: '#818cf8' }} />
+                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c7d2fe' }}>Active Buffs</span>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                            <div style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.86)', fontWeight: 700 }}>
+                                                Food Buff
+                                            </div>
+                                            {hasActiveFoodBuff ? (
+                                                <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.4 }}>
+                                                    Satiety buff: -{Math.round((user.satiety_buff ?? 0) * 100)}% hunger decay
+                                                    <br />
+                                                    Expires in: <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{formatDuration(foodBuffRemainingMs)}</span>
                                                 </div>
-                                            </motion.section>
-                                        )}
-                                    </AnimatePresence>
+                                            ) : (
+                                                <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.45)' }}>
+                                                    No active food buff
+                                                </div>
+                                            )}
+
+                                            <div style={{ marginTop: '0.15rem', fontSize: '0.66rem', color: 'rgba(255,255,255,0.86)', fontWeight: 700 }}>
+                                                Equipment Buffs
+                                            </div>
+                                            {activeEquipmentBuffs.length > 0 ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                                    {activeEquipmentBuffs.map((row) => (
+                                                        <div key={`${row.slot}-${row.name}`} style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.78)' }}>
+                                                            • {row.name}: {row.description}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.45)' }}>
+                                                    No active equipment buff
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
                                 </div>
                             </section>
                         </motion.div>
@@ -679,6 +795,149 @@ const DashboardPage = () => {
                 </div>
             </main>
 
+            <AnimatePresence>
+                {showProviderSkillModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowProviderSkillModal(false)}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 120,
+                            background: 'rgba(2,6,23,0.62)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '1rem',
+                        }}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.96 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.96 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '100%',
+                                maxWidth: '34rem',
+                                borderRadius: '0.9rem',
+                                border: '1px solid rgba(251,191,36,0.28)',
+                                background: 'rgba(15,23,42,0.96)',
+                                padding: '1rem',
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Provider Skill Tree</div>
+                                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
+                                        Available Points: {providerSkillTree?.points.available ?? 0}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowProviderSkillModal(false)}
+                                    style={{
+                                        border: '1px solid rgba(255,255,255,0.16)',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        color: 'white',
+                                        borderRadius: '0.4rem',
+                                        fontSize: '0.65rem',
+                                        padding: '0.3rem 0.6rem',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Close
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'grid', gap: '0.65rem' }}>
+                                {([
+                                    { key: 'VEGETABLE', title: 'Vegetable Farming', color: '#34d399' },
+                                    { key: 'CHICKEN', title: 'Chicken Farming', color: '#facc15' },
+                                    { key: 'BEEF', title: 'Beef Farming', color: '#f87171' },
+                                ] as Array<{ key: ProviderSkillBranch; title: string; color: string }>).map((branchMeta) => {
+                                    const branch = providerSkillTree?.branches?.[branchMeta.key];
+                                    const level = branch?.level ?? 0;
+                                    const available = providerSkillTree?.points.available ?? 0;
+                                    const canUpgrade = !skillLoading && level < 4 && available > 0;
+                                    const title = branch?.title ?? branchMeta.title;
+                                    const color = branch?.color ?? branchMeta.color;
+                                    const effects = branch?.effects;
+
+                                    return (
+                                        <div
+                                            key={branchMeta.key}
+                                            style={{
+                                                borderRadius: '0.7rem',
+                                                border: `1px solid ${color}55`,
+                                                background: `${color}14`,
+                                                padding: '0.7rem',
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color }}>
+                                                    {title} (Lv.{level}/4)
+                                                </div>
+                                                <button
+                                                    onClick={() => upgradeProviderSkill(branchMeta.key)}
+                                                    disabled={!canUpgrade}
+                                                    style={{
+                                                        border: `1px solid ${color}66`,
+                                                        background: canUpgrade ? `${color}2b` : 'rgba(255,255,255,0.05)',
+                                                        color: canUpgrade ? color : 'rgba(255,255,255,0.45)',
+                                                        borderRadius: '0.4rem',
+                                                        fontSize: '0.62rem',
+                                                        fontWeight: 700,
+                                                        padding: '0.24rem 0.55rem',
+                                                        cursor: canUpgrade ? 'pointer' : 'not-allowed',
+                                                    }}
+                                                >
+                                                    Upgrade
+                                                </button>
+                                            </div>
+                                            <div style={{ fontSize: '0.64rem', lineHeight: 1.45, display: 'flex', flexDirection: 'column', gap: '0.12rem' }}>
+                                                <span
+                                                    style={{
+                                                        color: level >= 1 ? color : 'rgba(255,255,255,0.55)',
+                                                        fontWeight: level >= 1 ? 700 : 500,
+                                                    }}
+                                                >
+                                                    {effects?.level1 ?? 'Lv.1: Reduce task waiting time by 5%'}
+                                                </span>
+                                                <span
+                                                    style={{
+                                                        color: level >= 2 ? color : 'rgba(255,255,255,0.55)',
+                                                        fontWeight: level >= 2 ? 700 : 500,
+                                                    }}
+                                                >
+                                                    {effects?.level2 ?? 'Lv.2: Increase task plot capacity to 2 (base is 1)'}
+                                                </span>
+                                                <span
+                                                    style={{
+                                                        color: level >= 3 ? color : 'rgba(255,255,255,0.55)',
+                                                        fontWeight: level >= 3 ? 700 : 500,
+                                                    }}
+                                                >
+                                                    {effects?.level3 ?? 'Lv.3: Reduce task waiting time by another 5% (10% total)'}
+                                                </span>
+                                                <span
+                                                    style={{
+                                                        color: level >= 4 ? color : 'rgba(255,255,255,0.55)',
+                                                        fontWeight: level >= 4 ? 700 : 500,
+                                                    }}
+                                                >
+                                                    {effects?.level4 ?? 'Lv.4: Increase task plot capacity to 3'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* ─── Responsive override for mobile ────────────────── */}
             <style>{`
                 @media (max-width: 1024px) {
@@ -709,9 +968,10 @@ interface OccupationCardProps {
     glowColor: string;
     canUnlock?: boolean;
     onUnlock?: () => void;
+    onOpenSkills?: () => void;
 }
 
-const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderColor, glowColor, canUnlock, onUnlock }: OccupationCardProps) => {
+const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderColor, glowColor, canUnlock, onUnlock, onOpenSkills }: OccupationCardProps) => {
     const normalizedLevel = Number(level ?? 0);
     const isLocked = normalizedLevel <= 0;
 
@@ -762,6 +1022,28 @@ const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderCol
                     </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    {!isLocked && onOpenSkills && (
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={onOpenSkills}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.3rem',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '0.35rem',
+                                border: `1px solid ${color}55`,
+                                background: `${color}1f`,
+                                color,
+                                fontSize: '0.58rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Skill
+                        </motion.button>
+                    )}
                     {isLocked ? (
                         canUnlock ? (
                             <motion.button
