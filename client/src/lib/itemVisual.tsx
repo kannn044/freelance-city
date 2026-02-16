@@ -7,6 +7,8 @@ import chickenMeatPng from '../assets/items/raw/chicken_meat.png';
 import beefMeatPng from '../assets/items/raw/beef_meat.png';
 import vegetablePng from '../assets/items/raw/vegetable.png';
 import saltPng from '../assets/items/ingredients/salt.png';
+import chickenSaladPng from '../assets/items/meals/chicken_salad.png';
+import beefSteakPng from '../assets/items/meals/beef_steak.png';
 import sunHatPng from '../assets/items/equipment/provider/sun_hat.png';
 import fieldShirtPng from '../assets/items/equipment/provider/field_shirt.png';
 import cargoPantsPng from '../assets/items/equipment/provider/cargo_pants.png';
@@ -36,6 +38,11 @@ const ingredientImageByName: Record<string, string> = {
     Salt: saltPng,
 };
 
+const mealImageByName: Record<string, string> = {
+    'Chicken Salad': chickenSaladPng,
+    'Beef Steak': beefSteakPng,
+};
+
 const equipmentImageByName: Record<string, string> = {
     'Sun Hat': sunHatPng,
     'Field Shirt': fieldShirtPng,
@@ -61,6 +68,7 @@ export const getItemImageSrc = (item?: Item | null): string | null => {
     if (item.type === 'SEED') return seedImageByName[item.name] ?? null;
     if (item.type === 'RAW') return rawImageByName[item.name] ?? null;
     if (item.type === 'INGREDIENT') return ingredientImageByName[item.name] ?? null;
+    if (item.type === 'MEAL') return mealImageByName[item.name] ?? null;
     if (item.type === 'EQUIPMENT') return equipmentImageByName[item.name] ?? null;
     return null;
 };
