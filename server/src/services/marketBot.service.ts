@@ -81,17 +81,45 @@ class MarketBotService {
             const listings = await prisma.marketListing.findMany({
                 where: { status: "ACTIVE" },
                 include: { item: true },
-                orderBy: { created_at: "asc" },
-                take: 100,
+                orderBy: { created_at: "desc" },
+                take: 500,
             });
 
             if (listings.length === 0) return;
 
-            const shuffled = [...listings].sort(() => Math.random() - 0.5);
-            const targetCount = Math.min(this.config.maxListingsPerTick, shuffled.length);
+            // Global fairness: randomize sellers first, then pick listings in round-robin
+            // so bot can buy from all players (logged in or not), not just one seller cluster.
+            const perSeller = new Map<number, typeof listings>();
+            for (const listing of listings) {
+                const arr = perSeller.get(listing.seller_id) ?? [];
+                arr.push(listing);
+                perSeller.set(listing.seller_id, arr);
+            }
 
-            for (let i = 0; i < targetCount; i++) {
-                const listing = shuffled[i];
+            const sellerIds = [...perSeller.keys()].sort(() => Math.random() - 0.5);
+            for (const sellerId of sellerIds) {
+                const arr = perSeller.get(sellerId);
+                if (!arr) continue;
+                arr.sort(() => Math.random() - 0.5);
+            }
+
+            const picked: typeof listings = [];
+            let exhausted = false;
+            let round = 0;
+            while (!exhausted && picked.length < this.config.maxListingsPerTick) {
+                exhausted = true;
+                for (const sellerId of sellerIds) {
+                    const arr = perSeller.get(sellerId) ?? [];
+                    if (round < arr.length) {
+                        picked.push(arr[round]);
+                        exhausted = false;
+                        if (picked.length >= this.config.maxListingsPerTick) break;
+                    }
+                }
+                round += 1;
+            }
+
+            for (const listing of picked) {
                 const listingAgeMs = Date.now() - new Date(listing.created_at).getTime();
                 if (listingAgeMs < this.config.minListingAgeMs) {
                     continue;

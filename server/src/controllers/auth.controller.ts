@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { INVENTORY_SLOTS, UNLOCK_SECOND_OCCUPATION_LEVEL } from "../config/game.config";
+import { syncHunger } from "../services/hunger.service";
 
 const generateToken = (userId: number): string => {
     return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: "7d" });
@@ -102,10 +103,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         }
 
         const token = generateToken(user.id);
+        const syncedUser = await syncHunger(user.id);
 
         res.json({
             token,
-            user: userResponse(user),
+            user: userResponse(syncedUser),
         });
     } catch (error) {
         console.error("Login error:", error);
@@ -179,9 +181,7 @@ export const selectClass = async (
 // GET /auth/me
 export const me = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await prisma.user.findUnique({
-            where: { id: req.userId },
-        });
+        const user = await syncHunger(req.userId!);
 
         if (!user) {
             res.status(404).json({ error: "User not found" });

@@ -118,7 +118,6 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
                     Chef Lv. {chefLevel}
                 </div>
             </div>
-            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>Decay multiplier: {info.multiplier}</span>
         </div>
     );
 };

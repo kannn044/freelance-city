@@ -469,7 +469,22 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
             const equipmentCookMultiplier = 1 - equipmentEffects.cookTimeReductionPct;
             const cookMins = recipe.cook_mins * tier.multiplier * equipmentCookMultiplier;
-            const completesAt = new Date(Date.now() + cookMins * 60 * 1000);
+
+            // Chef queue logic: run one menu at a time, FIFO by task creation order.
+            const now = new Date();
+            const lastPendingCook = await prisma.workOrder.findFirst({
+                where: {
+                    user_id: req.userId!,
+                    type: "COOK",
+                    collected: false,
+                },
+                orderBy: { completes_at: "desc" },
+            });
+
+            const startsAt = lastPendingCook && lastPendingCook.completes_at > now
+                ? lastPendingCook.completes_at
+                : now;
+            const completesAt = new Date(startsAt.getTime() + cookMins * 60 * 1000);
 
             const order = await prisma.workOrder.create({
                 data: {
@@ -478,13 +493,16 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     item_id: recipe.output_item_id,
                     recipe_id: recipeId,
                     quantity: recipe.output_qty,
+                    started_at: startsAt,
                     completes_at: completesAt,
                 },
                 include: { item: true },
             });
 
             res.json({
-                message: `Started cooking ${recipe.name}. Ready in ${Math.ceil(cookMins)} minutes.`,
+                message: startsAt.getTime() > now.getTime()
+                    ? `Queued cooking ${recipe.name}. It will start after current menu and finish in ${Math.ceil(cookMins)} minutes once started.`
+                    : `Started cooking ${recipe.name}. Ready in ${Math.ceil(cookMins)} minutes.`,
                 order,
             });
         } else {

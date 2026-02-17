@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import api from '../lib/api';
 import { useAuthStore } from './authStore';
 import type { EquipmentRarity } from '../lib/equipmentRarity';
+import { getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
+import { HUNGER_TASK_DECAY_PER_SEC } from '../lib/gameConstants';
 
 // ─── Types ───────────────────────────────────────────
 
@@ -185,8 +187,6 @@ interface GameState {
     setActionMessage: (message: string | null) => void;
     clearMessage: () => void;
 }
-
-const HUNGER_DECAY_PER_MS = (2400 / 180) / (60 * 1000); // ~13.33 Kcal/min in ms
 
 export const useGameStore = create<GameState>((set, get) => ({
     inventory: [],
@@ -529,16 +529,63 @@ export const useGameStore = create<GameState>((set, get) => ({
     },
 
     tickHunger: () => {
-        const { hunger, hungerUpdatedAt, satietyBuff, buffExpiresAt } = get();
+        const { hunger, hungerUpdatedAt, satietyBuff, buffExpiresAt, workOrders, equipment } = get();
         const now = Date.now();
         const elapsed = now - hungerUpdatedAt;
+        if (elapsed <= 0) return;
 
-        let rate = HUNGER_DECAY_PER_MS;
-        if (satietyBuff > 0 && buffExpiresAt && now < buffExpiresAt) {
-            rate *= (1 - satietyBuff);
+        const activeOrders = workOrders.filter((o) => {
+            const start = new Date(o.started_at).getTime();
+            const end = new Date(o.completes_at).getTime();
+            return now >= start && now < end;
+        });
+
+        const farmBySeed = new Map<number, number>();
+        let activeCookMenus = 0;
+
+        for (const order of activeOrders) {
+            if (order.type === 'FARM') {
+                farmBySeed.set(order.item_id, (farmBySeed.get(order.item_id) ?? 0) + 1);
+            } else if (order.type === 'COOK') {
+                activeCookMenus += 1;
+            }
         }
 
-        const newHunger = Math.max(0, hunger - rate * elapsed);
+        let activeProviderPlots = 0;
+        for (const count of farmBySeed.values()) {
+            activeProviderPlots += Math.ceil(count / 9);
+        }
+
+        let equipFlatReductionPerMin = 0;
+        let equipCookPctReduction = 0;
+        for (const eq of equipment) {
+            if (!eq.item_id || !eq.effect_key) continue;
+            const mult = getEquipmentRarityMultiplier(eq.item_rarity as EquipmentRarity | null | undefined);
+            const v = Number(eq.effect_value ?? 0) * mult;
+
+            if (eq.effect_key === 'hunger_decay_reduction_per_min') {
+                equipFlatReductionPerMin += v;
+            }
+            if (eq.effect_key === 'cook_state_hunger_decay_reduction_pct') {
+                equipCookPctReduction += v;
+            }
+        }
+        equipCookPctReduction = Math.max(0, Math.min(0.9, equipCookPctReduction));
+
+        const elapsedSec = elapsed / 1000;
+        const providerDecay = elapsedSec * activeProviderPlots * HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT;
+        const chefDecay = elapsedSec * activeCookMenus * HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU * (1 - equipCookPctReduction);
+        let decay = providerDecay + chefDecay;
+
+        if (satietyBuff > 0 && buffExpiresAt && now < buffExpiresAt) {
+            decay *= (1 - satietyBuff);
+        }
+
+        if (equipFlatReductionPerMin > 0) {
+            decay = Math.max(0, decay - (equipFlatReductionPerMin / 60) * elapsedSec);
+        }
+
+        const newHunger = Math.max(0, hunger - decay);
         set({ hunger: newHunger, hungerUpdatedAt: now });
     },
 

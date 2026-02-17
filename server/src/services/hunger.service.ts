@@ -1,5 +1,10 @@
 import { prisma } from "../lib/prisma";
-import { MAX_HUNGER, HUNGER_DECAY_PER_MIN, getHungerTier } from "../config/game.config";
+import {
+    MAX_HUNGER,
+    HUNGER_DECAY_PER_MIN,
+    HUNGER_TASK_DECAY_PER_SEC,
+    getHungerTier,
+} from "../config/game.config";
 import { getUserEquipmentEffects } from "./equipmentEffects.service";
 
 /**
@@ -38,20 +43,91 @@ export function calculateCurrentHunger(
 export async function syncHunger(userId: number) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("User not found");
-
     const effects = await getUserEquipmentEffects(userId);
-    const hasActiveCook = (await prisma.workOrder.count({
-        where: { user_id: userId, type: "COOK", collected: false },
-    })) > 0;
-
-    let effectiveDecayPerMin = HUNGER_DECAY_PER_MIN - effects.hungerDecayReductionPerMin;
-    if (hasActiveCook) {
-        effectiveDecayPerMin *= (1 - effects.cookStateHungerDecayReductionPct);
-    }
-    effectiveDecayPerMin = Math.max(0.1, effectiveDecayPerMin);
 
     const now = new Date();
-    const elapsedMinutes = Math.max(0, (now.getTime() - user.hunger_updated_at.getTime()) / 60000);
+    const fromMs = user.hunger_updated_at.getTime();
+    const toMs = now.getTime();
+
+    if (toMs <= fromMs) {
+        return user;
+    }
+
+    const orders = await prisma.workOrder.findMany({
+        where: {
+            user_id: userId,
+            collected: false,
+            started_at: { lt: now },
+            completes_at: { gt: user.hunger_updated_at },
+        },
+        select: {
+            type: true,
+            item_id: true,
+            started_at: true,
+            completes_at: true,
+        },
+    });
+
+    let providerDecayKcal = 0;
+    const farmOrders = orders.filter((o) => o.type === "FARM");
+
+    const farmBySeed = new Map<number, Array<{ startMs: number; endMs: number }>>();
+    for (const o of farmOrders) {
+        const startMs = Math.max(fromMs, o.started_at.getTime());
+        const endMs = Math.min(toMs, o.completes_at.getTime());
+        if (endMs <= startMs) continue;
+        const arr = farmBySeed.get(o.item_id) ?? [];
+        arr.push({ startMs, endMs });
+        farmBySeed.set(o.item_id, arr);
+    }
+
+    for (const [, intervals] of farmBySeed) {
+        const events: Array<{ t: number; d: number }> = [];
+        for (const itv of intervals) {
+            events.push({ t: itv.startMs, d: +1 });
+            events.push({ t: itv.endMs, d: -1 });
+        }
+        events.sort((a, b) => a.t - b.t || a.d - b.d);
+
+        let active = 0;
+        let prev = fromMs;
+        let i = 0;
+
+        while (i < events.length) {
+            const t = events[i].t;
+            if (t > prev && active > 0) {
+                const secs = (t - prev) / 1000;
+                const activePlots = Math.ceil(active / 9);
+                providerDecayKcal += activePlots * HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT * secs;
+            }
+
+            while (i < events.length && events[i].t === t) {
+                active += events[i].d;
+                i += 1;
+            }
+            prev = t;
+        }
+
+        if (toMs > prev && active > 0) {
+            const secs = (toMs - prev) / 1000;
+            const activePlots = Math.ceil(active / 9);
+            providerDecayKcal += activePlots * HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT * secs;
+        }
+    }
+
+    let chefDecayKcal = 0;
+    const cookOrders = orders.filter((o) => o.type === "COOK");
+    for (const o of cookOrders) {
+        const startMs = Math.max(fromMs, o.started_at.getTime());
+        const endMs = Math.min(toMs, o.completes_at.getTime());
+        if (endMs <= startMs) continue;
+        const secs = (endMs - startMs) / 1000;
+        chefDecayKcal += HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU * secs;
+    }
+
+    // Chef-only equipment reduction should affect only cooking workload part.
+    const reducedChefDecay = chefDecayKcal * (1 - Math.max(0, Math.min(0.9, effects.cookStateHungerDecayReductionPct)));
+    let totalTaskDecay = providerDecayKcal + reducedChefDecay;
 
     // Apply satiety buff if still active
     let satietyRateMultiplier = 1;
@@ -59,7 +135,15 @@ export async function syncHunger(userId: number) {
         satietyRateMultiplier = 1 - user.satiety_buff;
     }
 
-    const newHunger = Math.max(0, Math.round((user.hunger - effectiveDecayPerMin * satietyRateMultiplier * elapsedMinutes) * 100) / 100);
+    totalTaskDecay *= satietyRateMultiplier;
+
+    // Flat decay reduction from equipment (legacy unit: per minute) adapted to elapsed wall time.
+    const elapsedMinutes = Math.max(0, (toMs - fromMs) / 60000);
+    if (effects.hungerDecayReductionPerMin > 0 && elapsedMinutes > 0) {
+        totalTaskDecay = Math.max(0, totalTaskDecay - effects.hungerDecayReductionPerMin * elapsedMinutes);
+    }
+
+    const newHunger = Math.max(0, Math.round((user.hunger - totalTaskDecay) * 100) / 100);
 
     // Clear expired buff
     const buffExpired = user.buff_expires_at && now >= user.buff_expires_at;

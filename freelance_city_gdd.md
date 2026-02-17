@@ -114,6 +114,70 @@ Players must choose one role upon first login. Dependencies enforce trading.
 * Provider Upper Body = 70% × 18% = **12.6%**
 * Chef Upper Body = 30% × 18% = **5.4%**
 
+### 2.6 Chef Skill Tree (Proposal - Pre-Implementation)
+
+> สถานะ: แนวคิดสำหรับรีวิวก่อนลงโค้ดจริง
+
+แนวคิดรวม:
+* ใช้รูปแบบเดียวกับ Provider: 3 สาย, สูงสุด Lv.4, ใช้แต้มจาก `chef_level`
+* จุดประสงค์: ทำให้ Chef มีความลึกด้าน **ความเร็ว / ความคุ้มวัตถุดิบ / ความสามารถขายออกในตลาด**
+* ต้องไม่ทับกับ Equipment ทั้งหมด แต่ควรเสริมกันได้
+
+#### สาย A: PREP_MASTER (Speed / Throughput)
+โฟกัส: ทำอาหารเร็วขึ้นและขยายจำนวนคิวพร้อมกัน
+
+* **Lv1:** ลดเวลา COOK 5%
+* **Lv2:** เพิ่มคิว COOK พร้อมกัน +1 (จาก 1 → 2)
+* **Lv3:** ลดเวลา COOK เพิ่มอีก 5% (รวม 10%)
+* **Lv4:** เพิ่มคิว COOK พร้อมกัน +1 (จาก 2 → 3)
+
+#### สาย B: KITCHEN_ECONOMY (Ingredient Efficiency)
+โฟกัส: ประหยัดต้นทุนวัตถุดิบ
+
+* **Lv1:** โอกาสไม่ใช้วัตถุดิบรอง +6%
+* **Lv2:** โอกาสไม่ใช้วัตถุดิบรอง +6% (รวม 12%)
+* **Lv3:** โอกาสไม่ใช้วัตถุดิบหลัก +5%
+* **Lv4:** โอกาสไม่ใช้วัตถุดิบหลัก +5% (รวม 10%)
+
+#### สาย C: MARKET_INTEL (Liquidity / Sell-Through)
+โฟกัส: ทำให้ของขายออกง่ายขึ้น (แทน Gourmet quality ที่ไม่ชัดเจนเมื่อผู้เล่นตั้งราคาเอง)
+
+* **Lv1:** เพิ่มความน่าจะเป็นที่บอทเลือกพิจารณา listing ของผู้เล่น
+* **Lv2:** ขยายเพดานราคาที่ยอมรับได้ของบอท (anti-overprice ผ่อนคลายเล็กน้อย)
+* **Lv3:** เพิ่มอายุ listing ที่ยังคงความน่าสนใจต่อบอท
+* **Lv4:** เพิ่มโอกาสขายออกโดยรวมในแต่ละช่วงเวลา (ผ่านน้ำหนักการสุ่ม)
+
+---
+
+### 2.7 Chef Task Logic เมื่อมี Skill (Proposal)
+
+#### ตอนเริ่มงาน COOK
+1. ตรวจคิวพร้อมกันจากสาย `PREP_MASTER`
+    * Base 1, Lv2 = 2, Lv4 = 3
+2. คำนวณเวลาเสร็จงาน
+    * `finalCookTime = baseCookTime × hungerTierMultiplier × (1 - equipCookReduction) × (1 - skillCookReduction)`
+3. คำนวณการหักวัตถุดิบ
+    * ใช้โอกาส save จาก `equipment + KITCHEN_ECONOMY`
+    * ควรมีเพดานรวม เช่น 70% เพื่อกันระบบแตก
+
+#### ตอนเก็บงาน COOK (Collect)
+* ใช้ผลลัพธ์ตามที่ถูกกำหนดจากตอน start (กัน exploit การ reroll)
+* เพิ่ม/ลดผลตอบแทนตามระบบที่ออกแบบ (เช่น save/cost efficiency ที่บันทึกไว้)
+
+#### ผลกระทบแบบ Real-time หลังอัปสกิล
+* สาย PREP_MASTER (ลดเวลา): มีผลกับงาน COOK ที่กำลังรันทันที โดยปรับ `remaining time`
+* สาย KITCHEN_ECONOMY: มีผลกับงานใหม่ที่เริ่มหลังอัป (เพราะหักวัตถุดิบตอน start)
+* สาย MARKET_INTEL: มีผลทันทีที่ตลาด/บอทรอบถัดไปโดยไม่กระทบของผู้เล่นย้อนหลัง
+
+---
+
+### 2.8 Balance / Safety Notes (Chef Skills)
+
+* กำหนด soft cap ของโบนัสรวมที่มาจาก Skill + Equipment
+* Skill ฝั่งตลาดควรเป็น "weight boost" ไม่ใช่ guaranteed sale
+* หลีกเลี่ยงการทำให้ Chef overtake economy เร็วเกิน (โดยเฉพาะช่วง early game)
+* ทุกค่าควรย้ายไป config เพื่อปรับ balancing ได้โดยไม่ต้องแก้ logic หลัก
+
 ---
 
 ## 3. Economy & Logic

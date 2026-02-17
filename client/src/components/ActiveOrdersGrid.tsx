@@ -56,6 +56,11 @@ function formatTimeLeft(completesAt: string): string {
     return `${secs}s`;
 }
 
+function isQueuedChefOrder(order: WorkOrder): boolean {
+    if (order.type !== 'COOK') return false;
+    return Date.now() < new Date(order.started_at).getTime();
+}
+
 function getRemainingMs(completesAt: string): number {
     return Math.max(0, new Date(completesAt).getTime() - Date.now());
 }
@@ -65,7 +70,8 @@ function getProgress(order: WorkOrder): number {
     const end = new Date(order.completes_at).getTime();
     const now = Date.now();
     if (now >= end) return 100;
-    return Math.min(100, ((now - start) / (end - start)) * 100);
+    if (now <= start) return 0;
+    return Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100));
 }
 
 const ActiveOrdersGrid = () => {
@@ -88,7 +94,7 @@ const ActiveOrdersGrid = () => {
 
     const chefOrders = workOrders
         .filter((o) => o.type === 'COOK')
-        .sort((a, b) => getRemainingMs(a.completes_at) - getRemainingMs(b.completes_at));
+        .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
     const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at) <= 0).length;
     const providerPlotsByType = PROVIDER_SEED_PLOTS.map((seedType) => {
@@ -165,6 +171,8 @@ const ActiveOrdersGrid = () => {
     const renderOrderCard = (order: WorkOrder, accent: 'provider' | 'chef') => {
         const progress = getProgress(order);
         const ready = progress >= 100;
+        const queued = isQueuedChefOrder(order);
+        const timeLabel = ready ? 'Ready!' : queued ? 'Queued' : formatTimeLeft(order.completes_at);
 
         const color = accent === 'provider' ? '#34d399' : '#fb923c';
         const border = accent === 'provider'
@@ -218,8 +226,8 @@ const ActiveOrdersGrid = () => {
                         ) : (
                             <Clock style={{ width: '0.8rem', height: '0.8rem', color }} />
                         )}
-                        <span style={{ fontSize: '0.62rem', fontWeight: 600, color: ready ? '#34d399' : color }}>
-                            {formatTimeLeft(order.completes_at)}
+                        <span style={{ fontSize: '0.62rem', fontWeight: 600, color: ready ? '#34d399' : queued ? '#facc15' : color }}>
+                            {timeLabel}
                         </span>
                     </div>
                 </div>

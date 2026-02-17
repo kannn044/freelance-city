@@ -4,6 +4,15 @@ export const MAX_LEVEL = 50;
 export const UNLOCK_SECOND_OCCUPATION_LEVEL = 5;
 
 /**
+ * Client mirror of task-driven hunger decay (kcal/sec).
+ * Keep in sync with server/src/config/game.config.ts.
+ */
+export const HUNGER_TASK_DECAY_PER_SEC = {
+    FARM_PER_PLOT: 1,
+    COOK_PER_MENU: 0.25,
+} as const;
+
+/**
  * Total EXP required to reach each level (index = level).
  * Formula: level^2 × 100  (quadratic growth)
  */

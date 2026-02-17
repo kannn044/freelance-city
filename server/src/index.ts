@@ -15,7 +15,7 @@ const envCorsOrigins = (process.env.CORS_ORIGINS ?? "")
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean);
-const allowedOrigins = envCorsOrigins.length > 0 ? envCorsOrigins : defaultCorsOrigins;
+const allowedOrigins = Array.from(new Set([...defaultCorsOrigins, ...envCorsOrigins]));
 
 // Middleware
 app.use(cors({ origin: allowedOrigins, credentials: true }));

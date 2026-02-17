@@ -19,6 +19,17 @@ export const MAX_HUNGER = 2400;
 export const HUNGER_DECAY_PER_MIN = MAX_HUNGER / GAME_DAY_MINUTES; // ~13.33 Kcal/min
 
 /**
+ * Task-driven hunger decay (kcal/sec).
+ * Separate tuning for each task type so balance can be adjusted independently.
+ */
+export const HUNGER_TASK_DECAY_PER_SEC = {
+    /** FARM: decay per active plot (1 plot = up to 9 same-seed farm tasks) */
+    FARM_PER_PLOT: 1,
+    /** COOK: decay per active cooking menu */
+    COOK_PER_MENU: 0.25,
+} as const;
+
+/**
  * Initial total inventory slots for each user.
  */
 export const INVENTORY_SLOTS = 8;

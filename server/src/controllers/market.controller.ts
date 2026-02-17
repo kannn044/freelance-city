@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
-import { awardSaleExp } from "../services/level.service";
 import { marketBotService } from "../services/marketBot.service";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 
@@ -121,7 +120,6 @@ export const getSalesHistory = async (req: AuthRequest, res: Response): Promise<
 /**
  * POST /game/market/sell — Create a sell listing from inventory
  * Body: { slotId: number, quantity: number, price: number }
- * Awards EXP to the seller based on: (hunger/maxHunger) × item.exp_value × price
  */
 export const createListing = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -166,26 +164,18 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
             include: { item: true },
         });
 
-        // Award EXP to seller
         const totalValue = quantity * price;
-        const expResult = await awardSaleExp(req.userId!, slot.item.id, totalValue);
 
         // Get updated user for response
         const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
 
-        let message = `Listed ${quantity}x ${slot.item.name} at ${price} credits each (total ${totalValue})`;
-        if (expResult.expGained > 0) {
-            message += ` (+${expResult.expGained} EXP)`;
-        }
-        if (expResult.levelUp) {
-            message += ` 🎉 Level up!`;
-        }
+        const message = `Listed ${quantity}x ${slot.item.name} at ${price} credits each (total ${totalValue})`;
 
         res.json({
             message,
             listing,
-            expGained: expResult.expGained,
-            levelUp: expResult.levelUp,
+            expGained: 0,
+            levelUp: false,
             user: {
                 id: updatedUser!.id,
                 email: updatedUser!.email,
