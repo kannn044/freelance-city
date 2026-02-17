@@ -427,6 +427,81 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
     });
 }
 
+async function buildCancelRefundOutputs(
+    order: { type: "FARM" | "COOK"; item_id: number; quantity: number; recipe_id: number | null },
+    db: DbClient,
+): Promise<OutputReward[]> {
+    if (order.type === "FARM") {
+        return [{ outputItemId: order.item_id, outputQty: Math.max(1, order.quantity), outputRarity: null }];
+    }
+
+    if (!order.recipe_id) {
+        throw new Error("Recipe is missing on COOK order");
+    }
+
+    const recipe = await db.recipe.findUnique({
+        where: { id: order.recipe_id },
+        include: { ingredients: true },
+    });
+
+    if (!recipe) {
+        throw new Error("Recipe not found for this order");
+    }
+
+    return recipe.ingredients
+        .filter((ing) => ing.quantity > 0)
+        .map((ing) => ({
+            outputItemId: ing.item_id,
+            outputQty: ing.quantity,
+            outputRarity: null,
+        }));
+}
+
+async function rescheduleChefQueueAfterCancel(userId: number, db: DbClient) {
+    const now = Date.now();
+    const remaining = await db.workOrder.findMany({
+        where: {
+            user_id: userId,
+            type: "COOK",
+            collected: false,
+        },
+        orderBy: [{ started_at: "asc" }, { id: "asc" }],
+    });
+
+    if (remaining.length === 0) return;
+
+    let cursor = now;
+    for (const order of remaining) {
+        const startMs = new Date(order.started_at).getTime();
+        const endMs = new Date(order.completes_at).getTime();
+        const durationMs = Math.max(1000, endMs - startMs);
+        const isCurrentlyRunning = startMs <= now && now < endMs;
+
+        let nextStartMs: number;
+        let nextEndMs: number;
+
+        if (isCurrentlyRunning) {
+            nextStartMs = startMs;
+            nextEndMs = endMs;
+            cursor = endMs;
+        } else {
+            nextStartMs = Math.max(cursor, now);
+            nextEndMs = nextStartMs + durationMs;
+            cursor = nextEndMs;
+        }
+
+        if (nextStartMs !== startMs || nextEndMs !== endMs) {
+            await db.workOrder.update({
+                where: { id: order.id },
+                data: {
+                    started_at: new Date(nextStartMs),
+                    completes_at: new Date(nextEndMs),
+                },
+            });
+        }
+    }
+}
+
 /**
  * GET /game/workspace — Get active work orders
  */
@@ -979,5 +1054,107 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
     } catch (error) {
         console.error("collectReadyWork error:", error);
         res.status(500).json({ error: "Failed to collect ready work" });
+    }
+};
+
+/**
+ * POST /game/workspace/cancel/:orderId — Cancel active order and refund input materials
+ */
+export const cancelWork = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        await syncHunger(req.userId!);
+
+        if (typeof req.params.orderId !== "string") {
+            res.status(400).json({ error: "Invalid order ID" });
+            return;
+        }
+
+        const orderId = parseInt(req.params.orderId);
+        if (!Number.isInteger(orderId) || orderId <= 0) {
+            res.status(400).json({ error: "Invalid order ID" });
+            return;
+        }
+
+        const now = Date.now();
+
+        const result = await prisma.$transaction(async (tx) => {
+            const order = await tx.workOrder.findFirst({
+                where: {
+                    id: orderId,
+                    user_id: req.userId!,
+                    collected: false,
+                },
+                include: { item: true },
+            });
+
+            if (!order) {
+                return { ok: false as const, reason: "not_found" as const };
+            }
+
+            if (new Date(order.completes_at).getTime() <= now) {
+                return { ok: false as const, reason: "already_ready" as const };
+            }
+
+            const refunds = await buildCancelRefundOutputs(order, tx);
+            const refundableQty = refunds.reduce((sum, r) => sum + Math.max(0, r.outputQty), 0);
+
+            if (refundableQty > 0) {
+                const canPlaceRefund = await placeOutputInInventory(req.userId!, refunds, tx);
+                if (!canPlaceRefund) {
+                    return { ok: false as const, reason: "inventory_full" as const };
+                }
+            }
+
+            await tx.workOrder.delete({ where: { id: order.id } });
+
+            if (order.type === "COOK") {
+                await rescheduleChefQueueAfterCancel(req.userId!, tx);
+            }
+
+            return {
+                ok: true as const,
+                orderType: order.type,
+                orderItemName: order.item.name,
+            };
+        });
+
+        if (!result.ok) {
+            if (result.reason === "not_found") {
+                res.status(404).json({ error: "Work order not found" });
+                return;
+            }
+            if (result.reason === "already_ready") {
+                res.status(400).json({ error: "This order is already ready. Please collect it instead." });
+                return;
+            }
+            if (result.reason === "inventory_full") {
+                res.status(400).json({ error: "Inventory is full. Free up slots or stacks before cancelling." });
+                return;
+            }
+            res.status(500).json({ error: "Failed to cancel work" });
+            return;
+        }
+
+        const [orders, slots] = await Promise.all([
+            prisma.workOrder.findMany({
+                where: { user_id: req.userId!, collected: false },
+                include: { item: true },
+                orderBy: { started_at: "desc" },
+            }),
+            prisma.inventorySlot.findMany({
+                where: { user_id: req.userId! },
+                include: { item: true },
+                orderBy: { slot: "asc" },
+            }),
+        ]);
+
+        res.json({
+            message: `Cancelled ${result.orderType} order: ${result.orderItemName}. Materials refunded.`,
+            orders,
+            slots,
+        });
+    } catch (error) {
+        console.error("cancelWork error:", error);
+        res.status(500).json({ error: "Failed to cancel work" });
     }
 };

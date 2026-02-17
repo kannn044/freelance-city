@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { getInventory, eatItem, equipItem, unequipItem, organizeInventory, discardItem } from "../controllers/inventory.controller";
-import { getWorkOrders, startWork, collectWork, collectReadyWork } from "../controllers/workspace.controller";
+import { getWorkOrders, startWork, collectWork, collectReadyWork, cancelWork } from "../controllers/workspace.controller";
 import {
 	getListings,
 	createListing,
@@ -48,6 +48,7 @@ router.get("/workspace", getWorkOrders);
 router.post("/workspace/start", startWork);
 router.post("/workspace/collect/:orderId", collectWork);
 router.post("/workspace/collect-ready", collectReadyWork);
+router.post("/workspace/cancel/:orderId", cancelWork);
 
 // ─── Skills ──────────────────────────────────────────
 router.get("/skills/provider", getProviderSkills);

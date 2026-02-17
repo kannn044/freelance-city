@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, CheckCircle, Sprout, ChefHat } from 'lucide-react';
+import { Clock, CheckCircle, Sprout, ChefHat, X } from 'lucide-react';
 import { useGameStore } from '../stores/gameStore';
 import type { WorkOrder } from '../stores/gameStore';
 import { renderItemIcon } from '../lib/itemVisual';
@@ -75,7 +75,7 @@ function getProgress(order: WorkOrder, nowMs: number = Date.now()): number {
 }
 
 const ActiveOrdersGrid = () => {
-    const { workOrders, collectWork, collectReadyWork, hunger } = useGameStore();
+    const { workOrders, collectWork, collectReadyWork, cancelWork, hunger } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [, setTick] = useState(0);
     const providerSlotBySeedRef = useRef<Record<string, Map<number, number>>>({});
@@ -294,6 +294,29 @@ const ActiveOrdersGrid = () => {
                         ✅ Collect
                     </motion.button>
                 )}
+
+                {!ready && (
+                    <motion.button
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                            const ok = window.confirm(`Cancel order for ${order.item.name} and refund materials?`);
+                            if (ok) cancelWork(order.id);
+                        }}
+                        style={{
+                            padding: '0.32rem 0.6rem',
+                            borderRadius: '0.5rem',
+                            border: '1px solid rgba(248,113,113,0.45)',
+                            background: 'rgba(248,113,113,0.14)',
+                            color: '#fecaca',
+                            fontSize: '0.66rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Cancel
+                    </motion.button>
+                )}
             </motion.div>
         );
     };
@@ -356,6 +379,34 @@ const ActiveOrdersGrid = () => {
                 }}
             >
                 {renderItemIcon(order.item, 20)}
+                {!ready && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const ok = window.confirm(`Cancel order for ${order.item.name} and refund materials?`);
+                            if (ok) cancelWork(order.id);
+                        }}
+                        title="Cancel order"
+                        style={{
+                            position: 'absolute',
+                            left: '0.16rem',
+                            top: '0.16rem',
+                            width: '0.9rem',
+                            height: '0.9rem',
+                            borderRadius: '999px',
+                            border: '1px solid rgba(248,113,113,0.55)',
+                            background: 'rgba(220,38,38,0.34)',
+                            color: '#fecaca',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            padding: 0,
+                        }}
+                    >
+                        <X style={{ width: '0.55rem', height: '0.55rem' }} />
+                    </button>
+                )}
                 <div
                     style={{
                         position: 'absolute',

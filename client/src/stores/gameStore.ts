@@ -185,6 +185,7 @@ interface GameState {
     startCook: (recipeId: number, selectedIngredients?: IngredientSelection[]) => Promise<void>;
     collectWork: (orderId: number) => Promise<void>;
     collectReadyWork: () => Promise<void>;
+    cancelWork: (orderId: number) => Promise<void>;
     equipItem: (slotId: number) => Promise<void>;
     unequipItem: (slot: EquipmentSlotState['slot']) => Promise<void>;
     organizeInventory: (mode: 'combine' | 'sort-az') => Promise<void>;
@@ -475,6 +476,19 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to collect ready work' });
+        }
+    },
+
+    cancelWork: async (orderId) => {
+        try {
+            const { data } = await api.post(`/game/workspace/cancel/${orderId}`);
+            set({
+                inventory: data.slots ?? get().inventory,
+                workOrders: data.orders ?? get().workOrders,
+                actionMessage: data.message,
+            });
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to cancel order' });
         }
     },
 
