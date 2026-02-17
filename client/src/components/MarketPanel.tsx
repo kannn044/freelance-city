@@ -25,13 +25,14 @@ const MarketPanel = () => {
         fetchEquipmentBoxInfo,
         fetchMarket,
         fetchSalesHistory,
+        cancelListing,
         setActionMessage,
     } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [tab, setTab] = useState<Tab>('market');
     const [sellSlotId, setSellSlotId] = useState<number | null>(null);
     const [sellQty, setSellQty] = useState(1);
-    const [sellPrice, setSellPrice] = useState(100);
+    const [sellPriceInput, setSellPriceInput] = useState('100');
     const [showSellForm, setShowSellForm] = useState(false);
     const [showSellPicker, setShowSellPicker] = useState(false);
     const [showOddsModal, setShowOddsModal] = useState(false);
@@ -39,6 +40,7 @@ const MarketPanel = () => {
     const [isBoxOpening, setIsBoxOpening] = useState(false);
     const [boxOpenResult, setBoxOpenResult] = useState<Awaited<ReturnType<typeof openEquipmentBox>> | null>(null);
     const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
+    const [marketBuyQty, setMarketBuyQty] = useState<Record<number, number>>({});
     const [otherSearch, setOtherSearch] = useState('');
     const [ownSearch, setOwnSearch] = useState('');
     const [salesSearch, setSalesSearch] = useState('');
@@ -60,6 +62,7 @@ const MarketPanel = () => {
 
     const sellableSlots = inventory.filter((s) => s.item && s.quantity > 0);
     const selectedSellSlot = sellSlotId === null ? null : sellableSlots.find((s) => s.id === sellSlotId) ?? null;
+    const sellPrice = Math.max(1, Number(sellPriceInput || 1));
 
     // NOTE: backend stores listing.price as unit price (credits per 1 item)
     const getUnitPrice = (price: number) => price;
@@ -451,10 +454,17 @@ const MarketPanel = () => {
                                         }}
                                     />
                                     <input
-                                        type="number"
-                                        min={1}
-                                        value={sellPrice}
-                                        onChange={(e) => setSellPrice(Math.max(1, Number(e.target.value)))}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        value={sellPriceInput}
+                                        onChange={(e) => {
+                                            const next = e.target.value;
+                                            if (/^\d*$/.test(next)) {
+                                                setSellPriceInput(next);
+                                            }
+                                        }}
+                                        onBlur={() => setSellPriceInput(String(sellPrice))}
                                         placeholder="Unit Price"
                                         style={{
                                             flex: 1,
@@ -548,30 +558,58 @@ const MarketPanel = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() =>
-                                            askConfirm(
-                                                'Confirm Purchase',
-                                                `Buy all ${listing.quantity}x ${listing.item.name} for ${listing.quantity * listing.price} credits?\n(Unit: ${listing.price})`,
-                                                'Buy All',
-                                                () => buyListing(listing.id, listing.quantity)
-                                            )
-                                        }
-                                        style={{
-                                            padding: '0.3rem 0.6rem',
-                                            borderRadius: '0.35rem',
-                                            border: '1px solid rgba(255,255,255,0.14)',
-                                            background: 'rgba(255,255,255,0.08)',
-                                            color: 'white',
-                                            fontSize: '0.65rem',
-                                            fontWeight: 500,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        💰 {listing.price}
-                                    </motion.button>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={listing.quantity}
+                                            value={marketBuyQty[listing.id] ?? 1}
+                                            onChange={(e) => {
+                                                const next = Math.min(
+                                                    Math.max(1, Number(e.target.value) || 1),
+                                                    listing.quantity
+                                                );
+                                                setMarketBuyQty((prev) => ({ ...prev, [listing.id]: next }));
+                                            }}
+                                            style={{
+                                                width: '3rem',
+                                                padding: '0.22rem 0.3rem',
+                                                borderRadius: '0.35rem',
+                                                border: '1px solid rgba(255,255,255,0.14)',
+                                                background: 'rgba(15,23,42,0.45)',
+                                                color: 'white',
+                                                fontSize: '0.62rem',
+                                            }}
+                                        />
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => {
+                                                const qty = Math.min(
+                                                    Math.max(1, marketBuyQty[listing.id] ?? 1),
+                                                    listing.quantity
+                                                );
+                                                askConfirm(
+                                                    'Confirm Purchase',
+                                                    `Buy ${qty}x ${listing.item.name} for ${qty * listing.price} credits?\n(Unit: ${listing.price})`,
+                                                    'Buy',
+                                                    () => buyListing(listing.id, qty)
+                                                );
+                                            }}
+                                            style={{
+                                                padding: '0.3rem 0.6rem',
+                                                borderRadius: '0.35rem',
+                                                border: '1px solid rgba(255,255,255,0.14)',
+                                                background: 'rgba(255,255,255,0.08)',
+                                                color: 'white',
+                                                fontSize: '0.65rem',
+                                                fontWeight: 500,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            💰 {listing.price}
+                                        </motion.button>
+                                    </div>
                                 </motion.div>
                             ))
                         )}
@@ -634,6 +672,32 @@ const MarketPanel = () => {
                                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#93c5fd' }}>
                                         💰 {getTotalPrice(listing.price, listing.quantity)}
                                     </span>
+                                    <motion.button
+                                        whileHover={{ scale: 1.04 }}
+                                        whileTap={{ scale: 0.96 }}
+                                        onClick={() =>
+                                            askConfirm(
+                                                'Confirm Cancel Listing',
+                                                `Cancel ${listing.quantity}x ${listing.item.name}?\nItem will return to your inventory only if space is available.`,
+                                                'Cancel Listing',
+                                                () => cancelListing(listing.id)
+                                            )
+                                        }
+                                        style={{
+                                            marginLeft: '0.45rem',
+                                            padding: '0.28rem 0.5rem',
+                                            borderRadius: '0.35rem',
+                                            border: '1px solid rgba(248,113,113,0.35)',
+                                            background: 'rgba(248,113,113,0.12)',
+                                            color: '#fecaca',
+                                            fontSize: '0.62rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        Cancel
+                                    </motion.button>
                                 </motion.div>
                             ))
                         )}

@@ -179,6 +179,7 @@ interface GameState {
     organizeInventory: (mode: 'combine' | 'sort-az') => Promise<void>;
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
+    cancelListing: (listingId: number) => Promise<void>;
 
     tickHunger: () => void;
     setActionMessage: (message: string | null) => void;
@@ -510,6 +511,20 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to buy listing' });
+        }
+    },
+
+    cancelListing: async (listingId) => {
+        try {
+            const { data } = await api.post(`/game/market/cancel/${listingId}`);
+            set({
+                inventory: data.slots ?? get().inventory,
+                actionMessage: data.message,
+            });
+            get().fetchMarket();
+            get().fetchSalesHistory();
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to cancel listing' });
         }
     },
 

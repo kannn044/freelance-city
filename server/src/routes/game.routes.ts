@@ -6,6 +6,7 @@ import {
 	getListings,
 	createListing,
 	buyListing,
+	cancelListing,
 	getSalesHistory,
 	getMarketBotConfig,
 	updateMarketBotConfig,
@@ -50,6 +51,7 @@ router.get("/market", getListings);
 router.get("/market/sales-history", getSalesHistory);
 router.post("/market/sell", createListing);
 router.post("/market/buy/:listingId", buyListing);
+router.post("/market/cancel/:listingId", cancelListing);
 router.get("/market/bot/config", getMarketBotConfig);
 router.post("/market/bot/config", updateMarketBotConfig);
 router.post("/market/bot/tick", runMarketBotTick);

@@ -336,6 +336,78 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
 };
 
 /**
+ * POST /game/market/cancel/:listingId — Cancel own active listing and return items to inventory
+ */
+export const cancelListing = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        if (typeof req.params.listingId !== "string") {
+            res.status(400).json({ error: "Invalid listing ID" });
+            return;
+        }
+
+        const listingId = parseInt(req.params.listingId);
+
+        const listing = await prisma.marketListing.findFirst({
+            where: {
+                id: listingId,
+                seller_id: req.userId!,
+                status: "ACTIVE",
+            },
+            include: { item: true },
+        });
+
+        if (!listing) {
+            res.status(404).json({ error: "Active listing not found" });
+            return;
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const effects = await getUserEquipmentEffects(req.userId!, tx);
+            const effectiveMaxStack = getEffectiveMaxStack(listing.item.type, listing.item.max_stack, effects);
+
+            const placed = await placeItemInInventoryTx(
+                tx,
+                req.userId!,
+                listing.item_id,
+                listing.quantity,
+                effectiveMaxStack
+            );
+
+            if (!placed) {
+                throw new Error("Inventory full!");
+            }
+
+            await tx.marketListing.update({
+                where: { id: listing.id },
+                data: {
+                    status: "CANCELLED",
+                    buyer_id: null,
+                    sold_at: null,
+                },
+            });
+        });
+
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+
+        res.json({
+            message: `Cancelled listing and returned ${listing.quantity}x ${listing.item.name}`,
+            slots,
+        });
+    } catch (error: any) {
+        console.error("cancelListing error:", error);
+        if (error?.message === "Inventory full!") {
+            res.status(400).json({ error: "Inventory full! Cannot cancel listing." });
+            return;
+        }
+        res.status(500).json({ error: "Failed to cancel listing" });
+    }
+};
+
+/**
  * GET /game/market/bot/config — Get market bot config
  */
 export const getMarketBotConfig = async (_req: AuthRequest, res: Response): Promise<void> => {
