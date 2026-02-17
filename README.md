@@ -197,10 +197,30 @@ npm run build
 
 ```bash
 sudo npm install -g pm2
-cd /path/to/freelance-city/server
-pm2 start dist/index.js --name freelance-city-server
+cd /path/to/freelance-city
+pm2 start ecosystem.config.cjs
 pm2 save
 pm2 startup
+```
+
+Quick PM2 operations:
+
+```bash
+pm2 status
+pm2 logs freelance-city-server
+pm2 restart freelance-city-server
+pm2 stop freelance-city-server
+pm2 delete freelance-city-server
+```
+
+After new deployment/build:
+
+```bash
+cd /path/to/freelance-city/server
+npm ci
+npm run build
+cd ..
+pm2 restart freelance-city-server
 ```
 
 ## 6) Serve frontend with Nginx

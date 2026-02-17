@@ -96,8 +96,8 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     maxListingsPerTick: 2,
     // At most 5 units purchased from one listing per tick.
     maxQtyPerListing: 5,
-    // Bot ignores listings priced above 200% of reference unit price.
-    maxUnitPriceRatio: 2.00,
+    // Bot ignores listings priced above 150% of reference unit price.
+    maxUnitPriceRatio: 1.50,
 };
 
 // ─── Provider Skill Tree ───────────────────────────────
