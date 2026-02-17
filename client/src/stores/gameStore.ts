@@ -3,7 +3,7 @@ import api from '../lib/api';
 import { useAuthStore } from './authStore';
 import type { EquipmentRarity } from '../lib/equipmentRarity';
 import { getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
-import { HUNGER_TASK_DECAY_PER_SEC } from '../lib/gameConstants';
+import { DEFAULT_HUNGER_TASK_DECAY_PER_SEC, type HungerTaskDecayConfig } from '../lib/gameConstants';
 
 // ─── Types ───────────────────────────────────────────
 
@@ -152,6 +152,7 @@ interface GameState {
     hungerUpdatedAt: number; // timestamp ms
     satietyBuff: number;
     buffExpiresAt: number | null;
+    taskDecay: HungerTaskDecayConfig;
 
     // Loading
     isLoading: boolean;
@@ -166,6 +167,7 @@ interface GameState {
     fetchRecipes: () => Promise<void>;
     fetchRecipeShop: () => Promise<void>;
     fetchEquipmentBoxInfo: () => Promise<void>;
+    fetchRuntimeConfig: () => Promise<void>;
     fetchAll: () => Promise<void>;
 
     eatItem: (slotId: number) => Promise<void>;
@@ -202,6 +204,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     hungerUpdatedAt: Date.now(),
     satietyBuff: 0,
     buffExpiresAt: null,
+    taskDecay: {
+        farmPerPlot: DEFAULT_HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT,
+        cookPerMenu: DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
+    },
     isLoading: false,
     actionMessage: null,
 
@@ -277,6 +283,27 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
+    fetchRuntimeConfig: async () => {
+        try {
+            const { data } = await api.get('/game/runtime-config');
+            const farmPerPlot = Number(data?.taskDecay?.farmPerPlot);
+            const cookPerMenu = Number(data?.taskDecay?.cookPerMenu);
+
+            set({
+                taskDecay: {
+                    farmPerPlot: Number.isFinite(farmPerPlot)
+                        ? farmPerPlot
+                        : DEFAULT_HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT,
+                    cookPerMenu: Number.isFinite(cookPerMenu)
+                        ? cookPerMenu
+                        : DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
+                },
+            });
+        } catch (err) {
+            console.error('fetchRuntimeConfig error', err);
+        }
+    },
+
     fetchAll: async () => {
         set({ isLoading: true });
         const authUser = useAuthStore.getState().user;
@@ -295,6 +322,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             get().fetchRecipes(),
             get().fetchRecipeShop(),
             get().fetchEquipmentBoxInfo(),
+            get().fetchRuntimeConfig(),
         ]);
         set({ isLoading: false });
     },
@@ -529,7 +557,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     },
 
     tickHunger: () => {
-        const { hunger, hungerUpdatedAt, satietyBuff, buffExpiresAt, workOrders, equipment } = get();
+        const { hunger, hungerUpdatedAt, satietyBuff, buffExpiresAt, workOrders, equipment, taskDecay } = get();
         const now = Date.now();
         const elapsed = now - hungerUpdatedAt;
         if (elapsed <= 0) return;
@@ -573,8 +601,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         equipCookPctReduction = Math.max(0, Math.min(0.9, equipCookPctReduction));
 
         const elapsedSec = elapsed / 1000;
-        const providerDecay = elapsedSec * activeProviderPlots * HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT;
-        const chefDecay = elapsedSec * activeCookMenus * HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU * (1 - equipCookPctReduction);
+        const providerDecay = elapsedSec * activeProviderPlots * taskDecay.farmPerPlot;
+        const chefDecay = elapsedSec * activeCookMenus * taskDecay.cookPerMenu * (1 - equipCookPctReduction);
         let decay = providerDecay + chefDecay;
 
         if (satietyBuff > 0 && buffExpiresAt && now < buffExpiresAt) {

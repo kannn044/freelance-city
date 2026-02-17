@@ -5,12 +5,17 @@ export const UNLOCK_SECOND_OCCUPATION_LEVEL = 5;
 
 /**
  * Client mirror of task-driven hunger decay (kcal/sec).
- * Keep in sync with server/src/config/game.config.ts.
+ * Used as fallback until runtime config is fetched from server.
  */
-export const HUNGER_TASK_DECAY_PER_SEC = {
-    FARM_PER_PLOT: 1,
+export const DEFAULT_HUNGER_TASK_DECAY_PER_SEC = {
+    FARM_PER_PLOT: 0.01,
     COOK_PER_MENU: 0.25,
 } as const;
+
+export type HungerTaskDecayConfig = {
+    farmPerPlot: number;
+    cookPerMenu: number;
+};
 
 /**
  * Total EXP required to reach each level (index = level).

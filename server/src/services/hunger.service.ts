@@ -2,10 +2,10 @@ import { prisma } from "../lib/prisma";
 import {
     MAX_HUNGER,
     HUNGER_DECAY_PER_MIN,
-    HUNGER_TASK_DECAY_PER_SEC,
     getHungerTier,
 } from "../config/game.config";
 import { getUserEquipmentEffects } from "./equipmentEffects.service";
+import { getGameTaskDecayConfig } from "./gamePricing.service";
 import type { Prisma } from "@prisma/client";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
@@ -81,6 +81,7 @@ export async function syncHunger(userId: number) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("User not found");
     const effects = await getUserEquipmentEffects(userId);
+    const taskDecay = await getGameTaskDecayConfig();
 
     const now = new Date();
     const fromMs = user.hunger_updated_at.getTime();
@@ -164,7 +165,7 @@ export async function syncHunger(userId: number) {
             if (t > prev && active > 0) {
                 const secs = (t - prev) / 1000;
                 const activePlots = Math.ceil(active / 9);
-                providerDecayKcal += activePlots * HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT * secs;
+                providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs;
             }
 
             while (i < events.length && events[i].t === t) {
@@ -177,7 +178,7 @@ export async function syncHunger(userId: number) {
         if (toMs > prev && active > 0) {
             const secs = (toMs - prev) / 1000;
             const activePlots = Math.ceil(active / 9);
-            providerDecayKcal += activePlots * HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT * secs;
+            providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs;
         }
     }
 
@@ -188,7 +189,7 @@ export async function syncHunger(userId: number) {
         const endMs = Math.min(toMs, o.completes_at.getTime());
         if (endMs <= startMs) continue;
         const secs = (endMs - startMs) / 1000;
-        chefDecayKcal += HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU * secs;
+        chefDecayKcal += taskDecay.cookPerMenu * secs;
     }
 
     // Chef-only equipment reduction should affect only cooking workload part.

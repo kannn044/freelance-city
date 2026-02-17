@@ -22,7 +22,13 @@ import {
 	openEquipmentBox,
 } from "../controllers/shop.controller";
 import { getProviderSkills, upgradeProviderSkill } from "../controllers/skills.controller";
-import { getPricingConfig, setPricingConfig } from "../controllers/admin.controller";
+import {
+	getPricingConfig,
+	setPricingConfig,
+	getPublicRuntimeConfig,
+	getRuntimeConfig,
+	setRuntimeConfig,
+} from "../controllers/admin.controller";
 
 const router = Router();
 
@@ -59,6 +65,9 @@ router.post("/market/bot/tick", runMarketBotTick);
 // ─── Admin ───────────────────────────────────────────
 router.get("/admin/pricing", getPricingConfig);
 router.post("/admin/pricing", setPricingConfig);
+router.get("/runtime-config", getPublicRuntimeConfig);
+router.get("/admin/runtime-config", getRuntimeConfig);
+router.post("/admin/runtime-config", setRuntimeConfig);
 
 // ─── Shop & Recipes ──────────────────────────────────
 router.get("/shop", getShop);
