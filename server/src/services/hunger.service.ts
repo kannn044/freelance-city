@@ -6,6 +6,43 @@ import {
     getHungerTier,
 } from "../config/game.config";
 import { getUserEquipmentEffects } from "./equipmentEffects.service";
+import type { Prisma } from "@prisma/client";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
+
+async function shiftPendingOrdersForPause(
+    userId: number,
+    pauseStartMs: number,
+    pauseMs: number,
+    db: DbClient = prisma,
+) {
+    if (pauseMs <= 0) return;
+
+    const ordersToShift = await db.workOrder.findMany({
+        where: {
+            user_id: userId,
+            collected: false,
+            completes_at: { gt: new Date(pauseStartMs) },
+        },
+        select: {
+            id: true,
+            started_at: true,
+            completes_at: true,
+        },
+    });
+
+    if (ordersToShift.length === 0) return;
+
+    for (const order of ordersToShift) {
+        await db.workOrder.update({
+            where: { id: order.id },
+            data: {
+                started_at: new Date(order.started_at.getTime() + pauseMs),
+                completes_at: new Date(order.completes_at.getTime() + pauseMs),
+            },
+        });
+    }
+}
 
 /**
  * Calculate real-time hunger based on elapsed time since last update.
@@ -48,9 +85,38 @@ export async function syncHunger(userId: number) {
     const now = new Date();
     const fromMs = user.hunger_updated_at.getTime();
     const toMs = now.getTime();
+    const buffExpired = user.buff_expires_at && now >= user.buff_expires_at;
 
     if (toMs <= fromMs) {
         return user;
+    }
+
+    // Hard pause: if kcal is already empty, all pending tasks are frozen until kcal is restored.
+    if (user.hunger <= 0) {
+        const updatedUser = await prisma.$transaction(async (tx) => {
+            // Atomic claim: only one sync call with this exact timestamp can apply pause shift.
+            const claimed = await tx.user.updateMany({
+                where: {
+                    id: userId,
+                    hunger_updated_at: user.hunger_updated_at,
+                },
+                data: {
+                    hunger: 0,
+                    hunger_updated_at: now,
+                    ...(buffExpired ? { satiety_buff: 0, buff_expires_at: null } : {}),
+                },
+            });
+
+            if (claimed.count > 0) {
+                const pauseMs = toMs - fromMs;
+                await shiftPendingOrdersForPause(userId, fromMs, pauseMs, tx);
+            }
+
+            return tx.user.findUnique({ where: { id: userId } });
+        });
+
+        if (!updatedUser) throw new Error("User not found");
+        return updatedUser;
     }
 
     const orders = await prisma.workOrder.findMany({
@@ -143,10 +209,17 @@ export async function syncHunger(userId: number) {
         totalTaskDecay = Math.max(0, totalTaskDecay - effects.hungerDecayReductionPerMin * elapsedMinutes);
     }
 
-    const newHunger = Math.max(0, Math.round((user.hunger - totalTaskDecay) * 100) / 100);
+    const rawNextHunger = user.hunger - totalTaskDecay;
+    const newHunger = Math.max(0, Math.round(rawNextHunger * 100) / 100);
 
-    // Clear expired buff
-    const buffExpired = user.buff_expires_at && now >= user.buff_expires_at;
+    // If hunger reaches zero within this sync window, freeze all remaining timeline after depletion point.
+    if (rawNextHunger <= 0 && totalTaskDecay > 0) {
+        const elapsedMs = toMs - fromMs;
+        const activeRatio = Math.max(0, Math.min(1, user.hunger / totalTaskDecay));
+        const pauseStartMs = fromMs + Math.floor(elapsedMs * activeRatio);
+        const pauseMs = Math.max(0, toMs - pauseStartMs);
+        await shiftPendingOrdersForPause(userId, pauseStartMs, pauseMs);
+    }
 
     const updated = await prisma.user.update({
         where: { id: userId },

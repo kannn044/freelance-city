@@ -233,6 +233,8 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
  */
 export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncHunger(req.userId!);
+
         const orders = await prisma.workOrder.findMany({
             where: { user_id: req.userId!, collected: false },
             include: { item: true },
@@ -519,6 +521,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
  */
 export const collectWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncHunger(req.userId!);
+
         if (typeof req.params.orderId !== 'string') {
             res.status(400).json({ error: "Invalid order ID" });
             return;
@@ -582,6 +586,8 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
  */
 export const collectReadyWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncHunger(req.userId!);
+
         const readyOrders = await prisma.workOrder.findMany({
             where: {
                 user_id: req.userId!,

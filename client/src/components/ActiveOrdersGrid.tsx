@@ -47,8 +47,8 @@ function getUnlockedPlotCountBySkillLevel(level: number): number {
     return 1;
 }
 
-function formatTimeLeft(completesAt: string): string {
-    const diff = new Date(completesAt).getTime() - Date.now();
+function formatTimeLeft(completesAt: string, nowMs: number = Date.now()): string {
+    const diff = new Date(completesAt).getTime() - nowMs;
     if (diff <= 0) return 'Ready!';
     const mins = Math.floor(diff / 60000);
     const secs = Math.floor((diff % 60000) / 1000);
@@ -56,29 +56,30 @@ function formatTimeLeft(completesAt: string): string {
     return `${secs}s`;
 }
 
-function isQueuedChefOrder(order: WorkOrder): boolean {
+function isQueuedChefOrder(order: WorkOrder, nowMs: number = Date.now()): boolean {
     if (order.type !== 'COOK') return false;
-    return Date.now() < new Date(order.started_at).getTime();
+    return nowMs < new Date(order.started_at).getTime();
 }
 
-function getRemainingMs(completesAt: string): number {
-    return Math.max(0, new Date(completesAt).getTime() - Date.now());
+function getRemainingMs(completesAt: string, nowMs: number = Date.now()): number {
+    return Math.max(0, new Date(completesAt).getTime() - nowMs);
 }
 
-function getProgress(order: WorkOrder): number {
+function getProgress(order: WorkOrder, nowMs: number = Date.now()): number {
     const start = new Date(order.started_at).getTime();
     const end = new Date(order.completes_at).getTime();
-    const now = Date.now();
+    const now = nowMs;
     if (now >= end) return 100;
     if (now <= start) return 0;
     return Math.max(0, Math.min(100, ((now - start) / (end - start)) * 100));
 }
 
 const ActiveOrdersGrid = () => {
-    const { workOrders, collectWork, collectReadyWork } = useGameStore();
+    const { workOrders, collectWork, collectReadyWork, hunger } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [, setTick] = useState(0);
     const providerSlotBySeedRef = useRef<Record<string, Map<number, number>>>({});
+    const pausedNowRef = useRef<number | null>(null);
 
     const showProviderColumn = (user?.provider_level ?? 0) > 0;
     const showChefColumn = (user?.chef_level ?? 0) > 0;
@@ -88,6 +89,18 @@ const ActiveOrdersGrid = () => {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (hunger <= 0) {
+            if (pausedNowRef.current === null) {
+                pausedNowRef.current = Date.now();
+            }
+            return;
+        }
+        pausedNowRef.current = null;
+    }, [hunger]);
+
+    const effectiveNowMs = pausedNowRef.current ?? Date.now();
+
     const providerOrders = workOrders
         .filter((o) => o.type === 'FARM')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
@@ -96,7 +109,7 @@ const ActiveOrdersGrid = () => {
         .filter((o) => o.type === 'COOK')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
-    const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at) <= 0).length;
+    const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at, effectiveNowMs) <= 0).length;
     const providerPlotsByType = PROVIDER_SEED_PLOTS.map((seedType) => {
         const branchSkillLevel = getProviderBranchSkillLevel(seedType.name, user);
         const unlockedPlots = getUnlockedPlotCountBySkillLevel(branchSkillLevel);
@@ -169,10 +182,17 @@ const ActiveOrdersGrid = () => {
     });
 
     const renderOrderCard = (order: WorkOrder, accent: 'provider' | 'chef') => {
-        const progress = getProgress(order);
+        const progress = getProgress(order, effectiveNowMs);
         const ready = progress >= 100;
-        const queued = isQueuedChefOrder(order);
-        const timeLabel = ready ? 'Ready!' : queued ? 'Queued' : formatTimeLeft(order.completes_at);
+        const queued = isQueuedChefOrder(order, effectiveNowMs);
+        const pausedByKcal = hunger <= 0 && !ready;
+        const timeLabel = ready
+            ? 'Ready!'
+            : queued
+                ? 'Queued'
+                : pausedByKcal
+                    ? 'Paused (No Kcal)'
+                    : formatTimeLeft(order.completes_at, effectiveNowMs);
 
         const color = accent === 'provider' ? '#34d399' : '#fb923c';
         const border = accent === 'provider'
@@ -226,7 +246,7 @@ const ActiveOrdersGrid = () => {
                         ) : (
                             <Clock style={{ width: '0.8rem', height: '0.8rem', color }} />
                         )}
-                        <span style={{ fontSize: '0.62rem', fontWeight: 600, color: ready ? '#34d399' : queued ? '#facc15' : color }}>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 600, color: ready ? '#34d399' : queued ? '#facc15' : pausedByKcal ? '#f87171' : color }}>
                             {timeLabel}
                         </span>
                     </div>
@@ -306,7 +326,7 @@ const ActiveOrdersGrid = () => {
             );
         }
 
-        const ready = getRemainingMs(order.completes_at) <= 0;
+        const ready = getRemainingMs(order.completes_at, effectiveNowMs) <= 0;
         return (
             <motion.div
                 key={`provider-order-${order.id}`}
@@ -469,10 +489,11 @@ const ActiveOrdersGrid = () => {
                                                                 {' • '}
                                                                 {`${formatTimeLeft(
                                                                     plot.orders.reduce((soonest, current) =>
-                                                                        getRemainingMs(current.completes_at) < getRemainingMs(soonest.completes_at)
+                                                                        getRemainingMs(current.completes_at, effectiveNowMs) < getRemainingMs(soonest.completes_at, effectiveNowMs)
                                                                             ? current
                                                                             : soonest
-                                                                    ).completes_at
+                                                                    ).completes_at,
+                                                                    effectiveNowMs
                                                                 )}`}
                                                             </>
                                                         )}
