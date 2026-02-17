@@ -344,11 +344,11 @@ export const getMarketBotConfig = async (_req: AuthRequest, res: Response): Prom
 
 /**
  * POST /game/market/bot/config — Update market bot config
- * Body: { enabled?, tickMs?, buyChancePerTick?, maxListingsPerTick?, maxQtyPerListing?, maxUnitPriceRatio? }
+ * Body: { enabled?, tickMs?, buyChancePerTick?, maxListingsPerTick?, maxQtyPerListing?, maxUnitPriceRatio?, minListingAgeMs? }
  */
 export const updateMarketBotConfig = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { enabled, tickMs, buyChancePerTick, maxListingsPerTick, maxQtyPerListing, maxUnitPriceRatio } = req.body ?? {};
+        const { enabled, tickMs, buyChancePerTick, maxListingsPerTick, maxQtyPerListing, maxUnitPriceRatio, minListingAgeMs } = req.body ?? {};
 
         const config = marketBotService.updateConfig({
             enabled: typeof enabled === "boolean" ? enabled : undefined,
@@ -357,6 +357,7 @@ export const updateMarketBotConfig = async (req: AuthRequest, res: Response): Pr
             maxListingsPerTick: typeof maxListingsPerTick === "number" ? maxListingsPerTick : undefined,
             maxQtyPerListing: typeof maxQtyPerListing === "number" ? maxQtyPerListing : undefined,
             maxUnitPriceRatio: typeof maxUnitPriceRatio === "number" ? maxUnitPriceRatio : undefined,
+            minListingAgeMs: typeof minListingAgeMs === "number" ? minListingAgeMs : undefined,
         });
 
         res.json({ message: "Market bot config updated", config });

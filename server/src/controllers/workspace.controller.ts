@@ -17,6 +17,9 @@ interface AuthRequest extends Request {
     userId?: number;
 }
 
+// Small tolerance to avoid client/server clock drift causing false "Not ready yet".
+const READY_GRACE_MS = 5000;
+
 type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
 
 function getProviderBranchBySeedName(seedName: string): ProviderBranch | null {
@@ -192,7 +195,7 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             return { ok: false as const, reason: "not_found" as const };
         }
 
-        if (new Date() < order.completes_at) {
+        if (Date.now() + READY_GRACE_MS < order.completes_at.getTime()) {
             return { ok: false as const, reason: "not_ready" as const };
         }
 
@@ -565,7 +568,7 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
             where: {
                 user_id: req.userId!,
                 collected: false,
-                completes_at: { lte: new Date() },
+                completes_at: { lte: new Date(Date.now() + READY_GRACE_MS) },
             },
             orderBy: { completes_at: "asc" },
         });

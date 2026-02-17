@@ -79,6 +79,8 @@ export interface MarketBotTuningConfig {
     maxQtyPerListing: number;
     /** Anti-overprice guard: max accepted unit price ratio vs reference price. */
     maxUnitPriceRatio: number;
+    /** Minimum listing age before bot can buy (milliseconds). */
+    minListingAgeMs: number;
 }
 
 /**
@@ -98,6 +100,8 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     maxQtyPerListing: 5,
     // Bot ignores listings priced above 150% of reference unit price.
     maxUnitPriceRatio: 1.50,
+    // Avoid instant bot buy right after user lists an item.
+    minListingAgeMs: 60_000,
 };
 
 // ─── Provider Skill Tree ───────────────────────────────

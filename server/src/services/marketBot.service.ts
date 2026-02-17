@@ -8,6 +8,7 @@ export interface MarketBotConfig {
     maxListingsPerTick: number;
     maxQtyPerListing: number;
     maxUnitPriceRatio: number; // max allowed unit price / reference price
+    minListingAgeMs: number;
 }
 
 const DEFAULT_CONFIG: MarketBotConfig = {
@@ -17,6 +18,7 @@ const DEFAULT_CONFIG: MarketBotConfig = {
     maxListingsPerTick: MARKET_BOT_CONFIG.maxListingsPerTick,
     maxQtyPerListing: MARKET_BOT_CONFIG.maxQtyPerListing,
     maxUnitPriceRatio: MARKET_BOT_CONFIG.maxUnitPriceRatio,
+    minListingAgeMs: MARKET_BOT_CONFIG.minListingAgeMs,
 };
 
 class MarketBotService {
@@ -49,6 +51,7 @@ class MarketBotService {
             maxListingsPerTick: this.normalizeInt(next.maxListingsPerTick ?? this.config.maxListingsPerTick, 1, 20),
             maxQtyPerListing: this.normalizeInt(next.maxQtyPerListing ?? this.config.maxQtyPerListing, 1, 9999),
             maxUnitPriceRatio: this.normalizeFloat(next.maxUnitPriceRatio ?? this.config.maxUnitPriceRatio, 0.1, 10),
+            minListingAgeMs: this.normalizeInt(next.minListingAgeMs ?? this.config.minListingAgeMs, 0, 24 * 60 * 60 * 1000),
             enabled: typeof next.enabled === "boolean" ? next.enabled : this.config.enabled,
         };
 
@@ -89,6 +92,10 @@ class MarketBotService {
 
             for (let i = 0; i < targetCount; i++) {
                 const listing = shuffled[i];
+                const listingAgeMs = Date.now() - new Date(listing.created_at).getTime();
+                if (listingAgeMs < this.config.minListingAgeMs) {
+                    continue;
+                }
 
                 // Anti-overprice: bot only buys listings within configured ratio
                 const referenceUnitPrice = this.getReferenceUnitPrice(listing.item);
@@ -118,6 +125,9 @@ class MarketBotService {
 
                     const freshRefUnitPrice = this.getReferenceUnitPrice(fresh.item);
                     if (freshRefUnitPrice === null) return;
+
+                    const freshAgeMs = Date.now() - new Date(fresh.created_at).getTime();
+                    if (freshAgeMs < this.config.minListingAgeMs) return;
 
                     const freshMaxAllowed = freshRefUnitPrice * this.config.maxUnitPriceRatio;
                     if (fresh.price > freshMaxAllowed) return;
