@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import type { InventorySlot } from '../stores/gameStore';
 import { UtensilsCrossed, Package, ArrowDownAZ, Rows3 } from 'lucide-react';
@@ -19,6 +19,29 @@ const InventoryGrid = () => {
     const { inventory, equipment, eatItem, equipItem, unequipItem, organizeInventory } = useGameStore();
     const occupiedSlots = inventory.filter((s) => s.item && s.quantity > 0).length;
     const [hoveredSlot, setHoveredSlot] = useState<InventorySlot | null>(null);
+    const [confirmState, setConfirmState] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        confirmLabel: string;
+        onConfirm: (() => void) | null;
+    }>({
+        open: false,
+        title: '',
+        description: '',
+        confirmLabel: 'Confirm',
+        onConfirm: null,
+    });
+
+    const askConfirm = (title: string, description: string, confirmLabel: string, onConfirm: () => void) => {
+        setConfirmState({ open: true, title, description, confirmLabel, onConfirm });
+    };
+
+    const runConfirm = () => {
+        const fn = confirmState.onConfirm;
+        setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }));
+        fn?.();
+    };
 
     const formatEquipmentEffect = (slot: InventorySlot | null) => {
         const item = slot?.item;
@@ -50,11 +73,23 @@ const InventoryGrid = () => {
     const handleSlotClick = (slot: InventorySlot) => {
         if (!slot.item) return;
         if (slot.item.type === 'EQUIPMENT') {
-            equipItem(slot.id);
+            const rarity = getEquipmentRarityLabel(slot.equipment_rarity);
+            const effectText = formatEquipmentEffect(slot);
+            askConfirm(
+                'Confirm Equip Item',
+                `Item: ${slot.item.name} (${rarity})\nType: EQUIPMENT\nRole: ${slot.item.equipment_role ?? '-'}\nSlot: ${slot.item.equipment_slot ?? '-'}${effectText ? `\nEffect: ${effectText}` : ''}`,
+                'Equip',
+                () => equipItem(slot.id)
+            );
             return;
         }
         if (slot.item.kcal && slot.item.kcal > 0) {
-            eatItem(slot.id);
+            askConfirm(
+                'Confirm Eat Item',
+                `Item: ${slot.item.name}\nKcal: +${slot.item.kcal}${slot.item.buff_pct ? `\nBuff: ${Math.round(slot.item.buff_pct * 100)}% for ${slot.item.buff_mins ?? 0}m` : ''}`,
+                'Eat',
+                () => eatItem(slot.id)
+            );
         }
     };
 
@@ -426,6 +461,80 @@ const InventoryGrid = () => {
                     </div>
                 )}
             </div>
+
+            <AnimatePresence>
+                {confirmState.open && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            background: 'rgba(2,6,23,0.58)',
+                            zIndex: 140,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '1rem',
+                        }}
+                        onClick={() => setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }))}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.96, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.96, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '100%',
+                                maxWidth: '22rem',
+                                borderRadius: '0.75rem',
+                                border: '1px solid rgba(255,255,255,0.15)',
+                                background: 'rgba(15,23,42,0.96)',
+                                padding: '0.9rem',
+                            }}
+                        >
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)', marginBottom: '0.35rem' }}>
+                                {confirmState.title}
+                            </div>
+                            <div style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-line' }}>
+                                {confirmState.description}
+                            </div>
+                            <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end', gap: '0.45rem' }}>
+                                <button
+                                    onClick={() => setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }))}
+                                    style={{
+                                        border: '1px solid rgba(255,255,255,0.16)',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        color: 'white',
+                                        borderRadius: '0.4rem',
+                                        fontSize: '0.65rem',
+                                        padding: '0.28rem 0.55rem',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={runConfirm}
+                                    style={{
+                                        border: '1px solid rgba(99,102,241,0.45)',
+                                        background: 'rgba(99,102,241,0.2)',
+                                        color: '#e0e7ff',
+                                        borderRadius: '0.4rem',
+                                        fontSize: '0.65rem',
+                                        fontWeight: 700,
+                                        padding: '0.28rem 0.6rem',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {confirmState.confirmLabel}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 };

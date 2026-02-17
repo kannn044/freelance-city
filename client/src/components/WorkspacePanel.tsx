@@ -5,7 +5,7 @@ import { Sprout, ChefHat } from 'lucide-react';
 import { renderItemIcon } from '../lib/itemVisual';
 
 const WorkspacePanel = () => {
-    const { inventory, shopItems, recipes, recipeShop, startFarm, startCook, buyFromShop } = useGameStore();
+    const { inventory, recipes, recipeShop, startFarm, startCook } = useGameStore();
     const user = useAuthStore((s) => s.user);
 
     const canFarm = (user?.provider_level ?? 0) > 0;
@@ -13,8 +13,6 @@ const WorkspacePanel = () => {
 
     // Seeds in inventory (for providers to farm)
     const seedSlots = inventory.filter((s) => s.item?.type === 'SEED');
-    // Available seeds to buy from shop
-    const seedShopItems = shopItems.filter((i) => i.type === 'SEED');
 
     return (
         <div
@@ -60,42 +58,9 @@ const WorkspacePanel = () => {
                             <Sprout style={{ width: '0.7rem', height: '0.7rem' }} /> Farm your seeds
                         </div>
                         {seedSlots.length === 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
-                                    No seeds in inventory. Buy from shop:
-                                </p>
-                                {seedShopItems.length === 0 ? (
-                                    <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
-                                        Loading shop items...
-                                    </p>
-                                ) : (
-                                    seedShopItems.map((item) => (
-                                        <motion.button
-                                            key={item.id}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            onClick={() => buyFromShop(item.id, 1)}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '0.55rem 0.6rem',
-                                                borderRadius: '0.5rem',
-                                                border: '1px solid rgba(255,255,255,0.08)',
-                                                background: 'rgba(255,255,255,0.03)',
-                                                color: 'rgba(255,255,255,0.8)',
-                                                fontSize: '0.7rem',
-                                                cursor: 'pointer',
-                                            }}
-                                        >
-                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                                {renderItemIcon(item, 15)} {item.name}
-                                            </span>
-                                            <span style={{ color: '#fbbf24' }}>💰 {item.buy_price}</span>
-                                        </motion.button>
-                                    ))
-                                )}
-                            </div>
+                            <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
+                                No seeds in inventory.
+                            </p>
                         ) : (
                             seedSlots.map((slot) => (
                                 <motion.button
