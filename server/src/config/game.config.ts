@@ -60,9 +60,9 @@ export function getEquipmentRarityBuffMultiplier(rarity: EquipmentRarity): numbe
  * Lowering Provider values helps slow early Provider leveling pace.
  */
 export const PROVIDER_WORK_EXP_MULTIPLIER = 0.2;
-export const CHEF_WORK_EXP_MULTIPLIER = 0.8;
+export const CHEF_WORK_EXP_MULTIPLIER = 0.4;
 export const PROVIDER_MARKET_EXP_MULTIPLIER = 0.2;
-export const CHEF_MARKET_EXP_MULTIPLIER = 0.8;
+export const CHEF_MARKET_EXP_MULTIPLIER = 0.4;
 
 // ─── Market Bot ─────────────────────────────────────────
 
