@@ -2,10 +2,9 @@ import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
-import { getEffectiveNpcBuyPrice, getGamePricing } from "../services/gamePricing.service";
+import { getEffectiveNpcBuyPrice, getGameEquipmentRarityConfig, getGamePricing } from "../services/gamePricing.service";
 import {
     EQUIPMENT_RARITY_BUFF_MULTIPLIER,
-    EQUIPMENT_RARITY_DROP_RATES,
     getEquipmentRarityBuffMultiplier,
     type EquipmentRarity,
 } from "../config/game.config";
@@ -177,16 +176,16 @@ function buildEquipmentOdds(userRole: string) {
     ]);
 }
 
-function buildRarityOdds() {
-    return (Object.entries(EQUIPMENT_RARITY_DROP_RATES) as Array<[EquipmentRarity, number]>).map(([rarity, rate]) => ({
+function buildRarityOdds(dropRates: Record<EquipmentRarity, number>) {
+    return (Object.entries(dropRates) as Array<[EquipmentRarity, number]>).map(([rarity, rate]) => ({
         rarity,
         chancePct: Number((rate * 100).toFixed(4)),
         buffMultiplier: EQUIPMENT_RARITY_BUFF_MULTIPLIER[rarity],
     }));
 }
 
-function rollEquipmentRarity(): EquipmentRarity {
-    const pool = (Object.entries(EQUIPMENT_RARITY_DROP_RATES) as Array<[EquipmentRarity, number]>).map(([value, weight]) => ({
+function rollEquipmentRarity(dropRates: Record<EquipmentRarity, number>): EquipmentRarity {
+    const pool = (Object.entries(dropRates) as Array<[EquipmentRarity, number]>).map(([value, weight]) => ({
         value,
         weight,
     }));
@@ -372,6 +371,7 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
         const pricing = await getGamePricing();
+        const equipmentDropRates = await getGameEquipmentRarityConfig();
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
@@ -390,7 +390,7 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
                 note: "Final chance = role_bias x slot_weight",
             },
             odds,
-            rarityOdds: buildRarityOdds(),
+            rarityOdds: buildRarityOdds(equipmentDropRates),
         });
     } catch (error) {
         console.error("getEquipmentBoxInfo error:", error);
@@ -405,6 +405,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
         const pricing = await getGamePricing();
+        const equipmentDropRates = await getGameEquipmentRarityConfig();
         const boxPrice = pricing.equipmentBoxPrice;
         if (!user) {
             res.status(404).json({ error: "User not found" });
@@ -450,7 +451,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             return;
         }
 
-        const rolledRarity = rollEquipmentRarity();
+        const rolledRarity = rollEquipmentRarity(equipmentDropRates);
         const added = await addItemToInventory(req.userId!, Number(rolledItemId), 1, rolledRarity);
         if (!added) {
             res.status(400).json({ error: "Inventory full" });
@@ -493,7 +494,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             },
             slots,
             odds: buildEquipmentOdds(user.role),
-            rarityOdds: buildRarityOdds(),
+            rarityOdds: buildRarityOdds(equipmentDropRates),
         });
     } catch (error) {
         console.error("openEquipmentBox error:", error);

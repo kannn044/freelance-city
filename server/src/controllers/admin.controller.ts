@@ -3,6 +3,7 @@ import {
     getGamePricing,
     getGameRuntimeConfig,
     getGameTaskDecayConfig,
+    getGameTaskTimeConfig,
     updateGamePricing,
     updateGameRuntimeConfig,
 } from "../services/gamePricing.service";
@@ -78,7 +79,8 @@ export async function setPricingConfig(req: AuthRequest, res: Response): Promise
 export async function getPublicRuntimeConfig(_req: AuthRequest, res: Response): Promise<void> {
     try {
         const taskDecay = await getGameTaskDecayConfig();
-        res.json({ taskDecay });
+        const taskTime = await getGameTaskTimeConfig();
+        res.json({ taskDecay, taskTime });
     } catch (error) {
         console.error("getPublicRuntimeConfig error:", error);
         res.status(500).json({ error: "Failed to fetch runtime config" });
@@ -109,7 +111,21 @@ export async function getRuntimeConfig(req: AuthRequest, res: Response): Promise
  *   npcShopMultiplier?: number,
  *   equipmentBoxPrice?: number,
  *   farmPerPlot?: number,
- *   cookPerMenu?: number
+ *   cookPerMenu?: number,
+ *   providerTaskTimeMultiplier?: number,
+ *   chefTaskTimeMultiplier?: number,
+ *   providerWorkExpMultiplier?: number,
+ *   chefWorkExpMultiplier?: number,
+ *   providerMarketExpMultiplier?: number,
+ *   chefMarketExpMultiplier?: number,
+ *   harvestNormalRate?: number,
+ *   harvestRareRate?: number,
+ *   harvestEpicRate?: number,
+ *   harvestLegendaryRate?: number,
+ *   equipmentNormalRate?: number,
+ *   equipmentRareRate?: number,
+ *   equipmentEpicRate?: number,
+ *   equipmentLegendaryRate?: number
  * }
  */
 export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise<void> {
@@ -124,7 +140,21 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             payload.npcShopMultiplier != null
             || payload.equipmentBoxPrice != null
             || payload.farmPerPlot != null
-            || payload.cookPerMenu != null;
+            || payload.cookPerMenu != null
+            || payload.providerTaskTimeMultiplier != null
+            || payload.chefTaskTimeMultiplier != null
+            || payload.providerWorkExpMultiplier != null
+            || payload.chefWorkExpMultiplier != null
+            || payload.providerMarketExpMultiplier != null
+            || payload.chefMarketExpMultiplier != null
+            || payload.harvestNormalRate != null
+            || payload.harvestRareRate != null
+            || payload.harvestEpicRate != null
+            || payload.harvestLegendaryRate != null
+            || payload.equipmentNormalRate != null
+            || payload.equipmentRareRate != null
+            || payload.equipmentEpicRate != null
+            || payload.equipmentLegendaryRate != null;
 
         if (!hasAny) {
             res.status(400).json({ error: "No runtime config fields provided" });
@@ -136,6 +166,20 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             equipmentBoxPrice: payload.equipmentBoxPrice != null ? Number(payload.equipmentBoxPrice) : undefined,
             farmPerPlot: payload.farmPerPlot != null ? Number(payload.farmPerPlot) : undefined,
             cookPerMenu: payload.cookPerMenu != null ? Number(payload.cookPerMenu) : undefined,
+            providerTaskTimeMultiplier: payload.providerTaskTimeMultiplier != null ? Number(payload.providerTaskTimeMultiplier) : undefined,
+            chefTaskTimeMultiplier: payload.chefTaskTimeMultiplier != null ? Number(payload.chefTaskTimeMultiplier) : undefined,
+            providerWorkExpMultiplier: payload.providerWorkExpMultiplier != null ? Number(payload.providerWorkExpMultiplier) : undefined,
+            chefWorkExpMultiplier: payload.chefWorkExpMultiplier != null ? Number(payload.chefWorkExpMultiplier) : undefined,
+            providerMarketExpMultiplier: payload.providerMarketExpMultiplier != null ? Number(payload.providerMarketExpMultiplier) : undefined,
+            chefMarketExpMultiplier: payload.chefMarketExpMultiplier != null ? Number(payload.chefMarketExpMultiplier) : undefined,
+            harvestNormalRate: payload.harvestNormalRate != null ? Number(payload.harvestNormalRate) : undefined,
+            harvestRareRate: payload.harvestRareRate != null ? Number(payload.harvestRareRate) : undefined,
+            harvestEpicRate: payload.harvestEpicRate != null ? Number(payload.harvestEpicRate) : undefined,
+            harvestLegendaryRate: payload.harvestLegendaryRate != null ? Number(payload.harvestLegendaryRate) : undefined,
+            equipmentNormalRate: payload.equipmentNormalRate != null ? Number(payload.equipmentNormalRate) : undefined,
+            equipmentRareRate: payload.equipmentRareRate != null ? Number(payload.equipmentRareRate) : undefined,
+            equipmentEpicRate: payload.equipmentEpicRate != null ? Number(payload.equipmentEpicRate) : undefined,
+            equipmentLegendaryRate: payload.equipmentLegendaryRate != null ? Number(payload.equipmentLegendaryRate) : undefined,
         });
 
         res.json({

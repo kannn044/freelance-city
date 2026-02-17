@@ -3,17 +3,15 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { syncHunger } from "../services/hunger.service";
 import {
-    CHEF_WORK_EXP_MULTIPLIER,
-    HARVEST_ITEM_RARITY_DROP_RATES,
     type EquipmentRarity,
     getHungerTier,
     getLevelFromExp,
     getProviderSkillPlotCount,
     getProviderSkillTimeReduction,
     HUNGER_TIERS,
-    PROVIDER_WORK_EXP_MULTIPLIER,
 } from "../config/game.config";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
+import { getGameExpConfig, getGameHarvestRarityConfig, getGameTaskTimeConfig } from "../services/gamePricing.service";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -57,8 +55,8 @@ function isTieredHarvestItem(item: { type: string; name: string }) {
     return item.type === "RAW" && TIERED_HARVEST_ITEM_NAMES.has(item.name);
 }
 
-function rollHarvestRarity(): EquipmentRarity {
-    const entries = Object.entries(HARVEST_ITEM_RARITY_DROP_RATES) as Array<[EquipmentRarity, number]>;
+function rollHarvestRarity(dropRates: Record<EquipmentRarity, number>): EquipmentRarity {
+    const entries = Object.entries(dropRates) as Array<[EquipmentRarity, number]>;
     const totalWeight = entries.reduce((sum, [, w]) => sum + Math.max(0, Number(w) || 0), 0);
     if (totalWeight <= 0) return "NORMAL";
 
@@ -72,7 +70,10 @@ function rollHarvestRarity(): EquipmentRarity {
     return "NORMAL";
 }
 
-function splitByHarvestRarity(totalQty: number): Array<{ rarity: EquipmentRarity; qty: number }> {
+function splitByHarvestRarity(
+    totalQty: number,
+    dropRates: Record<EquipmentRarity, number>
+): Array<{ rarity: EquipmentRarity; qty: number }> {
     const tally: Record<EquipmentRarity, number> = {
         NORMAL: 0,
         RARE: 0,
@@ -81,7 +82,7 @@ function splitByHarvestRarity(totalQty: number): Array<{ rarity: EquipmentRarity
     };
 
     for (let i = 0; i < totalQty; i++) {
-        tally[rollHarvestRarity()] += 1;
+        tally[rollHarvestRarity(dropRates)] += 1;
     }
 
     return (Object.entries(tally) as Array<[EquipmentRarity, number]>)
@@ -98,7 +99,8 @@ type OutputReward = {
 async function getOrderOutput(
     order: { type: "FARM" | "COOK"; item_id: number; quantity: number },
     userId: number,
-    db: DbClient
+    db: DbClient,
+    harvestDropRates: Record<EquipmentRarity, number>
 ): Promise<OutputReward[]> {
     const effects = await getUserEquipmentEffects(userId, db);
 
@@ -119,7 +121,7 @@ async function getOrderOutput(
         }
 
         if (isTieredHarvestItem(outputItem)) {
-            return splitByHarvestRarity(outputQty).map((entry) => ({
+            return splitByHarvestRarity(outputQty, harvestDropRates).map((entry) => ({
                 outputItemId: outputItem.id,
                 outputQty: entry.qty,
                 outputRarity: entry.rarity,
@@ -255,7 +257,8 @@ async function awardOrderExp(
     orderType: "FARM" | "COOK",
     outputItem: { exp_value: number; name: string },
     outputQty: number,
-    db: DbClient
+    db: DbClient,
+    expConfig: { providerWorkExpMultiplier: number; chefWorkExpMultiplier: number }
 ) {
     const user = await db.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("User not found");
@@ -267,7 +270,9 @@ async function awardOrderExp(
     let expGained = 0;
     let levelUp = false;
     let newLevel = user[levelField];
-    const workExpMultiplier = occupation === "provider" ? PROVIDER_WORK_EXP_MULTIPLIER : CHEF_WORK_EXP_MULTIPLIER;
+    const workExpMultiplier = occupation === "provider"
+        ? expConfig.providerWorkExpMultiplier
+        : expConfig.chefWorkExpMultiplier;
 
     if (user[levelField] >= 1) {
         expGained = Math.floor(outputItem.exp_value * outputQty * 10 * workExpMultiplier);
@@ -293,6 +298,11 @@ async function awardOrderExp(
 
 async function collectSingleReadyOrder(userId: number, orderId: number) {
     return prisma.$transaction(async (tx) => {
+        const [harvestDropRates, expConfig] = await Promise.all([
+            getGameHarvestRarityConfig(),
+            getGameExpConfig(),
+        ]);
+
         const order = await tx.workOrder.findFirst({
             where: { id: orderId, user_id: userId, collected: false },
         });
@@ -305,7 +315,7 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             return { ok: false as const, reason: "not_ready" as const };
         }
 
-        const outputs = await getOrderOutput(order, userId, tx);
+        const outputs = await getOrderOutput(order, userId, tx, harvestDropRates);
         const outputItemId = outputs[0]?.outputItemId;
         const outputQty = outputs.reduce((sum, o) => sum + o.outputQty, 0);
         if (!outputItemId || outputQty <= 0) {
@@ -326,7 +336,10 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             data: { collected: true },
         });
 
-        const exp = await awardOrderExp(userId, order.type, outputItem, outputQty, tx);
+        const exp = await awardOrderExp(userId, order.type, outputItem, outputQty, tx, {
+            providerWorkExpMultiplier: expConfig.providerWorkExpMultiplier,
+            chefWorkExpMultiplier: expConfig.chefWorkExpMultiplier,
+        });
 
         return {
             ok: true as const,
@@ -368,6 +381,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
     try {
         const { type, itemId, recipeId, quantity = 1 } = req.body;
         const user = await syncHunger(req.userId!);
+        const taskTimeConfig = await getGameTaskTimeConfig();
 
         const equipmentEffects = await getUserEquipmentEffects(req.userId!);
 
@@ -434,7 +448,11 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const skillReduction = getProviderSkillTimeReduction(branchSkillLevel);
             const equipmentTimeMultiplier = 1 - equipmentEffects.farmTimeReductionPct;
             const skillTimeMultiplier = 1 - skillReduction;
-            const growMins = slot.item.grow_mins * tier.multiplier * skillTimeMultiplier * equipmentTimeMultiplier;
+            const growMins = slot.item.grow_mins
+                * tier.multiplier
+                * skillTimeMultiplier
+                * equipmentTimeMultiplier
+                * taskTimeConfig.providerTaskTimeMultiplier;
             const completesAt = new Date(Date.now() + growMins * 60 * 1000);
 
             // Reduce seed from inventory
@@ -581,7 +599,10 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             // Apply hunger penalty to cook time
             const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
             const equipmentCookMultiplier = 1 - equipmentEffects.cookTimeReductionPct;
-            const cookMins = recipe.cook_mins * tier.multiplier * equipmentCookMultiplier;
+            const cookMins = recipe.cook_mins
+                * tier.multiplier
+                * equipmentCookMultiplier
+                * taskTimeConfig.chefTaskTimeMultiplier;
 
             // Chef queue logic: run one menu at a time, FIFO by task creation order.
             const now = new Date();

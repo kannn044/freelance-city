@@ -1,10 +1,9 @@
 import { prisma } from "../lib/prisma";
 import {
     MAX_HUNGER,
-    CHEF_MARKET_EXP_MULTIPLIER,
     getLevelFromExp,
-    PROVIDER_MARKET_EXP_MULTIPLIER,
 } from "../config/game.config";
+import { getGameExpConfig } from "./gamePricing.service";
 
 /**
  * Determine which occupation should receive EXP based on item type.
@@ -25,6 +24,7 @@ export async function awardSaleExp(
     itemId: number,
     salePrice: number
 ): Promise<{ expGained: number; levelUp: boolean }> {
+    const expConfig = await getGameExpConfig();
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error("User not found");
 
@@ -35,8 +35,8 @@ export async function awardSaleExp(
     const hungerRatio = Math.max(0, user.hunger / MAX_HUNGER);
     const occupation = getOccupationForItem(item.type);
     const expMultiplier = occupation === "provider"
-        ? PROVIDER_MARKET_EXP_MULTIPLIER
-        : CHEF_MARKET_EXP_MULTIPLIER;
+        ? expConfig.providerMarketExpMultiplier
+        : expConfig.chefMarketExpMultiplier;
     const expGained = Math.floor(hungerRatio * item.exp_value * salePrice * expMultiplier);
 
     if (expGained <= 0) {
