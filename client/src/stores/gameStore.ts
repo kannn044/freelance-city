@@ -96,6 +96,11 @@ export interface Recipe {
     ingredients: { item_id: number; quantity: number; item: Item }[];
 }
 
+export interface IngredientSelection {
+    slotId: number;
+    quantity: number;
+}
+
 export interface EquipmentBoxOdds {
     role: 'PROVIDER' | 'CHEF';
     slot: 'HEAD' | 'UPPER_BODY' | 'LOWER_BODY' | 'ARM' | 'GLOVE' | 'SHOE';
@@ -177,12 +182,13 @@ interface GameState {
     buyRecipeUnlock: (recipeId: number) => Promise<void>;
     openEquipmentBox: () => Promise<EquipmentBoxOpenResult>;
     startFarm: (itemId: number, quantity: number) => Promise<void>;
-    startCook: (recipeId: number) => Promise<void>;
+    startCook: (recipeId: number, selectedIngredients?: IngredientSelection[]) => Promise<void>;
     collectWork: (orderId: number) => Promise<void>;
     collectReadyWork: () => Promise<void>;
     equipItem: (slotId: number) => Promise<void>;
     unequipItem: (slot: EquipmentSlotState['slot']) => Promise<void>;
     organizeInventory: (mode: 'combine' | 'sort-az') => Promise<void>;
+    discardItem: (slotId: number, quantity?: number) => Promise<void>;
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
     cancelListing: (listingId: number) => Promise<void>;
@@ -423,11 +429,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
-    startCook: async (recipeId) => {
+    startCook: async (recipeId, selectedIngredients = []) => {
         try {
             const { data } = await api.post('/game/workspace/start', {
                 type: 'COOK',
                 recipeId,
+                selectedIngredients,
             });
             set({ actionMessage: data.message });
             get().fetchInventory();
@@ -507,6 +514,19 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to organize inventory' });
+        }
+    },
+
+    discardItem: async (slotId, quantity) => {
+        try {
+            const { data } = await api.post('/game/inventory/discard', { slotId, quantity });
+            set({
+                inventory: data.slots ?? get().inventory,
+                equipment: data.equipment ?? get().equipment,
+                actionMessage: data.message,
+            });
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to discard item' });
         }
     },
 

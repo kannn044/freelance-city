@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import type { InventorySlot } from '../stores/gameStore';
-import { UtensilsCrossed, Package, ArrowDownAZ, Rows3 } from 'lucide-react';
+import { UtensilsCrossed, Package, ArrowDownAZ, Rows3, Trash2 } from 'lucide-react';
 import { getEquipmentImageByName, renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
@@ -16,9 +16,11 @@ const equipmentSlots = [
 ] as const;
 
 const InventoryGrid = () => {
-    const { inventory, equipment, eatItem, equipItem, unequipItem, organizeInventory } = useGameStore();
+    const { inventory, equipment, eatItem, equipItem, unequipItem, organizeInventory, discardItem } = useGameStore();
     const occupiedSlots = inventory.filter((s) => s.item && s.quantity > 0).length;
     const [hoveredSlot, setHoveredSlot] = useState<InventorySlot | null>(null);
+    const [draggingSlotId, setDraggingSlotId] = useState<number | null>(null);
+    const [isBinHovered, setIsBinHovered] = useState(false);
     const [confirmState, setConfirmState] = useState<{
         open: boolean;
         title: string;
@@ -45,6 +47,27 @@ const InventoryGrid = () => {
 
     const hasTierRarity = (slot: InventorySlot | null | undefined) => {
         return !!slot?.equipment_rarity;
+    };
+
+    const handleDropToBin = () => {
+        if (!draggingSlotId) return;
+        const slot = inventory.find((s) => s.id === draggingSlotId);
+        setDraggingSlotId(null);
+        setIsBinHovered(false);
+
+        if (!slot?.item || slot.quantity <= 0) return;
+
+        const rarityOrTier = slot.item.type === 'EQUIPMENT' ? 'Rarity' : 'Tier';
+        const rarityText = slot.equipment_rarity
+            ? `\n${rarityOrTier}: ${getEquipmentRarityLabel(slot.equipment_rarity)}`
+            : '';
+
+        askConfirm(
+            'Confirm Discard Item',
+            `Item: ${slot.item.name}${rarityText}\nQuantity: ${slot.quantity}`,
+            'Discard',
+            () => discardItem(slot.id, slot.quantity)
+        );
     };
 
     const formatEquipmentEffect = (slot: InventorySlot | null) => {
@@ -270,6 +293,38 @@ const InventoryGrid = () => {
                 >
                     <ArrowDownAZ style={{ width: '0.82rem', height: '0.82rem' }} />
                 </motion.button>
+                <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    onDragOver={(e) => {
+                        if (!draggingSlotId) return;
+                        e.preventDefault();
+                        setIsBinHovered(true);
+                    }}
+                    onDragLeave={() => setIsBinHovered(false)}
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        handleDropToBin();
+                    }}
+                    style={{
+                        width: '2rem',
+                        height: '2rem',
+                        borderRadius: '0.48rem',
+                        border: isBinHovered
+                            ? '1px solid rgba(248,113,113,0.78)'
+                            : '1px solid rgba(248,113,113,0.38)',
+                        background: isBinHovered
+                            ? 'rgba(220,38,38,0.28)'
+                            : 'rgba(220,38,38,0.12)',
+                        color: '#fecaca',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.15s ease',
+                    }}
+                    title="Drag item here to discard"
+                >
+                    <Trash2 style={{ width: '0.9rem', height: '0.9rem' }} />
+                </motion.div>
             </div>
 
             <div
@@ -291,6 +346,17 @@ const InventoryGrid = () => {
                             onClick={() => slot && handleSlotClick(slot)}
                             onMouseEnter={() => setHoveredSlot(slot && slot.item ? slot : null)}
                             onMouseLeave={() => setHoveredSlot(null)}
+                            draggable={!!hasItem}
+                            onDragStartCapture={(e) => {
+                                if (!slot?.item) return;
+                                setDraggingSlotId(slot.id);
+                                e.dataTransfer.effectAllowed = 'move';
+                                e.dataTransfer.setData('text/plain', String(slot.id));
+                            }}
+                            onDragEndCapture={() => {
+                                setDraggingSlotId(null);
+                                setIsBinHovered(false);
+                            }}
                             whileHover={hasItem ? { scale: 1.05 } : {}}
                             whileTap={hasItem ? { scale: 0.95 } : {}}
                             style={{
@@ -307,10 +373,11 @@ const InventoryGrid = () => {
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                cursor: canEat || canEquip ? 'pointer' : 'default',
+                                cursor: hasItem ? 'grab' : 'default',
                                 transition: 'all 0.2s',
                                 padding: '0.3rem',
                                 overflow: 'hidden',
+                                opacity: draggingSlotId === slot?.id ? 0.5 : 1,
                             }}
                         >
                             {hasItem ? (

@@ -9,6 +9,7 @@ import {
     getProviderSkillPlotCount,
     getProviderSkillTimeReduction,
     HUNGER_TIERS,
+    resolveCookMealRarityByPair,
 } from "../config/game.config";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 import { getGameExpConfig, getGameHarvestRarityConfig, getGameTaskTimeConfig } from "../services/gamePricing.service";
@@ -17,10 +18,59 @@ interface AuthRequest extends Request {
     userId?: number;
 }
 
+type IngredientSelectionInput = {
+    slotId: number;
+    quantity: number;
+};
+
 // Small tolerance to avoid client/server clock drift causing false "Not ready yet".
 const READY_GRACE_MS = 5000;
 
 type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
+
+let workOrderRarityColumnEnsured = false;
+
+async function ensureWorkOrderRarityColumn() {
+    if (workOrderRarityColumnEnsured) return;
+
+    const rows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'work_orders'
+          AND COLUMN_NAME = 'output_rarity'
+    `;
+
+    const exists = Number(rows[0]?.cnt ?? 0) > 0;
+    if (!exists) {
+        await prisma.$executeRawUnsafe(`
+            ALTER TABLE work_orders
+            ADD COLUMN output_rarity ENUM('NORMAL','RARE','EPIC','LEGENDARY') NULL
+        `);
+    }
+
+    workOrderRarityColumnEnsured = true;
+}
+
+async function setWorkOrderOutputRarity(orderId: number, rarity: EquipmentRarity | null, db: DbClient = prisma) {
+    await ensureWorkOrderRarityColumn();
+    await db.$executeRaw`
+        UPDATE work_orders
+        SET output_rarity = ${rarity}
+        WHERE id = ${orderId}
+    `;
+}
+
+async function getWorkOrderOutputRarity(orderId: number, db: DbClient = prisma): Promise<EquipmentRarity | null> {
+    await ensureWorkOrderRarityColumn();
+    const rows = await db.$queryRaw<Array<{ output_rarity: EquipmentRarity | null }>>`
+        SELECT output_rarity
+        FROM work_orders
+        WHERE id = ${orderId}
+        LIMIT 1
+    `;
+    return rows[0]?.output_rarity ?? null;
+}
 
 function getProviderBranchBySeedName(seedName: string): ProviderBranch | null {
     if (seedName === "Vegetable Seed") return "VEGETABLE";
@@ -97,7 +147,7 @@ type OutputReward = {
 };
 
 async function getOrderOutput(
-    order: { type: "FARM" | "COOK"; item_id: number; quantity: number },
+    order: { id: number; type: "FARM" | "COOK"; item_id: number; quantity: number },
     userId: number,
     db: DbClient,
     harvestDropRates: Record<EquipmentRarity, number>
@@ -137,9 +187,34 @@ async function getOrderOutput(
         ];
     }
 
+    const cookedItem = await db.item.findUnique({ where: { id: order.item_id } });
+    if (!cookedItem) {
+        throw new Error("Cook output item not found");
+    }
+
     let outputQty = order.quantity;
     if (effects.gourmetChance > 0 && Math.random() < effects.gourmetChance) {
         outputQty += 1;
+    }
+
+    // Chef meal rarity follows harvest drop-rate profile for consistent tier economy.
+    if (cookedItem.type === "MEAL") {
+        const hintedRarity = await getWorkOrderOutputRarity(order.id, db);
+        if (hintedRarity) {
+            return [
+                {
+                    outputItemId: cookedItem.id,
+                    outputQty,
+                    outputRarity: hintedRarity,
+                },
+            ];
+        }
+
+        return splitByHarvestRarity(outputQty, harvestDropRates).map((entry) => ({
+            outputItemId: cookedItem.id,
+            outputQty: entry.qty,
+            outputRarity: entry.rarity,
+        }));
     }
 
     return [
@@ -379,13 +454,24 @@ export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<vo
  */
 export const startWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { type, itemId, recipeId, quantity = 1 } = req.body;
+        const { type, itemId, recipeId, quantity = 1, selectedIngredients } = req.body as {
+            type: "FARM" | "COOK";
+            itemId?: number;
+            recipeId?: number;
+            quantity?: number;
+            selectedIngredients?: IngredientSelectionInput[];
+        };
         const user = await syncHunger(req.userId!);
         const taskTimeConfig = await getGameTaskTimeConfig();
 
         const equipmentEffects = await getUserEquipmentEffects(req.userId!);
 
         if (type === "FARM") {
+            if (!itemId || !Number.isInteger(Number(itemId))) {
+                res.status(400).json({ error: "itemId is required for FARM" });
+                return;
+            }
+
             // Requires Provider occupation
             if (user.provider_level < 1) {
                 res.status(403).json({ error: "You need the Provider occupation to farm" });
@@ -405,7 +491,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const slot = await prisma.inventorySlot.findFirst({
                 where: {
                     user_id: req.userId!,
-                    item_id: itemId,
+                    item_id: Number(itemId),
                     quantity: { gte: quantity },
                 },
                 include: { item: true },
@@ -473,7 +559,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 data: {
                     user_id: req.userId!,
                     type: "FARM",
-                    item_id: itemId,
+                    item_id: Number(itemId),
                     quantity,
                     completes_at: completesAt,
                 },
@@ -514,13 +600,18 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 order,
             });
         } else if (type === "COOK") {
+            if (!recipeId || !Number.isInteger(Number(recipeId))) {
+                res.status(400).json({ error: "recipeId is required for COOK" });
+                return;
+            }
+
             // Requires Chef occupation
             if (user.chef_level < 1) {
                 res.status(403).json({ error: "You need the Chef occupation to cook" });
                 return;
             }
 
-            const recipeUnlocked = await isRecipeUnlocked(req.userId!, recipeId);
+            const recipeUnlocked = await isRecipeUnlocked(req.userId!, Number(recipeId));
 
             if (!recipeUnlocked) {
                 res.status(403).json({ error: "Recipe is locked. Buy it from NPC recipe shop first" });
@@ -529,7 +620,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
             // Find recipe
             const recipe = await prisma.recipe.findUnique({
-                where: { id: recipeId },
+                where: { id: Number(recipeId) },
                 include: {
                     ingredients: { include: { item: true } },
                     output_item: true,
@@ -547,6 +638,17 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 include: { item: true },
             });
 
+            const selectedList = Array.isArray(selectedIngredients)
+                ? selectedIngredients
+                    .map((x) => ({
+                        slotId: Number(x.slotId),
+                        quantity: Math.floor(Number(x.quantity)),
+                    }))
+                    .filter((x) => Number.isInteger(x.slotId) && x.slotId > 0 && Number.isInteger(x.quantity) && x.quantity > 0)
+                : [];
+
+            const selectedMode = selectedList.length > 0;
+
             for (const ingredient of recipe.ingredients) {
                 const totalQty = userSlots
                     .filter((s) => s.item_id === ingredient.item_id)
@@ -560,38 +662,116 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 }
             }
 
-            // Deduct ingredients from inventory
-            for (let idx = 0; idx < recipe.ingredients.length; idx++) {
-                const ingredient = recipe.ingredients[idx];
-                const isSecondary = idx > 0;
-                const savedByEffect = isSecondary
-                    && equipmentEffects.cookSecondaryIngredientSaveChance > 0
-                    && Math.random() < equipmentEffects.cookSecondaryIngredientSaveChance;
+            const consumedIngredientRarities: EquipmentRarity[] = [];
 
-                if (savedByEffect) {
-                    continue;
+            if (selectedMode) {
+                const slotMap = new Map(userSlots.map((s) => [s.id, s]));
+                const requiredByItem = new Map<number, number>();
+                for (const ing of recipe.ingredients) {
+                    requiredByItem.set(ing.item_id, ing.quantity);
                 }
 
-                let remaining = ingredient.quantity;
-                for (const slot of userSlots) {
-                    if (slot.item_id !== ingredient.item_id || remaining <= 0) continue;
+                const selectedByItem = new Map<number, number>();
+                for (const pick of selectedList) {
+                    const slot = slotMap.get(pick.slotId);
+                    if (!slot || !slot.item_id) {
+                        res.status(400).json({ error: "Invalid selected ingredient slot" });
+                        return;
+                    }
+                    if (!requiredByItem.has(slot.item_id)) {
+                        res.status(400).json({ error: "Selected ingredient does not match recipe" });
+                        return;
+                    }
+                    if (slot.quantity < pick.quantity) {
+                        res.status(400).json({ error: "Selected ingredient quantity exceeds slot amount" });
+                        return;
+                    }
 
-                    const take = Math.min(slot.quantity, remaining);
-                    remaining -= take;
+                    selectedByItem.set(slot.item_id, (selectedByItem.get(slot.item_id) ?? 0) + pick.quantity);
+                }
 
-                    if (slot.quantity - take > 0) {
+                for (const [itemId, requiredQty] of requiredByItem.entries()) {
+                    const pickedQty = selectedByItem.get(itemId) ?? 0;
+                    if (pickedQty !== requiredQty) {
+                        const item = recipe.ingredients.find((r) => r.item_id === itemId)?.item;
+                        res.status(400).json({
+                            error: `Selected quantity mismatch for ${item?.name ?? `item ${itemId}`}. Need ${requiredQty}, selected ${pickedQty}`,
+                        });
+                        return;
+                    }
+                }
+
+                for (const pick of selectedList) {
+                    const slot = slotMap.get(pick.slotId)!;
+                    const rarity = ((slot as any).equipment_rarity as EquipmentRarity | null) ?? "NORMAL";
+                    for (let c = 0; c < pick.quantity; c++) {
+                        consumedIngredientRarities.push(rarity);
+                    }
+
+                    if (slot.quantity - pick.quantity > 0) {
                         await prisma.inventorySlot.update({
                             where: { id: slot.id },
-                            data: { quantity: slot.quantity - take },
+                            data: { quantity: slot.quantity - pick.quantity },
                         });
-                        slot.quantity -= take;
+                        slot.quantity -= pick.quantity;
                     } else {
                         await prisma.inventorySlot.update({
                             where: { id: slot.id },
                             data: { item_id: null, quantity: 0 },
                         });
+                        await prisma.$executeRaw`
+                            UPDATE inventory_slots
+                            SET equipment_rarity = NULL
+                            WHERE id = ${slot.id}
+                        `;
                         slot.quantity = 0;
                         slot.item_id = null;
+                    }
+                }
+            } else {
+                // Backward-compatible auto consume mode
+                for (let idx = 0; idx < recipe.ingredients.length; idx++) {
+                    const ingredient = recipe.ingredients[idx];
+                    const isSecondary = idx > 0;
+                    const savedByEffect = isSecondary
+                        && equipmentEffects.cookSecondaryIngredientSaveChance > 0
+                        && Math.random() < equipmentEffects.cookSecondaryIngredientSaveChance;
+
+                    if (savedByEffect) {
+                        continue;
+                    }
+
+                    let remaining = ingredient.quantity;
+                    for (const slot of userSlots) {
+                        if (slot.item_id !== ingredient.item_id || remaining <= 0) continue;
+
+                        const take = Math.min(slot.quantity, remaining);
+                        remaining -= take;
+
+                        const rarity = ((slot as any).equipment_rarity as EquipmentRarity | null) ?? "NORMAL";
+                        for (let c = 0; c < take; c++) {
+                            consumedIngredientRarities.push(rarity);
+                        }
+
+                        if (slot.quantity - take > 0) {
+                            await prisma.inventorySlot.update({
+                                where: { id: slot.id },
+                                data: { quantity: slot.quantity - take },
+                            });
+                            slot.quantity -= take;
+                        } else {
+                            await prisma.inventorySlot.update({
+                                where: { id: slot.id },
+                                data: { item_id: null, quantity: 0 },
+                            });
+                            await prisma.$executeRaw`
+                                UPDATE inventory_slots
+                                SET equipment_rarity = NULL
+                                WHERE id = ${slot.id}
+                            `;
+                            slot.quantity = 0;
+                            slot.item_id = null;
+                        }
                     }
                 }
             }
@@ -625,13 +805,31 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     user_id: req.userId!,
                     type: "COOK",
                     item_id: recipe.output_item_id,
-                    recipe_id: recipeId,
+                    recipe_id: Number(recipeId),
                     quantity: recipe.output_qty,
                     started_at: startsAt,
                     completes_at: completesAt,
                 },
                 include: { item: true },
             });
+
+            // Ingredient-based meal rarity rule:
+            // Rare+Rare => 50% Rare, 50% Normal (generalized to any same non-NORMAL tier ingredients).
+            if (recipe.output_item.type === "MEAL") {
+                const rank: Record<EquipmentRarity, number> = {
+                    NORMAL: 0,
+                    RARE: 1,
+                    EPIC: 2,
+                    LEGENDARY: 3,
+                };
+
+                const sorted = [...consumedIngredientRarities].sort((a, b) => rank[b] - rank[a]);
+                const first = sorted[0] ?? "NORMAL";
+                const second = sorted[1] ?? "NORMAL";
+                const outputRarity: EquipmentRarity = resolveCookMealRarityByPair(first, second);
+
+                await setWorkOrderOutputRarity(order.id, outputRarity);
+            }
 
             res.json({
                 message: startsAt.getTime() > now.getTime()

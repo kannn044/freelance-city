@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { INVENTORY_SLOTS, type EquipmentRarity } from "../config/game.config";
+import {
+    INVENTORY_SLOTS,
+    getFoodRarityBuffMultiplier,
+    type EquipmentRarity,
+} from "../config/game.config";
 import { syncHunger, applyMealEffect } from "../services/hunger.service";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 
@@ -306,6 +310,79 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
 };
 
 /**
+ * POST /game/inventory/discard — Discard item(s) from an inventory slot
+ * Body: { slotId: number, quantity?: number }
+ */
+export const discardItem = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const slotId = Number(req.body?.slotId);
+        const quantityRaw = req.body?.quantity;
+
+        if (!Number.isInteger(slotId) || slotId <= 0) {
+            res.status(400).json({ error: "Invalid slotId" });
+            return;
+        }
+
+        const slot = await prisma.inventorySlot.findFirst({
+            where: { id: slotId, user_id: req.userId! },
+            include: { item: true },
+        });
+
+        if (!slot || !slot.item || slot.quantity <= 0) {
+            res.status(400).json({ error: "No item in this slot" });
+            return;
+        }
+
+        const requestedQty = quantityRaw == null
+            ? slot.quantity
+            : Math.floor(Number(quantityRaw));
+
+        if (!Number.isFinite(requestedQty) || requestedQty <= 0) {
+            res.status(400).json({ error: "Invalid quantity" });
+            return;
+        }
+
+        if (requestedQty > slot.quantity) {
+            res.status(400).json({ error: `Cannot discard ${requestedQty}. Slot has only ${slot.quantity}.` });
+            return;
+        }
+
+        if (slot.quantity - requestedQty > 0) {
+            await prisma.inventorySlot.update({
+                where: { id: slot.id },
+                data: { quantity: slot.quantity - requestedQty },
+            });
+        } else {
+            await prisma.inventorySlot.update({
+                where: { id: slot.id },
+                data: { item_id: null, quantity: 0 },
+            });
+            await prisma.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = NULL
+                WHERE id = ${slot.id}
+            `;
+        }
+
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+        const equipment = await getEquipmentState(req.userId!);
+
+        res.json({
+            message: `Discarded ${requestedQty}x ${slot.item.name}`,
+            slots,
+            equipment,
+        });
+    } catch (error) {
+        console.error("discardItem error:", error);
+        res.status(500).json({ error: "Failed to discard item" });
+    }
+};
+
+/**
  * POST /game/equipment/equip — Equip one equipment item from inventory slot
  * Body: { slotId: number }
  */
@@ -497,11 +574,16 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
             return;
         }
 
+        const rarity = ((slot as any).equipment_rarity as EquipmentRarity | null) ?? "NORMAL";
+        const effectiveBuffPct = slot.item.type === "MEAL"
+            ? (slot.item.buff_pct ?? 0) * getFoodRarityBuffMultiplier(rarity)
+            : (slot.item.buff_pct ?? 0);
+
         // Apply meal effect
         const user = await applyMealEffect(
             req.userId!,
             slot.item.kcal,
-            slot.item.buff_pct,
+            effectiveBuffPct,
             slot.item.buff_mins
         );
 
@@ -516,6 +598,11 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
                 where: { id: slotId },
                 data: { item_id: null, quantity: 0 },
             });
+            await prisma.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = NULL
+                WHERE id = ${slotId}
+            `;
         }
 
         // Fetch updated slots

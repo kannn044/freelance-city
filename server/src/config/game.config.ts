@@ -75,6 +75,71 @@ export function getEquipmentRarityBuffMultiplier(rarity: EquipmentRarity): numbe
     return EQUIPMENT_RARITY_BUFF_MULTIPLIER[rarity] ?? 1.0;
 }
 
+/**
+ * Meal buff multiplier by rarity tier.
+ * Applied to `buff_pct` when consuming meal items.
+ */
+export const FOOD_RARITY_BUFF_MULTIPLIER: Record<EquipmentRarity, number> = {
+    NORMAL: 1.0,
+    RARE: 1.2,
+    EPIC: 1.5,
+    LEGENDARY: 2.0,
+};
+
+export function getFoodRarityBuffMultiplier(rarity: EquipmentRarity): number {
+    return FOOD_RARITY_BUFF_MULTIPLIER[rarity] ?? 1.0;
+}
+
+export interface CookRarityMixRule {
+    key: `${EquipmentRarity}+${EquipmentRarity}`;
+    outcomes: Array<{ rarity: EquipmentRarity; chance: number }>;
+}
+
+/**
+ * Chef ingredient-mix rarity rules (unordered pair; 10 total cases for 4 tiers).
+ * Chance values are weights and do not need to sum to 1.
+ */
+export const COOK_INGREDIENT_RARITY_MIX_RULES: CookRarityMixRule[] = [
+    { key: "NORMAL+NORMAL", outcomes: [{ rarity: "NORMAL", chance: 1 }] },
+    { key: "NORMAL+RARE", outcomes: [{ rarity: "NORMAL", chance: 0.7 }, { rarity: "RARE", chance: 0.3 }] },
+    { key: "NORMAL+EPIC", outcomes: [{ rarity: "NORMAL", chance: 0.8 }, { rarity: "RARE", chance: 0.2 }] },
+    { key: "NORMAL+LEGENDARY", outcomes: [{ rarity: "NORMAL", chance: 0.9 }, { rarity: "RARE", chance: 0.1 }] },
+    { key: "RARE+RARE", outcomes: [{ rarity: "RARE", chance: 0.5 }, { rarity: "NORMAL", chance: 0.5 }] },
+    { key: "RARE+EPIC", outcomes: [{ rarity: "NORMAL", chance: 0.35 }, { rarity: "RARE", chance: 0.55 }, { rarity: "EPIC", chance: 0.1 }] },
+    { key: "RARE+LEGENDARY", outcomes: [{ rarity: "NORMAL", chance: 0.35 }, { rarity: "RARE", chance: 0.6 }, { rarity: "EPIC", chance: 0.05 }] },
+    { key: "EPIC+EPIC", outcomes: [{ rarity: "NORMAL", chance: 0.25 }, { rarity: "RARE", chance: 0.35 }, { rarity: "EPIC", chance: 0.4 }] },
+    { key: "EPIC+LEGENDARY", outcomes: [{ rarity: "NORMAL", chance: 0.2 }, { rarity: "RARE", chance: 0.35 }, { rarity: "EPIC", chance: 0.45 }] },
+    { key: "LEGENDARY+LEGENDARY", outcomes: [{ rarity: "NORMAL", chance: 0.1 }, { rarity: "RARE", chance: 0.2 }, { rarity: "EPIC", chance: 0.35 }, { rarity: "LEGENDARY", chance: 0.35 }] },
+];
+
+function sortPair(a: EquipmentRarity, b: EquipmentRarity): `${EquipmentRarity}+${EquipmentRarity}` {
+    const rank: Record<EquipmentRarity, number> = {
+        NORMAL: 0,
+        RARE: 1,
+        EPIC: 2,
+        LEGENDARY: 3,
+    };
+    return rank[a] <= rank[b] ? `${a}+${b}` : `${b}+${a}`;
+}
+
+export function resolveCookMealRarityByPair(a: EquipmentRarity, b: EquipmentRarity): EquipmentRarity {
+    const key = sortPair(a, b);
+    const rule = COOK_INGREDIENT_RARITY_MIX_RULES.find((r) => r.key === key);
+    if (!rule || rule.outcomes.length === 0) return "NORMAL";
+
+    const total = rule.outcomes.reduce((sum, o) => sum + Math.max(0, o.chance), 0);
+    if (total <= 0) return "NORMAL";
+
+    let roll = Math.random() * total;
+    for (const o of rule.outcomes) {
+        const w = Math.max(0, o.chance);
+        if (roll <= w) return o.rarity;
+        roll -= w;
+    }
+
+    return rule.outcomes[rule.outcomes.length - 1].rarity;
+}
+
 // ─── EXP Balance ───────────────────────────────────────
 
 /**
