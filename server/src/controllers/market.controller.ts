@@ -2,9 +2,66 @@ import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { marketBotService } from "../services/marketBot.service";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
+import type { EquipmentRarity } from "../config/game.config";
 
 interface AuthRequest extends Request {
     userId?: number;
+}
+
+let marketListingRarityColumnEnsured = false;
+
+async function ensureMarketListingRarityColumn() {
+    if (marketListingRarityColumnEnsured) return;
+
+    const rows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'market_listings'
+          AND COLUMN_NAME = 'equipment_rarity'
+    `;
+
+    const exists = Number(rows[0]?.cnt ?? 0) > 0;
+    if (!exists) {
+        await prisma.$executeRawUnsafe(`
+            ALTER TABLE market_listings
+            ADD COLUMN equipment_rarity ENUM('NORMAL','RARE','EPIC','LEGENDARY') NULL
+        `);
+    }
+
+    marketListingRarityColumnEnsured = true;
+}
+
+async function getMarketListingRarityMap(listingIds: number[]) {
+    await ensureMarketListingRarityColumn();
+    if (listingIds.length === 0) return new Map<number, EquipmentRarity | null>();
+
+    const safeIds = listingIds.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0);
+    if (safeIds.length === 0) return new Map<number, EquipmentRarity | null>();
+
+    const rows = await prisma.$queryRawUnsafe<Array<{ id: number; equipment_rarity: EquipmentRarity | null }>>(
+        `SELECT id, equipment_rarity FROM market_listings WHERE id IN (${safeIds.join(",")})`
+    );
+
+    const map = new Map<number, EquipmentRarity | null>();
+    for (const row of rows) {
+        map.set(Number(row.id), row.equipment_rarity ?? null);
+    }
+    return map;
+}
+
+async function getMarketListingRarityById(listingId: number): Promise<EquipmentRarity | null> {
+    const map = await getMarketListingRarityMap([listingId]);
+    return map.get(listingId) ?? null;
+}
+
+async function setMarketListingRarity(listingId: number, rarity: EquipmentRarity | null) {
+    await ensureMarketListingRarityColumn();
+    await prisma.$executeRaw`
+        UPDATE market_listings
+        SET equipment_rarity = ${rarity}
+        WHERE id = ${listingId}
+    `;
 }
 
 async function placeItemInInventoryTx(
@@ -12,7 +69,8 @@ async function placeItemInInventoryTx(
     userId: number,
     itemId: number,
     quantity: number,
-    maxStack: number
+    maxStack: number,
+    rarity: EquipmentRarity | null = null,
 ): Promise<boolean> {
     const slots = await tx.inventorySlot.findMany({
         where: { user_id: userId },
@@ -20,7 +78,7 @@ async function placeItemInInventoryTx(
     });
 
     const stackCapacity = slots
-        .filter((s: any) => s.item_id === itemId)
+        .filter((s: any) => s.item_id === itemId && (s.equipment_rarity ?? null) === (rarity ?? null))
         .reduce((sum: number, s: any) => sum + Math.max(0, maxStack - s.quantity), 0);
     const emptySlots = slots.filter((s: any) => s.item_id === null).length;
     const totalCapacity = stackCapacity + emptySlots * maxStack;
@@ -31,6 +89,7 @@ async function placeItemInInventoryTx(
     for (const slot of slots) {
         if (remaining <= 0) break;
         if (slot.item_id !== itemId || slot.quantity >= maxStack) continue;
+        if ((slot.equipment_rarity ?? null) !== (rarity ?? null)) continue;
 
         const add = Math.min(maxStack - slot.quantity, remaining);
         remaining -= add;
@@ -52,6 +111,11 @@ async function placeItemInInventoryTx(
             where: { id: slot.id },
             data: { item_id: itemId, quantity: put },
         });
+        await tx.$executeRaw`
+            UPDATE inventory_slots
+            SET equipment_rarity = ${rarity}
+            WHERE id = ${slot.id}
+        `;
     }
 
     return remaining === 0;
@@ -62,6 +126,8 @@ async function placeItemInInventoryTx(
  */
 export const getListings = async (_req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureMarketListingRarityColumn();
+
         const listings = await prisma.marketListing.findMany({
             where: { status: "ACTIVE" },
             include: {
@@ -71,7 +137,14 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
             orderBy: { created_at: "desc" },
         });
 
-        res.json({ listings });
+        const rarityById = await getMarketListingRarityMap(listings.map((l) => l.id));
+
+        const payload = listings.map((l) => ({
+            ...l,
+            equipment_rarity: rarityById.get(l.id) ?? null,
+        }));
+
+        res.json({ listings: payload });
     } catch (error) {
         console.error("getListings error:", error);
         res.status(500).json({ error: "Failed to fetch listings" });
@@ -83,6 +156,8 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
  */
 export const getSalesHistory = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureMarketListingRarityColumn();
+
         const sales = await prisma.marketListing.findMany({
             where: {
                 seller_id: req.userId!,
@@ -98,6 +173,8 @@ export const getSalesHistory = async (req: AuthRequest, res: Response): Promise<
             take: 100,
         });
 
+        const rarityById = await getMarketListingRarityMap(sales.map((s) => s.id));
+
         const history = sales.map((sale) => ({
             id: sale.id,
             item_id: sale.item_id,
@@ -105,6 +182,7 @@ export const getSalesHistory = async (req: AuthRequest, res: Response): Promise<
             price: sale.price,
             sold_at: sale.sold_at,
             item: sale.item,
+            equipment_rarity: rarityById.get(sale.id) ?? null,
             buyer: sale.buyer,
             buyer_name: sale.buyer?.email?.split("@")[0] ?? "Market Bot",
             total: sale.quantity * sale.price,
@@ -123,6 +201,8 @@ export const getSalesHistory = async (req: AuthRequest, res: Response): Promise<
  */
 export const createListing = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureMarketListingRarityColumn();
+
         const { slotId, quantity, price } = req.body;
 
         if (!slotId || !quantity || !price || quantity <= 0 || price <= 0) {
@@ -140,6 +220,8 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
+        const listingRarity = (slot as any).equipment_rarity ?? null;
+
         // Deduct from inventory
         if (slot.quantity > quantity) {
             await prisma.inventorySlot.update({
@@ -151,6 +233,11 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
                 where: { id: slotId },
                 data: { item_id: null, quantity: 0 },
             });
+            await prisma.$executeRaw`
+                UPDATE inventory_slots
+                SET equipment_rarity = NULL
+                WHERE id = ${slotId}
+            `;
         }
 
         // Create listing (price is unit price)
@@ -164,6 +251,8 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
             include: { item: true },
         });
 
+        await setMarketListingRarity(listing.id, listingRarity);
+
         const totalValue = quantity * price;
 
         // Get updated user for response
@@ -173,7 +262,10 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
 
         res.json({
             message,
-            listing,
+            listing: {
+                ...listing,
+                equipment_rarity: listingRarity,
+            },
             expGained: 0,
             levelUp: false,
             user: {
@@ -200,6 +292,8 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
  */
 export const buyListing = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureMarketListingRarityColumn();
+
         if (typeof req.params.listingId !== 'string') {
             res.status(400).json({ error: "Invalid listing ID" });
             return;
@@ -215,6 +309,8 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
             res.status(404).json({ error: "Listing not found or already sold" });
             return;
         }
+
+        const listingRarity = await getMarketListingRarityById(listing.id);
 
         if (listing.seller_id === req.userId!) {
             res.status(400).json({ error: "You cannot buy your own listing" });
@@ -251,7 +347,8 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
                 req.userId!,
                 listing.item_id,
                 requestedQty,
-                effectiveMaxStack
+                effectiveMaxStack,
+                listingRarity
             );
 
             if (!placed) {
@@ -296,6 +393,26 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
                         sold_at: new Date(),
                     },
                 });
+
+                const soldRows = await tx.marketListing.findMany({
+                    where: {
+                        seller_id: listing.seller_id,
+                        buyer_id: req.userId!,
+                        item_id: listing.item_id,
+                        quantity: requestedQty,
+                        price: unitPrice,
+                        status: "SOLD",
+                    },
+                    orderBy: { id: "desc" },
+                    take: 1,
+                });
+                if (soldRows[0]) {
+                    await tx.$executeRaw`
+                        UPDATE market_listings
+                        SET equipment_rarity = ${listingRarity}
+                        WHERE id = ${soldRows[0].id}
+                    `;
+                }
             }
         });
 
@@ -330,6 +447,8 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
  */
 export const cancelListing = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureMarketListingRarityColumn();
+
         if (typeof req.params.listingId !== "string") {
             res.status(400).json({ error: "Invalid listing ID" });
             return;
@@ -351,6 +470,8 @@ export const cancelListing = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
+        const listingRarity = await getMarketListingRarityById(listing.id);
+
         await prisma.$transaction(async (tx) => {
             const effects = await getUserEquipmentEffects(req.userId!, tx);
             const effectiveMaxStack = getEffectiveMaxStack(listing.item.type, listing.item.max_stack, effects);
@@ -360,7 +481,8 @@ export const cancelListing = async (req: AuthRequest, res: Response): Promise<vo
                 req.userId!,
                 listing.item_id,
                 listing.quantity,
-                effectiveMaxStack
+                effectiveMaxStack,
+                listingRarity
             );
 
             if (!placed) {

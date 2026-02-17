@@ -30,6 +30,17 @@ export const HUNGER_TASK_DECAY_PER_SEC = {
 } as const;
 
 /**
+ * Harvest material rarity drop weights.
+ * Used for farm-produced RAW materials (Vegetable, Chicken Meat, Beef Meat).
+ */
+export const HARVEST_ITEM_RARITY_DROP_RATES: Record<EquipmentRarity, number> = {
+    NORMAL: 80,
+    RARE: 28,
+    EPIC: 1.9,
+    LEGENDARY: 0.1,
+};
+
+/**
  * Initial total inventory slots for each user.
  */
 export const INVENTORY_SLOTS = 8;

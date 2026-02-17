@@ -140,7 +140,7 @@ const MarketPanel = () => {
         const extraCount = newSales.length - 1;
         const extraText = extraCount > 0 ? ` (+${extraCount} more)` : '';
         setActionMessage(
-            `🔔 ${newest.buyer_name} bought ${newest.quantity}x ${newest.item.name} for ${newest.total} credits${extraText}`
+            `🔔 ${newest.buyer_name} bought ${newest.quantity}x ${newest.item.name}${formatTierSuffix(newest.equipment_rarity)} for ${newest.total} credits${extraText}`
         );
     }, [tab, salesHistory, setActionMessage]);
 
@@ -159,6 +159,9 @@ const MarketPanel = () => {
         setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }));
         fn?.();
     };
+
+    const formatTierSuffix = (rarity?: string | null) => (rarity ? ` (${getEquipmentRarityLabel(rarity)})` : '');
+    const getTierColor = (rarity?: string | null) => (rarity ? getEquipmentRarityColor(rarity) : 'rgba(255,255,255,0.92)');
 
     const formatEquipmentStatus = (
         effectKey?: string | null,
@@ -367,7 +370,9 @@ const MarketPanel = () => {
                                     {selectedSellSlot?.item ? (
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
                                             {renderItemIcon(selectedSellSlot.item, 16)}
-                                            <span>{selectedSellSlot.item.name} (x{selectedSellSlot.quantity})</span>
+                                            <span style={{ color: getTierColor(selectedSellSlot.equipment_rarity) }}>
+                                                {selectedSellSlot.item.name}{formatTierSuffix(selectedSellSlot.equipment_rarity)} (x{selectedSellSlot.quantity})
+                                            </span>
                                         </span>
                                     ) : (
                                         <span style={{ color: 'rgba(255,255,255,0.7)' }}>Select item...</span>
@@ -423,7 +428,9 @@ const MarketPanel = () => {
                                                     >
                                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
                                                             {s.item ? renderItemIcon(s.item, 16) : null}
-                                                            <span>{s.item?.name}</span>
+                                                            <span style={{ color: getTierColor(s.equipment_rarity) }}>
+                                                                {s.item?.name}{formatTierSuffix(s.equipment_rarity)}
+                                                            </span>
                                                         </span>
                                                         <span style={{ color: 'rgba(255,255,255,0.65)' }}>x{s.quantity}</span>
                                                     </button>
@@ -547,8 +554,8 @@ const MarketPanel = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                         {renderItemIcon(listing.item, 16)}
                                         <div>
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
-                                                {listing.quantity}x {listing.item.name}
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: getTierColor(listing.equipment_rarity) }}>
+                                                {listing.quantity}x {listing.item.name}{formatTierSuffix(listing.equipment_rarity)}
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.35)' }}>
                                                 by {listing.seller.email.split('@')[0]}
@@ -591,7 +598,7 @@ const MarketPanel = () => {
                                                 );
                                                 askConfirm(
                                                     'Confirm Purchase',
-                                                    `Buy ${qty}x ${listing.item.name} for ${qty * listing.price} credits?\n(Unit: ${listing.price})`,
+                                                    `Buy ${qty}x ${listing.item.name}${formatTierSuffix(listing.equipment_rarity)} for ${qty * listing.price} credits?\n(Unit: ${listing.price})`,
                                                     'Buy',
                                                     () => buyListing(listing.id, qty)
                                                 );
@@ -658,8 +665,8 @@ const MarketPanel = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                         {renderItemIcon(listing.item, 16)}
                                         <div>
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
-                                                {listing.quantity}x {listing.item.name}
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: getTierColor(listing.equipment_rarity) }}>
+                                                {listing.quantity}x {listing.item.name}{formatTierSuffix(listing.equipment_rarity)}
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
                                                 Your listing
@@ -678,7 +685,7 @@ const MarketPanel = () => {
                                         onClick={() =>
                                             askConfirm(
                                                 'Confirm Cancel Listing',
-                                                `Cancel ${listing.quantity}x ${listing.item.name}?\nItem will return to your inventory only if space is available.`,
+                                                `Cancel ${listing.quantity}x ${listing.item.name}${formatTierSuffix(listing.equipment_rarity)}?\nItem will return to your inventory only if space is available.`,
                                                 'Cancel Listing',
                                                 () => cancelListing(listing.id)
                                             )
@@ -746,8 +753,8 @@ const MarketPanel = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                         {renderItemIcon(sale.item, 16)}
                                         <div>
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
-                                                {sale.quantity}x {sale.item.name}
+                                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: getTierColor(sale.equipment_rarity) }}>
+                                                {sale.quantity}x {sale.item.name}{formatTierSuffix(sale.equipment_rarity)}
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
                                                 Buyer: {sale.buyer_name} • {formatSoldTime(sale.sold_at)}

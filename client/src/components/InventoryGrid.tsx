@@ -43,6 +43,10 @@ const InventoryGrid = () => {
         fn?.();
     };
 
+    const hasTierRarity = (slot: InventorySlot | null | undefined) => {
+        return !!slot?.equipment_rarity;
+    };
+
     const formatEquipmentEffect = (slot: InventorySlot | null) => {
         const item = slot?.item;
         if (!item || item.type !== 'EQUIPMENT') return null;
@@ -84,9 +88,10 @@ const InventoryGrid = () => {
             return;
         }
         if (slot.item.kcal && slot.item.kcal > 0) {
+            const rarityText = hasTierRarity(slot) ? `\nTier: ${getEquipmentRarityLabel(slot.equipment_rarity)}` : '';
             askConfirm(
                 'Confirm Eat Item',
-                `Item: ${slot.item.name}\nKcal: +${slot.item.kcal}${slot.item.buff_pct ? `\nBuff: ${Math.round(slot.item.buff_pct * 100)}% for ${slot.item.buff_mins ?? 0}m` : ''}`,
+                `Item: ${slot.item.name}${rarityText}\nKcal: +${slot.item.kcal}${slot.item.buff_pct ? `\nBuff: ${Math.round(slot.item.buff_pct * 100)}% for ${slot.item.buff_mins ?? 0}m` : ''}`,
                 'Eat',
                 () => eatItem(slot.id)
             );
@@ -316,10 +321,9 @@ const InventoryGrid = () => {
                                     <span
                                         style={{
                                             fontSize: '0.6rem',
-                                            color:
-                                                hasItem.type === 'EQUIPMENT'
-                                                    ? getEquipmentRarityColor(slot?.equipment_rarity)
-                                                    : 'rgba(255,255,255,0.6)',
+                                            color: slot?.equipment_rarity
+                                                ? getEquipmentRarityColor(slot.equipment_rarity)
+                                                : 'rgba(255,255,255,0.6)',
                                             marginTop: '0.2rem',
                                             textAlign: 'center',
                                             lineHeight: 1.2,
@@ -329,8 +333,8 @@ const InventoryGrid = () => {
                                             whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {hasItem.type === 'EQUIPMENT'
-                                            ? `${hasItem.name} (${getEquipmentRarityLabel(slot?.equipment_rarity)})`
+                                        {slot?.equipment_rarity
+                                            ? `${hasItem.name} (${getEquipmentRarityLabel(slot.equipment_rarity)})`
                                             : hasItem.name}
                                     </span>
                                     {/* Quantity badge */}
@@ -418,12 +422,14 @@ const InventoryGrid = () => {
                                     fontSize: '0.72rem',
                                     fontWeight: 700,
                                     color:
-                                        hoveredSlot.item.type === 'EQUIPMENT'
+                                        hoveredSlot.equipment_rarity
                                             ? getEquipmentRarityColor(hoveredSlot.equipment_rarity)
                                             : 'rgba(255,255,255,0.9)',
                                 }}
                             >
-                                {hoveredSlot.item.name}
+                                {hoveredSlot.equipment_rarity
+                                    ? `${hoveredSlot.item.name} (${getEquipmentRarityLabel(hoveredSlot.equipment_rarity)})`
+                                    : hoveredSlot.item.name}
                             </span>
                         </div>
                         <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.45 }}>
@@ -451,6 +457,11 @@ const InventoryGrid = () => {
                                             Effect: {formatEquipmentEffect(hoveredSlot)}
                                         </>
                                     ) : null}
+                                </>
+                            ) : hoveredSlot.equipment_rarity ? (
+                                <>
+                                    <br />
+                                    Tier: {getEquipmentRarityLabel(hoveredSlot.equipment_rarity)}
                                 </>
                             ) : null}
                         </div>

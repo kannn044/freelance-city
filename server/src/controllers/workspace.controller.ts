@@ -4,6 +4,8 @@ import { prisma } from "../lib/prisma";
 import { syncHunger } from "../services/hunger.service";
 import {
     CHEF_WORK_EXP_MULTIPLIER,
+    HARVEST_ITEM_RARITY_DROP_RATES,
+    type EquipmentRarity,
     getHungerTier,
     getLevelFromExp,
     getProviderSkillPlotCount,
@@ -49,11 +51,55 @@ function applyTierReduction(baseHunger: number, tierReduction: number) {
     return HUNGER_TIERS[reducedIdx];
 }
 
+const TIERED_HARVEST_ITEM_NAMES = new Set(["Vegetable", "Chicken Meat", "Beef Meat"]);
+
+function isTieredHarvestItem(item: { type: string; name: string }) {
+    return item.type === "RAW" && TIERED_HARVEST_ITEM_NAMES.has(item.name);
+}
+
+function rollHarvestRarity(): EquipmentRarity {
+    const entries = Object.entries(HARVEST_ITEM_RARITY_DROP_RATES) as Array<[EquipmentRarity, number]>;
+    const totalWeight = entries.reduce((sum, [, w]) => sum + Math.max(0, Number(w) || 0), 0);
+    if (totalWeight <= 0) return "NORMAL";
+
+    let cursor = Math.random() * totalWeight;
+    for (const [rarity, weight] of entries) {
+        const w = Math.max(0, Number(weight) || 0);
+        if (cursor <= w) return rarity;
+        cursor -= w;
+    }
+
+    return "NORMAL";
+}
+
+function splitByHarvestRarity(totalQty: number): Array<{ rarity: EquipmentRarity; qty: number }> {
+    const tally: Record<EquipmentRarity, number> = {
+        NORMAL: 0,
+        RARE: 0,
+        EPIC: 0,
+        LEGENDARY: 0,
+    };
+
+    for (let i = 0; i < totalQty; i++) {
+        tally[rollHarvestRarity()] += 1;
+    }
+
+    return (Object.entries(tally) as Array<[EquipmentRarity, number]>)
+        .filter(([, qty]) => qty > 0)
+        .map(([rarity, qty]) => ({ rarity, qty }));
+}
+
+type OutputReward = {
+    outputItemId: number;
+    outputQty: number;
+    outputRarity: EquipmentRarity | null;
+};
+
 async function getOrderOutput(
     order: { type: "FARM" | "COOK"; item_id: number; quantity: number },
     userId: number,
     db: DbClient
-) {
+): Promise<OutputReward[]> {
     const effects = await getUserEquipmentEffects(userId, db);
 
     if (order.type === "FARM") {
@@ -67,10 +113,26 @@ async function getOrderOutput(
             outputQty *= 2;
         }
 
-        return {
-            outputItemId: seedItem.yield_item_id,
-            outputQty,
-        };
+        const outputItem = await db.item.findUnique({ where: { id: seedItem.yield_item_id } });
+        if (!outputItem) {
+            throw new Error("Output item not found");
+        }
+
+        if (isTieredHarvestItem(outputItem)) {
+            return splitByHarvestRarity(outputQty).map((entry) => ({
+                outputItemId: outputItem.id,
+                outputQty: entry.qty,
+                outputRarity: entry.rarity,
+            }));
+        }
+
+        return [
+            {
+                outputItemId: seedItem.yield_item_id,
+                outputQty,
+                outputRarity: null,
+            },
+        ];
     }
 
     let outputQty = order.quantity;
@@ -78,20 +140,22 @@ async function getOrderOutput(
         outputQty += 1;
     }
 
-    return {
-        outputItemId: order.item_id,
-        outputQty,
-    };
+    return [
+        {
+            outputItemId: order.item_id,
+            outputQty,
+            outputRarity: null,
+        },
+    ];
 }
 
 async function placeOutputInInventory(
     userId: number,
-    outputItemId: number,
-    outputQty: number,
+    outputs: OutputReward[],
     db: DbClient
 ): Promise<boolean> {
-    const outputItem = await db.item.findUnique({ where: { id: outputItemId } });
-    if (!outputItem) throw new Error("Output item not found");
+    if (outputs.length === 0) return true;
+
     const effects = await getUserEquipmentEffects(userId, db);
 
     const slots = await db.inventorySlot.findMany({
@@ -99,49 +163,91 @@ async function placeOutputInInventory(
         orderBy: { slot: "asc" },
     });
 
-    const maxStack = getEffectiveMaxStack(outputItem.type, outputItem.max_stack, effects);
-    const stackCapacity = slots
-        .filter((s) => s.item_id === outputItemId)
-        .reduce((sum, s) => sum + Math.max(0, maxStack - s.quantity), 0);
-    const emptySlots = slots.filter((s) => s.item_id === null).length;
-    const totalCapacity = stackCapacity + emptySlots * maxStack;
-
-    if (totalCapacity < outputQty) return false;
-
-    let remaining = outputQty;
-
-    // Fill existing stacks first
-    for (const slot of slots) {
-        if (remaining <= 0) break;
-        if (slot.item_id !== outputItemId) continue;
-
-        const canAdd = Math.max(0, maxStack - slot.quantity);
-        if (canAdd <= 0) continue;
-
-        const add = Math.min(canAdd, remaining);
-        remaining -= add;
-
-        await db.inventorySlot.update({
-            where: { id: slot.id },
-            data: { quantity: slot.quantity + add },
-        });
+    const uniqueItemIds = Array.from(new Set(outputs.map((o) => o.outputItemId)));
+    const itemMap = new Map<number, { id: number; type: string; max_stack: number }>();
+    for (const itemId of uniqueItemIds) {
+        const item = await db.item.findUnique({ where: { id: itemId } });
+        if (!item) throw new Error("Output item not found");
+        itemMap.set(itemId, { id: item.id, type: item.type, max_stack: item.max_stack });
     }
 
-    // Use empty slots
-    for (const slot of slots) {
-        if (remaining <= 0) break;
-        if (slot.item_id !== null) continue;
+    const draftSlots = slots.map((s) => ({
+        id: s.id,
+        item_id: s.item_id,
+        quantity: s.quantity,
+        equipment_rarity: (s as any).equipment_rarity ?? null,
+    }));
 
-        const put = Math.min(maxStack, remaining);
-        remaining -= put;
+    for (const output of outputs) {
+        if (output.outputQty <= 0) continue;
+        const outputItem = itemMap.get(output.outputItemId);
+        if (!outputItem) throw new Error("Output item not found");
 
-        await db.inventorySlot.update({
-            where: { id: slot.id },
-            data: { item_id: outputItemId, quantity: put },
-        });
+        const maxStack = getEffectiveMaxStack(outputItem.type as any, outputItem.max_stack, effects);
+        const stackCapacity = draftSlots
+            .filter((s) => s.item_id === output.outputItemId && (s.equipment_rarity ?? null) === (output.outputRarity ?? null))
+            .reduce((sum, s) => sum + Math.max(0, maxStack - s.quantity), 0);
+        const emptySlots = draftSlots.filter((s) => s.item_id === null).length;
+        const totalCapacity = stackCapacity + emptySlots * maxStack;
+
+        if (totalCapacity < output.outputQty) return false;
+
+        let remaining = output.outputQty;
+
+        for (const slot of draftSlots) {
+            if (remaining <= 0) break;
+            if (slot.item_id !== output.outputItemId) continue;
+            if ((slot.equipment_rarity ?? null) !== (output.outputRarity ?? null)) continue;
+
+            const canAdd = Math.max(0, maxStack - slot.quantity);
+            if (canAdd <= 0) continue;
+
+            const add = Math.min(canAdd, remaining);
+            remaining -= add;
+            slot.quantity += add;
+        }
+
+        for (const slot of draftSlots) {
+            if (remaining <= 0) break;
+            if (slot.item_id !== null) continue;
+
+            const put = Math.min(maxStack, remaining);
+            remaining -= put;
+            slot.item_id = output.outputItemId;
+            slot.quantity = put;
+            slot.equipment_rarity = output.outputRarity;
+        }
     }
 
-    return remaining === 0;
+    for (let i = 0; i < slots.length; i++) {
+        const prev = slots[i];
+        const next = draftSlots[i];
+        const prevRarity = (prev as any).equipment_rarity ?? null;
+        const nextRarity = next.equipment_rarity ?? null;
+
+        if (
+            prev.item_id === next.item_id
+            && prev.quantity === next.quantity
+            && prevRarity === nextRarity
+        ) {
+            continue;
+        }
+
+        await db.inventorySlot.update({
+            where: { id: prev.id },
+            data: {
+                item_id: next.item_id,
+                quantity: next.quantity,
+            },
+        });
+        await db.$executeRaw`
+            UPDATE inventory_slots
+            SET equipment_rarity = ${nextRarity}
+            WHERE id = ${prev.id}
+        `;
+    }
+
+    return true;
 }
 
 async function awardOrderExp(
@@ -199,13 +305,18 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             return { ok: false as const, reason: "not_ready" as const };
         }
 
-        const { outputItemId, outputQty } = await getOrderOutput(order, userId, tx);
+        const outputs = await getOrderOutput(order, userId, tx);
+        const outputItemId = outputs[0]?.outputItemId;
+        const outputQty = outputs.reduce((sum, o) => sum + o.outputQty, 0);
+        if (!outputItemId || outputQty <= 0) {
+            return { ok: false as const, reason: "output_missing" as const };
+        }
         const outputItem = await tx.item.findUnique({ where: { id: outputItemId } });
         if (!outputItem) {
             return { ok: false as const, reason: "output_missing" as const };
         }
 
-        const placed = await placeOutputInInventory(userId, outputItemId, outputQty, tx);
+        const placed = await placeOutputInInventory(userId, outputs, tx);
         if (!placed) {
             return { ok: false as const, reason: "inventory_full" as const, itemName: outputItem.name, qty: outputQty };
         }

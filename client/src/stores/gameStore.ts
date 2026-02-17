@@ -67,6 +67,7 @@ export interface MarketListing {
     price: number;
     status: string;
     created_at: string;
+    equipment_rarity?: EquipmentRarity | null;
     item: Item;
     seller: { id: number; email: string; role: string };
 }
@@ -79,6 +80,7 @@ export interface SaleHistoryEntry {
     sold_at: string | null;
     total: number;
     buyer_name: string;
+    equipment_rarity?: EquipmentRarity | null;
     item: Item;
     buyer?: { id: number; email: string; role: string } | null;
 }
