@@ -173,6 +173,7 @@ Create `server/.env` in your deploy directory:
 ```env
 DATABASE_URL="mysql://fc_user:strong_password@localhost:3306/freelance_city"
 JWT_SECRET="replace-with-strong-secret"
+ADMIN_SECRET="replace-with-admin-secret"
 PORT=4000
 ```
 
@@ -290,6 +291,15 @@ sudo systemctl restart nginx
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d your-domain.com
 ```
+
+4. **Runtime shop pricing (no player-data impact)**
+   - You can adjust NPC Shop and Equipment Box prices at runtime without touching existing user inventory/progress.
+   - Requires `ADMIN_SECRET` in backend env and authenticated request with header `x-admin-key: <ADMIN_SECRET>`.
+   - Endpoints:
+     - `GET /game/admin/pricing`
+     - `POST /game/admin/pricing` with body:
+       - `npcShopMultiplier` (number, e.g. `1.1` = +10%)
+       - `equipmentBoxPrice` (integer, e.g. `500`)
 
 ---
 

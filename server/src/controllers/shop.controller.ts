@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
+import { getEffectiveNpcBuyPrice, getGamePricing } from "../services/gamePricing.service";
 import {
     EQUIPMENT_RARITY_BUFF_MULTIPLIER,
     EQUIPMENT_RARITY_DROP_RATES,
@@ -13,7 +14,6 @@ interface AuthRequest extends Request {
     userId?: number;
 }
 
-const EQUIPMENT_BOX_PRICE = 420;
 const SLOT_WEIGHTS: Record<string, number> = {
     HEAD: 14,
     UPPER_BODY: 18,
@@ -222,6 +222,7 @@ async function hasRecipeUnlocked(userId: number, recipeId: number): Promise<bool
 export const getShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const pricing = await getGamePricing();
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
@@ -249,7 +250,12 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
             })
             : [];
 
-        res.json({ items });
+        const pricedItems = items.map((item) => ({
+            ...item,
+            buy_price: getEffectiveNpcBuyPrice(item.buy_price, pricing.npcShopMultiplier),
+        }));
+
+        res.json({ items: pricedItems });
     } catch (error) {
         console.error("getShop error:", error);
         res.status(500).json({ error: "Failed to fetch shop" });
@@ -263,6 +269,7 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
 export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { itemId, quantity = 1 } = req.body;
+        const pricing = await getGamePricing();
 
         if (!itemId || quantity <= 0) {
             res.status(400).json({ error: "Invalid purchase parameters" });
@@ -295,7 +302,12 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
 
-        const totalCost = item.buy_price * quantity;
+        const effectiveUnitPrice = getEffectiveNpcBuyPrice(item.buy_price, pricing.npcShopMultiplier);
+        if (!effectiveUnitPrice) {
+            res.status(400).json({ error: "Item not available in shop" });
+            return;
+        }
+        const totalCost = effectiveUnitPrice * quantity;
 
         if (user.money < totalCost) {
             res.status(400).json({ error: `Not enough credits. Need ${totalCost}, have ${user.money}` });
@@ -359,6 +371,7 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
 export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const pricing = await getGamePricing();
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
@@ -368,7 +381,7 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
         res.json({
             box: {
                 name: "Equipment Box",
-                price: EQUIPMENT_BOX_PRICE,
+                price: pricing.equipmentBoxPrice,
                 description: "Open 1 box to receive 1 random equipment item.",
             },
             formula: {
@@ -391,13 +404,15 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
 export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const pricing = await getGamePricing();
+        const boxPrice = pricing.equipmentBoxPrice;
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
         }
 
-        if (user.money < EQUIPMENT_BOX_PRICE) {
-            res.status(400).json({ error: `Not enough credits. Need ${EQUIPMENT_BOX_PRICE}, have ${user.money}` });
+        if (user.money < boxPrice) {
+            res.status(400).json({ error: `Not enough credits. Need ${boxPrice}, have ${user.money}` });
             return;
         }
 
@@ -444,7 +459,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
 
         await prisma.user.update({
             where: { id: req.userId! },
-            data: { money: { decrement: EQUIPMENT_BOX_PRICE } },
+            data: { money: { decrement: boxPrice } },
         });
 
         const rolledItem = await prisma.item.findUnique({ where: { id: Number(rolledItemId) } });
@@ -457,7 +472,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
 
         res.json({
             message: `Opened Equipment Box and got ${rolledRarity} ${rolledItem?.name ?? "equipment"}!`,
-            boxPrice: EQUIPMENT_BOX_PRICE,
+            boxPrice,
             rolled: {
                 role: rolledRole,
                 slot: rolledSlot,
