@@ -193,7 +193,7 @@ npm ci
 npm run build
 ```
 
-## 5) Run backend with PM2
+## 5) Run backend + frontend with PM2
 
 ```bash
 sudo npm install -g pm2
@@ -203,14 +203,23 @@ pm2 save
 pm2 startup
 ```
 
+This starts:
+
+- `freelance-city-server` on port `4000`
+- `freelance-city-client` via `vite preview` on port `4173`
+
 Quick PM2 operations:
 
 ```bash
 pm2 status
 pm2 logs freelance-city-server
+pm2 logs freelance-city-client
 pm2 restart freelance-city-server
+pm2 restart freelance-city-client
 pm2 stop freelance-city-server
+pm2 stop freelance-city-client
 pm2 delete freelance-city-server
+pm2 delete freelance-city-client
 ```
 
 After new deployment/build:
@@ -219,8 +228,12 @@ After new deployment/build:
 cd /path/to/freelance-city/server
 npm ci
 npm run build
+cd ../client
+npm ci
+npm run build
 cd ..
 pm2 restart freelance-city-server
+pm2 restart freelance-city-client
 ```
 
 ## 6) Serve frontend with Nginx
