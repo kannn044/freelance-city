@@ -21,7 +21,7 @@ import {
 	getEquipmentBoxInfo,
 	openEquipmentBox,
 } from "../controllers/shop.controller";
-import { getProviderSkills, upgradeProviderSkill } from "../controllers/skills.controller";
+import { getProviderSkills, upgradeProviderSkill, getChefSkills, upgradeChefSkill } from "../controllers/skills.controller";
 import {
 	getPricingConfig,
 	setPricingConfig,
@@ -53,6 +53,8 @@ router.post("/workspace/cancel/:orderId", cancelWork);
 // ─── Skills ──────────────────────────────────────────
 router.get("/skills/provider", getProviderSkills);
 router.post("/skills/provider/upgrade", upgradeProviderSkill);
+router.get("/skills/chef", getChefSkills);
+router.post("/skills/chef/upgrade", upgradeChefSkill);
 
 // ─── Market ──────────────────────────────────────────
 router.get("/market", getListings);

@@ -4,6 +4,10 @@ import { prisma } from "../lib/prisma";
 import { syncHunger } from "../services/hunger.service";
 import {
     type EquipmentRarity,
+    getChefSkillConcurrentCookSlots,
+    getChefSkillCookTimeReduction,
+    getChefSkillPrimarySaveChance,
+    getChefSkillSecondarySaveChance,
     getHungerTier,
     getLevelFromExp,
     getProviderSkillPlotCount,
@@ -29,6 +33,7 @@ const READY_GRACE_MS = 5000;
 type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
 
 let workOrderRarityColumnEnsured = false;
+let chefSkillColumnsEnsured = false;
 
 async function ensureWorkOrderRarityColumn() {
     if (workOrderRarityColumnEnsured) return;
@@ -50,6 +55,67 @@ async function ensureWorkOrderRarityColumn() {
     }
 
     workOrderRarityColumnEnsured = true;
+}
+
+async function ensureChefSkillColumns(db: DbClient = prisma) {
+    if (chefSkillColumnsEnsured) return;
+
+    const columns = [
+        "chef_skill_prep",
+        "chef_skill_economy",
+        "chef_skill_market",
+    ];
+
+    for (const column of columns) {
+        const rows = await db.$queryRaw<Array<{ cnt: number | bigint }>>`
+            SELECT COUNT(*) as cnt
+            FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'users'
+              AND COLUMN_NAME = ${column}
+        `;
+
+        const exists = Number(rows[0]?.cnt ?? 0) > 0;
+        if (!exists) {
+            await db.$executeRawUnsafe(`
+                ALTER TABLE users
+                ADD COLUMN ${column} INT NOT NULL DEFAULT 0
+            `);
+        }
+    }
+
+    chefSkillColumnsEnsured = true;
+}
+
+type ChefSkillLevels = {
+    prep: number;
+    economy: number;
+    market: number;
+};
+
+async function getChefSkillLevels(userId: number, db: DbClient = prisma): Promise<ChefSkillLevels> {
+    try {
+        await ensureChefSkillColumns(db);
+        const rows = await db.$queryRaw<Array<{
+            chef_skill_prep: number;
+            chef_skill_economy: number;
+            chef_skill_market: number;
+        }>>`
+            SELECT chef_skill_prep, chef_skill_economy, chef_skill_market
+            FROM users
+            WHERE id = ${userId}
+            LIMIT 1
+        `;
+
+        const row = rows[0];
+        return {
+            prep: Number(row?.chef_skill_prep ?? 0),
+            economy: Number(row?.chef_skill_economy ?? 0),
+            market: Number(row?.chef_skill_market ?? 0),
+        };
+    } catch {
+        return { prep: 0, economy: 0, market: 0 };
+    }
 }
 
 async function setWorkOrderOutputRarity(orderId: number, rarity: EquipmentRarity | null, db: DbClient = prisma) {
@@ -459,6 +525,8 @@ async function buildCancelRefundOutputs(
 
 async function rescheduleChefQueueAfterCancel(userId: number, db: DbClient) {
     const now = Date.now();
+    const chefSkills = await getChefSkillLevels(userId, db);
+    const maxParallel = Math.max(1, getChefSkillConcurrentCookSlots(chefSkills.prep));
     const remaining = await db.workOrder.findMany({
         where: {
             user_id: userId,
@@ -470,25 +538,21 @@ async function rescheduleChefQueueAfterCancel(userId: number, db: DbClient) {
 
     if (remaining.length === 0) return;
 
-    let cursor = now;
+    const laneAvailableAt = Array.from({ length: maxParallel }, () => now);
+
     for (const order of remaining) {
         const startMs = new Date(order.started_at).getTime();
         const endMs = new Date(order.completes_at).getTime();
         const durationMs = Math.max(1000, endMs - startMs);
-        const isCurrentlyRunning = startMs <= now && now < endMs;
 
-        let nextStartMs: number;
-        let nextEndMs: number;
-
-        if (isCurrentlyRunning) {
-            nextStartMs = startMs;
-            nextEndMs = endMs;
-            cursor = endMs;
-        } else {
-            nextStartMs = Math.max(cursor, now);
-            nextEndMs = nextStartMs + durationMs;
-            cursor = nextEndMs;
+        let laneIndex = 0;
+        for (let i = 1; i < laneAvailableAt.length; i++) {
+            if (laneAvailableAt[i] < laneAvailableAt[laneIndex]) laneIndex = i;
         }
+
+        const nextStartMs = Math.max(now, startMs, laneAvailableAt[laneIndex]);
+        const nextEndMs = nextStartMs + durationMs;
+        laneAvailableAt[laneIndex] = nextEndMs;
 
         if (nextStartMs !== startMs || nextEndMs !== endMs) {
             await db.workOrder.update({
@@ -713,6 +777,12 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 include: { item: true },
             });
 
+            const chefSkills = await getChefSkillLevels(req.userId!);
+            const chefCookTimeReductionPct = getChefSkillCookTimeReduction(chefSkills.prep);
+            const chefParallelSlots = Math.max(1, getChefSkillConcurrentCookSlots(chefSkills.prep));
+            const chefSecondarySaveChance = getChefSkillSecondarySaveChance(chefSkills.economy);
+            const chefPrimarySaveChance = getChefSkillPrimarySaveChance(chefSkills.economy);
+
             const selectedList = Array.isArray(selectedIngredients)
                 ? selectedIngredients
                     .map((x) => ({
@@ -776,31 +846,53 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     }
                 }
 
-                for (const pick of selectedList) {
-                    const slot = slotMap.get(pick.slotId)!;
-                    const rarity = ((slot as any).equipment_rarity as EquipmentRarity | null) ?? "NORMAL";
-                    for (let c = 0; c < pick.quantity; c++) {
-                        consumedIngredientRarities.push(rarity);
+                for (const ingredient of recipe.ingredients) {
+                    const picksForItem = selectedList.filter((p) => {
+                        const slot = slotMap.get(p.slotId);
+                        return slot?.item_id === ingredient.item_id;
+                    });
+
+                    let consumeUnits = 0;
+                    for (let i = 0; i < ingredient.quantity; i++) {
+                        const isSecondary = recipe.ingredients.findIndex((x) => x.item_id === ingredient.item_id) > 0;
+                        const saveChance = isSecondary
+                            ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + chefSecondarySaveChance))
+                            : Math.min(0.4, Math.max(0, chefPrimarySaveChance));
+                        const saved = saveChance > 0 && Math.random() < saveChance;
+                        if (!saved) consumeUnits += 1;
                     }
 
-                    if (slot.quantity - pick.quantity > 0) {
-                        await prisma.inventorySlot.update({
-                            where: { id: slot.id },
-                            data: { quantity: slot.quantity - pick.quantity },
-                        });
-                        slot.quantity -= pick.quantity;
-                    } else {
-                        await prisma.inventorySlot.update({
-                            where: { id: slot.id },
-                            data: { item_id: null, quantity: 0 },
-                        });
-                        await prisma.$executeRaw`
-                            UPDATE inventory_slots
-                            SET equipment_rarity = NULL
-                            WHERE id = ${slot.id}
-                        `;
-                        slot.quantity = 0;
-                        slot.item_id = null;
+                    let remainingConsume = consumeUnits;
+                    for (const pick of picksForItem) {
+                        if (remainingConsume <= 0) break;
+                        const slot = slotMap.get(pick.slotId)!;
+                        const take = Math.min(pick.quantity, remainingConsume);
+                        remainingConsume -= take;
+
+                        const rarity = ((slot as any).equipment_rarity as EquipmentRarity | null) ?? "NORMAL";
+                        for (let c = 0; c < take; c++) {
+                            consumedIngredientRarities.push(rarity);
+                        }
+
+                        if (slot.quantity - take > 0) {
+                            await prisma.inventorySlot.update({
+                                where: { id: slot.id },
+                                data: { quantity: slot.quantity - take },
+                            });
+                            slot.quantity -= take;
+                        } else {
+                            await prisma.inventorySlot.update({
+                                where: { id: slot.id },
+                                data: { item_id: null, quantity: 0 },
+                            });
+                            await prisma.$executeRaw`
+                                UPDATE inventory_slots
+                                SET equipment_rarity = NULL
+                                WHERE id = ${slot.id}
+                            `;
+                            slot.quantity = 0;
+                            slot.item_id = null;
+                        }
                     }
                 }
             } else {
@@ -808,15 +900,16 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 for (let idx = 0; idx < recipe.ingredients.length; idx++) {
                     const ingredient = recipe.ingredients[idx];
                     const isSecondary = idx > 0;
-                    const savedByEffect = isSecondary
-                        && equipmentEffects.cookSecondaryIngredientSaveChance > 0
-                        && Math.random() < equipmentEffects.cookSecondaryIngredientSaveChance;
+                    const saveChance = isSecondary
+                        ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + chefSecondarySaveChance))
+                        : Math.min(0.4, Math.max(0, chefPrimarySaveChance));
 
-                    if (savedByEffect) {
-                        continue;
+                    let remaining = 0;
+                    for (let i = 0; i < ingredient.quantity; i++) {
+                        const saved = saveChance > 0 && Math.random() < saveChance;
+                        if (!saved) remaining += 1;
                     }
 
-                    let remaining = ingredient.quantity;
                     for (const slot of userSlots) {
                         if (slot.item_id !== ingredient.item_id || remaining <= 0) continue;
 
@@ -854,26 +947,48 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             // Apply hunger penalty to cook time
             const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
             const equipmentCookMultiplier = 1 - equipmentEffects.cookTimeReductionPct;
+            const chefCookMultiplier = 1 - chefCookTimeReductionPct;
             const cookMins = recipe.cook_mins
                 * tier.multiplier
                 * equipmentCookMultiplier
+                * chefCookMultiplier
                 * taskTimeConfig.chefTaskTimeMultiplier;
 
-            // Chef queue logic: run one menu at a time, FIFO by task creation order.
-            const now = new Date();
-            const lastPendingCook = await prisma.workOrder.findFirst({
+            // Chef queue logic with PREP_MASTER parallel slots.
+            const nowMs = Date.now();
+            const durationMs = Math.max(1000, Math.floor(cookMins * 60 * 1000));
+            const pendingCooks = await prisma.workOrder.findMany({
                 where: {
                     user_id: req.userId!,
                     type: "COOK",
                     collected: false,
                 },
-                orderBy: { completes_at: "desc" },
+                orderBy: [{ started_at: "asc" }, { id: "asc" }],
             });
 
-            const startsAt = lastPendingCook && lastPendingCook.completes_at > now
-                ? lastPendingCook.completes_at
-                : now;
-            const completesAt = new Date(startsAt.getTime() + cookMins * 60 * 1000);
+            const laneAvailableAt = Array.from({ length: chefParallelSlots }, () => nowMs);
+            for (const order of pendingCooks) {
+                const currentStart = new Date(order.started_at).getTime();
+                const currentEnd = new Date(order.completes_at).getTime();
+                const existingDurationMs = Math.max(1000, currentEnd - currentStart);
+
+                let laneIndex = 0;
+                for (let i = 1; i < laneAvailableAt.length; i++) {
+                    if (laneAvailableAt[i] < laneAvailableAt[laneIndex]) laneIndex = i;
+                }
+
+                const normalizedStart = Math.max(nowMs, currentStart, laneAvailableAt[laneIndex]);
+                laneAvailableAt[laneIndex] = normalizedStart + existingDurationMs;
+            }
+
+            let targetLane = 0;
+            for (let i = 1; i < laneAvailableAt.length; i++) {
+                if (laneAvailableAt[i] < laneAvailableAt[targetLane]) targetLane = i;
+            }
+
+            const startMs = Math.max(nowMs, laneAvailableAt[targetLane]);
+            const startsAt = new Date(startMs);
+            const completesAt = new Date(startMs + durationMs);
 
             const order = await prisma.workOrder.create({
                 data: {
@@ -907,8 +1022,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             }
 
             res.json({
-                message: startsAt.getTime() > now.getTime()
-                    ? `Queued cooking ${recipe.name}. It will start after current menu and finish in ${Math.ceil(cookMins)} minutes once started.`
+                message: startsAt.getTime() > nowMs
+                    ? `Queued cooking ${recipe.name}. It will start when a chef slot is available and finish in ${Math.ceil(cookMins)} minutes once started.`
                     : `Started cooking ${recipe.name}. Ready in ${Math.ceil(cookMins)} minutes.`,
                 order,
             });

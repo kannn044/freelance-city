@@ -259,6 +259,94 @@ export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
     },
 };
 
+// ─── Chef Skill Tree ───────────────────────────────────
+
+export type ChefBranch = "PREP_MASTER" | "KITCHEN_ECONOMY" | "MARKET_INTEL";
+
+export const CHEF_SKILL_MAX_LEVEL = 4;
+
+/**
+ * PREP_MASTER time reduction by branch level.
+ * Lv1: 5% total, Lv3: 10% total.
+ */
+export function getChefSkillCookTimeReduction(level: number): number {
+    if (level >= 3) return 0.10;
+    if (level >= 1) return 0.05;
+    return 0;
+}
+
+/**
+ * PREP_MASTER concurrent cook slots.
+ * Base: 1, Lv2: 2, Lv4: 3.
+ */
+export function getChefSkillConcurrentCookSlots(level: number): number {
+    if (level >= 4) return 3;
+    if (level >= 2) return 2;
+    return 1;
+}
+
+/**
+ * KITCHEN_ECONOMY save chance for secondary ingredients.
+ * Lv1: 6%, Lv2+: 12% total.
+ */
+export function getChefSkillSecondarySaveChance(level: number): number {
+    if (level >= 2) return 0.12;
+    if (level >= 1) return 0.06;
+    return 0;
+}
+
+/**
+ * KITCHEN_ECONOMY save chance for primary ingredient.
+ * Lv3: 5%, Lv4: 10%.
+ */
+export function getChefSkillPrimarySaveChance(level: number): number {
+    if (level >= 4) return 0.10;
+    if (level >= 3) return 0.05;
+    return 0;
+}
+
+export const CHEF_SKILL_TREE_CONFIG: Record<ChefBranch, {
+    title: string;
+    color: string;
+    effects: {
+        level1: string;
+        level2: string;
+        level3: string;
+        level4: string;
+    };
+}> = {
+    PREP_MASTER: {
+        title: "Prep Master",
+        color: "#fb923c",
+        effects: {
+            level1: "Lv.1: Reduce cook time by 5%",
+            level2: "Lv.2: Increase parallel cook slots to 2 (base is 1)",
+            level3: "Lv.3: Reduce cook time by another 5% (10% total)",
+            level4: "Lv.4: Increase parallel cook slots to 3",
+        },
+    },
+    KITCHEN_ECONOMY: {
+        title: "Kitchen Economy",
+        color: "#34d399",
+        effects: {
+            level1: "Lv.1: Secondary ingredient save chance +6%",
+            level2: "Lv.2: Secondary ingredient save chance +6% (12% total)",
+            level3: "Lv.3: Primary ingredient save chance +5%",
+            level4: "Lv.4: Primary ingredient save chance +5% (10% total)",
+        },
+    },
+    MARKET_INTEL: {
+        title: "Market Intel",
+        color: "#c084fc",
+        effects: {
+            level1: "Lv.1: Improve listing visibility to bot market",
+            level2: "Lv.2: Expand bot accepted price tolerance",
+            level3: "Lv.3: Improve listing relevance duration",
+            level4: "Lv.4: Increase overall bot buy weight",
+        },
+    },
+};
+
 // ─── Hunger Penalty Tiers ────────────────────────────────
 
 export interface HungerTier {

@@ -27,6 +27,7 @@ import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
 type ProviderSkillBranch = 'VEGETABLE' | 'CHICKEN' | 'BEEF';
+type ChefSkillBranch = 'PREP_MASTER' | 'KITCHEN_ECONOMY' | 'MARKET_INTEL';
 
 interface ProviderSkillTreeData {
     points: {
@@ -35,6 +36,25 @@ interface ProviderSkillTreeData {
         available: number;
     };
     branches: Record<ProviderSkillBranch, {
+        title: string;
+        level: number;
+        color: string;
+        effects: {
+            level1: string;
+            level2: string;
+            level3: string;
+            level4: string;
+        };
+    }>;
+}
+
+interface ChefSkillTreeData {
+    points: {
+        total: number;
+        spent: number;
+        available: number;
+    };
+    branches: Record<ChefSkillBranch, {
         title: string;
         level: number;
         color: string;
@@ -61,6 +81,8 @@ const DashboardPage = () => {
     } = useGameStore();
     const [showProviderSkillModal, setShowProviderSkillModal] = useState(false);
     const [providerSkillTree, setProviderSkillTree] = useState<ProviderSkillTreeData | null>(null);
+    const [showChefSkillModal, setShowChefSkillModal] = useState(false);
+    const [chefSkillTree, setChefSkillTree] = useState<ChefSkillTreeData | null>(null);
     const [skillLoading, setSkillLoading] = useState(false);
 
     useEffect(() => {
@@ -147,6 +169,21 @@ const DashboardPage = () => {
         await fetchProviderSkillTree();
     };
 
+    const fetchChefSkillTree = async () => {
+        try {
+            setSkillLoading(true);
+            const { data } = await api.get('/game/skills/chef');
+            setChefSkillTree(data.skillTree);
+        } finally {
+            setSkillLoading(false);
+        }
+    };
+
+    const openChefSkillModal = async () => {
+        setShowChefSkillModal(true);
+        await fetchChefSkillTree();
+    };
+
     const upgradeProviderSkill = async (branch: ProviderSkillBranch) => {
         try {
             setSkillLoading(true);
@@ -161,6 +198,25 @@ const DashboardPage = () => {
             useGameStore.getState().setActionMessage(data.message ?? 'Skill upgraded');
         } catch (err: any) {
             useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade skill');
+        } finally {
+            setSkillLoading(false);
+        }
+    };
+
+    const upgradeChefSkill = async (branch: ChefSkillBranch) => {
+        try {
+            setSkillLoading(true);
+            const { data } = await api.post('/game/skills/chef/upgrade', { branch });
+            setChefSkillTree(data.skillTree);
+            if (data.user) {
+                useAuthStore.setState({ user: data.user });
+            } else {
+                await fetchMe();
+            }
+            await fetchWorkOrders();
+            useGameStore.getState().setActionMessage(data.message ?? 'Chef skill upgraded');
+        } catch (err: any) {
+            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade chef skill');
         } finally {
             setSkillLoading(false);
         }
@@ -620,6 +676,7 @@ const DashboardPage = () => {
                                                 glowColor="rgba(251, 113, 133, 0.15)"
                                                 canUnlock={secondaryOccupation === 'chef' && canUnlockSecond}
                                                 onUnlock={handleUnlock}
+                                                onOpenSkills={!chefLevel ? undefined : openChefSkillModal}
                                             />
                                         </div>
                                     </div>
@@ -933,6 +990,127 @@ const DashboardPage = () => {
                                                     }}
                                                 >
                                                     {effects?.level4 ?? 'Lv.4: Increase task plot capacity to 3'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+
+                {showChefSkillModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowChefSkillModal(false)}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 120,
+                            background: 'rgba(2,6,23,0.62)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '1rem',
+                        }}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.96 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.96 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '100%',
+                                maxWidth: '34rem',
+                                borderRadius: '0.9rem',
+                                border: '1px solid rgba(251,113,133,0.28)',
+                                background: 'rgba(15,23,42,0.96)',
+                                padding: '1rem',
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Chef Skill Tree</div>
+                                    <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
+                                        Available Points: {chefSkillTree?.points.available ?? 0}
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowChefSkillModal(false)}
+                                    style={{
+                                        border: '1px solid rgba(255,255,255,0.16)',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        color: 'white',
+                                        borderRadius: '0.4rem',
+                                        fontSize: '0.65rem',
+                                        padding: '0.3rem 0.6rem',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Close
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'grid', gap: '0.65rem' }}>
+                                {([
+                                    { key: 'PREP_MASTER', title: 'Prep Master', color: '#fb923c' },
+                                    { key: 'KITCHEN_ECONOMY', title: 'Kitchen Economy', color: '#34d399' },
+                                    { key: 'MARKET_INTEL', title: 'Market Intel', color: '#c084fc' },
+                                ] as Array<{ key: ChefSkillBranch; title: string; color: string }>).map((branchMeta) => {
+                                    const branch = chefSkillTree?.branches?.[branchMeta.key];
+                                    const level = branch?.level ?? 0;
+                                    const available = chefSkillTree?.points.available ?? 0;
+                                    const canUpgrade = !skillLoading && level < 4 && available > 0;
+                                    const title = branch?.title ?? branchMeta.title;
+                                    const color = branch?.color ?? branchMeta.color;
+                                    const effects = branch?.effects;
+
+                                    return (
+                                        <div
+                                            key={branchMeta.key}
+                                            style={{
+                                                borderRadius: '0.7rem',
+                                                border: `1px solid ${color}55`,
+                                                background: `${color}14`,
+                                                padding: '0.7rem',
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                                                <div style={{ fontSize: '0.8rem', fontWeight: 700, color }}>
+                                                    {title} (Lv.{level}/4)
+                                                </div>
+                                                <button
+                                                    onClick={() => upgradeChefSkill(branchMeta.key)}
+                                                    disabled={!canUpgrade}
+                                                    style={{
+                                                        border: `1px solid ${color}66`,
+                                                        background: canUpgrade ? `${color}2b` : 'rgba(255,255,255,0.05)',
+                                                        color: canUpgrade ? color : 'rgba(255,255,255,0.45)',
+                                                        borderRadius: '0.4rem',
+                                                        fontSize: '0.62rem',
+                                                        fontWeight: 700,
+                                                        padding: '0.24rem 0.55rem',
+                                                        cursor: canUpgrade ? 'pointer' : 'not-allowed',
+                                                    }}
+                                                >
+                                                    Upgrade
+                                                </button>
+                                            </div>
+                                            <div style={{ fontSize: '0.64rem', lineHeight: 1.45, display: 'flex', flexDirection: 'column', gap: '0.12rem' }}>
+                                                <span style={{ color: level >= 1 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 1 ? 700 : 500 }}>
+                                                    {effects?.level1 ?? 'Lv.1 effect'}
+                                                </span>
+                                                <span style={{ color: level >= 2 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 2 ? 700 : 500 }}>
+                                                    {effects?.level2 ?? 'Lv.2 effect'}
+                                                </span>
+                                                <span style={{ color: level >= 3 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 3 ? 700 : 500 }}>
+                                                    {effects?.level3 ?? 'Lv.3 effect'}
+                                                </span>
+                                                <span style={{ color: level >= 4 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 4 ? 700 : 500 }}>
+                                                    {effects?.level4 ?? 'Lv.4 effect'}
                                                 </span>
                                             </div>
                                         </div>
