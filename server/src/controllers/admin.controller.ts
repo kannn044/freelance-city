@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+    getFerrumMiningConfig,
     getGamePricing,
     getGameRuntimeConfig,
     getGameTaskDecayConfig,
@@ -80,7 +81,8 @@ export async function getPublicRuntimeConfig(_req: AuthRequest, res: Response): 
     try {
         const taskDecay = await getGameTaskDecayConfig();
         const taskTime = await getGameTaskTimeConfig();
-        res.json({ taskDecay, taskTime });
+        const ferrumMining = await getFerrumMiningConfig();
+        res.json({ taskDecay, taskTime, ferrumMining });
     } catch (error) {
         console.error("getPublicRuntimeConfig error:", error);
         res.status(500).json({ error: "Failed to fetch runtime config" });
@@ -125,7 +127,11 @@ export async function getRuntimeConfig(req: AuthRequest, res: Response): Promise
  *   equipmentNormalRate?: number,
  *   equipmentRareRate?: number,
  *   equipmentEpicRate?: number,
- *   equipmentLegendaryRate?: number
+ *   equipmentLegendaryRate?: number,
+ *   ferrumMiningHungerCost?: number,
+ *   ferrumMiningTimeSurface?: number,
+ *   ferrumMiningTimeDeep?: number,
+ *   ferrumMiningTimeCore?: number
  * }
  */
 export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise<void> {
@@ -154,7 +160,29 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             || payload.equipmentNormalRate != null
             || payload.equipmentRareRate != null
             || payload.equipmentEpicRate != null
-            || payload.equipmentLegendaryRate != null;
+            || payload.equipmentLegendaryRate != null
+            || payload.ferrumMiningHungerCost != null
+            || payload.ferrumMiningTimeSurface != null
+            || payload.ferrumMiningTimeDeep != null
+            || payload.ferrumMiningTimeCore != null
+            || payload.ferrumDropSurfaceIron != null
+            || payload.ferrumDropSurfaceCopper != null
+            || payload.ferrumDropSurfaceSteel != null
+            || payload.ferrumDropSurfaceStone != null
+            || payload.ferrumDropSurfaceCoal != null
+            || payload.ferrumDropSurfaceGem != null
+            || payload.ferrumDropDeepIron != null
+            || payload.ferrumDropDeepCopper != null
+            || payload.ferrumDropDeepSteel != null
+            || payload.ferrumDropDeepStone != null
+            || payload.ferrumDropDeepCoal != null
+            || payload.ferrumDropDeepGem != null
+            || payload.ferrumDropCoreIron != null
+            || payload.ferrumDropCoreCopper != null
+            || payload.ferrumDropCoreSteel != null
+            || payload.ferrumDropCoreStone != null
+            || payload.ferrumDropCoreCoal != null
+            || payload.ferrumDropCoreGem != null;
 
         if (!hasAny) {
             res.status(400).json({ error: "No runtime config fields provided" });
@@ -180,6 +208,28 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             equipmentRareRate: payload.equipmentRareRate != null ? Number(payload.equipmentRareRate) : undefined,
             equipmentEpicRate: payload.equipmentEpicRate != null ? Number(payload.equipmentEpicRate) : undefined,
             equipmentLegendaryRate: payload.equipmentLegendaryRate != null ? Number(payload.equipmentLegendaryRate) : undefined,
+            ferrumMiningHungerCost: payload.ferrumMiningHungerCost != null ? Number(payload.ferrumMiningHungerCost) : undefined,
+            ferrumMiningTimeSurface: payload.ferrumMiningTimeSurface != null ? Number(payload.ferrumMiningTimeSurface) : undefined,
+            ferrumMiningTimeDeep: payload.ferrumMiningTimeDeep != null ? Number(payload.ferrumMiningTimeDeep) : undefined,
+            ferrumMiningTimeCore: payload.ferrumMiningTimeCore != null ? Number(payload.ferrumMiningTimeCore) : undefined,
+            ferrumDropSurfaceIron: payload.ferrumDropSurfaceIron != null ? Number(payload.ferrumDropSurfaceIron) : undefined,
+            ferrumDropSurfaceCopper: payload.ferrumDropSurfaceCopper != null ? Number(payload.ferrumDropSurfaceCopper) : undefined,
+            ferrumDropSurfaceSteel: payload.ferrumDropSurfaceSteel != null ? Number(payload.ferrumDropSurfaceSteel) : undefined,
+            ferrumDropSurfaceStone: payload.ferrumDropSurfaceStone != null ? Number(payload.ferrumDropSurfaceStone) : undefined,
+            ferrumDropSurfaceCoal: payload.ferrumDropSurfaceCoal != null ? Number(payload.ferrumDropSurfaceCoal) : undefined,
+            ferrumDropSurfaceGem: payload.ferrumDropSurfaceGem != null ? Number(payload.ferrumDropSurfaceGem) : undefined,
+            ferrumDropDeepIron: payload.ferrumDropDeepIron != null ? Number(payload.ferrumDropDeepIron) : undefined,
+            ferrumDropDeepCopper: payload.ferrumDropDeepCopper != null ? Number(payload.ferrumDropDeepCopper) : undefined,
+            ferrumDropDeepSteel: payload.ferrumDropDeepSteel != null ? Number(payload.ferrumDropDeepSteel) : undefined,
+            ferrumDropDeepStone: payload.ferrumDropDeepStone != null ? Number(payload.ferrumDropDeepStone) : undefined,
+            ferrumDropDeepCoal: payload.ferrumDropDeepCoal != null ? Number(payload.ferrumDropDeepCoal) : undefined,
+            ferrumDropDeepGem: payload.ferrumDropDeepGem != null ? Number(payload.ferrumDropDeepGem) : undefined,
+            ferrumDropCoreIron: payload.ferrumDropCoreIron != null ? Number(payload.ferrumDropCoreIron) : undefined,
+            ferrumDropCoreCopper: payload.ferrumDropCoreCopper != null ? Number(payload.ferrumDropCoreCopper) : undefined,
+            ferrumDropCoreSteel: payload.ferrumDropCoreSteel != null ? Number(payload.ferrumDropCoreSteel) : undefined,
+            ferrumDropCoreStone: payload.ferrumDropCoreStone != null ? Number(payload.ferrumDropCoreStone) : undefined,
+            ferrumDropCoreCoal: payload.ferrumDropCoreCoal != null ? Number(payload.ferrumDropCoreCoal) : undefined,
+            ferrumDropCoreGem: payload.ferrumDropCoreGem != null ? Number(payload.ferrumDropCoreGem) : undefined,
         });
 
         res.json({

@@ -16,7 +16,8 @@ import {
     resolveCookMealRarityByPair,
 } from "../config/game.config";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
-import { getGameExpConfig, getGameHarvestRarityConfig, getGameTaskTimeConfig } from "../services/gamePricing.service";
+import { getFerrumMiningConfig, getGameExpConfig, getGameHarvestRarityConfig, getGameTaskTimeConfig } from "../services/gamePricing.service";
+import { getUserCityProfile } from "../services/city.service";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -34,6 +35,21 @@ type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
 
 let workOrderRarityColumnEnsured = false;
 let chefSkillColumnsEnsured = false;
+
+const MINING_PERMIT_NAME = "Ferrum Mining Permit";
+type MiningLayer = "SURFACE" | "DEEP" | "CORE";
+
+const LAYER_CODE: Record<MiningLayer, number> = {
+    SURFACE: 1,
+    DEEP: 2,
+    CORE: 3,
+};
+
+function codeToLayer(code: number | null | undefined): MiningLayer {
+    if (code === 2) return "DEEP";
+    if (code === 3) return "CORE";
+    return "SURFACE";
+}
 
 async function ensureWorkOrderRarityColumn() {
     if (workOrderRarityColumnEnsured) return;
@@ -155,6 +171,94 @@ async function isRecipeUnlocked(userId: number, recipeId: number): Promise<boole
     return count > 0;
 }
 
+async function ensureFerrumCatalog(db: DbClient = prisma) {
+    const upsertItem = async (name: string, data: any) => {
+        return db.item.upsert({ where: { name }, update: data, create: { name, ...data } as any });
+    };
+
+    const miningPermit = await upsertItem(MINING_PERMIT_NAME, {
+        type: "SEED",
+        buy_price: null,
+        sell_price: null,
+        max_stack: 1,
+        grow_mins: 1,
+        exp_value: 0,
+        icon: "⛏️",
+    });
+
+    await upsertItem("Mattock", {
+        type: "EQUIPMENT",
+        buy_price: 650,
+        sell_price: 220,
+        max_stack: 1,
+        exp_value: 0,
+        icon: "⛏️",
+        equipment_role: "PROVIDER",
+        equipment_slot: "ARM",
+    });
+
+    const ironOre = await upsertItem("Iron Ore", { type: "RAW", max_stack: 20, sell_price: 45, exp_value: 0.8, icon: "🪨" });
+    const copperOre = await upsertItem("Copper Ore", { type: "RAW", max_stack: 20, sell_price: 55, exp_value: 0.9, icon: "🟠" });
+    const steelOre = await upsertItem("Steel Ore", { type: "RAW", max_stack: 20, sell_price: 75, exp_value: 1.1, icon: "⚙️" });
+    const stone = await upsertItem("Stone", { type: "RAW", max_stack: 30, sell_price: 12, exp_value: 0.4, icon: "🧱" });
+    const coal = await upsertItem("Coal", { type: "INGREDIENT", max_stack: 30, sell_price: 20, exp_value: 0.5, icon: "⚫" });
+    const gem = await upsertItem("Gem", { type: "RAW", max_stack: 10, sell_price: 200, exp_value: 2.5, icon: "💎" });
+    const flux = await upsertItem("Flux", { type: "INGREDIENT", max_stack: 20, sell_price: 65, buy_price: null, exp_value: 0.8, icon: "🧪" });
+    const oil = await upsertItem("Oil", { type: "INGREDIENT", max_stack: 20, sell_price: 90, buy_price: null, exp_value: 1.0, icon: "🛢️" });
+
+    const ironIngot = await upsertItem("Iron Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 220, exp_value: 1.6, icon: "🔩" });
+    const copperIngot = await upsertItem("Copper Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 250, exp_value: 1.8, icon: "🟧" });
+    const steelIngot = await upsertItem("Steel Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 340, exp_value: 2.3, icon: "🧰" });
+
+    const upsertRecipe = async (name: string, outputId: number, cookMins: number) => {
+        return db.recipe.upsert({
+            where: { name },
+            update: { output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
+            create: { name, output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
+        });
+    };
+
+    const ironRecipe = await upsertRecipe("Iron Ingot Smelt", ironIngot.id, 7);
+    const copperRecipe = await upsertRecipe("Copper Ingot Smelt", copperIngot.id, 8);
+    const steelRecipe = await upsertRecipe("Steel Ingot Smelt", steelIngot.id, 10);
+
+    const upsertIngredient = async (recipeId: number, itemId: number, quantity: number) => {
+        await db.recipeIngredient.upsert({
+            where: { recipe_id_item_id: { recipe_id: recipeId, item_id: itemId } },
+            update: { quantity },
+            create: { recipe_id: recipeId, item_id: itemId, quantity },
+        });
+    };
+
+    // User-defined formula: ore + flux + coal + oil
+    await upsertIngredient(ironRecipe.id, ironOre.id, 2);
+    await upsertIngredient(ironRecipe.id, flux.id, 1);
+    await upsertIngredient(ironRecipe.id, coal.id, 2);
+    await upsertIngredient(ironRecipe.id, oil.id, 1);
+
+    await upsertIngredient(copperRecipe.id, copperOre.id, 2);
+    await upsertIngredient(copperRecipe.id, flux.id, 1);
+    await upsertIngredient(copperRecipe.id, coal.id, 2);
+    await upsertIngredient(copperRecipe.id, oil.id, 1);
+
+    await upsertIngredient(steelRecipe.id, steelOre.id, 2);
+    await upsertIngredient(steelRecipe.id, flux.id, 1);
+    await upsertIngredient(steelRecipe.id, coal.id, 2);
+    await upsertIngredient(steelRecipe.id, oil.id, 1);
+
+    return {
+        miningPermitId: miningPermit.id,
+        oreItemIds: {
+            ironOreId: ironOre.id,
+            copperOreId: copperOre.id,
+            steelOreId: steelOre.id,
+            stoneId: stone.id,
+            coalId: coal.id,
+            gemId: gem.id,
+        },
+    };
+}
+
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
 function applyTierReduction(baseHunger: number, tierReduction: number) {
@@ -218,7 +322,59 @@ async function getOrderOutput(
     db: DbClient,
     harvestDropRates: Record<EquipmentRarity, number>
 ): Promise<OutputReward[]> {
+    const ferrumCatalog = await ensureFerrumCatalog(db);
     const effects = await getUserEquipmentEffects(userId, db);
+
+    if (order.type === "FARM" && order.item_id === ferrumCatalog.miningPermitId) {
+        const miningConfig = await getFerrumMiningConfig();
+        const rows = await db.$queryRaw<Array<{ recipe_id: number | null }>>`
+            SELECT recipe_id
+            FROM work_orders
+            WHERE id = ${order.id}
+            LIMIT 1
+        `;
+        const layer = codeToLayer(rows[0]?.recipe_id ?? 1);
+        const drop = layer === "SURFACE"
+            ? miningConfig.dropRates.surface
+            : layer === "DEEP"
+                ? miningConfig.dropRates.deep
+                : miningConfig.dropRates.core;
+
+        const outputs: OutputReward[] = [];
+        const rollQty = (chance: number, min = 1, max = 1) => (Math.random() < chance ? min + Math.floor(Math.random() * (max - min + 1)) : 0);
+
+        const pushTiered = (itemId: number, qty: number) => {
+            if (qty <= 0) return;
+            const splits = splitByHarvestRarity(qty, harvestDropRates);
+            for (const s of splits) {
+                outputs.push({
+                    outputItemId: itemId,
+                    outputQty: s.qty,
+                    outputRarity: s.rarity,
+                });
+            }
+        };
+
+        const ironQty = rollQty(drop.ironOre, 1, 2);
+        const copperQty = rollQty(drop.copperOre, 1, 2);
+        const steelQty = rollQty(drop.steelOre, 1, 1);
+        const stoneQty = rollQty(drop.stone, 1, 2);
+        const coalQty = rollQty(drop.coal, 1, 2);
+        const gemQty = rollQty(drop.gem, 1, 1);
+
+        pushTiered(ferrumCatalog.oreItemIds.ironOreId, ironQty);
+        pushTiered(ferrumCatalog.oreItemIds.copperOreId, copperQty);
+        pushTiered(ferrumCatalog.oreItemIds.steelOreId, steelQty);
+        pushTiered(ferrumCatalog.oreItemIds.stoneId, stoneQty);
+        pushTiered(ferrumCatalog.oreItemIds.coalId, coalQty);
+        pushTiered(ferrumCatalog.oreItemIds.gemId, gemQty);
+
+        if (outputs.length === 0) {
+            pushTiered(ferrumCatalog.oreItemIds.stoneId, 1);
+        }
+
+        return outputs;
+    }
 
     if (order.type === "FARM") {
         const seedItem = await db.item.findUnique({ where: { id: order.item_id } });
@@ -411,6 +567,7 @@ async function awardOrderExp(
     let expGained = 0;
     let levelUp = false;
     let newLevel = user[levelField];
+    let blacksmithUnlocked = false;
     const workExpMultiplier = occupation === "provider"
         ? expConfig.providerWorkExpMultiplier
         : expConfig.chefWorkExpMultiplier;
@@ -431,10 +588,38 @@ async function awardOrderExp(
                 where: { id: userId },
                 data: updateData,
             });
+
+            if (occupation === "provider" && newLevel >= 5 && user.chef_level < 1) {
+                const cityRows = await db.$queryRaw<Array<{ city_key: string | null }>>`
+                    SELECT city_key
+                    FROM users
+                    WHERE id = ${userId}
+                    LIMIT 1
+                `;
+                const cityKey = cityRows[0]?.city_key ?? null;
+
+                if (cityKey === "FERRUM") {
+                    await db.user.update({ where: { id: userId }, data: { chef_level: 1 } });
+
+                    const smeltRecipes = await db.recipe.findMany({
+                        where: { name: { in: ["Iron Ingot Smelt", "Copper Ingot Smelt", "Steel Ingot Smelt"] } },
+                        select: { id: true },
+                    });
+                    for (const r of smeltRecipes) {
+                        await db.userRecipeUnlock.upsert({
+                            where: { user_id_recipe_id: { user_id: userId, recipe_id: r.id } },
+                            update: {},
+                            create: { user_id: userId, recipe_id: r.id },
+                        });
+                    }
+
+                    blacksmithUnlocked = true;
+                }
+            }
         }
     }
 
-    return { expGained, levelUp, newLevel };
+    return { expGained, levelUp, newLevel, blacksmithUnlocked };
 }
 
 async function collectSingleReadyOrder(userId: number, orderId: number) {
@@ -489,6 +674,7 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             expGained: exp.expGained,
             levelUp: exp.levelUp,
             newLevel: exp.newLevel,
+            blacksmithUnlocked: exp.blacksmithUnlocked,
         };
     });
 }
@@ -498,6 +684,10 @@ async function buildCancelRefundOutputs(
     db: DbClient,
 ): Promise<OutputReward[]> {
     if (order.type === "FARM") {
+        const ferrumCatalog = await ensureFerrumCatalog(db);
+        if (order.item_id === ferrumCatalog.miningPermitId) {
+            return [];
+        }
         return [{ outputItemId: order.item_id, outputQty: Math.max(1, order.quantity), outputRarity: null }];
     }
 
@@ -566,6 +756,44 @@ async function rescheduleChefQueueAfterCancel(userId: number, db: DbClient) {
     }
 }
 
+async function rescheduleFerrumMiningQueueAfterCancel(userId: number, db: DbClient) {
+    const ferrumCatalog = await ensureFerrumCatalog(db);
+    const now = Date.now();
+
+    const remaining = await db.workOrder.findMany({
+        where: {
+            user_id: userId,
+            type: "FARM",
+            item_id: ferrumCatalog.miningPermitId,
+            collected: false,
+        },
+        orderBy: [{ started_at: "asc" }, { id: "asc" }],
+    });
+
+    if (remaining.length === 0) return;
+
+    let laneAvailableAt = now;
+    for (const order of remaining) {
+        const currentStart = new Date(order.started_at).getTime();
+        const currentEnd = new Date(order.completes_at).getTime();
+        const durationMs = Math.max(1000, currentEnd - currentStart);
+
+        const nextStartMs = Math.max(now, laneAvailableAt);
+        const nextEndMs = nextStartMs + durationMs;
+        laneAvailableAt = nextEndMs;
+
+        if (nextStartMs !== currentStart || nextEndMs !== currentEnd) {
+            await db.workOrder.update({
+                where: { id: order.id },
+                data: {
+                    started_at: new Date(nextStartMs),
+                    completes_at: new Date(nextEndMs),
+                },
+            });
+        }
+    }
+}
+
 /**
  * GET /game/workspace — Get active work orders
  */
@@ -593,19 +821,123 @@ export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<vo
  */
 export const startWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { type, itemId, recipeId, quantity = 1, selectedIngredients } = req.body as {
+        const { type, itemId, recipeId, quantity = 1, selectedIngredients, mode, layer } = req.body as {
             type: "FARM" | "COOK";
             itemId?: number;
             recipeId?: number;
             quantity?: number;
             selectedIngredients?: IngredientSelectionInput[];
+            mode?: "MINE";
+            layer?: MiningLayer;
         };
         const user = await syncHunger(req.userId!);
+        const cityProfile = await getUserCityProfile(req.userId!);
+        const isFerrum = cityProfile.city_key === "FERRUM";
         const taskTimeConfig = await getGameTaskTimeConfig();
+        const ferrumMining = await getFerrumMiningConfig();
+        const ferrumCatalog = await ensureFerrumCatalog(prisma);
 
         const equipmentEffects = await getUserEquipmentEffects(req.userId!);
 
         if (type === "FARM") {
+            if (isFerrum) {
+                if (user.provider_level < 1) {
+                    res.status(403).json({ error: "Ferrum requires Miner occupation to run expeditions" });
+                    return;
+                }
+
+                if (mode !== "MINE") {
+                    res.status(400).json({ error: "Ferrum FARM mode must be MINE" });
+                    return;
+                }
+
+                const miningLayer: MiningLayer = layer === "DEEP" || layer === "CORE" ? layer : "SURFACE";
+                const baseMins = miningLayer === "SURFACE"
+                    ? ferrumMining.layerTimeMins.surface
+                    : miningLayer === "DEEP"
+                        ? ferrumMining.layerTimeMins.deep
+                        : ferrumMining.layerTimeMins.core;
+
+                // Ferrum Miner skill logic mirrors Chef PREP branch timing behavior.
+                const minerPrepLevel = Number((user as any).provider_skill_veg ?? 0);
+                const minerTimeReduction = getChefSkillCookTimeReduction(minerPrepLevel);
+
+                if (user.hunger < ferrumMining.hungerCostPerExpedition) {
+                    res.status(400).json({ error: `Not enough hunger for expedition. Need ${ferrumMining.hungerCostPerExpedition}` });
+                    return;
+                }
+
+                const hasMattock = await prisma.inventorySlot.findFirst({
+                    where: {
+                        user_id: req.userId!,
+                        quantity: { gt: 0 },
+                        item: { name: "Mattock" },
+                    },
+                });
+                const equippedMattockRows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
+                    SELECT COUNT(*) as cnt
+                    FROM user_equipments ue
+                    INNER JOIN items i ON i.id = ue.item_id
+                    WHERE ue.user_id = ${req.userId!}
+                      AND i.name = 'Mattock'
+                `;
+                const hasEquippedMattock = Number(equippedMattockRows[0]?.cnt ?? 0) > 0;
+
+                if (!hasMattock && !hasEquippedMattock) {
+                    res.status(400).json({ error: "Mining requires a Mattock. Buy one from NPC Shop first." });
+                    return;
+                }
+
+                const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
+                const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.providerTaskTimeMultiplier;
+                const durationMs = Math.max(1000, Math.floor(growMins * 60 * 1000));
+
+                const pendingMiningOrders = await prisma.workOrder.findMany({
+                    where: {
+                        user_id: req.userId!,
+                        type: "FARM",
+                        item_id: ferrumCatalog.miningPermitId,
+                        collected: false,
+                    },
+                    orderBy: [{ started_at: "asc" }, { id: "asc" }],
+                });
+
+                const nowMs = Date.now();
+                const lastOrder = pendingMiningOrders[pendingMiningOrders.length - 1];
+                const startsAtMs = lastOrder ? Math.max(nowMs, new Date(lastOrder.completes_at).getTime()) : nowMs;
+                const startsAt = new Date(startsAtMs);
+                const completesAt = new Date(startsAtMs + durationMs);
+
+                await prisma.user.update({
+                    where: { id: req.userId! },
+                    data: {
+                        hunger: Math.max(0, user.hunger - ferrumMining.hungerCostPerExpedition),
+                        hunger_updated_at: new Date(),
+                    },
+                });
+
+                const order = await prisma.workOrder.create({
+                    data: {
+                        user_id: req.userId!,
+                        type: "FARM",
+                        item_id: ferrumCatalog.miningPermitId,
+                        quantity: 1,
+                        recipe_id: LAYER_CODE[miningLayer],
+                        started_at: startsAt,
+                        completes_at: completesAt,
+                    },
+                    include: { item: true },
+                });
+
+                res.json({
+                    message: startsAtMs > nowMs
+                        ? `⛏️ Queued ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Starts when previous run completes.`
+                        : `⛏️ Started ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Ready in ${Math.ceil(growMins)} min.`,
+                    order,
+                });
+                return;
+            }
+
             if (!itemId || !Number.isInteger(Number(itemId))) {
                 res.status(400).json({ error: "itemId is required for FARM" });
                 return;
@@ -739,6 +1071,11 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 order,
             });
         } else if (type === "COOK") {
+            if (isFerrum && user.provider_level < 5) {
+                res.status(403).json({ error: "Blacksmith unlocks at Miner Level 5" });
+                return;
+            }
+
             if (!recipeId || !Number.isInteger(Number(recipeId))) {
                 res.status(400).json({ error: "recipeId is required for COOK" });
                 return;
@@ -769,6 +1106,14 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             if (!recipe) {
                 res.status(400).json({ error: "Recipe not found" });
                 return;
+            }
+
+            if (isFerrum) {
+                const outName = String(recipe.output_item?.name ?? "").toLowerCase();
+                if (!outName.includes("ingot")) {
+                    res.status(403).json({ error: "Ferrum Blacksmith can only smelt ingot recipes" });
+                    return;
+                }
             }
 
             // Check all ingredients in inventory
@@ -1069,6 +1414,7 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
 
         const expMessage = result.expGained > 0 ? ` (+${result.expGained} EXP)` : "";
         const levelUpMessage = result.levelUp ? ` 🎉 Level up! Now Lvl ${result.newLevel}!` : "";
+        const unlockMessage = result.blacksmithUnlocked ? " 🔓 Blacksmith unlocked in Ferrum!" : "";
 
         // Return updated inventory + user
         const slots = await prisma.inventorySlot.findMany({
@@ -1080,7 +1426,7 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
         const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
 
         res.json({
-            message: `Collected ${result.qty}x ${result.itemName}!${expMessage}${levelUpMessage}`,
+            message: `Collected ${result.qty}x ${result.itemName}!${expMessage}${levelUpMessage}${unlockMessage}`,
             slots,
             user: {
                 id: updatedUser!.id,
@@ -1224,6 +1570,11 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
 
             if (order.type === "COOK") {
                 await rescheduleChefQueueAfterCancel(req.userId!, tx);
+            } else if (order.type === "FARM") {
+                const ferrumCatalog = await ensureFerrumCatalog(tx);
+                if (order.item_id === ferrumCatalog.miningPermitId) {
+                    await rescheduleFerrumMiningQueueAfterCancel(req.userId!, tx);
+                }
             }
 
             return {

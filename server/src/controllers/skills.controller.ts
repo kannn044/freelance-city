@@ -17,6 +17,48 @@ interface AuthRequest extends Request {
 type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
 type ChefBranch = "PREP_MASTER" | "KITCHEN_ECONOMY" | "MARKET_INTEL";
 
+const FERRUM_MINER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
+    title: string;
+    color: string;
+    effects: {
+        level1: string;
+        level2: string;
+        level3: string;
+        level4: string;
+    };
+}> = {
+    VEGETABLE: {
+        title: "Drill Prep",
+        color: "#38bdf8",
+        effects: {
+            level1: "Lv.1: Reduce mining expedition time by 5%",
+            level2: "Lv.2: Improve layer handling consistency",
+            level3: "Lv.3: Reduce mining expedition time by another 5% (10% total)",
+            level4: "Lv.4: Expert drilling flow for faster cycle",
+        },
+    },
+    CHICKEN: {
+        title: "Ore Efficiency",
+        color: "#f59e0b",
+        effects: {
+            level1: "Lv.1: Better ore extraction discipline",
+            level2: "Lv.2: Better by-product consistency",
+            level3: "Lv.3: Improved handling under pressure",
+            level4: "Lv.4: Master ore management",
+        },
+    },
+    BEEF: {
+        title: "Market Logistics",
+        color: "#ef4444",
+        effects: {
+            level1: "Lv.1: Better outbound logistics",
+            level2: "Lv.2: Better queue discipline",
+            level3: "Lv.3: Better shipment planning",
+            level4: "Lv.4: Master market routing",
+        },
+    },
+};
+
 let chefSkillColumnsEnsured = false;
 
 async function ensureChefSkillColumns() {
@@ -233,6 +275,7 @@ interface ProviderSkillUserRow {
     chef_skill_prep: number;
     chef_skill_economy: number;
     chef_skill_market: number;
+    city_key: string | null;
 }
 
 async function getProviderSkillUserRow(userId: number): Promise<ProviderSkillUserRow | null> {
@@ -258,7 +301,8 @@ async function getProviderSkillUserRow(userId: number): Promise<ProviderSkillUse
                 chef_exp,
                 chef_skill_prep,
                 chef_skill_economy,
-                chef_skill_market
+                chef_skill_market,
+                city_key
             FROM users
             WHERE id = ${userId}
             LIMIT 1
@@ -287,7 +331,8 @@ async function getProviderSkillUserRow(userId: number): Promise<ProviderSkillUse
                 provider_level,
                 provider_exp,
                 chef_level,
-                chef_exp
+                chef_exp,
+                city_key
             FROM users
             WHERE id = ${userId}
             LIMIT 1
@@ -308,18 +353,71 @@ async function getProviderSkillUserRow(userId: number): Promise<ProviderSkillUse
     }
 }
 
+async function applyImmediateFerrumMinerTimeReduction(
+    userId: number,
+    oldLevel: number,
+    newLevel: number,
+): Promise<number> {
+    const oldReduction = getChefSkillCookTimeReduction(oldLevel);
+    const newReduction = getChefSkillCookTimeReduction(newLevel);
+
+    if (newReduction <= oldReduction) return 0;
+
+    const oldMultiplier = 1 - oldReduction;
+    const newMultiplier = 1 - newReduction;
+    if (oldMultiplier <= 0 || newMultiplier <= 0) return 0;
+
+    const remainingScale = newMultiplier / oldMultiplier;
+
+    return prisma.$transaction(async (tx) => {
+        const permit = await tx.item.findFirst({ where: { name: "Ferrum Mining Permit" }, select: { id: true } });
+        if (!permit) return 0;
+
+        const orders = await tx.workOrder.findMany({
+            where: {
+                user_id: userId,
+                type: "FARM",
+                item_id: permit.id,
+                collected: false,
+            },
+            select: { id: true, completes_at: true },
+        });
+
+        const nowMs = Date.now();
+        let adjusted = 0;
+
+        for (const order of orders) {
+            const remainingMs = Math.max(0, new Date(order.completes_at).getTime() - nowMs);
+            if (remainingMs <= 0) continue;
+
+            const nextRemainingMs = Math.max(1000, Math.floor(remainingMs * remainingScale));
+            if (nextRemainingMs >= remainingMs) continue;
+
+            await tx.workOrder.update({
+                where: { id: order.id },
+                data: { completes_at: new Date(nowMs + nextRemainingMs) },
+            });
+            adjusted += 1;
+        }
+
+        return adjusted;
+    });
+}
+
 function buildProviderSkillTree(user: {
     provider_level: number;
     provider_skill_veg: number;
     provider_skill_chicken: number;
     provider_skill_beef: number;
-}) {
+}, cityKey?: string | null) {
     const spent =
         user.provider_skill_veg +
         user.provider_skill_chicken +
         user.provider_skill_beef;
     const total = Math.max(0, user.provider_level);
     const available = Math.max(0, total - spent);
+
+    const cfg = cityKey === "FERRUM" ? FERRUM_MINER_SKILL_TREE_CONFIG : PROVIDER_SKILL_TREE_CONFIG;
 
     return {
         points: {
@@ -330,21 +428,21 @@ function buildProviderSkillTree(user: {
         branches: {
             VEGETABLE: {
                 level: user.provider_skill_veg,
-                title: PROVIDER_SKILL_TREE_CONFIG.VEGETABLE.title,
-                color: PROVIDER_SKILL_TREE_CONFIG.VEGETABLE.color,
-                effects: PROVIDER_SKILL_TREE_CONFIG.VEGETABLE.effects,
+                title: cfg.VEGETABLE.title,
+                color: cfg.VEGETABLE.color,
+                effects: cfg.VEGETABLE.effects,
             },
             CHICKEN: {
                 level: user.provider_skill_chicken,
-                title: PROVIDER_SKILL_TREE_CONFIG.CHICKEN.title,
-                color: PROVIDER_SKILL_TREE_CONFIG.CHICKEN.color,
-                effects: PROVIDER_SKILL_TREE_CONFIG.CHICKEN.effects,
+                title: cfg.CHICKEN.title,
+                color: cfg.CHICKEN.color,
+                effects: cfg.CHICKEN.effects,
             },
             BEEF: {
                 level: user.provider_skill_beef,
-                title: PROVIDER_SKILL_TREE_CONFIG.BEEF.title,
-                color: PROVIDER_SKILL_TREE_CONFIG.BEEF.color,
-                effects: PROVIDER_SKILL_TREE_CONFIG.BEEF.effects,
+                title: cfg.BEEF.title,
+                color: cfg.BEEF.color,
+                effects: cfg.BEEF.effects,
             },
         },
     };
@@ -403,7 +501,7 @@ export const getProviderSkills = async (req: AuthRequest, res: Response): Promis
             return;
         }
 
-        res.json({ skillTree: buildProviderSkillTree(user) });
+        res.json({ skillTree: buildProviderSkillTree(user, user.city_key) });
     } catch (error) {
         console.error("getProviderSkills error:", error);
         res.status(500).json({ error: "Failed to fetch provider skill tree" });
@@ -460,12 +558,16 @@ export const upgradeProviderSkill = async (req: AuthRequest, res: Response): Pro
         );
 
         const nextLevel = currentLevel + 1;
-        const adjustedOrders = await applyImmediateProviderTimeReduction(
-            req.userId!,
-            branch,
-            currentLevel,
-            nextLevel,
-        );
+        const adjustedOrders = user.city_key === "FERRUM"
+            ? (branch === "VEGETABLE"
+                ? await applyImmediateFerrumMinerTimeReduction(req.userId!, currentLevel, nextLevel)
+                : 0)
+            : await applyImmediateProviderTimeReduction(
+                req.userId!,
+                branch,
+                currentLevel,
+                nextLevel,
+            );
 
         const updated = await getProviderSkillUserRow(req.userId!);
         if (!updated) {
@@ -477,7 +579,7 @@ export const upgradeProviderSkill = async (req: AuthRequest, res: Response): Pro
             message: adjustedOrders > 0
                 ? `Upgraded ${branch} branch to level ${nextLevel}. Skill buff applied to ${adjustedOrders} active task(s).`
                 : `Upgraded ${branch} branch to level ${nextLevel}`,
-            skillTree: buildProviderSkillTree(updated),
+            skillTree: buildProviderSkillTree(updated, updated.city_key),
             user: {
                 id: updated.id,
                 email: updated.email,

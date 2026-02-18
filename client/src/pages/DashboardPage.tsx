@@ -16,12 +16,12 @@ import {
     TrendingUp,
     Sprout,
     ChefHat,
+    ShoppingCart,
 } from 'lucide-react';
 
 import HungerBar from '../components/HungerBar';
 import InventoryGrid from '../components/InventoryGrid';
 import WorkspacePanel from '../components/WorkspacePanel';
-import MarketPanel from '../components/MarketPanel';
 import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
@@ -85,6 +85,11 @@ const DashboardPage = () => {
     const [chefSkillTree, setChefSkillTree] = useState<ChefSkillTreeData | null>(null);
     const [skillLoading, setSkillLoading] = useState(false);
 
+    const mergeAuthUser = (nextUser: any) => {
+        const prevUser = useAuthStore.getState().user as any;
+        useAuthStore.setState({ user: prevUser ? { ...prevUser, ...nextUser } : nextUser });
+    };
+
     useEffect(() => {
         const init = async () => {
             try {
@@ -134,12 +139,15 @@ const DashboardPage = () => {
 
     const providerLevel = Number(user.provider_level ?? 0);
     const chefLevel = Number(user.chef_level ?? 0);
+    const isFerrum = user.city_key === 'FERRUM';
+    const providerLabel = isFerrum ? 'Miner' : 'Provider';
+    const chefLabel = isFerrum ? 'Blacksmith' : 'Chef';
     const providerProgress = getExpProgress(user.provider_exp ?? 0, providerLevel);
     const chefProgress = getExpProgress(user.chef_exp ?? 0, chefLevel);
 
     // Determine if the second occupation can be unlocked
     const primaryLevel = user.role === 'PROVIDER' ? providerLevel : chefLevel;
-    const canUnlockSecond = primaryLevel >= UNLOCK_SECOND_OCCUPATION_LEVEL;
+    const canUnlockSecond = !isFerrum && primaryLevel >= UNLOCK_SECOND_OCCUPATION_LEVEL;
     const secondaryOccupation = user.role === 'PROVIDER' ? 'chef' : 'provider';
 
     const handleUnlock = async () => {
@@ -190,7 +198,7 @@ const DashboardPage = () => {
             const { data } = await api.post('/game/skills/provider/upgrade', { branch });
             setProviderSkillTree(data.skillTree);
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             } else {
                 await fetchMe();
             }
@@ -209,7 +217,7 @@ const DashboardPage = () => {
             const { data } = await api.post('/game/skills/chef/upgrade', { branch });
             setChefSkillTree(data.skillTree);
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             } else {
                 await fetchMe();
             }
@@ -382,6 +390,28 @@ const DashboardPage = () => {
 
                     {/* Right side */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <motion.button
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => navigate('/marketplace')}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.45rem',
+                                borderRadius: '0.65rem',
+                                border: '1px solid rgba(99, 102, 241, 0.35)',
+                                background: 'rgba(99, 102, 241, 0.12)',
+                                color: '#c7d2fe',
+                                fontSize: '0.76rem',
+                                fontWeight: 700,
+                                padding: '0.45rem 0.72rem',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <ShoppingCart size={14} />
+                            Marketplace Hub
+                        </motion.button>
+
                         {/* Money Pill */}
                         <motion.div
                             whileHover={{ scale: 1.05 }}
@@ -551,7 +581,7 @@ const DashboardPage = () => {
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(4, 1fr)',
+                            gridTemplateColumns: 'repeat(3, 1fr)',
                             gap: '1.5rem',
                         }}
                     >
@@ -562,7 +592,6 @@ const DashboardPage = () => {
                             transition={{ duration: 0.5 }}
                             style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '36rem' }}
                         >
-                            {/* Character Card */}
                             <section
                                 className="glass-card glow-indigo"
                                 style={{
@@ -574,7 +603,6 @@ const DashboardPage = () => {
                                     flexDirection: 'column',
                                 }}
                             >
-                                {/* Decorative blur */}
                                 <div
                                     style={{
                                         position: 'absolute',
@@ -589,7 +617,6 @@ const DashboardPage = () => {
                                 />
 
                                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '0.25rem' }}>
-                                    {/* Avatar + Name */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
                                         <motion.div
                                             whileHover={{ scale: 1.05 }}
@@ -620,12 +647,10 @@ const DashboardPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Hunger Stat */}
                                     <div style={{ marginBottom: '1.25rem', height: 'auto', overflow: 'hidden' }}>
                                         <HungerBar hunger={hunger} maxHunger={2400} />
                                     </div>
 
-                                    {/* Occupation Stats */}
                                     <div
                                         style={{
                                             paddingTop: '1.25rem',
@@ -649,9 +674,8 @@ const DashboardPage = () => {
                                         </h3>
 
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                            {/* Provider Stat */}
                                             <OccupationCard
-                                                name="Provider"
+                                                name={providerLabel}
                                                 icon={<Sprout size={16} />}
                                                 level={providerLevel}
                                                 progress={providerProgress}
@@ -664,9 +688,8 @@ const DashboardPage = () => {
                                                 onOpenSkills={!providerLevel ? undefined : openProviderSkillModal}
                                             />
 
-                                            {/* Chef Stat */}
                                             <OccupationCard
-                                                name="Chef"
+                                                name={chefLabel}
                                                 icon={<ChefHat size={16} />}
                                                 level={chefLevel}
                                                 progress={chefProgress}
@@ -681,7 +704,6 @@ const DashboardPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Buff Status */}
                                     <section
                                         className="glass-card"
                                         style={{
@@ -767,7 +789,6 @@ const DashboardPage = () => {
                                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                                     <InventoryGrid />
                                 </div>
-
                             </section>
                         </motion.div>
 
@@ -809,48 +830,6 @@ const DashboardPage = () => {
                                 </div>
                                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
                                     <WorkspacePanel />
-                                </div>
-                            </section>
-                        </motion.div>
-
-                        {/* ═══════ Column 4: Market ═══════ */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            style={{ height: '36rem' }}
-                        >
-                            <section
-                                className="glass-card"
-                                style={{
-                                    height: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    overflow: 'hidden',
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        padding: '1.25rem 1.5rem',
-                                        borderBottom: '1px solid rgba(99, 102, 241, 0.1)',
-                                        background: 'rgba(99, 102, 241, 0.03)',
-                                    }}
-                                >
-                                    <h2
-                                        style={{
-                                            fontSize: '1.1rem',
-                                            fontWeight: 700,
-                                            color: '#f1f5f9',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.5rem',
-                                        }}
-                                    >
-                                        <span>🏪</span> Marketplace
-                                    </h2>
-                                </div>
-                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-                                    <MarketPanel />
                                 </div>
                             </section>
                         </motion.div>

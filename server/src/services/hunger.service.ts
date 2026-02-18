@@ -130,33 +130,51 @@ export async function syncHunger(userId: number) {
         select: {
             type: true,
             item_id: true,
+            recipe_id: true,
             started_at: true,
             completes_at: true,
+            item: { select: { name: true } },
         },
     });
+
+    const headRows = await prisma.$queryRaw<Array<{ item_name: string | null }>>`
+        SELECT i.name as item_name
+        FROM user_equipments ue
+        LEFT JOIN items i ON i.id = ue.item_id
+        WHERE ue.user_id = ${userId} AND ue.slot = 'HEAD'
+        LIMIT 1
+    `;
+    const hasSafetyHelmet = String(headRows[0]?.item_name ?? "").toLowerCase() === "safety helmet";
 
     let providerDecayKcal = 0;
     const farmOrders = orders.filter((o) => o.type === "FARM");
 
-    const farmBySeed = new Map<number, Array<{ startMs: number; endMs: number }>>();
+    const farmBySeed = new Map<string, Array<{ startMs: number; endMs: number; burnMultiplier: number }>>();
     for (const o of farmOrders) {
         const startMs = Math.max(fromMs, o.started_at.getTime());
         const endMs = Math.min(toMs, o.completes_at.getTime());
         if (endMs <= startMs) continue;
-        const arr = farmBySeed.get(o.item_id) ?? [];
-        arr.push({ startMs, endMs });
-        farmBySeed.set(o.item_id, arr);
+
+        const isMining = String(o.item?.name ?? "") === "Ferrum Mining Permit";
+        const isDeepOrCore = (o.recipe_id === 2 || o.recipe_id === 3);
+        const burnMultiplier = isMining && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
+
+        const key = `${o.item_id}:${o.recipe_id ?? 0}`;
+        const arr = farmBySeed.get(key) ?? [];
+        arr.push({ startMs, endMs, burnMultiplier });
+        farmBySeed.set(key, arr);
     }
 
     for (const [, intervals] of farmBySeed) {
-        const events: Array<{ t: number; d: number }> = [];
+        const events: Array<{ t: number; d: number; m: number }> = [];
         for (const itv of intervals) {
-            events.push({ t: itv.startMs, d: +1 });
-            events.push({ t: itv.endMs, d: -1 });
+            events.push({ t: itv.startMs, d: +1, m: itv.burnMultiplier });
+            events.push({ t: itv.endMs, d: -1, m: itv.burnMultiplier });
         }
         events.sort((a, b) => a.t - b.t || a.d - b.d);
 
         let active = 0;
+        let multiplierSum = 0;
         let prev = fromMs;
         let i = 0;
 
@@ -165,11 +183,13 @@ export async function syncHunger(userId: number) {
             if (t > prev && active > 0) {
                 const secs = (t - prev) / 1000;
                 const activePlots = Math.ceil(active / 9);
-                providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs;
+                const avgMultiplier = Math.max(1, multiplierSum / active);
+                providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs * avgMultiplier;
             }
 
             while (i < events.length && events[i].t === t) {
                 active += events[i].d;
+                multiplierSum += events[i].d > 0 ? events[i].m : -events[i].m;
                 i += 1;
             }
             prev = t;
@@ -178,7 +198,8 @@ export async function syncHunger(userId: number) {
         if (toMs > prev && active > 0) {
             const secs = (toMs - prev) / 1000;
             const activePlots = Math.ceil(active / 9);
-            providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs;
+            const avgMultiplier = Math.max(1, multiplierSum / active);
+            providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs * avgMultiplier;
         }
     }
 

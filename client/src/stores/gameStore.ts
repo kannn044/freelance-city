@@ -69,7 +69,13 @@ export interface MarketListing {
     created_at: string;
     equipment_rarity?: EquipmentRarity | null;
     item: Item;
-    seller: { id: number; email: string; role: string };
+    seller: {
+        id: number;
+        email: string;
+        role: string;
+        city_key?: string | null;
+        city_name?: string | null;
+    };
 }
 
 export interface SaleHistoryEntry {
@@ -128,6 +134,26 @@ export interface EquipmentBoxInfo {
     rarityOdds?: EquipmentBoxRarityOdds[];
 }
 
+export interface FerrumMiningConfig {
+    hungerCostPerExpedition: number;
+    layerTimeMins: {
+        surface: number;
+        deep: number;
+        core: number;
+    };
+    dropRates: {
+        surface: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
+        deep: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
+        core: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
+    };
+}
+
+function mergeAuthUser(nextUser: any) {
+    if (!nextUser) return;
+    const prevUser = useAuthStore.getState().user as any;
+    useAuthStore.setState({ user: prevUser ? { ...prevUser, ...nextUser } : nextUser });
+}
+
 export interface EquipmentBoxOpenResult {
     ok: boolean;
     message?: string;
@@ -160,6 +186,7 @@ interface GameState {
     satietyBuff: number;
     buffExpiresAt: number | null;
     taskDecay: HungerTaskDecayConfig;
+    ferrumMiningConfig: FerrumMiningConfig;
 
     // Loading
     isLoading: boolean;
@@ -182,6 +209,7 @@ interface GameState {
     buyRecipeUnlock: (recipeId: number) => Promise<void>;
     openEquipmentBox: () => Promise<EquipmentBoxOpenResult>;
     startFarm: (itemId: number, quantity: number) => Promise<void>;
+    startMine: (layer: 'SURFACE' | 'DEEP' | 'CORE') => Promise<void>;
     startCook: (recipeId: number, selectedIngredients?: IngredientSelection[]) => Promise<void>;
     collectWork: (orderId: number) => Promise<void>;
     collectReadyWork: () => Promise<void>;
@@ -216,6 +244,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     taskDecay: {
         farmPerPlot: DEFAULT_HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT,
         cookPerMenu: DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
+    },
+    ferrumMiningConfig: {
+        hungerCostPerExpedition: 200,
+        layerTimeMins: { surface: 6, deep: 11, core: 16 },
+        dropRates: {
+            surface: { ironOre: 0.65, copperOre: 0.3, steelOre: 0, stone: 0.7, coal: 0.45, gem: 0.02 },
+            deep: { ironOre: 0.45, copperOre: 0.45, steelOre: 0.18, stone: 0.55, coal: 0.6, gem: 0.05 },
+            core: { ironOre: 0.3, copperOre: 0.35, steelOre: 0.35, stone: 0.45, coal: 0.7, gem: 0.09 },
+        },
     },
     isLoading: false,
     actionMessage: null,
@@ -307,6 +344,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                         ? cookPerMenu
                         : DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
                 },
+                ferrumMiningConfig: data?.ferrumMining ?? get().ferrumMiningConfig,
             });
         } catch (err) {
             console.error('fetchRuntimeConfig error', err);
@@ -361,7 +399,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 actionMessage: data.message,
             });
             // Update user state (money, hunger, levels)
-            useAuthStore.setState({ user: data.user });
+            mergeAuthUser(data.user);
             // Re-fetch shop in case occupation state changed
             get().fetchShop();
         } catch (err: any) {
@@ -374,7 +412,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             const { data } = await api.post('/game/shop/recipes/buy', { recipeId });
             set({ actionMessage: data.message });
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             }
             await Promise.all([get().fetchRecipes(), get().fetchRecipeShop()]);
         } catch (err: any) {
@@ -397,7 +435,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                     : get().equipmentBoxInfo,
             });
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             }
             return {
                 ok: true,
@@ -430,6 +468,22 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
+    startMine: async (layer) => {
+        try {
+            const { data } = await api.post('/game/workspace/start', {
+                type: 'FARM',
+                mode: 'MINE',
+                layer,
+                quantity: 1,
+            });
+            set({ actionMessage: data.message });
+            get().fetchWorkOrders();
+            useAuthStore.getState().fetchMe();
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to start mining expedition' });
+        }
+    },
+
     startCook: async (recipeId, selectedIngredients = []) => {
         try {
             const { data } = await api.post('/game/workspace/start', {
@@ -456,7 +510,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             // Update user state (levels, exp) after collecting work
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             }
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to collect' });
@@ -472,7 +526,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
             get().fetchWorkOrders();
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             }
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to collect ready work' });
@@ -554,7 +608,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             // Update user state (levels, exp)
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             }
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to create listing' });
@@ -571,7 +625,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             // Update user state (money)
             if (data.user) {
-                useAuthStore.setState({ user: data.user });
+                mergeAuthUser(data.user);
             }
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to buy listing' });
@@ -604,20 +658,30 @@ export const useGameStore = create<GameState>((set, get) => ({
             return now >= start && now < end;
         });
 
-        const farmBySeed = new Map<number, number>();
+        const farmBySeed = new Map<string, { count: number; burnMultiplier: number }>();
         let activeCookMenus = 0;
+
+        const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
         for (const order of activeOrders) {
             if (order.type === 'FARM') {
-                farmBySeed.set(order.item_id, (farmBySeed.get(order.item_id) ?? 0) + 1);
+                const isMiningPermit = String(order.item?.name ?? '') === 'Ferrum Mining Permit';
+                const isDeepOrCore = order.recipe_id === 2 || order.recipe_id === 3;
+                const burnMultiplier = isMiningPermit && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
+                const key = `${order.item_id}:${order.recipe_id ?? 0}:${burnMultiplier}`;
+                const prev = farmBySeed.get(key) ?? { count: 0, burnMultiplier };
+                farmBySeed.set(key, { count: prev.count + 1, burnMultiplier });
             } else if (order.type === 'COOK') {
                 activeCookMenus += 1;
             }
         }
 
         let activeProviderPlots = 0;
-        for (const count of farmBySeed.values()) {
-            activeProviderPlots += Math.ceil(count / 9);
+        let weightedProviderPlots = 0;
+        for (const block of farmBySeed.values()) {
+            const plots = Math.ceil(block.count / 9);
+            activeProviderPlots += plots;
+            weightedProviderPlots += plots * block.burnMultiplier;
         }
 
         let equipFlatReductionPerMin = 0;
@@ -637,7 +701,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         equipCookPctReduction = Math.max(0, Math.min(0.9, equipCookPctReduction));
 
         const elapsedSec = elapsed / 1000;
-        const providerDecay = elapsedSec * activeProviderPlots * taskDecay.farmPerPlot;
+        const providerDecay = elapsedSec * weightedProviderPlots * taskDecay.farmPerPlot;
         const chefDecay = elapsedSec * activeCookMenus * taskDecay.cookPerMenu * (1 - equipCookPctReduction);
         let decay = providerDecay + chefDecay;
 

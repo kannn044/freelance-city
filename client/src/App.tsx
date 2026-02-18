@@ -5,18 +5,19 @@ import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/LoginPage';
 import ClassSelection from './pages/ClassSelection';
 import DashboardPage from './pages/DashboardPage';
+import MarketplacePage from './pages/MarketplacePage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuthStore();
   if (!token) return <Navigate to="/" replace />;
-  if (user && user.role === 'NONE') return <Navigate to="/select-class" replace />;
+  if (user && !user.city_key) return <Navigate to="/select-class" replace />;
   return <>{children}</>;
 }
 
 function ClassRoute({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuthStore();
   if (!token) return <Navigate to="/" replace />;
-  if (user && user.role !== 'NONE') return <Navigate to="/dashboard" replace />;
+  if (user && user.city_key) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute>
+                <MarketplacePage />
               </ProtectedRoute>
             }
           />

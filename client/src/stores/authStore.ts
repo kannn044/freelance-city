@@ -16,6 +16,46 @@ interface User {
     chef_exp: number;
     satiety_buff: number;
     buff_expires_at?: string | null;
+    city_key?: string | null;
+    city_selected_at?: string | null;
+    city?: {
+        key: string;
+        name: string;
+        tier: number;
+        treasury: number;
+        taxes: {
+            domesticPct: number;
+            exportPct: number;
+            importPct: number;
+        };
+        bonuses: {
+            task_time_reduction_pct: number;
+            npc_shop_discount_pct: number;
+            market_fee_discount_pct: number;
+            rare_drop_bonus_pct: number;
+        };
+    } | null;
+}
+
+interface CityOption {
+    key: string;
+    name: string;
+    playable: boolean;
+    description?: string;
+    occupations?: string[];
+    tier: number;
+    treasury: number;
+    taxes: {
+        domesticPct: number;
+        exportPct: number;
+        importPct: number;
+    };
+    bonuses: {
+        task_time_reduction_pct: number;
+        npc_shop_discount_pct: number;
+        market_fee_discount_pct: number;
+        rare_drop_bonus_pct: number;
+    };
 }
 
 interface AuthState {
@@ -23,8 +63,11 @@ interface AuthState {
     user: User | null;
     isLoading: boolean;
     error: string | null;
+    cities: CityOption[];
     login: (email: string, password: string) => Promise<void>;
     register: (email: string, password: string) => Promise<void>;
+    fetchCities: () => Promise<void>;
+    selectCity: (cityKey: string) => Promise<void>;
     selectClass: (role: 'PROVIDER' | 'CHEF') => Promise<void>;
     unlockOccupation: () => Promise<void>;
     fetchMe: () => Promise<void>;
@@ -37,6 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     isLoading: false,
     error: null,
+    cities: [],
 
     login: async (email, password) => {
         set({ isLoading: true, error: null });
@@ -62,6 +106,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } catch (err: any) {
             set({
                 error: err.response?.data?.error || 'Registration failed',
+                isLoading: false,
+            });
+            throw err;
+        }
+    },
+
+    fetchCities: async () => {
+        try {
+            const { data } = await api.get('/auth/cities');
+            set({ cities: data.cities || [] });
+        } catch {
+            // keep silent, fallback handled in UI
+        }
+    },
+
+    selectCity: async (cityKey) => {
+        set({ isLoading: true, error: null });
+        try {
+            const { data } = await api.post('/auth/select-city', { cityKey });
+            set({ user: data.user, isLoading: false });
+        } catch (err: any) {
+            set({
+                error: err.response?.data?.error || 'Failed to select city',
                 isLoading: false,
             });
             throw err;

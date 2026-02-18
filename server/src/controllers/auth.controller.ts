@@ -5,6 +5,12 @@ import prisma from "../lib/prisma";
 import { AuthRequest } from "../middleware/auth.middleware";
 import { INVENTORY_SLOTS, UNLOCK_SECOND_OCCUPATION_LEVEL } from "../config/game.config";
 import { syncHunger } from "../services/hunger.service";
+import {
+    ensureLegacyCityAssignment,
+    getAvailableCities,
+    getUserCityContext,
+    selectUserCity,
+} from "../services/city.service";
 
 const generateToken = (userId: number): string => {
     return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: "7d" });
@@ -28,6 +34,16 @@ function userResponse(user: any) {
         provider_skill_beef: user.provider_skill_beef,
         chef_level: user.chef_level,
         chef_exp: user.chef_exp,
+    };
+}
+
+async function buildUserResponse(user: any) {
+    const cityContext = await getUserCityContext(user.id);
+    return {
+        ...userResponse(user),
+        city_key: cityContext.city_key,
+        city_selected_at: cityContext.city_selected_at,
+        city: cityContext.city,
     };
 }
 
@@ -72,7 +88,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
         res.status(201).json({
             token,
-            user: userResponse(user),
+            user: await buildUserResponse(user),
         });
     } catch (error) {
         console.error("Register error:", error);
@@ -105,9 +121,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         const token = generateToken(user.id);
         const syncedUser = await syncHunger(user.id);
 
+        await ensureLegacyCityAssignment({ id: syncedUser.id, role: syncedUser.role });
+
         res.json({
             token,
-            user: userResponse(syncedUser),
+            user: await buildUserResponse(syncedUser),
         });
     } catch (error) {
         console.error("Login error:", error);
@@ -146,6 +164,17 @@ export const selectClass = async (
             return;
         }
 
+        const cityRows = await prisma.$queryRaw<Array<{ city_key: string | null }>>`
+            SELECT city_key
+            FROM users
+            WHERE id = ${req.userId}
+            LIMIT 1
+        `;
+        if (cityRows[0]?.city_key) {
+            res.status(400).json({ error: "Class selection is disabled. Occupation is fixed by selected city." });
+            return;
+        }
+
         if (user.role !== "NONE") {
             console.log("User already has role:", user.role);
             res.status(400).json({ error: "Class has already been selected" });
@@ -167,7 +196,7 @@ export const selectClass = async (
         });
         console.log("Updated user successfully, new role:", updatedUser.role);
 
-        res.json({ user: userResponse(updatedUser) });
+        res.json({ user: await buildUserResponse(updatedUser) });
         console.log("=== SELECT CLASS END (success) ===");
     } catch (error: any) {
         console.error("=== SELECT CLASS ERROR ===");
@@ -188,7 +217,9 @@ export const me = async (req: AuthRequest, res: Response): Promise<void> => {
             return;
         }
 
-        res.json({ user: userResponse(user) });
+        await ensureLegacyCityAssignment({ id: user.id, role: user.role });
+
+        res.json({ user: await buildUserResponse(user) });
     } catch (error) {
         console.error("Me error:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -239,10 +270,49 @@ export const unlockSecondOccupation = async (
 
         res.json({
             message: `🔓 ${secondaryOccupation === "provider" ? "Provider" : "Chef"} occupation unlocked!`,
-            user: userResponse(updatedUser),
+            user: await buildUserResponse(updatedUser),
         });
     } catch (error) {
         console.error("Unlock occupation error:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+// GET /auth/cities
+export const getCities = async (_req: Request, res: Response): Promise<void> => {
+    try {
+        const cities = await getAvailableCities();
+        res.json({ cities });
+    } catch (error) {
+        console.error("Get cities error:", error);
+        res.status(500).json({ error: "Failed to fetch city list" });
+    }
+};
+
+// POST /auth/select-city
+export const selectCity = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { cityKey } = req.body as { cityKey?: string };
+        if (!cityKey) {
+            res.status(400).json({ error: "cityKey is required" });
+            return;
+        }
+
+        const result = await selectUserCity(req.userId!, cityKey);
+        const user = await syncHunger(req.userId!);
+
+        const chargeMessage = result.charged > 0
+            ? ` (Transfer fee: ${result.charged.toLocaleString()} credits)`
+            : "";
+
+        res.json({
+            message: `City selected: ${result.cityKey}${chargeMessage}`,
+            user: await buildUserResponse(user),
+        });
+    } catch (error: any) {
+        const message = error?.message || "Failed to select city";
+        const lower = String(message).toLowerCase();
+        const status = lower.includes("not enough") || lower.includes("once per election") || lower.includes("not available") ? 400 : 500;
+        res.status(status).json({ error: message });
     }
 };

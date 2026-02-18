@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import { Sprout, ChefHat } from 'lucide-react';
+import { Sprout, ChefHat, Pickaxe } from 'lucide-react';
 import { renderItemIcon } from '../lib/itemVisual';
 import { useState } from 'react';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, type EquipmentRarity } from '../lib/equipmentRarity';
@@ -48,8 +48,9 @@ const getCookMixOutcomes = (a: EquipmentRarity, b: EquipmentRarity) => {
 };
 
 const WorkspacePanel = () => {
-    const { inventory, recipes, recipeShop, startFarm, startCook } = useGameStore();
+    const { inventory, recipes, recipeShop, startFarm, startMine, startCook, ferrumMiningConfig } = useGameStore();
     const user = useAuthStore((s) => s.user);
+    const isFerrum = user?.city_key === 'FERRUM';
 
     const canFarm = (user?.provider_level ?? 0) > 0;
     const canCook = (user?.chef_level ?? 0) > 0;
@@ -58,7 +59,8 @@ const WorkspacePanel = () => {
 
     // Seeds in inventory (for providers to farm)
     const seedSlots = inventory.filter((s) => s.item?.type === 'SEED');
-    const selectedRecipe = recipes.find((r) => r.id === selectedRecipeId) ?? null;
+    const smeltRecipes = isFerrum ? recipes.filter((r) => r.output_item?.name?.toLowerCase?.().includes('ingot')) : recipes;
+    const selectedRecipe = smeltRecipes.find((r) => r.id === selectedRecipeId) ?? null;
 
     const getSelectedQtyForItem = (itemId: number) => {
         return Object.entries(selectedQtyBySlot).reduce((sum, [slotIdRaw, qty]) => {
@@ -150,39 +152,82 @@ const WorkspacePanel = () => {
 
                 {canFarm && (
                     <>
-                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <Sprout style={{ width: '0.7rem', height: '0.7rem' }} /> Farm your seeds
-                        </div>
-                        {seedSlots.length === 0 ? (
-                            <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
-                                No seeds in inventory.
-                            </p>
+                        {isFerrum ? (
+                            <>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
+                                    <Pickaxe style={{ width: '0.7rem', height: '0.7rem' }} /> Ferrum Mining Zones
+                                </div>
+                                {([
+                                    { key: 'SURFACE', label: 'Surface Layer', mins: ferrumMiningConfig.layerTimeMins.surface, note: 'Low risk, common ore veins' },
+                                    { key: 'DEEP', label: 'Deep Layer', mins: ferrumMiningConfig.layerTimeMins.deep, note: 'Higher steel chance, helmet recommended' },
+                                    { key: 'CORE', label: 'Core Layer', mins: ferrumMiningConfig.layerTimeMins.core, note: 'High-value zone, heavy fatigue' },
+                                ] as const).map((layer) => (
+                                    <motion.button
+                                        key={layer.key}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => startMine(layer.key)}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'flex-start',
+                                            justifyContent: 'space-between',
+                                            padding: '0.6rem',
+                                            borderRadius: '0.5rem',
+                                            border: '1px solid rgba(56,189,248,0.28)',
+                                            background: 'rgba(15,23,42,0.45)',
+                                            color: 'rgba(255,255,255,0.9)',
+                                            fontSize: '0.73rem',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            gap: '0.2rem',
+                                        }}
+                                    >
+                                        <span>{layer.label}</span>
+                                        <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)' }}>{layer.note}</span>
+                                        <span style={{ fontSize: '0.62rem', color: '#67e8f9' }}>
+                                            Time ~{layer.mins}m • Cost {ferrumMiningConfig.hungerCostPerExpedition} hunger
+                                        </span>
+                                    </motion.button>
+                                ))}
+                            </>
                         ) : (
-                            seedSlots.map((slot) => (
-                                <motion.button
-                                    key={slot.id}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => slot.item && startFarm(slot.item.id, 1)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '0.55rem 0.6rem',
-                                        borderRadius: '0.5rem',
-                                        border: '1px solid rgba(255,255,255,0.12)',
-                                        background: 'rgba(255,255,255,0.03)',
-                                        color: 'rgba(255,255,255,0.9)',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 500,
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                        {renderItemIcon(slot.item, 15)} {slot.item?.name} (x{slot.quantity})
-                                    </span>
-                                </motion.button>
-                            ))
+                            <>
+                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                    <Sprout style={{ width: '0.7rem', height: '0.7rem' }} /> Farm your seeds
+                                </div>
+                                {seedSlots.length === 0 ? (
+                                    <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
+                                        No seeds in inventory.
+                                    </p>
+                                ) : (
+                                    seedSlots.map((slot) => (
+                                        <motion.button
+                                            key={slot.id}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => slot.item && startFarm(slot.item.id, 1)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '0.55rem 0.6rem',
+                                                borderRadius: '0.5rem',
+                                                border: '1px solid rgba(255,255,255,0.12)',
+                                                background: 'rgba(255,255,255,0.03)',
+                                                color: 'rgba(255,255,255,0.9)',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 500,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                {renderItemIcon(slot.item, 15)} {slot.item?.name} (x{slot.quantity})
+                                            </span>
+                                        </motion.button>
+                                    ))
+                                )}
+                            </>
                         )}
                     </>
                 )}
@@ -190,11 +235,11 @@ const WorkspacePanel = () => {
                 {canCook && (
                     <>
                         <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <ChefHat style={{ width: '0.7rem', height: '0.7rem' }} /> Cook a recipe
+                            <ChefHat style={{ width: '0.7rem', height: '0.7rem' }} /> {isFerrum ? 'Blacksmith Smelter' : 'Cook a recipe'}
                         </div>
 
-                        {recipes.length > 0 && (
-                            recipes.map((recipe) => (
+                        {smeltRecipes.length > 0 && (
+                            smeltRecipes.map((recipe) => (
                                 <motion.button
                                     key={recipe.id}
                                     whileHover={{ scale: 1.02 }}
@@ -230,7 +275,7 @@ const WorkspacePanel = () => {
                             </div>
                         )}
 
-                        {recipes.length === 0 && recipeShop.length === 0 && (
+                        {smeltRecipes.length === 0 && recipeShop.length === 0 && (
                             <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
                                 No recipes available.
                             </p>

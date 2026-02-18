@@ -3,6 +3,8 @@ import { prisma } from "../lib/prisma";
 import { marketBotService } from "../services/marketBot.service";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 import type { EquipmentRarity } from "../config/game.config";
+import { applyMarketTradeTaxTx, computeMarketTradeTaxTx } from "../services/city.service";
+import { ensureCitySchema } from "../services/city.service";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -62,6 +64,37 @@ async function setMarketListingRarity(listingId: number, rarity: EquipmentRarity
         SET equipment_rarity = ${rarity}
         WHERE id = ${listingId}
     `;
+}
+
+async function getSellerCityMap(userIds: number[]) {
+    await ensureCitySchema(prisma);
+    const safeIds = userIds.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0);
+    if (safeIds.length === 0) {
+        return new Map<number, { city_key: string | null; city_name: string | null }>();
+    }
+
+    const rows = await prisma.$queryRawUnsafe<Array<{
+        id: number;
+        city_key: string | null;
+        city_name: string | null;
+    }>>(
+        `
+        SELECT u.id, u.city_key, cs.display_name AS city_name
+        FROM users u
+        LEFT JOIN city_states cs ON cs.city_key = u.city_key
+        WHERE u.id IN (${safeIds.join(",")})
+        `
+    );
+
+    const map = new Map<number, { city_key: string | null; city_name: string | null }>();
+    for (const row of rows) {
+        map.set(Number(row.id), {
+            city_key: row.city_key ?? null,
+            city_name: row.city_name ?? null,
+        });
+    }
+
+    return map;
 }
 
 async function placeItemInInventoryTx(
@@ -127,6 +160,7 @@ async function placeItemInInventoryTx(
 export const getListings = async (_req: AuthRequest, res: Response): Promise<void> => {
     try {
         await ensureMarketListingRarityColumn();
+        await ensureCitySchema(prisma);
 
         const listings = await prisma.marketListing.findMany({
             where: { status: "ACTIVE" },
@@ -138,10 +172,16 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
         });
 
         const rarityById = await getMarketListingRarityMap(listings.map((l) => l.id));
+        const sellerCityById = await getSellerCityMap(listings.map((l) => l.seller_id));
 
         const payload = listings.map((l) => ({
             ...l,
             equipment_rarity: rarityById.get(l.id) ?? null,
+            seller: {
+                ...l.seller,
+                city_key: sellerCityById.get(l.seller.id)?.city_key ?? null,
+                city_name: sellerCityById.get(l.seller.id)?.city_name ?? null,
+            },
         }));
 
         res.json({ listings: payload });
@@ -329,7 +369,15 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
         }
 
         const unitPrice = listing.price;
-        const totalCost = unitPrice * requestedQty;
+        const tradeValue = unitPrice * requestedQty;
+
+        const taxPreview = await computeMarketTradeTaxTx(
+            prisma,
+            listing.seller_id,
+            req.userId!,
+            tradeValue,
+        );
+        const totalCost = taxPreview.buyerPays;
 
         // Check buyer has enough money
         const buyer = await prisma.user.findUnique({ where: { id: req.userId! } });
@@ -355,14 +403,22 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
                 throw new Error("Inventory full!");
             }
 
+            const tax = await computeMarketTradeTaxTx(
+                tx,
+                listing.seller_id,
+                req.userId!,
+                tradeValue,
+            );
+
             await tx.user.update({
                 where: { id: req.userId! },
                 data: { money: { decrement: totalCost } },
             });
             await tx.user.update({
                 where: { id: listing.seller_id },
-                data: { money: { increment: totalCost } },
+                data: { money: { increment: tax.sellerReceives } },
             });
+            await applyMarketTradeTaxTx(tx, tax);
 
             if (requestedQty === listing.quantity) {
                 await tx.marketListing.update({
@@ -418,8 +474,12 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
 
         const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
 
+        const taxText = taxPreview.totalTax > 0
+            ? ` (tax ${taxPreview.totalTax}, net to seller ${taxPreview.sellerReceives})`
+            : "";
+
         res.json({
-            message: `Bought ${requestedQty}x ${listing.item.name} for ${totalCost} credits`,
+            message: `Bought ${requestedQty}x ${listing.item.name} for ${totalCost} credits${taxText}`,
             user: {
                 id: updatedUser!.id,
                 email: updatedUser!.email,

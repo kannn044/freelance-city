@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 import { getEffectiveNpcBuyPrice, getGameEquipmentRarityConfig, getGamePricing } from "../services/gamePricing.service";
+import { getUserCityProfile } from "../services/city.service";
 import {
     EQUIPMENT_RARITY_BUFF_MULTIPLIER,
     getEquipmentRarityBuffMultiplier,
@@ -212,6 +213,33 @@ async function hasRecipeUnlocked(userId: number, recipeId: number): Promise<bool
     return count > 0;
 }
 
+async function ensureFerrumNpcShopItems() {
+    await prisma.item.upsert({
+        where: { name: "Mattock" },
+        update: {
+            type: "EQUIPMENT",
+            buy_price: 650,
+            sell_price: 220,
+            max_stack: 1,
+            icon: "⛏️",
+            exp_value: 0,
+            equipment_role: "PROVIDER",
+            equipment_slot: "ARM",
+        } as any,
+        create: {
+            name: "Mattock",
+            type: "EQUIPMENT",
+            buy_price: 650,
+            sell_price: 220,
+            max_stack: 1,
+            icon: "⛏️",
+            exp_value: 0,
+            equipment_role: "PROVIDER",
+            equipment_slot: "ARM",
+        } as any,
+    });
+}
+
 /**
  * GET /game/shop — List items available for purchase from NPC shop
  * Filtered by user's unlocked occupations:
@@ -222,8 +250,28 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
     try {
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
         const pricing = await getGamePricing();
+        const city = await getUserCityProfile(req.userId!);
         if (!user) {
             res.status(404).json({ error: "User not found" });
+            return;
+        }
+
+        if (city.city_key === "FERRUM") {
+            await ensureFerrumNpcShopItems();
+            const ferrumItems = await prisma.item.findMany({
+                where: {
+                    buy_price: { not: null },
+                    name: { in: ["Mattock"] },
+                },
+                orderBy: { name: "asc" },
+            });
+
+            const pricedFerrum = ferrumItems.map((item) => ({
+                ...item,
+                buy_price: getEffectiveNpcBuyPrice(item.buy_price, pricing.npcShopMultiplier),
+            }));
+
+            res.json({ items: pricedFerrum });
             return;
         }
 
@@ -269,6 +317,7 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
     try {
         const { itemId, quantity = 1 } = req.body;
         const pricing = await getGamePricing();
+        const city = await getUserCityProfile(req.userId!);
 
         if (!itemId || quantity <= 0) {
             res.status(400).json({ error: "Invalid purchase parameters" });
@@ -296,8 +345,13 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
             res.status(403).json({ error: "You need the Chef occupation to buy ingredients" });
             return;
         }
-        if ((item as any).type === "EQUIPMENT") {
+        if ((item as any).type === "EQUIPMENT" && item.name !== "Mattock") {
             res.status(400).json({ error: "Equipment cannot be bought directly. Use Equipment Box." });
+            return;
+        }
+
+        if (city.city_key === "FERRUM" && item.name !== "Mattock") {
+            res.status(403).json({ error: "Ferrum NPC Shop currently sells Mattock only." });
             return;
         }
 
