@@ -5,14 +5,21 @@ import {
 } from "../config/game.config";
 import { getGameExpConfig } from "./gamePricing.service";
 
+type LegacyProgressUser = {
+    first_job_level: number;
+    secondary_job_level: number;
+    first_job_exp: number;
+    secondary_job_exp: number;
+};
+
 /**
  * Determine which occupation should receive EXP based on item type.
- * SEED / RAW → provider_exp
- * INGREDIENT / MEAL → chef_exp
+ * SEED / RAW → first_job_exp
+ * INGREDIENT / MEAL → secondary_job_exp
  */
-function getOccupationForItem(itemType: string): "provider" | "chef" {
-    if (itemType === "SEED" || itemType === "RAW") return "provider";
-    return "chef"; // INGREDIENT, MEAL
+function getOccupationForItem(itemType: string): "first_job" | "secondary_job" {
+    if (itemType === "SEED" || itemType === "RAW") return "first_job";
+    return "secondary_job"; // INGREDIENT, MEAL
 }
 
 /**
@@ -34,25 +41,26 @@ export async function awardSaleExp(
     // Calculate EXP
     const hungerRatio = Math.max(0, user.hunger / MAX_HUNGER);
     const occupation = getOccupationForItem(item.type);
-    const expMultiplier = occupation === "provider"
-        ? expConfig.providerMarketExpMultiplier
-        : expConfig.chefMarketExpMultiplier;
+    const expMultiplier = occupation === "first_job"
+        ? expConfig.firstJobMarketExpMultiplier
+        : expConfig.secondaryJobMarketExpMultiplier;
     const expGained = Math.floor(hungerRatio * item.exp_value * salePrice * expMultiplier);
 
     if (expGained <= 0) {
         return { expGained: 0, levelUp: false };
     }
 
-    const levelField = occupation === "provider" ? "provider_level" : "chef_level";
-    const expField = occupation === "provider" ? "provider_exp" : "chef_exp";
+    const levelField = occupation === "first_job" ? "first_job_level" : "secondary_job_level";
+    const expField = occupation === "first_job" ? "first_job_exp" : "secondary_job_exp";
+    const progressUser = user as unknown as LegacyProgressUser;
 
     // Only award EXP if the occupation is unlocked (level >= 1)
-    if (user[levelField] < 1) {
+    if (progressUser[levelField] < 1) {
         return { expGained: 0, levelUp: false };
     }
 
-    const oldLevel = user[levelField];
-    const newExp = user[expField] + expGained;
+    const oldLevel = progressUser[levelField];
+    const newExp = progressUser[expField] + expGained;
     const newLevel = getLevelFromExp(newExp);
     const levelUp = newLevel > oldLevel;
 

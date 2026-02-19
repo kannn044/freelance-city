@@ -21,7 +21,12 @@ import {
 	getEquipmentBoxInfo,
 	openEquipmentBox,
 } from "../controllers/shop.controller";
-import { getProviderSkills, upgradeProviderSkill, getChefSkills, upgradeChefSkill } from "../controllers/skills.controller";
+import {
+	getFirstJobSkills,
+	upgradeFirstJobSkill,
+	getSecondaryJobSkills,
+	upgradeSecondaryJobSkill,
+} from "../controllers/skills.controller";
 import {
 	getPricingConfig,
 	setPricingConfig,
@@ -29,6 +34,11 @@ import {
 	getRuntimeConfig,
 	setRuntimeConfig,
 } from "../controllers/admin.controller";
+import {
+	getCityGovernanceController,
+	setCityTaxesController,
+	voteMayorController,
+} from "../controllers/city.controller";
 
 const router = Router();
 
@@ -51,10 +61,10 @@ router.post("/workspace/collect-ready", collectReadyWork);
 router.post("/workspace/cancel/:orderId", cancelWork);
 
 // ─── Skills ──────────────────────────────────────────
-router.get("/skills/provider", getProviderSkills);
-router.post("/skills/provider/upgrade", upgradeProviderSkill);
-router.get("/skills/chef", getChefSkills);
-router.post("/skills/chef/upgrade", upgradeChefSkill);
+router.get("/skills/first-job", getFirstJobSkills);
+router.post("/skills/first-job/upgrade", upgradeFirstJobSkill);
+router.get("/skills/secondary-job", getSecondaryJobSkills);
+router.post("/skills/secondary-job/upgrade", upgradeSecondaryJobSkill);
 
 // ─── Market ──────────────────────────────────────────
 router.get("/market", getListings);
@@ -72,6 +82,11 @@ router.post("/admin/pricing", setPricingConfig);
 router.get("/runtime-config", getPublicRuntimeConfig);
 router.get("/admin/runtime-config", getRuntimeConfig);
 router.post("/admin/runtime-config", setRuntimeConfig);
+
+// ─── City Governance ──────────────────────────────────
+router.get("/city/governance", getCityGovernanceController);
+router.post("/city/vote-mayor", voteMayorController);
+router.post("/city/taxes", setCityTaxesController);
 
 // ─── Shop & Recipes ──────────────────────────────────
 router.get("/shop", getShop);

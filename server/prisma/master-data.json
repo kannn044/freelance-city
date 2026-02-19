@@ -1,0 +1,157 @@
+{
+  "gameSettings": [
+    { "key": "npc_shop_multiplier", "value": "1" },
+    { "key": "equipment_box_price", "value": "420" }
+  ],
+  "items": [
+    { "name": "Chicken Egg", "type": "SEED", "buy_price": 50, "max_stack": 30, "grow_mins": 10, "exp_value": 0.5, "icon": "chicken_egg" },
+    { "name": "Beef Calf", "type": "SEED", "buy_price": 120, "max_stack": 30, "grow_mins": 20, "exp_value": 0.8, "icon": "beef_calf" },
+    { "name": "Vegetable Seed", "type": "SEED", "buy_price": 30, "max_stack": 30, "grow_mins": 8, "exp_value": 0.3, "icon": "vegetable_seed" },
+
+    { "name": "Chicken Meat", "type": "RAW", "sell_price": 80, "max_stack": 20, "exp_value": 1.0, "icon": "chicken_meat" },
+    { "name": "Beef Meat", "type": "RAW", "sell_price": 180, "max_stack": 20, "exp_value": 1.5, "icon": "beef_meat" },
+    { "name": "Vegetable", "type": "RAW", "sell_price": 40, "max_stack": 20, "exp_value": 0.5, "icon": "vegetable" },
+
+    { "name": "Salt", "type": "INGREDIENT", "buy_price": 20, "max_stack": 30, "exp_value": 0.2, "icon": "salt" },
+
+    { "name": "Ferrum Mining Permit", "type": "SEED", "buy_price": null, "sell_price": null, "max_stack": 1, "grow_mins": 1, "exp_value": 0, "icon": "mining_permit" },
+
+    { "name": "Sun Hat", "type": "EQUIPMENT", "buy_price": 320, "max_stack": 1, "exp_value": 0, "icon": "sun_hat", "equipment_slot": "HEAD", "effect_key": "hunger_penalty_tier_reduction", "effect_value": 1 },
+    { "name": "Toque Blanche", "type": "EQUIPMENT", "buy_price": 360, "max_stack": 1, "exp_value": 0, "icon": "toque_blanche", "equipment_slot": "HEAD", "effect_key": "cook_secondary_ingredient_save_chance", "effect_value": 0.1 },
+    { "name": "Field Shirt", "type": "EQUIPMENT", "buy_price": 420, "max_stack": 1, "exp_value": 0, "icon": "field_shirt", "equipment_slot": "UPPER_BODY", "effect_key": "max_hunger_bonus", "effect_value": 300 },
+    { "name": "Apron", "type": "EQUIPMENT", "buy_price": 440, "max_stack": 1, "exp_value": 0, "icon": "apron", "equipment_slot": "UPPER_BODY", "effect_key": "max_hunger_and_satiety_bonus", "effect_value": 150, "effect_value2": 0.1 },
+    { "name": "Cargo Pants", "type": "EQUIPMENT", "buy_price": 520, "max_stack": 1, "exp_value": 0, "icon": "cargo_pants", "equipment_slot": "LOWER_BODY", "effect_key": "raw_stack_bonus", "effect_value": 5 },
+    { "name": "Slack Pants", "type": "EQUIPMENT", "buy_price": 520, "max_stack": 1, "exp_value": 0, "icon": "slack_pants", "equipment_slot": "LOWER_BODY", "effect_key": "ingredient_stack_bonus", "effect_value": 5 },
+    { "name": "Sweatband", "type": "EQUIPMENT", "buy_price": 600, "max_stack": 1, "exp_value": 0, "icon": "sweatband", "equipment_slot": "ARM", "effect_key": "farm_time_reduction_pct", "effect_value": 0.1 },
+    { "name": "Wrist Support", "type": "EQUIPMENT", "buy_price": 600, "max_stack": 1, "exp_value": 0, "icon": "wrist_support", "equipment_slot": "ARM", "effect_key": "cook_time_reduction_pct", "effect_value": 0.1 },
+    { "name": "Work Gloves", "type": "EQUIPMENT", "buy_price": 650, "max_stack": 1, "exp_value": 0, "icon": "work_gloves", "equipment_slot": "GLOVE", "effect_key": "farm_double_yield_chance", "effect_value": 0.08 },
+    { "name": "Latex Gloves", "type": "EQUIPMENT", "buy_price": 650, "max_stack": 1, "exp_value": 0, "icon": "latex_gloves", "equipment_slot": "GLOVE", "effect_key": "gourmet_chance", "effect_value": 0.08 },
+    { "name": "Mud Boots", "type": "EQUIPMENT", "buy_price": 700, "max_stack": 1, "exp_value": 0, "icon": "mud_boots", "equipment_slot": "SHOE", "effect_key": "hunger_decay_reduction_per_min", "effect_value": 1.5 },
+    { "name": "Anti-Slip Shoes", "type": "EQUIPMENT", "buy_price": 700, "max_stack": 1, "exp_value": 0, "icon": "anti_slip_shoes", "equipment_slot": "SHOE", "effect_key": "cook_state_hunger_decay_reduction_pct", "effect_value": 0.2 },
+    { "name": "Mattock", "type": "EQUIPMENT", "buy_price": 650, "sell_price": 220, "max_stack": 1, "exp_value": 0, "icon": "mattock", "equipment_slot": "ARM" },
+    { "name": "Fork", "type": "EQUIPMENT", "buy_price": 450, "sell_price": 180, "max_stack": 1, "exp_value": 0, "icon": "fork", "equipment_slot": "ARM" },
+
+    { "name": "Iron Ore", "type": "RAW", "max_stack": 30, "sell_price": 45, "exp_value": 0.8, "icon": "iron_ore" },
+    { "name": "Copper Ore", "type": "RAW", "max_stack": 30, "sell_price": 55, "exp_value": 0.9, "icon": "copper_ore" },
+    { "name": "Steel Ore", "type": "RAW", "max_stack": 30, "sell_price": 75, "exp_value": 1.1, "icon": "steel_ore" },
+    { "name": "Stone", "type": "RAW", "max_stack": 30, "sell_price": 12, "exp_value": 0.4, "icon": "stone" },
+    { "name": "Coal", "type": "INGREDIENT", "max_stack": 30, "sell_price": 20, "exp_value": 0.5, "icon": "coal" },
+    { "name": "Gem", "type": "RAW", "max_stack": 5, "sell_price": 500, "exp_value": 2.5, "icon": "gem" },
+    { "name": "Gas", "type": "RAW", "max_stack": 30, "sell_price": 200, "exp_value": 0.2, "icon": "gas" },
+    { "name": "Flux", "type": "INGREDIENT", "buy_price": null, "max_stack": 30, "sell_price": 65, "exp_value": 0.8, "icon": "flux" },
+    { "name": "Oil", "type": "INGREDIENT", "buy_price": null, "max_stack": 30, "sell_price": 90, "exp_value": 1.0, "icon": "oil" },
+
+    { "name": "Iron Ingot", "type": "INGREDIENT", "max_stack": 20, "sell_price": 220, "exp_value": 1.6, "icon": "iron_ingot" },
+    { "name": "Copper Ingot", "type": "INGREDIENT", "max_stack": 20, "sell_price": 250, "exp_value": 1.8, "icon": "copper_ingot" },
+    { "name": "Steel Ingot", "type": "INGREDIENT", "max_stack": 20, "sell_price": 340, "exp_value": 2.3, "icon": "steel_ingot" },
+
+    { "name": "Chicken Salad", "type": "MEAL", "sell_price": 150, "kcal": 200, "buff_pct": 0.05, "buff_mins": 30, "max_stack": 10, "exp_value": 2.0, "icon": "chicken_salad" },
+    { "name": "Beef Steak", "type": "MEAL", "sell_price": 400, "kcal": 300, "buff_pct": 0.15, "buff_mins": 45, "max_stack": 10, "exp_value": 3.0, "icon": "beef_steak" }
+  ],
+  "yieldLinks": [
+    { "seedItemName": "Chicken Egg", "yieldItemName": "Chicken Meat", "yield_qty": 1 },
+    { "seedItemName": "Beef Calf", "yieldItemName": "Beef Meat", "yield_qty": 1 },
+    { "seedItemName": "Vegetable Seed", "yieldItemName": "Vegetable", "yield_qty": 2 }
+  ],
+  "recipes": [
+    {
+      "name": "Chicken Salad",
+      "outputItemName": "Chicken Salad",
+      "output_qty": 1,
+      "cook_mins": 5,
+      "unlock_price": 250,
+      "ingredients": [
+        { "itemName": "Chicken Meat", "quantity": 2 },
+        { "itemName": "Vegetable", "quantity": 3 },
+        { "itemName": "Salt", "quantity": 1 },
+        { "itemName": "Gas", "quantity": 1 }
+      ]
+    },
+    {
+      "name": "Beef Steak",
+      "outputItemName": "Beef Steak",
+      "output_qty": 1,
+      "cook_mins": 10,
+      "unlock_price": 600,
+      "ingredients": [
+        { "itemName": "Beef Meat", "quantity": 2 },
+        { "itemName": "Vegetable", "quantity": 2 },
+        { "itemName": "Salt", "quantity": 1 },
+        { "itemName": "Gas", "quantity": 1 }
+      ]
+    },
+    {
+      "name": "Iron Ingot Smelt",
+      "outputItemName": "Iron Ingot",
+      "output_qty": 1,
+      "cook_mins": 7,
+      "unlock_price": 0,
+      "ingredients": [
+        { "itemName": "Iron Ore", "quantity": 2 },
+        { "itemName": "Flux", "quantity": 1 },
+        { "itemName": "Coal", "quantity": 2 },
+        { "itemName": "Oil", "quantity": 1 }
+      ]
+    },
+    {
+      "name": "Copper Ingot Smelt",
+      "outputItemName": "Copper Ingot",
+      "output_qty": 1,
+      "cook_mins": 8,
+      "unlock_price": 0,
+      "ingredients": [
+        { "itemName": "Copper Ore", "quantity": 2 },
+        { "itemName": "Flux", "quantity": 1 },
+        { "itemName": "Coal", "quantity": 2 },
+        { "itemName": "Oil", "quantity": 1 }
+      ]
+    },
+    {
+      "name": "Steel Ingot Smelt",
+      "outputItemName": "Steel Ingot",
+      "output_qty": 1,
+      "cook_mins": 10,
+      "unlock_price": 0,
+      "ingredients": [
+        { "itemName": "Steel Ore", "quantity": 2 },
+        { "itemName": "Flux", "quantity": 1 },
+        { "itemName": "Coal", "quantity": 2 },
+        { "itemName": "Oil", "quantity": 1 }
+      ]
+    }
+  ],
+  "shopRules": {
+    "itemRules": [
+      { "cityKey": "AGRARIA", "matcherType": "ITEM_NAME", "matcherValue": "Chicken Egg"},
+      { "cityKey": "AGRARIA", "matcherType": "ITEM_NAME", "matcherValue": "Beef Calf"},
+      { "cityKey": "AGRARIA", "matcherType": "ITEM_NAME", "matcherValue": "Vegetable Seed"},
+      { "cityKey": "AGRARIA", "matcherType": "ITEM_NAME", "matcherValue": "Salt"},
+      { "cityKey": "AGRARIA", "matcherType": "ITEM_NAME", "matcherValue": "Fork"},
+      { "cityKey": "FERRUM", "matcherType": "ITEM_NAME", "matcherValue": "Mattock"}
+    ],
+    "recipeRules": [
+      { "cityKey": "AGRARIA", "matcherType": "OUTPUT_ITEM_TYPE", "matcherValue": "MEAL"},
+      { "cityKey": "FERRUM", "matcherType": "RECIPE_NAME_LIKE", "matcherValue": "%Smelt%"}
+    ]
+  },
+  "workspaceRules": [
+    {
+      "cityKey": "AGRARIA",
+      "jobSlot": "first_job",
+      "workType": "FARM",
+      "requiredItemName": "Fork",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Farming in Agraria requires Fork equipped before starting work."
+    },
+    {
+      "cityKey": "FERRUM",
+      "jobSlot": "first_job",
+      "workType": "MINE",
+      "requiredItemName": "Mattock",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Mining in Ferrum requires Mattock equipped before starting expedition."
+    }
+  ]
+}

@@ -8,6 +8,9 @@ import {
 } from "../config/game.config";
 import { syncHunger, applyMealEffect } from "../services/hunger.service";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
+import { getUserCityProfile } from "../services/city.service";
+import { reconcileWorkspaceOrderPausesForUser } from "../services/workspaceRules.service";
+import { toJobPayload } from "../lib/userPayload";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -296,6 +299,10 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
             include: { item: true },
             orderBy: { slot: "asc" },
         });
+
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+
         const equipment = await getEquipmentState(req.userId!);
 
         res.json({
@@ -369,6 +376,10 @@ export const discardItem = async (req: AuthRequest, res: Response): Promise<void
             include: { item: true },
             orderBy: { slot: "asc" },
         });
+
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+
         const equipment = await getEquipmentState(req.userId!);
 
         res.json({
@@ -479,6 +490,10 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
             include: { item: true },
             orderBy: { slot: "asc" },
         });
+
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+
         const equipment = await getEquipmentState(req.userId!);
 
         res.json({
@@ -536,6 +551,10 @@ export const unequipItem = async (req: AuthRequest, res: Response): Promise<void
             include: { item: true },
             orderBy: { slot: "asc" },
         });
+
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+
         const equipment = await getEquipmentState(req.userId!);
 
         res.json({
@@ -614,7 +633,7 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
 
         res.json({
             message: `Ate ${slot.item.name}. +${slot.item.kcal} Kcal`,
-            user: {
+            user: toJobPayload({
                 id: user.id,
                 email: user.email,
                 role: user.role,
@@ -622,7 +641,7 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
                 hunger: user.hunger,
                 satiety_buff: user.satiety_buff,
                 buff_expires_at: user.buff_expires_at,
-            },
+            }),
             slots,
         });
     } catch (error) {

@@ -114,12 +114,18 @@ export async function getRuntimeConfig(req: AuthRequest, res: Response): Promise
  *   equipmentBoxPrice?: number,
  *   farmPerPlot?: number,
  *   cookPerMenu?: number,
- *   providerTaskTimeMultiplier?: number,
- *   chefTaskTimeMultiplier?: number,
- *   providerWorkExpMultiplier?: number,
- *   chefWorkExpMultiplier?: number,
- *   providerMarketExpMultiplier?: number,
- *   chefMarketExpMultiplier?: number,
+ *   firstJobTaskTimeMultiplier?: number,
+ *   secondaryJobTaskTimeMultiplier?: number,
+ *   firstJobWorkExpMultiplier?: number,
+ *   secondaryJobWorkExpMultiplier?: number,
+ *   firstJobMarketExpMultiplier?: number,
+ *   secondaryJobMarketExpMultiplier?: number,
+ *   providerTaskTimeMultiplier?: number,      // legacy alias
+ *   chefTaskTimeMultiplier?: number,          // legacy alias
+ *   providerWorkExpMultiplier?: number,       // legacy alias
+ *   chefWorkExpMultiplier?: number,           // legacy alias
+ *   providerMarketExpMultiplier?: number,     // legacy alias
+ *   chefMarketExpMultiplier?: number,         // legacy alias
  *   harvestNormalRate?: number,
  *   harvestRareRate?: number,
  *   harvestEpicRate?: number,
@@ -147,12 +153,18 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             || payload.equipmentBoxPrice != null
             || payload.farmPerPlot != null
             || payload.cookPerMenu != null
+            || payload.firstJobTaskTimeMultiplier != null
+            || payload.secondaryJobTaskTimeMultiplier != null
             || payload.providerTaskTimeMultiplier != null
             || payload.chefTaskTimeMultiplier != null
             || payload.providerWorkExpMultiplier != null
             || payload.chefWorkExpMultiplier != null
             || payload.providerMarketExpMultiplier != null
             || payload.chefMarketExpMultiplier != null
+            || payload.firstJobWorkExpMultiplier != null
+            || payload.secondaryJobWorkExpMultiplier != null
+            || payload.firstJobMarketExpMultiplier != null
+            || payload.secondaryJobMarketExpMultiplier != null
             || payload.harvestNormalRate != null
             || payload.harvestRareRate != null
             || payload.harvestEpicRate != null
@@ -194,12 +206,18 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             equipmentBoxPrice: payload.equipmentBoxPrice != null ? Number(payload.equipmentBoxPrice) : undefined,
             farmPerPlot: payload.farmPerPlot != null ? Number(payload.farmPerPlot) : undefined,
             cookPerMenu: payload.cookPerMenu != null ? Number(payload.cookPerMenu) : undefined,
+            firstJobTaskTimeMultiplier: payload.firstJobTaskTimeMultiplier != null ? Number(payload.firstJobTaskTimeMultiplier) : undefined,
+            secondaryJobTaskTimeMultiplier: payload.secondaryJobTaskTimeMultiplier != null ? Number(payload.secondaryJobTaskTimeMultiplier) : undefined,
             providerTaskTimeMultiplier: payload.providerTaskTimeMultiplier != null ? Number(payload.providerTaskTimeMultiplier) : undefined,
             chefTaskTimeMultiplier: payload.chefTaskTimeMultiplier != null ? Number(payload.chefTaskTimeMultiplier) : undefined,
             providerWorkExpMultiplier: payload.providerWorkExpMultiplier != null ? Number(payload.providerWorkExpMultiplier) : undefined,
             chefWorkExpMultiplier: payload.chefWorkExpMultiplier != null ? Number(payload.chefWorkExpMultiplier) : undefined,
             providerMarketExpMultiplier: payload.providerMarketExpMultiplier != null ? Number(payload.providerMarketExpMultiplier) : undefined,
             chefMarketExpMultiplier: payload.chefMarketExpMultiplier != null ? Number(payload.chefMarketExpMultiplier) : undefined,
+            firstJobWorkExpMultiplier: payload.firstJobWorkExpMultiplier != null ? Number(payload.firstJobWorkExpMultiplier) : undefined,
+            secondaryJobWorkExpMultiplier: payload.secondaryJobWorkExpMultiplier != null ? Number(payload.secondaryJobWorkExpMultiplier) : undefined,
+            firstJobMarketExpMultiplier: payload.firstJobMarketExpMultiplier != null ? Number(payload.firstJobMarketExpMultiplier) : undefined,
+            secondaryJobMarketExpMultiplier: payload.secondaryJobMarketExpMultiplier != null ? Number(payload.secondaryJobMarketExpMultiplier) : undefined,
             harvestNormalRate: payload.harvestNormalRate != null ? Number(payload.harvestNormalRate) : undefined,
             harvestRareRate: payload.harvestRareRate != null ? Number(payload.harvestRareRate) : undefined,
             harvestEpicRate: payload.harvestEpicRate != null ? Number(payload.harvestEpicRate) : undefined,

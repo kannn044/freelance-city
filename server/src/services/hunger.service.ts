@@ -77,9 +77,26 @@ export function calculateCurrentHunger(
 /**
  * Sync hunger to DB — called before any action that depends on hunger.
  */
-export async function syncHunger(userId: number) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+export async function syncHunger(userId: number): Promise<any> {
+    const userRows = await prisma.$queryRaw<
+        Array<{
+            id: number;
+            role: string | null;
+            hunger: number;
+            hunger_updated_at: Date;
+            satiety_buff: number;
+            buff_expires_at: Date | null;
+        }>
+    >`
+        SELECT id, role, hunger, hunger_updated_at, satiety_buff, buff_expires_at
+        FROM users
+        WHERE id = ${userId}
+        LIMIT 1
+    `;
+    const user = userRows[0];
     if (!user) throw new Error("User not found");
+    const normalizedRole =
+        String(user.role ?? "").toUpperCase() === "MAYOR" ? "MAYOR" : "CITIZEN";
     const effects = await getUserEquipmentEffects(userId);
     const taskDecay = await getGameTaskDecayConfig();
 
@@ -102,6 +119,7 @@ export async function syncHunger(userId: number) {
                     hunger_updated_at: user.hunger_updated_at,
                 },
                 data: {
+                    role: normalizedRole as any,
                     hunger: 0,
                     hunger_updated_at: now,
                     ...(buffExpired ? { satiety_buff: 0, buff_expires_at: null } : {}),
@@ -146,7 +164,7 @@ export async function syncHunger(userId: number) {
     `;
     const hasSafetyHelmet = String(headRows[0]?.item_name ?? "").toLowerCase() === "safety helmet";
 
-    let providerDecayKcal = 0;
+    let firstJobDecayKcal = 0;
     const farmOrders = orders.filter((o) => o.type === "FARM");
 
     const farmBySeed = new Map<string, Array<{ startMs: number; endMs: number; burnMultiplier: number }>>();
@@ -184,7 +202,7 @@ export async function syncHunger(userId: number) {
                 const secs = (t - prev) / 1000;
                 const activePlots = Math.ceil(active / 9);
                 const avgMultiplier = Math.max(1, multiplierSum / active);
-                providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs * avgMultiplier;
+                firstJobDecayKcal += activePlots * taskDecay.farmPerPlot * secs * avgMultiplier;
             }
 
             while (i < events.length && events[i].t === t) {
@@ -199,23 +217,23 @@ export async function syncHunger(userId: number) {
             const secs = (toMs - prev) / 1000;
             const activePlots = Math.ceil(active / 9);
             const avgMultiplier = Math.max(1, multiplierSum / active);
-            providerDecayKcal += activePlots * taskDecay.farmPerPlot * secs * avgMultiplier;
+            firstJobDecayKcal += activePlots * taskDecay.farmPerPlot * secs * avgMultiplier;
         }
     }
 
-    let chefDecayKcal = 0;
+    let secondaryJobDecayKcal = 0;
     const cookOrders = orders.filter((o) => o.type === "COOK");
     for (const o of cookOrders) {
         const startMs = Math.max(fromMs, o.started_at.getTime());
         const endMs = Math.min(toMs, o.completes_at.getTime());
         if (endMs <= startMs) continue;
         const secs = (endMs - startMs) / 1000;
-        chefDecayKcal += taskDecay.cookPerMenu * secs;
+        secondaryJobDecayKcal += taskDecay.cookPerMenu * secs;
     }
 
-    // Chef-only equipment reduction should affect only cooking workload part.
-    const reducedChefDecay = chefDecayKcal * (1 - Math.max(0, Math.min(0.9, effects.cookStateHungerDecayReductionPct)));
-    let totalTaskDecay = providerDecayKcal + reducedChefDecay;
+    // Secondary-job-only equipment reduction should affect only cooking workload part.
+    const reducedSecondaryJobDecay = secondaryJobDecayKcal * (1 - Math.max(0, Math.min(0.9, effects.cookStateHungerDecayReductionPct)));
+    let totalTaskDecay = firstJobDecayKcal + reducedSecondaryJobDecay;
 
     // Apply satiety buff if still active
     let satietyRateMultiplier = 1;
@@ -246,6 +264,7 @@ export async function syncHunger(userId: number) {
     const updated = await prisma.user.update({
         where: { id: userId },
         data: {
+            role: normalizedRole as any,
             hunger: newHunger,
             hunger_updated_at: now,
             ...(buffExpired ? { satiety_buff: 0, buff_expires_at: null } : {}),

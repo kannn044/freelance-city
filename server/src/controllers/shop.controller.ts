@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 import { getEffectiveNpcBuyPrice, getGameEquipmentRarityConfig, getGamePricing } from "../services/gamePricing.service";
 import { getUserCityProfile } from "../services/city.service";
+import { toJobPayload } from "../lib/userPayload";
 import {
     EQUIPMENT_RARITY_BUFF_MULTIPLIER,
     getEquipmentRarityBuffMultiplier,
@@ -32,12 +33,6 @@ function pickByWeight<T>(entries: Array<{ value: T; weight: number }>): T {
         if (rand <= acc) return e.value;
     }
     return entries[entries.length - 1].value;
-}
-
-function getRoleBias(userRole: string) {
-    if (userRole === "PROVIDER") return { PROVIDER: 0.7, CHEF: 0.3 };
-    if (userRole === "CHEF") return { PROVIDER: 0.3, CHEF: 0.7 };
-    return { PROVIDER: 0.5, CHEF: 0.5 };
 }
 
 async function addItemToInventory(
@@ -160,21 +155,12 @@ async function addItemToInventoryTx(
     return remaining === 0;
 }
 
-function buildEquipmentOdds(userRole: string) {
-    const roleBias = getRoleBias(userRole);
+function buildEquipmentOdds() {
     const slots = Object.entries(SLOT_WEIGHTS);
-    return slots.flatMap(([slot, slotWeight]) => [
-        {
-            role: "PROVIDER",
-            slot,
-            chancePct: Number(((slotWeight / 100) * roleBias.PROVIDER * 100).toFixed(2)),
-        },
-        {
-            role: "CHEF",
-            slot,
-            chancePct: Number(((slotWeight / 100) * roleBias.CHEF * 100).toFixed(2)),
-        },
-    ]);
+    return slots.map(([slot, slotWeight]) => ({
+        slot,
+        chancePct: Number(slotWeight.toFixed(2)),
+    }));
 }
 
 function buildRarityOdds(dropRates: Record<EquipmentRarity, number>) {
@@ -235,22 +221,16 @@ function normalizeCityKey(cityKey: string | null | undefined): string {
 }
 
 function getUserRoleTokens(user: {
-    role: string;
-    provider_level: number;
-    chef_level: number;
+    first_job_level: number;
+    secondary_job_level: number;
 }): Set<string> {
     const tokens = new Set<string>(["ANY"]);
 
-    if ((user.provider_level ?? 0) >= 1) {
+    if ((user.first_job_level ?? 0) >= 1) {
         tokens.add("PROVIDER");
     }
-    if ((user.chef_level ?? 0) >= 1) {
+    if ((user.secondary_job_level ?? 0) >= 1) {
         tokens.add("CHEF");
-    }
-
-    const primary = String(user.role ?? "").toUpperCase();
-    if (primary && primary !== "NONE") {
-        tokens.add(primary);
     }
 
     return tokens;
@@ -313,132 +293,9 @@ function recipeRuleMatches(
     return false;
 }
 
-async function upsertShopItemRule(cityKey: string, matcherType: string, matcherValue: string, requiredRole = "ANY") {
-    await prisma.$executeRaw`
-        INSERT INTO city_shop_item_rules (city_key, matcher_type, matcher_value, required_role, is_enabled)
-        VALUES (${cityKey}, ${matcherType}, ${matcherValue}, ${requiredRole}, 1)
-        ON DUPLICATE KEY UPDATE
-            is_enabled = VALUES(is_enabled),
-            required_role = VALUES(required_role)
-    `;
-}
-
-async function upsertShopRecipeRule(cityKey: string, matcherType: string, matcherValue: string, requiredRole = "ANY") {
-    await prisma.$executeRaw`
-        INSERT INTO city_shop_recipe_rules (city_key, matcher_type, matcher_value, required_role, is_enabled)
-        VALUES (${cityKey}, ${matcherType}, ${matcherValue}, ${requiredRole}, 1)
-        ON DUPLICATE KEY UPDATE
-            is_enabled = VALUES(is_enabled),
-            required_role = VALUES(required_role)
-    `;
-}
-
-async function ensureFerrumShopCatalog() {
-    const upsertItem = async (name: string, data: any) => {
-        return prisma.item.upsert({ where: { name }, update: data, create: { name, ...data } as any });
-    };
-
-    await upsertItem("Mattock", {
-        type: "EQUIPMENT",
-        buy_price: 650,
-        sell_price: 220,
-        max_stack: 1,
-        icon: "mattock",
-        exp_value: 0,
-        equipment_role: "PROVIDER",
-        equipment_slot: "ARM",
-    });
-
-    const ironOre = await upsertItem("Iron Ore", { type: "RAW", max_stack: 20, sell_price: 45, exp_value: 0.8, icon: "iron_ore" });
-    const copperOre = await upsertItem("Copper Ore", { type: "RAW", max_stack: 20, sell_price: 55, exp_value: 0.9, icon: "copper_ore" });
-    const steelOre = await upsertItem("Steel Ore", { type: "RAW", max_stack: 20, sell_price: 75, exp_value: 1.1, icon: "steel_ore" });
-    const coal = await upsertItem("Coal", { type: "INGREDIENT", max_stack: 30, sell_price: 20, exp_value: 0.5, icon: "coal" });
-    const flux = await upsertItem("Flux", { type: "INGREDIENT", max_stack: 20, sell_price: 65, buy_price: null, exp_value: 0.8, icon: "flux" });
-    const oil = await upsertItem("Oil", { type: "INGREDIENT", max_stack: 20, sell_price: 90, buy_price: null, exp_value: 1.0, icon: "oil" });
-
-    const ironIngot = await upsertItem("Iron Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 220, exp_value: 1.6, icon: "iron_ingot" });
-    const copperIngot = await upsertItem("Copper Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 250, exp_value: 1.8, icon: "copper_ingot" });
-    const steelIngot = await upsertItem("Steel Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 340, exp_value: 2.3, icon: "steel_ingot" });
-
-    const upsertRecipe = async (name: string, outputId: number, cookMins: number) => {
-        return prisma.recipe.upsert({
-            where: { name },
-            update: { output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
-            create: { name, output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
-        });
-    };
-
-    const ironRecipe = await upsertRecipe("Iron Ingot Smelt", ironIngot.id, 7);
-    const copperRecipe = await upsertRecipe("Copper Ingot Smelt", copperIngot.id, 8);
-    const steelRecipe = await upsertRecipe("Steel Ingot Smelt", steelIngot.id, 10);
-
-    const upsertIngredient = async (recipeId: number, itemId: number, quantity: number) => {
-        await prisma.recipeIngredient.upsert({
-            where: { recipe_id_item_id: { recipe_id: recipeId, item_id: itemId } },
-            update: { quantity },
-            create: { recipe_id: recipeId, item_id: itemId, quantity },
-        });
-    };
-
-    await upsertIngredient(ironRecipe.id, ironOre.id, 2);
-    await upsertIngredient(ironRecipe.id, flux.id, 1);
-    await upsertIngredient(ironRecipe.id, coal.id, 2);
-    await upsertIngredient(ironRecipe.id, oil.id, 1);
-
-    await upsertIngredient(copperRecipe.id, copperOre.id, 2);
-    await upsertIngredient(copperRecipe.id, flux.id, 1);
-    await upsertIngredient(copperRecipe.id, coal.id, 2);
-    await upsertIngredient(copperRecipe.id, oil.id, 1);
-
-    await upsertIngredient(steelRecipe.id, steelOre.id, 2);
-    await upsertIngredient(steelRecipe.id, flux.id, 1);
-    await upsertIngredient(steelRecipe.id, coal.id, 2);
-    await upsertIngredient(steelRecipe.id, oil.id, 1);
-}
-
 async function ensureShopCatalogSchemaAndDefaults() {
     if (shopCatalogEnsured) return;
-
-    await prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS city_shop_item_rules (
-            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            city_key VARCHAR(32) NOT NULL,
-            matcher_type VARCHAR(32) NOT NULL,
-            matcher_value VARCHAR(191) NOT NULL,
-            required_role VARCHAR(32) NOT NULL DEFAULT 'ANY',
-            is_enabled TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY uq_city_shop_item_rule (city_key, matcher_type, matcher_value, required_role)
-        )
-    `);
-
-    await prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS city_shop_recipe_rules (
-            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-            city_key VARCHAR(32) NOT NULL,
-            matcher_type VARCHAR(32) NOT NULL,
-            matcher_value VARCHAR(191) NOT NULL,
-            required_role VARCHAR(32) NOT NULL DEFAULT 'ANY',
-            is_enabled TINYINT(1) NOT NULL DEFAULT 1,
-            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            UNIQUE KEY uq_city_shop_recipe_rule (city_key, matcher_type, matcher_value, required_role)
-        )
-    `);
-
-    await ensureFerrumShopCatalog();
-
-    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Chicken Egg", "PROVIDER");
-    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Beef Calf", "PROVIDER");
-    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Vegetable Seed", "PROVIDER");
-    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Salt", "CHEF");
-
-    await upsertShopItemRule("FERRUM", "ITEM_NAME", "Mattock", "PROVIDER");
-
-    await upsertShopRecipeRule("AGRARIA", "OUTPUT_ITEM_TYPE", "MEAL", "CHEF");
-    await upsertShopRecipeRule("FERRUM", "RECIPE_NAME_LIKE", "%Smelt%", "CHEF");
-
+    // Master data is seeded by prisma/seed.ts.
     shopCatalogEnsured = true;
 }
 
@@ -462,15 +319,15 @@ async function getCityRecipeRules(cityKey: string): Promise<ShopRecipeRuleRow[]>
 
 async function getAllowedShopItemsForUser(
     cityKey: string,
-    user: { role: string; provider_level: number; chef_level: number },
+    user: { first_job_level: number; secondary_job_level: number },
 ) {
     const rules = await getCityItemRules(cityKey);
     const userRoles = getUserRoleTokens(user);
 
     if (rules.length === 0) {
         const fallbackTypes: string[] = [];
-        if (user.provider_level >= 1) fallbackTypes.push("SEED");
-        if (user.chef_level >= 1) fallbackTypes.push("INGREDIENT");
+        if (user.first_job_level >= 1) fallbackTypes.push("SEED");
+        if (user.secondary_job_level >= 1) fallbackTypes.push("INGREDIENT");
         if (fallbackTypes.length === 0) return [];
 
         return prisma.item.findMany({
@@ -494,9 +351,9 @@ async function getAllowedShopItemsForUser(
 
 async function getAllowedRecipeCatalogForUser(
     cityKey: string,
-    user: { role: string; provider_level: number; chef_level: number },
+    user: { first_job_level: number; secondary_job_level: number },
 ) {
-    if (user.chef_level < 1) return [];
+    if (user.secondary_job_level < 1) return [];
 
     const rules = await getCityRecipeRules(cityKey);
     const userRoles = getUserRoleTokens(user);
@@ -521,14 +378,14 @@ async function getAllowedRecipeCatalogForUser(
 /**
  * GET /game/shop — List items available for purchase from NPC shop
  * Filtered by user's unlocked occupations:
- *   Provider (provider_level >= 1) → SEED items
- *   Chef (chef_level >= 1) → INGREDIENT items
+ *   Provider (first_job_level >= 1) → SEED items
+ *   Chef (secondary_job_level >= 1) → INGREDIENT items
  */
 export const getShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         await ensureShopCatalogSchemaAndDefaults();
 
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         const pricing = await getGamePricing();
         const city = await getUserCityProfile(req.userId!);
         if (!user) {
@@ -538,9 +395,8 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
 
         const cityKey = normalizeCityKey(city.city_key);
         const items = await getAllowedShopItemsForUser(cityKey, {
-            role: String(user.role),
-            provider_level: Number(user.provider_level ?? 0),
-            chef_level: Number(user.chef_level ?? 0),
+            first_job_level: Number(user.first_job_level ?? 0),
+            secondary_job_level: Number(user.secondary_job_level ?? 0),
         });
 
         const pricedItems = items.map((item) => ({
@@ -579,7 +435,7 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
         }
 
         // Verify user has the occupation to buy this item type
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
@@ -587,9 +443,8 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
 
         const cityKey = normalizeCityKey(city.city_key);
         const allowedItems = await getAllowedShopItemsForUser(cityKey, {
-            role: String(user.role),
-            provider_level: Number(user.provider_level ?? 0),
-            chef_level: Number(user.chef_level ?? 0),
+            first_job_level: Number(user.first_job_level ?? 0),
+            secondary_job_level: Number(user.secondary_job_level ?? 0),
         });
 
         const isAllowed = allowedItems.some((shopItem) => shopItem.id === item.id);
@@ -633,7 +488,7 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
         }
 
         // Return updated data
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         const slots = await prisma.inventorySlot.findMany({
             where: { user_id: req.userId! },
             include: { item: true },
@@ -642,17 +497,17 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
 
         res.json({
             message: `Bought ${quantity}x ${item.name} for ${totalCost} credits`,
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
                 email: updatedUser!.email,
                 role: updatedUser!.role,
                 money: updatedUser!.money,
                 hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-            },
+                first_job_level: updatedUser!.first_job_level,
+                first_job_exp: updatedUser!.first_job_exp,
+                secondary_job_level: updatedUser!.secondary_job_level,
+                secondary_job_exp: updatedUser!.secondary_job_exp,
+            }),
             slots,
         });
     } catch (error) {
@@ -666,7 +521,7 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
  */
 export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         const pricing = await getGamePricing();
         const equipmentDropRates = await getGameEquipmentRarityConfig();
         if (!user) {
@@ -674,7 +529,7 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
             return;
         }
 
-        const odds = buildEquipmentOdds(user.role);
+        const odds = buildEquipmentOdds();
         res.json({
             box: {
                 name: "Equipment Box",
@@ -682,9 +537,8 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
                 description: "Open 1 box to receive 1 random equipment item.",
             },
             formula: {
-                roleBias: getRoleBias(user.role),
                 slotWeights: SLOT_WEIGHTS,
-                note: "Final chance = role_bias x slot_weight",
+                note: "Final chance = slot_weight",
             },
             odds,
             rarityOdds: buildRarityOdds(equipmentDropRates),
@@ -700,7 +554,7 @@ export const getEquipmentBoxInfo = async (req: AuthRequest, res: Response): Prom
  */
 export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         const pricing = await getGamePricing();
         const equipmentDropRates = await getGameEquipmentRarityConfig();
         const boxPrice = pricing.equipmentBoxPrice;
@@ -714,11 +568,6 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             return;
         }
 
-        const roleBias = getRoleBias(user.role);
-        const rolledRole = pickByWeight([
-            { value: "PROVIDER" as const, weight: roleBias.PROVIDER },
-            { value: "CHEF" as const, weight: roleBias.CHEF },
-        ]);
         const rolledSlot = pickByWeight(
             Object.entries(SLOT_WEIGHTS).map(([slot, weight]) => ({ value: slot, weight }))
         );
@@ -727,7 +576,6 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             SELECT id
             FROM items
             WHERE type = 'EQUIPMENT'
-              AND equipment_role = ${rolledRole}
               AND equipment_slot = ${rolledSlot}
         `;
 
@@ -761,7 +609,7 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
         });
 
         const rolledItem = await prisma.item.findUnique({ where: { id: Number(rolledItemId) } });
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         const slots = await prisma.inventorySlot.findMany({
             where: { user_id: req.userId! },
             include: { item: true },
@@ -772,25 +620,24 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
             message: `Opened Equipment Box and got ${rolledRarity} ${rolledItem?.name ?? "equipment"}!`,
             boxPrice,
             rolled: {
-                role: rolledRole,
                 slot: rolledSlot,
                 rarity: rolledRarity,
                 buffMultiplier: getEquipmentRarityBuffMultiplier(rolledRarity),
                 item: rolledItem,
             },
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
                 email: updatedUser!.email,
                 role: updatedUser!.role,
                 money: updatedUser!.money,
                 hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-            },
+                first_job_level: updatedUser!.first_job_level,
+                first_job_exp: updatedUser!.first_job_exp,
+                secondary_job_level: updatedUser!.secondary_job_level,
+                secondary_job_exp: updatedUser!.secondary_job_exp,
+            }),
             slots,
-            odds: buildEquipmentOdds(user.role),
+            odds: buildEquipmentOdds(),
             rarityOdds: buildRarityOdds(equipmentDropRates),
         });
     } catch (error) {
@@ -806,8 +653,8 @@ export const getRecipes = async (req: AuthRequest, res: Response): Promise<void>
     try {
         await ensureShopCatalogSchemaAndDefaults();
 
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
-        if (!user || user.chef_level < 1) {
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
+        if (!user || user.secondary_job_level < 1) {
             res.json({ recipes: [] });
             return;
         }
@@ -815,9 +662,8 @@ export const getRecipes = async (req: AuthRequest, res: Response): Promise<void>
         const city = await getUserCityProfile(req.userId!);
         const cityKey = normalizeCityKey(city.city_key);
         const allowedCatalog = await getAllowedRecipeCatalogForUser(cityKey, {
-            role: String(user.role),
-            provider_level: Number(user.provider_level ?? 0),
-            chef_level: Number(user.chef_level ?? 0),
+            first_job_level: Number(user.first_job_level ?? 0),
+            secondary_job_level: Number(user.secondary_job_level ?? 0),
         });
         const allowedRecipeIds = new Set(allowedCatalog.map((r) => r.id));
 
@@ -852,8 +698,8 @@ export const getRecipeShop = async (req: AuthRequest, res: Response): Promise<vo
     try {
         await ensureShopCatalogSchemaAndDefaults();
 
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
-        if (!user || user.chef_level < 1) {
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
+        if (!user || user.secondary_job_level < 1) {
             res.json({ recipes: [] });
             return;
         }
@@ -861,9 +707,8 @@ export const getRecipeShop = async (req: AuthRequest, res: Response): Promise<vo
         const city = await getUserCityProfile(req.userId!);
         const cityKey = normalizeCityKey(city.city_key);
         const allowedCatalog = await getAllowedRecipeCatalogForUser(cityKey, {
-            role: String(user.role),
-            provider_level: Number(user.provider_level ?? 0),
-            chef_level: Number(user.chef_level ?? 0),
+            first_job_level: Number(user.first_job_level ?? 0),
+            secondary_job_level: Number(user.secondary_job_level ?? 0),
         });
 
         const unlockedRecipeIds = await getUnlockedRecipeIds(req.userId!);
@@ -892,13 +737,13 @@ export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<
             return;
         }
 
-        const user = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const user = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
         }
 
-        if (user.chef_level < 1) {
+        if (user.secondary_job_level < 1) {
             res.status(403).json({ error: "You need the Chef occupation to unlock recipes" });
             return;
         }
@@ -906,9 +751,8 @@ export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<
         const city = await getUserCityProfile(req.userId!);
         const cityKey = normalizeCityKey(city.city_key);
         const allowedCatalog = await getAllowedRecipeCatalogForUser(cityKey, {
-            role: String(user.role),
-            provider_level: Number(user.provider_level ?? 0),
-            chef_level: Number(user.chef_level ?? 0),
+            first_job_level: Number(user.first_job_level ?? 0),
+            secondary_job_level: Number(user.secondary_job_level ?? 0),
         });
         const allowedRecipeIds = new Set(allowedCatalog.map((r) => r.id));
 
@@ -955,22 +799,22 @@ export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<
             `,
         ]);
 
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
 
         res.json({
             message: `Unlocked recipe: ${recipe.name} for ${unlockPrice} credits`,
             recipe,
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
                 email: updatedUser!.email,
                 role: updatedUser!.role,
                 money: updatedUser!.money,
                 hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-            },
+                first_job_level: updatedUser!.first_job_level,
+                first_job_exp: updatedUser!.first_job_exp,
+                secondary_job_level: updatedUser!.secondary_job_level,
+                secondary_job_exp: updatedUser!.secondary_job_exp,
+            }),
         });
     } catch (error) {
         console.error("buyRecipeUnlock error:", error);

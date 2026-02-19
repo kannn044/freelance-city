@@ -5,6 +5,7 @@ import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equip
 import type { EquipmentRarity } from "../config/game.config";
 import { applyMarketTradeTaxTx, computeMarketTradeTaxTx } from "../services/city.service";
 import { ensureCitySchema } from "../services/city.service";
+import { toJobPayload } from "../lib/userPayload";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -81,7 +82,7 @@ async function getSellerCityMap(userIds: number[]) {
         `
         SELECT u.id, u.city_key, cs.display_name AS city_name
         FROM users u
-        LEFT JOIN city_states cs ON cs.city_key = u.city_key
+        LEFT JOIN city_states cs ON BINARY cs.city_key = BINARY u.city_key
         WHERE u.id IN (${safeIds.join(",")})
         `
     );
@@ -296,7 +297,7 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
         const totalValue = quantity * price;
 
         // Get updated user for response
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
 
         const message = `Listed ${quantity}x ${slot.item.name} at ${price} credits each (total ${totalValue})`;
 
@@ -308,17 +309,17 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
             },
             expGained: 0,
             levelUp: false,
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
                 email: updatedUser!.email,
                 role: updatedUser!.role,
                 money: updatedUser!.money,
                 hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-            },
+                first_job_level: updatedUser!.first_job_level,
+                first_job_exp: updatedUser!.first_job_exp,
+                secondary_job_level: updatedUser!.secondary_job_level,
+                secondary_job_exp: updatedUser!.secondary_job_exp,
+            }),
         });
     } catch (error) {
         console.error("createListing error:", error);
@@ -472,7 +473,7 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
             }
         });
 
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
 
         const taxText = taxPreview.totalTax > 0
             ? ` (tax ${taxPreview.totalTax}, net to seller ${taxPreview.sellerReceives})`
@@ -480,17 +481,17 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
 
         res.json({
             message: `Bought ${requestedQty}x ${listing.item.name} for ${totalCost} credits${taxText}`,
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
                 email: updatedUser!.email,
                 role: updatedUser!.role,
                 money: updatedUser!.money,
                 hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-            },
+                first_job_level: updatedUser!.first_job_level,
+                first_job_exp: updatedUser!.first_job_exp,
+                secondary_job_level: updatedUser!.secondary_job_level,
+                secondary_job_exp: updatedUser!.secondary_job_exp,
+            }),
         });
     } catch (error: any) {
         console.error("buyListing error:", error);
@@ -588,11 +589,38 @@ export const getMarketBotConfig = async (_req: AuthRequest, res: Response): Prom
 
 /**
  * POST /game/market/bot/config — Update market bot config
- * Body: { enabled?, tickMs?, buyChancePerTick?, maxListingsPerTick?, maxQtyPerListing?, maxUnitPriceRatio?, minListingAgeMs? }
+ * Body: {
+ *   enabled?, tickMs?,
+ *   buyChancePerTick?, maxListingsPerTick?, maxQtyPerListing?, maxUnitPriceRatio?, minListingAgeMs?,
+ *   sellChancePerTick?, maxSellListingsPerTick?, maxSellersPerItem?,
+ *   sellMinQtyPerListing?, sellMaxQtyPerListing?,
+ *   sellUnitPriceMinRatio?, sellUnitPriceMaxRatio?,
+ *   sellItemNames?,
+ *   sellFeedCooldownMs?, maxActiveBotListingsTotal?, maxBotUsers?
+ * }
  */
 export const updateMarketBotConfig = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { enabled, tickMs, buyChancePerTick, maxListingsPerTick, maxQtyPerListing, maxUnitPriceRatio, minListingAgeMs } = req.body ?? {};
+        const {
+            enabled,
+            tickMs,
+            buyChancePerTick,
+            maxListingsPerTick,
+            maxQtyPerListing,
+            maxUnitPriceRatio,
+            minListingAgeMs,
+            sellChancePerTick,
+            maxSellListingsPerTick,
+            maxSellersPerItem,
+            sellMinQtyPerListing,
+            sellMaxQtyPerListing,
+            sellUnitPriceMinRatio,
+            sellUnitPriceMaxRatio,
+            sellItemNames,
+            sellFeedCooldownMs,
+            maxActiveBotListingsTotal,
+            maxBotUsers,
+        } = req.body ?? {};
 
         const config = marketBotService.updateConfig({
             enabled: typeof enabled === "boolean" ? enabled : undefined,
@@ -602,6 +630,19 @@ export const updateMarketBotConfig = async (req: AuthRequest, res: Response): Pr
             maxQtyPerListing: typeof maxQtyPerListing === "number" ? maxQtyPerListing : undefined,
             maxUnitPriceRatio: typeof maxUnitPriceRatio === "number" ? maxUnitPriceRatio : undefined,
             minListingAgeMs: typeof minListingAgeMs === "number" ? minListingAgeMs : undefined,
+            sellChancePerTick: typeof sellChancePerTick === "number" ? sellChancePerTick : undefined,
+            maxSellListingsPerTick: typeof maxSellListingsPerTick === "number" ? maxSellListingsPerTick : undefined,
+            maxSellersPerItem: typeof maxSellersPerItem === "number" ? maxSellersPerItem : undefined,
+            sellMinQtyPerListing: typeof sellMinQtyPerListing === "number" ? sellMinQtyPerListing : undefined,
+            sellMaxQtyPerListing: typeof sellMaxQtyPerListing === "number" ? sellMaxQtyPerListing : undefined,
+            sellUnitPriceMinRatio: typeof sellUnitPriceMinRatio === "number" ? sellUnitPriceMinRatio : undefined,
+            sellUnitPriceMaxRatio: typeof sellUnitPriceMaxRatio === "number" ? sellUnitPriceMaxRatio : undefined,
+            sellItemNames: Array.isArray(sellItemNames)
+                ? sellItemNames.map((n) => String(n))
+                : undefined,
+            sellFeedCooldownMs: typeof sellFeedCooldownMs === "number" ? sellFeedCooldownMs : undefined,
+            maxActiveBotListingsTotal: typeof maxActiveBotListingsTotal === "number" ? maxActiveBotListingsTotal : undefined,
+            maxBotUsers: typeof maxBotUsers === "number" ? maxBotUsers : undefined,
         });
 
         res.json({ message: "Market bot config updated", config });

@@ -1,208 +1,15 @@
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import {
-    CHEF_SKILL_MAX_LEVEL,
-    CHEF_SKILL_TREE_CONFIG,
-    PROVIDER_SKILL_MAX_LEVEL,
-    PROVIDER_SKILL_TREE_CONFIG,
-    getChefSkillConcurrentCookSlots,
-    getChefSkillCookTimeReduction,
-    getProviderSkillTimeReduction,
+    getSecondaryJobSkillConcurrentCookSlots as getSecondaryJobConcurrentQueueSlots,
+    getSecondaryJobSkillCookTimeReduction as getSecondaryJobTimeReduction,
+    getFirstJobSkillTimeReduction as getFirstJobTimeReduction,
 } from "../config/game.config";
+import { toJobPayload } from "../lib/userPayload";
+import { ensureCitySchema } from "../services/city.service";
 
 interface AuthRequest extends Request {
     userId?: number;
-}
-
-type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
-type SecondaryBranchKey = string;
-type SecondaryStorageField = "chef_skill_prep" | "chef_skill_economy" | "chef_skill_market";
-type SecondaryEffectKind = "TIME_AND_QUEUE" | "RESOURCE_EFFICIENCY" | "OUTPUT_MASTERY";
-
-type SecondaryBranchProfile = {
-    key: SecondaryBranchKey;
-    storageField: SecondaryStorageField;
-    effectKind: SecondaryEffectKind;
-    title: string;
-    color: string;
-    effects: {
-        level1: string;
-        level2: string;
-        level3: string;
-        level4: string;
-    };
-};
-
-type SecondarySkillProfile = {
-    treeTitle: string;
-    occupationLabel: string;
-    timeEffectLabel: string;
-    queueLabel: string;
-    branches: SecondaryBranchProfile[];
-};
-
-const FERRUM_MINER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
-    title: string;
-    color: string;
-    effects: {
-        level1: string;
-        level2: string;
-        level3: string;
-        level4: string;
-    };
-}> = {
-    VEGETABLE: {
-        title: "Drill Prep",
-        color: "#38bdf8",
-        effects: {
-            level1: "Lv.1: Reduce mining expedition time by 5%",
-            level2: "Lv.2: Improve layer handling consistency",
-            level3: "Lv.3: Reduce mining expedition time by another 5% (10% total)",
-            level4: "Lv.4: Expert drilling flow for faster cycle",
-        },
-    },
-    CHICKEN: {
-        title: "Ore Efficiency",
-        color: "#f59e0b",
-        effects: {
-            level1: "Lv.1: Better ore extraction discipline",
-            level2: "Lv.2: Better by-product consistency",
-            level3: "Lv.3: Improved handling under pressure",
-            level4: "Lv.4: Master ore management",
-        },
-    },
-    BEEF: {
-        title: "Market Logistics",
-        color: "#ef4444",
-        effects: {
-            level1: "Lv.1: Better outbound logistics",
-            level2: "Lv.2: Better queue discipline",
-            level3: "Lv.3: Better shipment planning",
-            level4: "Lv.4: Master market routing",
-        },
-    },
-};
-
-const DEFAULT_SECONDARY_SKILL_PROFILE: SecondarySkillProfile = {
-    treeTitle: "Chef Skill Tree",
-    occupationLabel: "Chef",
-    timeEffectLabel: "cook-time",
-    queueLabel: "queue",
-    branches: [
-        {
-            key: "PREP_MASTER",
-            storageField: "chef_skill_prep",
-            effectKind: "TIME_AND_QUEUE",
-            title: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.title,
-            color: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.color,
-            effects: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.effects,
-        },
-        {
-            key: "KITCHEN_ECONOMY",
-            storageField: "chef_skill_economy",
-            effectKind: "RESOURCE_EFFICIENCY",
-            title: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.title,
-            color: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.color,
-            effects: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.effects,
-        },
-        {
-            key: "MARKET_INTEL",
-            storageField: "chef_skill_market",
-            effectKind: "OUTPUT_MASTERY",
-            title: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.title,
-            color: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.color,
-            effects: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.effects,
-        },
-    ],
-};
-
-const FERRUM_BLACKSMITH_SKILL_PROFILE: SecondarySkillProfile = {
-    treeTitle: "Blacksmith Skill Tree",
-    occupationLabel: "Blacksmith",
-    timeEffectLabel: "smelting-time",
-    queueLabel: "smelting queue",
-    branches: [
-        {
-            key: "SMELTING_SPEED",
-            storageField: "chef_skill_prep",
-            effectKind: "TIME_AND_QUEUE",
-            title: "Smelting Speed",
-            color: "#f97316",
-            effects: {
-                level1: "Lv.1: Reduce smelting time by 5%",
-                level2: "Lv.2: Increase concurrent smelting queue to 2",
-                level3: "Lv.3: Reduce smelting time by another 5% (10% total)",
-                level4: "Lv.4: Increase concurrent smelting queue to 3",
-            },
-        },
-        {
-            key: "FUEL_EFFICIENCY",
-            storageField: "chef_skill_economy",
-            effectKind: "RESOURCE_EFFICIENCY",
-            title: "Fuel Efficiency",
-            color: "#22c55e",
-            effects: {
-                level1: "Lv.1: Secondary smelting ingredient save chance +6%",
-                level2: "Lv.2: Secondary smelting ingredient save chance +6% (12% total)",
-                level3: "Lv.3: Primary smelting ingredient save chance +5%",
-                level4: "Lv.4: Primary smelting ingredient save chance +10%",
-            },
-        },
-        {
-            key: "ALLOY_MASTERY",
-            storageField: "chef_skill_market",
-            effectKind: "OUTPUT_MASTERY",
-            title: "Alloy Mastery",
-            color: "#a78bfa",
-            effects: {
-                level1: "Lv.1: +3% chance to produce +1 extra ingot",
-                level2: "Lv.2: +6% chance to produce +1 extra ingot",
-                level3: "Lv.3: +10% chance to produce +1 extra ingot",
-                level4: "Lv.4: +15% chance to produce +1 extra ingot",
-            },
-        },
-    ],
-};
-
-const CITY_SECONDARY_SKILL_PROFILES: Record<string, SecondarySkillProfile> = {
-    FERRUM: FERRUM_BLACKSMITH_SKILL_PROFILE,
-};
-
-function resolveSecondarySkillProfile(cityKey?: string | null): SecondarySkillProfile {
-    const key = String(cityKey ?? "").toUpperCase();
-    return CITY_SECONDARY_SKILL_PROFILES[key] ?? DEFAULT_SECONDARY_SKILL_PROFILE;
-}
-
-let chefSkillColumnsEnsured = false;
-
-async function ensureChefSkillColumns() {
-    if (chefSkillColumnsEnsured) return;
-
-    const columns = [
-        "chef_skill_prep",
-        "chef_skill_economy",
-        "chef_skill_market",
-    ];
-
-    for (const column of columns) {
-        const rows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
-            SELECT COUNT(*) as cnt
-            FROM information_schema.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = 'users'
-              AND COLUMN_NAME = ${column}
-        `;
-
-        const exists = Number(rows[0]?.cnt ?? 0) > 0;
-        if (!exists) {
-            await prisma.$executeRawUnsafe(`
-                ALTER TABLE users
-                ADD COLUMN ${column} INT NOT NULL DEFAULT 0
-            `);
-        }
-    }
-
-    chefSkillColumnsEnsured = true;
 }
 
 async function getSmeltingRecipeIds(): Promise<Set<number>> {
@@ -216,80 +23,14 @@ async function getSmeltingRecipeIds(): Promise<Set<number>> {
     return new Set(rows.map((r) => Number(r.id)).filter((id) => Number.isFinite(id) && id > 0));
 }
 
-function getSeedNameByBranch(branch: ProviderBranch): string {
-    if (branch === "VEGETABLE") return "Vegetable Seed";
-    if (branch === "CHICKEN") return "Chicken Egg";
-    return "Beef Calf";
-}
-
-async function applyImmediateProviderTimeReduction(
-    userId: number,
-    branch: ProviderBranch,
-    oldLevel: number,
-    newLevel: number,
-): Promise<number> {
-    const oldReduction = getProviderSkillTimeReduction(oldLevel);
-    const newReduction = getProviderSkillTimeReduction(newLevel);
-
-    if (newReduction <= oldReduction) return 0;
-
-    const oldMultiplier = 1 - oldReduction;
-    const newMultiplier = 1 - newReduction;
-    if (oldMultiplier <= 0 || newMultiplier <= 0) return 0;
-
-    const remainingScale = newMultiplier / oldMultiplier;
-    const seedName = getSeedNameByBranch(branch);
-
-    return prisma.$transaction(async (tx) => {
-        const seed = await tx.item.findFirst({
-            where: { name: seedName },
-            select: { id: true },
-        });
-
-        if (!seed) return 0;
-
-        const orders = await tx.workOrder.findMany({
-            where: {
-                user_id: userId,
-                type: "FARM",
-                item_id: seed.id,
-                collected: false,
-            },
-            select: {
-                id: true,
-                completes_at: true,
-            },
-        });
-
-        const nowMs = Date.now();
-        let adjusted = 0;
-
-        for (const order of orders) {
-            const remainingMs = Math.max(0, new Date(order.completes_at).getTime() - nowMs);
-            if (remainingMs <= 0) continue;
-
-            const nextRemainingMs = Math.max(1000, Math.floor(remainingMs * remainingScale));
-            if (nextRemainingMs >= remainingMs) continue;
-
-            await tx.workOrder.update({
-                where: { id: order.id },
-                data: { completes_at: new Date(nowMs + nextRemainingMs) },
-            });
-            adjusted += 1;
-        }
-
-        return adjusted;
-    });
-}
-
-async function applyImmediateChefPrepReduction(
+async function applyImmediateSecondaryJobTimeReduction(
     userId: number,
     oldLevel: number,
     newLevel: number,
     cityKey?: string | null,
 ): Promise<number> {
-    const oldReduction = getChefSkillCookTimeReduction(oldLevel);
-    const newReduction = getChefSkillCookTimeReduction(newLevel);
+    const oldReduction = getSecondaryJobTimeReduction(oldLevel);
+    const newReduction = getSecondaryJobTimeReduction(newLevel);
 
     if (newReduction <= oldReduction) return 0;
 
@@ -341,8 +82,8 @@ async function applyImmediateChefPrepReduction(
     });
 }
 
-async function rebalanceChefQueueSlots(userId: number, prepLevel: number): Promise<number> {
-    const maxParallel = Math.max(1, getChefSkillConcurrentCookSlots(prepLevel));
+async function rebalanceSecondaryJobQueueSlots(userId: number, prepLevel: number): Promise<number> {
+    const maxParallel = Math.max(1, getSecondaryJobConcurrentQueueSlots(prepLevel));
     const now = Date.now();
 
     const cityRows = await prisma.$queryRaw<Array<{ city_key: string | null }>>`
@@ -403,7 +144,7 @@ async function rebalanceChefQueueSlots(userId: number, prepLevel: number): Promi
     });
 }
 
-interface ProviderSkillUserRow {
+interface JobSkillUserRow {
     id: number;
     email: string;
     role: string;
@@ -412,102 +153,263 @@ interface ProviderSkillUserRow {
     hunger_updated_at: Date;
     satiety_buff: number;
     buff_expires_at: Date | null;
-    provider_level: number;
-    provider_exp: number;
-    provider_skill_veg: number;
-    provider_skill_chicken: number;
-    provider_skill_beef: number;
-    chef_level: number;
-    chef_exp: number;
-    chef_skill_prep: number;
-    chef_skill_economy: number;
-    chef_skill_market: number;
+    first_job_level: number;
+    first_job_exp: number;
+    secondary_job_level: number;
+    secondary_job_exp: number;
     city_key: string | null;
 }
 
-async function getProviderSkillUserRow(userId: number): Promise<ProviderSkillUserRow | null> {
-    await ensureChefSkillColumns();
+async function getJobSkillUserRow(userId: number): Promise<JobSkillUserRow | null> {
+    const rows = await prisma.$queryRaw<JobSkillUserRow[]>`
+        SELECT
+            id,
+            email,
+            role,
+            money,
+            hunger,
+            hunger_updated_at,
+            satiety_buff,
+            buff_expires_at,
+            first_job_level,
+            first_job_exp,
+            secondary_job_level,
+            secondary_job_exp,
+            city_key
+        FROM users
+        WHERE id = ${userId}
+        LIMIT 1
+    `;
 
-    try {
-        const rows = await prisma.$queryRaw<ProviderSkillUserRow[]>`
-            SELECT
-                id,
-                email,
-                role,
-                money,
-                hunger,
-                hunger_updated_at,
-                satiety_buff,
-                buff_expires_at,
-                provider_level,
-                provider_exp,
-                provider_skill_veg,
-                provider_skill_chicken,
-                provider_skill_beef,
-                chef_level,
-                chef_exp,
-                chef_skill_prep,
-                chef_skill_economy,
-                chef_skill_market,
-                city_key
-            FROM users
-            WHERE id = ${userId}
-            LIMIT 1
-        `;
+    return rows[0] ?? null;
+}
 
-        return rows[0] ?? null;
-    } catch (error: any) {
-        // Backward compatibility: DB migration for provider_skill_* columns may not be applied yet.
-        const msg = String(error?.message ?? "");
-        if (!msg.toLowerCase().includes("unknown column")) {
-            throw error;
+type JobSlotKey = "first_job" | "secondary_job";
+
+type DynamicBranchRow = {
+    branch_slot: number;
+    branch_key: string;
+    branch_name: string;
+    effect_type: "TIME_QUEUE" | "CRAFT_COST" | "OUTPUT_BONUS" | string;
+    max_level: number;
+    effect_config_json: unknown;
+    level: number;
+};
+
+type DynamicSlotState = {
+    user: JobSkillUserRow;
+    cityKey: string;
+    jobSlot: JobSlotKey;
+    occupationKey: string;
+    occupationLabel: string;
+    total: number;
+    exp: number;
+    branches: DynamicBranchRow[];
+};
+
+const BRANCH_COLORS: Record<string, string> = {
+    TIME_QUEUE: "#38bdf8",
+    CRAFT_COST: "#22c55e",
+    OUTPUT_BONUS: "#a78bfa",
+};
+
+const parseJsonObject = (input: unknown): Record<string, any> => {
+    if (input && typeof input === "object") return input as Record<string, any>;
+    if (typeof input === "string") {
+        try {
+            const parsed = JSON.parse(input);
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch {
+            return {};
         }
+    }
+    return {};
+};
 
-        const legacyRows = await prisma.$queryRaw<Array<
-            Omit<ProviderSkillUserRow, "provider_skill_veg" | "provider_skill_chicken" | "provider_skill_beef" | "chef_skill_prep" | "chef_skill_economy" | "chef_skill_market">
-        >>`
-            SELECT
-                id,
-                email,
-                role,
-                money,
-                hunger,
-                hunger_updated_at,
-                satiety_buff,
-                buff_expires_at,
-                provider_level,
-                provider_exp,
-                chef_level,
-                chef_exp,
-                city_key
-            FROM users
-            WHERE id = ${userId}
-            LIMIT 1
+function buildBranchEffects(branch: DynamicBranchRow) {
+    const cfg = parseJsonObject(branch.effect_config_json);
+
+    if (branch.effect_type === "TIME_QUEUE") {
+        const reduction = Array.isArray(cfg.timeReductionPctByLevel) ? cfg.timeReductionPctByLevel : [5, 10, 15, 20, 25];
+        const queue = Array.isArray(cfg.queueLimitByLevel) ? cfg.queueLimitByLevel : [1, 1, 2, 2, 3];
+        return {
+            level1: `Lv.1: Work time -${reduction[0] ?? 5}% / Queue ${queue[0] ?? 1}`,
+            level2: `Lv.2: Work time -${reduction[1] ?? 10}% / Queue ${queue[1] ?? 1}`,
+            level3: `Lv.3: Work time -${reduction[2] ?? 15}% / Queue ${queue[2] ?? 2}`,
+            level4: `Lv.4: Work time -${reduction[3] ?? 20}% / Queue ${queue[3] ?? 2}`,
+            level5: `Lv.5: Work time -${reduction[4] ?? 25}% / Queue ${queue[4] ?? 3}`,
+        };
+    }
+
+    if (branch.effect_type === "CRAFT_COST") {
+        const save = Array.isArray(cfg.saveAllIngredientsChancePctByLevel)
+            ? cfg.saveAllIngredientsChancePctByLevel
+            : [6, 12, 18, 24, 30];
+        return {
+            level1: `Lv.1: ${save[0] ?? 6}% chance to save all ingredients`,
+            level2: `Lv.2: ${save[1] ?? 12}% chance to save all ingredients`,
+            level3: `Lv.3: ${save[2] ?? 18}% chance to save all ingredients`,
+            level4: `Lv.4: ${save[3] ?? 24}% chance to save all ingredients`,
+            level5: `Lv.5: ${save[4] ?? 30}% chance to save all ingredients`,
+        };
+    }
+
+    const chance = Array.isArray(cfg.bonusOutputChancePctByLevel)
+        ? cfg.bonusOutputChancePctByLevel
+        : [4, 8, 12, 16, 20];
+    const qty = Number(cfg.bonusOutputQty ?? 1);
+    return {
+        level1: `Lv.1: ${chance[0] ?? 4}% chance for +${qty} output`,
+        level2: `Lv.2: ${chance[1] ?? 8}% chance for +${qty} output`,
+        level3: `Lv.3: ${chance[2] ?? 12}% chance for +${qty} output`,
+        level4: `Lv.4: ${chance[3] ?? 16}% chance for +${qty} output`,
+        level5: `Lv.5: ${chance[4] ?? 20}% chance for +${qty} output`,
+    };
+}
+
+async function ensureDynamicSkillRows(user: JobSkillUserRow): Promise<void> {
+    await ensureCitySchema(prisma);
+    const cityKey = String(user.city_key ?? "").toUpperCase();
+    if (!cityKey) return;
+
+    const occupationRows = await prisma.$queryRaw<Array<{ occupation_key: string; job_slot: JobSlotKey }>>`
+        SELECT occupation_key, job_slot
+        FROM occupation_catalog
+        WHERE city_key = ${cityKey}
+    `;
+
+    const occupationBySlot = new Map<JobSlotKey, string>();
+    for (const row of occupationRows) {
+        occupationBySlot.set(row.job_slot, row.occupation_key);
+    }
+
+    for (const slot of ["first_job", "secondary_job"] as JobSlotKey[]) {
+        const occupationKey = occupationBySlot.get(slot);
+        if (!occupationKey) continue;
+        const level = slot === "first_job"
+            ? Math.max(1, Number(user.first_job_level ?? 1))
+            : Math.max(1, Number(user.secondary_job_level ?? 1));
+        const exp = slot === "first_job"
+            ? Math.max(0, Number(user.first_job_exp ?? 0))
+            : Math.max(0, Number(user.secondary_job_exp ?? 0));
+
+        await prisma.$executeRaw`
+            INSERT INTO user_job_progress (user_id, job_slot, occupation_key, level, exp)
+            VALUES (${user.id}, ${slot}, ${occupationKey}, ${level}, ${exp})
+            ON DUPLICATE KEY UPDATE
+                occupation_key = VALUES(occupation_key)
         `;
 
-        const row = legacyRows[0];
-        if (!row) return null;
-
-        return {
-            ...row,
-            provider_skill_veg: 0,
-            provider_skill_chicken: 0,
-            provider_skill_beef: 0,
-            chef_skill_prep: 0,
-            chef_skill_economy: 0,
-            chef_skill_market: 0,
-        };
+        await prisma.$executeRaw`
+            INSERT INTO user_skill_progress (user_id, job_slot, occupation_key, branch_key, level)
+            SELECT ${user.id}, ${slot}, ${occupationKey}, branch_key, 0
+            FROM occupation_skill_branch_catalog
+            WHERE occupation_key = ${occupationKey}
+            ON DUPLICATE KEY UPDATE
+                occupation_key = VALUES(occupation_key)
+        `;
     }
 }
 
-async function applyImmediateFerrumMinerTimeReduction(
-    userId: number,
-    oldLevel: number,
-    newLevel: number,
-): Promise<number> {
-    const oldReduction = getChefSkillCookTimeReduction(oldLevel);
-    const newReduction = getChefSkillCookTimeReduction(newLevel);
+async function getDynamicSlotState(userId: number, jobSlot: JobSlotKey): Promise<DynamicSlotState | null> {
+    const user = await getJobSkillUserRow(userId);
+    if (!user) return null;
 
+    await ensureDynamicSkillRows(user);
+
+    const cityKey = String(user.city_key ?? "").toUpperCase();
+    if (!cityKey) return null;
+
+    const progressRows = await prisma.$queryRaw<Array<{
+        occupation_key: string;
+        level: number;
+        exp: number;
+        display_name: string;
+    }>>`
+        SELECT ujp.occupation_key, ujp.level, ujp.exp, oc.display_name
+        FROM user_job_progress ujp
+        JOIN occupation_catalog oc ON oc.occupation_key = ujp.occupation_key
+        WHERE ujp.user_id = ${userId} AND ujp.job_slot = ${jobSlot}
+        LIMIT 1
+    `;
+
+    const progress = progressRows[0];
+    if (!progress) return null;
+
+    const branchRows = await prisma.$queryRaw<Array<DynamicBranchRow>>`
+        SELECT b.branch_slot,
+               b.branch_key,
+               b.branch_name,
+               b.effect_type,
+               b.max_level,
+               b.effect_config_json,
+               COALESCE(usp.level, 0) AS level
+        FROM occupation_skill_branch_catalog b
+        LEFT JOIN user_skill_progress usp
+          ON usp.user_id = ${userId}
+         AND usp.job_slot = ${jobSlot}
+         AND usp.branch_key = b.branch_key
+        WHERE b.occupation_key = ${progress.occupation_key}
+        ORDER BY b.branch_slot ASC
+    `;
+
+    return {
+        user,
+        cityKey,
+        jobSlot,
+        occupationKey: progress.occupation_key,
+        occupationLabel: progress.display_name,
+        total: Number(progress.level ?? 0),
+        exp: Number(progress.exp ?? 0),
+        branches: branchRows.map((row) => ({
+            ...row,
+            level: Number(row.level ?? 0),
+            max_level: Number(row.max_level ?? 5),
+        })),
+    };
+}
+
+function buildDynamicSkillTree(state: DynamicSlotState) {
+    const spent = state.branches.reduce((sum, branch) => sum + Math.max(0, Number(branch.level ?? 0)), 0);
+    const total = Math.max(0, Number(state.total ?? 0));
+    const available = Math.max(0, total - spent);
+
+    const branches = Object.fromEntries(
+        state.branches.map((branch) => [
+            branch.branch_key,
+            {
+                level: Number(branch.level ?? 0),
+                title: branch.branch_name,
+                color: BRANCH_COLORS[branch.effect_type] ?? "#60a5fa",
+                effects: buildBranchEffects(branch),
+            },
+        ])
+    );
+
+    return {
+        treeTitle: `${state.occupationLabel} Skill Tree`,
+        occupationLabel: state.occupationLabel,
+        points: {
+            total,
+            spent,
+            available,
+        },
+        branches,
+    };
+}
+
+function readBranchTriplet(branches: DynamicBranchRow[]): [number, number, number] {
+    const values: [number, number, number] = [0, 0, 0];
+    for (const branch of branches) {
+        const idx = Number(branch.branch_slot ?? 0) - 1;
+        if (idx >= 0 && idx < 3) values[idx] = Number(branch.level ?? 0);
+    }
+    return values;
+}
+
+async function applyFirstJobTimeReduction(userId: number, oldLevel: number, newLevel: number): Promise<number> {
+    const oldReduction = getFirstJobTimeReduction(oldLevel);
+    const newReduction = getFirstJobTimeReduction(newLevel);
     if (newReduction <= oldReduction) return 0;
 
     const oldMultiplier = 1 - oldReduction;
@@ -517,14 +419,10 @@ async function applyImmediateFerrumMinerTimeReduction(
     const remainingScale = newMultiplier / oldMultiplier;
 
     return prisma.$transaction(async (tx) => {
-        const permit = await tx.item.findFirst({ where: { name: "Ferrum Mining Permit" }, select: { id: true } });
-        if (!permit) return 0;
-
         const orders = await tx.workOrder.findMany({
             where: {
                 user_id: userId,
                 type: "FARM",
-                item_id: permit.id,
                 collected: false,
             },
             select: { id: true, completes_at: true },
@@ -551,341 +449,257 @@ async function applyImmediateFerrumMinerTimeReduction(
     });
 }
 
-function buildProviderSkillTree(user: {
-    provider_level: number;
-    provider_skill_veg: number;
-    provider_skill_chicken: number;
-    provider_skill_beef: number;
-}, cityKey?: string | null) {
-    const spent =
-        user.provider_skill_veg +
-        user.provider_skill_chicken +
-        user.provider_skill_beef;
-    const total = Math.max(0, user.provider_level);
-    const available = Math.max(0, total - spent);
-
-    const cfg = cityKey === "FERRUM" ? FERRUM_MINER_SKILL_TREE_CONFIG : PROVIDER_SKILL_TREE_CONFIG;
-
-    return {
-        points: {
-            total,
-            spent,
-            available,
-        },
-        branches: {
-            VEGETABLE: {
-                level: user.provider_skill_veg,
-                title: cfg.VEGETABLE.title,
-                color: cfg.VEGETABLE.color,
-                effects: cfg.VEGETABLE.effects,
-            },
-            CHICKEN: {
-                level: user.provider_skill_chicken,
-                title: cfg.CHICKEN.title,
-                color: cfg.CHICKEN.color,
-                effects: cfg.CHICKEN.effects,
-            },
-            BEEF: {
-                level: user.provider_skill_beef,
-                title: cfg.BEEF.title,
-                color: cfg.BEEF.color,
-                effects: cfg.BEEF.effects,
-            },
-        },
-    };
-}
-
-function buildChefSkillTree(user: {
-    chef_level: number;
-    chef_skill_prep: number;
-    chef_skill_economy: number;
-    chef_skill_market: number;
-}, cityKey?: string | null) {
-    const profile = resolveSecondarySkillProfile(cityKey);
-    const spent =
-        user.chef_skill_prep +
-        user.chef_skill_economy +
-        user.chef_skill_market;
-    const total = Math.max(0, user.chef_level);
-    const available = Math.max(0, total - spent);
-
-    const readLevel = (field: SecondaryStorageField): number => {
-        if (field === "chef_skill_prep") return Number(user.chef_skill_prep ?? 0);
-        if (field === "chef_skill_economy") return Number(user.chef_skill_economy ?? 0);
-        return Number(user.chef_skill_market ?? 0);
-    };
-
-    const branches = Object.fromEntries(
-        profile.branches.map((branch) => [
-            branch.key,
-            {
-                level: readLevel(branch.storageField),
-                title: branch.title,
-                color: branch.color,
-                effects: branch.effects,
-            },
-        ])
-    );
-
-    return {
-        treeTitle: profile.treeTitle,
-        occupationLabel: profile.occupationLabel,
-        points: {
-            total,
-            spent,
-            available,
-        },
-        branches,
-    };
-}
-
 /**
- * GET /game/skills/provider
+ * GET /game/skills/first-job
  */
-export const getProviderSkills = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getFirstJobSkills = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await getProviderSkillUserRow(req.userId!);
-        if (!user) {
+        const state = await getDynamicSlotState(req.userId!, "first_job");
+        if (!state) {
             res.status(404).json({ error: "User not found" });
             return;
         }
 
-        res.json({ skillTree: buildProviderSkillTree(user, user.city_key) });
+        res.json({ skillTree: buildDynamicSkillTree(state) });
     } catch (error) {
-        console.error("getProviderSkills error:", error);
-        res.status(500).json({ error: "Failed to fetch provider skill tree" });
+        console.error("getFirstJobSkills error:", error);
+        res.status(500).json({ error: "Failed to fetch first job skill tree" });
     }
 };
 
 /**
- * POST /game/skills/provider/upgrade
- * Body: { branch: "VEGETABLE" | "CHICKEN" | "BEEF" }
+ * POST /game/skills/first-job/upgrade
+ * Body: { branch: string }
  */
-export const upgradeProviderSkill = async (req: AuthRequest, res: Response): Promise<void> => {
+export const upgradeFirstJobSkill = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const branch = String(req.body?.branch ?? "") as ProviderBranch;
-        if (!["VEGETABLE", "CHICKEN", "BEEF"].includes(branch)) {
+        const branchKey = String(req.body?.branch ?? "").trim();
+        if (!branchKey) {
             res.status(400).json({ error: "Invalid branch" });
             return;
         }
 
-        const user = await getProviderSkillUserRow(req.userId!);
-        if (!user) {
+        const state = await getDynamicSlotState(req.userId!, "first_job");
+        if (!state) {
             res.status(404).json({ error: "User not found" });
             return;
         }
 
-        if (user.provider_level < 1) {
-            res.status(403).json({ error: "Provider occupation is required" });
+        if (state.total < 1) {
+            res.status(403).json({ error: "First job occupation is required" });
             return;
         }
 
-        const spent = user.provider_skill_veg + user.provider_skill_chicken + user.provider_skill_beef;
-        const available = Math.max(0, user.provider_level - spent);
+        const targetBranch = state.branches.find((branch) => branch.branch_key === branchKey);
+        if (!targetBranch) {
+            res.status(400).json({ error: "Branch not found in selected occupation" });
+            return;
+        }
+
+        const spent = state.branches.reduce((sum, branch) => sum + Number(branch.level ?? 0), 0);
+        const available = Math.max(0, state.total - spent);
         if (available < 1) {
             res.status(400).json({ error: "Not enough skill points" });
             return;
         }
 
-        const fieldMap: Record<ProviderBranch, "provider_skill_veg" | "provider_skill_chicken" | "provider_skill_beef"> = {
-            VEGETABLE: "provider_skill_veg",
-            CHICKEN: "provider_skill_chicken",
-            BEEF: "provider_skill_beef",
-        };
-
-        const targetField = fieldMap[branch];
-        const currentLevel = Number(user[targetField] ?? 0);
-
-        if (currentLevel >= PROVIDER_SKILL_MAX_LEVEL) {
+        const currentLevel = Number(targetBranch.level ?? 0);
+        if (currentLevel >= Number(targetBranch.max_level ?? 5)) {
             res.status(400).json({ error: "This branch is already max level" });
             return;
         }
 
-        await prisma.$executeRawUnsafe(
-            `UPDATE users SET ${targetField} = ${targetField} + 1 WHERE id = ?`,
-            req.userId!
-        );
+        await prisma.$executeRaw`
+            UPDATE user_skill_progress
+            SET level = LEAST(level + 1, ${Number(targetBranch.max_level ?? 5)})
+            WHERE user_id = ${req.userId!}
+              AND job_slot = 'first_job'
+              AND branch_key = ${targetBranch.branch_key}
+        `;
 
         const nextLevel = currentLevel + 1;
-        const adjustedOrders = user.city_key === "FERRUM"
-            ? (branch === "VEGETABLE"
-                ? await applyImmediateFerrumMinerTimeReduction(req.userId!, currentLevel, nextLevel)
-                : 0)
-            : await applyImmediateProviderTimeReduction(
-                req.userId!,
-                branch,
-                currentLevel,
-                nextLevel,
-            );
+        const adjustedOrders = targetBranch.effect_type === "TIME_QUEUE"
+            ? await applyFirstJobTimeReduction(req.userId!, currentLevel, nextLevel)
+            : 0;
 
-        const updated = await getProviderSkillUserRow(req.userId!);
-        if (!updated) {
+        const updatedFirst = await getDynamicSlotState(req.userId!, "first_job");
+        const updatedSecond = await getDynamicSlotState(req.userId!, "secondary_job");
+        if (!updatedFirst || !updatedSecond) {
             res.status(404).json({ error: "User not found after update" });
             return;
         }
 
-        res.json({
-            message: adjustedOrders > 0
-                ? `Upgraded ${branch} branch to level ${nextLevel}. Skill buff applied to ${adjustedOrders} active task(s).`
-                : `Upgraded ${branch} branch to level ${nextLevel}`,
-            skillTree: buildProviderSkillTree(updated, updated.city_key),
-            user: {
-                id: updated.id,
-                email: updated.email,
-                role: updated.role,
-                money: updated.money,
-                hunger: updated.hunger,
-                hunger_updated_at: updated.hunger_updated_at,
-                satiety_buff: updated.satiety_buff,
-                buff_expires_at: updated.buff_expires_at,
-                provider_level: updated.provider_level,
-                provider_exp: updated.provider_exp,
-                provider_skill_veg: updated.provider_skill_veg,
-                provider_skill_chicken: updated.provider_skill_chicken,
-                provider_skill_beef: updated.provider_skill_beef,
-                chef_level: updated.chef_level,
-                chef_exp: updated.chef_exp,
-                chef_skill_prep: updated.chef_skill_prep,
-                chef_skill_economy: updated.chef_skill_economy,
-                chef_skill_market: updated.chef_skill_market,
-            },
-        });
-    } catch (error: any) {
-        const msg = String(error?.message ?? "").toLowerCase();
-        if (msg.includes("unknown column")) {
-            res.status(400).json({
-                error: "Provider skill columns are missing in database. Please run Prisma migration first.",
-            });
+        const updatedUser = await getJobSkillUserRow(req.userId!);
+        if (!updatedUser) {
+            res.status(404).json({ error: "User not found after update" });
             return;
         }
-        console.error("upgradeProviderSkill error:", error);
-        res.status(500).json({ error: "Failed to upgrade provider skill" });
+
+        const [firstVeg, firstChicken, firstBeef] = readBranchTriplet(updatedFirst.branches);
+        const [secondVeg, secondChicken, secondBeef] = readBranchTriplet(updatedSecond.branches);
+
+        res.json({
+            message: adjustedOrders > 0
+                ? `Upgraded ${targetBranch.branch_name} to level ${nextLevel}. Applied buff to ${adjustedOrders} active task(s).`
+                : `Upgraded ${targetBranch.branch_name} to level ${nextLevel}`,
+            skillTree: buildDynamicSkillTree(updatedFirst),
+            user: toJobPayload({
+                id: updatedUser.id,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                money: updatedUser.money,
+                hunger: updatedUser.hunger,
+                hunger_updated_at: updatedUser.hunger_updated_at,
+                satiety_buff: updatedUser.satiety_buff,
+                buff_expires_at: updatedUser.buff_expires_at,
+                first_job_level: updatedUser.first_job_level,
+                first_job_exp: updatedUser.first_job_exp,
+                first_job_skill_veg: firstVeg,
+                first_job_skill_chicken: firstChicken,
+                first_job_skill_beef: firstBeef,
+                secondary_job_level: updatedUser.secondary_job_level,
+                secondary_job_exp: updatedUser.secondary_job_exp,
+                secondary_job_skill_veg: secondVeg,
+                secondary_job_skill_chicken: secondChicken,
+                secondary_job_skill_beef: secondBeef,
+            }),
+        });
+    } catch (error: any) {
+        console.error("upgradeFirstJobSkill error:", error);
+        res.status(500).json({ error: "Failed to upgrade first job skill" });
     }
 };
 
 /**
- * GET /game/skills/chef
+ * GET /game/skills/secondary-job
  */
-export const getChefSkills = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getSecondaryJobSkills = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const user = await getProviderSkillUserRow(req.userId!);
-        if (!user) {
+        const state = await getDynamicSlotState(req.userId!, "secondary_job");
+        if (!state) {
             res.status(404).json({ error: "User not found" });
             return;
         }
 
-        const profile = resolveSecondarySkillProfile(user.city_key);
         res.json({
-            skillTree: buildChefSkillTree(user, user.city_key),
+            skillTree: buildDynamicSkillTree(state),
             profile: {
-                treeTitle: profile.treeTitle,
-                occupationLabel: profile.occupationLabel,
+                treeTitle: `${state.occupationLabel} Skill Tree`,
+                occupationLabel: state.occupationLabel,
             },
         });
     } catch (error) {
-        console.error("getChefSkills error:", error);
-        res.status(500).json({ error: "Failed to fetch chef skill tree" });
+        console.error("getSecondaryJobSkills error:", error);
+        res.status(500).json({ error: "Failed to fetch secondary job skill tree" });
     }
 };
 
 /**
- * POST /game/skills/chef/upgrade
- * Body: { branch: "PREP_MASTER" | "KITCHEN_ECONOMY" | "MARKET_INTEL" }
+ * POST /game/skills/secondary-job/upgrade
+ * Body: { branch: string }
  */
-export const upgradeChefSkill = async (req: AuthRequest, res: Response): Promise<void> => {
+export const upgradeSecondaryJobSkill = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const branch = String(req.body?.branch ?? "").trim().toUpperCase();
-
-        const user = await getProviderSkillUserRow(req.userId!);
-        if (!user) {
-            res.status(404).json({ error: "User not found" });
-            return;
-        }
-
-        const profile = resolveSecondarySkillProfile(user.city_key);
-        const branchProfile = profile.branches.find((b) => b.key === branch);
-        if (!branchProfile) {
+        const branchKey = String(req.body?.branch ?? "").trim();
+        if (!branchKey) {
             res.status(400).json({ error: "Invalid branch" });
             return;
         }
 
-        if (user.chef_level < 1) {
-            res.status(403).json({ error: `${profile.occupationLabel} occupation is required` });
+        const state = await getDynamicSlotState(req.userId!, "secondary_job");
+        if (!state) {
+            res.status(404).json({ error: "User not found" });
             return;
         }
 
-        const spent = user.chef_skill_prep + user.chef_skill_economy + user.chef_skill_market;
-        const available = Math.max(0, user.chef_level - spent);
+        const targetBranch = state.branches.find((branch) => branch.branch_key === branchKey);
+        if (!targetBranch) {
+            res.status(400).json({ error: "Branch not found in selected occupation" });
+            return;
+        }
+
+        if (state.total < 1) {
+            res.status(403).json({ error: `${state.occupationLabel} occupation is required` });
+            return;
+        }
+
+        const spent = state.branches.reduce((sum, branch) => sum + Number(branch.level ?? 0), 0);
+        const available = Math.max(0, state.total - spent);
         if (available < 1) {
             res.status(400).json({ error: "Not enough skill points" });
             return;
         }
 
-        const targetField = branchProfile.storageField;
-        const currentLevel = Number(user[targetField] ?? 0);
-        if (currentLevel >= CHEF_SKILL_MAX_LEVEL) {
+        const currentLevel = Number(targetBranch.level ?? 0);
+        if (currentLevel >= Number(targetBranch.max_level ?? 5)) {
             res.status(400).json({ error: "This branch is already max level" });
             return;
         }
 
-        await prisma.$executeRawUnsafe(
-            `UPDATE users SET ${targetField} = ${targetField} + 1 WHERE id = ?`,
-            req.userId!
-        );
+        await prisma.$executeRaw`
+            UPDATE user_skill_progress
+            SET level = LEAST(level + 1, ${Number(targetBranch.max_level ?? 5)})
+            WHERE user_id = ${req.userId!}
+              AND job_slot = 'secondary_job'
+              AND branch_key = ${targetBranch.branch_key}
+        `;
 
         let adjustedOrders = 0;
         let rebalancedOrders = 0;
 
-        if (branchProfile.effectKind === "TIME_AND_QUEUE") {
+        if (targetBranch.effect_type === "TIME_QUEUE") {
             const nextLevel = currentLevel + 1;
-            adjustedOrders = await applyImmediateChefPrepReduction(req.userId!, currentLevel, nextLevel, user.city_key);
-            rebalancedOrders = await rebalanceChefQueueSlots(req.userId!, nextLevel);
+            adjustedOrders = await applyImmediateSecondaryJobTimeReduction(req.userId!, currentLevel, nextLevel, state.cityKey);
+            rebalancedOrders = await rebalanceSecondaryJobQueueSlots(req.userId!, nextLevel);
         }
 
-        const updated = await getProviderSkillUserRow(req.userId!);
-        if (!updated) {
+        const updatedFirst = await getDynamicSlotState(req.userId!, "first_job");
+        const updatedSecond = await getDynamicSlotState(req.userId!, "secondary_job");
+        if (!updatedFirst || !updatedSecond) {
             res.status(404).json({ error: "User not found after update" });
             return;
         }
 
+        const updatedUser = await getJobSkillUserRow(req.userId!);
+        if (!updatedUser) {
+            res.status(404).json({ error: "User not found after update" });
+            return;
+        }
+
+        const [firstVeg, firstChicken, firstBeef] = readBranchTriplet(updatedFirst.branches);
+        const [secondVeg, secondChicken, secondBeef] = readBranchTriplet(updatedSecond.branches);
+
         const nextLevel = currentLevel + 1;
-        const message = branchProfile.effectKind === "TIME_AND_QUEUE"
-            ? `Upgraded ${branch} to level ${nextLevel}. Applied ${profile.timeEffectLabel} buff to ${adjustedOrders} order(s), rebalanced ${rebalancedOrders} ${profile.queueLabel} order(s).`
-            : `Upgraded ${branch} to level ${nextLevel}.`;
+        const message = targetBranch.effect_type === "TIME_QUEUE"
+            ? `Upgraded ${targetBranch.branch_name} to level ${nextLevel}. Applied buff to ${adjustedOrders} order(s), rebalanced ${rebalancedOrders} queue order(s).`
+            : `Upgraded ${targetBranch.branch_name} to level ${nextLevel}.`;
 
         res.json({
             message,
-            skillTree: buildChefSkillTree(updated, updated.city_key),
-            user: {
-                id: updated.id,
-                email: updated.email,
-                role: updated.role,
-                money: updated.money,
-                hunger: updated.hunger,
-                hunger_updated_at: updated.hunger_updated_at,
-                satiety_buff: updated.satiety_buff,
-                buff_expires_at: updated.buff_expires_at,
-                provider_level: updated.provider_level,
-                provider_exp: updated.provider_exp,
-                provider_skill_veg: updated.provider_skill_veg,
-                provider_skill_chicken: updated.provider_skill_chicken,
-                provider_skill_beef: updated.provider_skill_beef,
-                chef_level: updated.chef_level,
-                chef_exp: updated.chef_exp,
-                chef_skill_prep: updated.chef_skill_prep,
-                chef_skill_economy: updated.chef_skill_economy,
-                chef_skill_market: updated.chef_skill_market,
-            },
+            skillTree: buildDynamicSkillTree(updatedSecond),
+            user: toJobPayload({
+                id: updatedUser.id,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                money: updatedUser.money,
+                hunger: updatedUser.hunger,
+                hunger_updated_at: updatedUser.hunger_updated_at,
+                satiety_buff: updatedUser.satiety_buff,
+                buff_expires_at: updatedUser.buff_expires_at,
+                first_job_level: updatedUser.first_job_level,
+                first_job_exp: updatedUser.first_job_exp,
+                first_job_skill_veg: firstVeg,
+                first_job_skill_chicken: firstChicken,
+                first_job_skill_beef: firstBeef,
+                secondary_job_level: updatedUser.secondary_job_level,
+                secondary_job_exp: updatedUser.secondary_job_exp,
+                secondary_job_skill_veg: secondVeg,
+                secondary_job_skill_chicken: secondChicken,
+                secondary_job_skill_beef: secondBeef,
+            }),
         });
     } catch (error: any) {
-        const msg = String(error?.message ?? "").toLowerCase();
-        if (msg.includes("unknown column")) {
-            res.status(400).json({
-                error: "Chef skill columns are missing in database and could not be created.",
-            });
-            return;
-        }
-        console.error("upgradeChefSkill error:", error);
-        res.status(500).json({ error: "Failed to upgrade chef skill" });
+        console.error("upgradeSecondaryJobSkill error:", error);
+        res.status(500).json({ error: "Failed to upgrade secondary job skill" });
     }
 };

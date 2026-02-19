@@ -6,19 +6,45 @@ import { AuthRequest } from "../middleware/auth.middleware";
 import { INVENTORY_SLOTS } from "../config/game.config";
 import { syncHunger } from "../services/hunger.service";
 import {
+    ensureCitySchema,
     ensureLegacyCityAssignment,
     getAvailableCities,
     getUserCityContext,
     selectUserCity,
 } from "../services/city.service";
+import { toJobPayload } from "../lib/userPayload";
 
 const generateToken = (userId: number): string => {
     return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: "7d" });
 };
 
+async function findLoginUserByEmail(email: string) {
+    await prisma.$executeRaw`
+        UPDATE users
+        SET role = 'CITIZEN'
+        WHERE email = ${email}
+          AND (
+              role IS NULL
+              OR TRIM(CAST(role AS CHAR)) = ''
+              OR role NOT IN ('CITIZEN', 'MAYOR')
+          )
+    `;
+
+    const rows = await prisma.$queryRaw<
+        Array<{ id: number; email: string; password_hash: string }>
+    >`
+        SELECT id, email, password_hash
+        FROM users
+        WHERE email = ${email}
+        LIMIT 1
+    `;
+
+    return rows[0] ?? null;
+}
+
 /** Standard user response shape (includes occupation levels) */
 function userResponse(user: any) {
-    return {
+    return toJobPayload({
         id: user.id,
         email: user.email,
         role: user.role,
@@ -27,14 +53,11 @@ function userResponse(user: any) {
         hunger_updated_at: user.hunger_updated_at,
         satiety_buff: user.satiety_buff,
         buff_expires_at: user.buff_expires_at,
-        provider_level: user.provider_level,
-        provider_exp: user.provider_exp,
-        provider_skill_veg: user.provider_skill_veg,
-        provider_skill_chicken: user.provider_skill_chicken,
-        provider_skill_beef: user.provider_skill_beef,
-        chef_level: user.chef_level,
-        chef_exp: user.chef_exp,
-    };
+        first_job_level: user.first_job_level,
+        first_job_exp: user.first_job_exp,
+        secondary_job_level: user.secondary_job_level,
+        secondary_job_exp: user.secondary_job_exp,
+    });
 }
 
 async function buildUserResponse(user: any) {
@@ -50,6 +73,8 @@ async function buildUserResponse(user: any) {
 // POST /auth/register
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
+        await ensureCitySchema(prisma);
+
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -73,7 +98,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const password_hash = await bcrypt.hash(password, 12);
 
         const user = await prisma.user.create({
-            data: { email, password_hash },
+            data: { email, password_hash, role: "CITIZEN" as any },
         });
 
         // Initialize 8 empty inventory slots
@@ -99,6 +124,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // POST /auth/login
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
+        await ensureCitySchema(prisma);
+
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -106,7 +133,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await findLoginUserByEmail(email);
         if (!user) {
             res.status(401).json({ error: "Invalid email or password" });
             return;
@@ -121,7 +148,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         const token = generateToken(user.id);
         const syncedUser = await syncHunger(user.id);
 
-        await ensureLegacyCityAssignment({ id: syncedUser.id, role: syncedUser.role });
+        await ensureLegacyCityAssignment({
+            id: syncedUser.id,
+            first_job_level: syncedUser.first_job_level,
+            secondary_job_level: syncedUser.secondary_job_level,
+        });
 
         res.json({
             token,
@@ -139,25 +170,37 @@ export const selectClass = async (
     res: Response
 ): Promise<void> => {
     try {
+        await ensureCitySchema(prisma);
+
         console.log("=== SELECT CLASS START ===");
         console.log("req.userId:", req.userId);
         console.log("req.body:", JSON.stringify(req.body));
 
-        const { role } = req.body;
+        const requestedJobSlot = String(req.body?.job_slot ?? req.body?.role ?? "").trim().toLowerCase();
+        const canonicalJobSlot = requestedJobSlot === "secondary_job" || requestedJobSlot === "chef"
+            ? "secondary_job"
+            : requestedJobSlot === "first_job" || requestedJobSlot === "provider"
+                ? "first_job"
+                : null;
 
-        if (!role || !["PROVIDER", "CHEF"].includes(role)) {
-            console.log("Invalid role:", role);
+        if (!canonicalJobSlot) {
+            console.log("Invalid job slot:", req.body?.job_slot ?? req.body?.role);
             res
                 .status(400)
-                .json({ error: "Role must be either PROVIDER or CHEF" });
+                .json({ error: "job_slot must be first_job or secondary_job" });
             return;
         }
 
         console.log("Finding user with id:", req.userId);
         const user = await prisma.user.findUnique({
             where: { id: req.userId },
-        });
-        console.log("Found user:", user ? `id=${user.id}, role=${user.role}` : "null");
+        }) as any;
+        console.log(
+            "Found user:",
+            user
+                ? `id=${user.id}, first_job_level=${user.first_job_level}, secondary_job_level=${user.secondary_job_level}`
+                : "null"
+        );
 
         if (!user) {
             res.status(404).json({ error: "User not found" });
@@ -175,26 +218,32 @@ export const selectClass = async (
             return;
         }
 
-        if (user.role !== "NONE") {
-            console.log("User already has role:", user.role);
+        if ((user.first_job_level ?? 0) >= 1 || (user.secondary_job_level ?? 0) >= 1) {
+            console.log("User already has occupation level:", {
+                first_job_level: user.first_job_level,
+                secondary_job_level: user.secondary_job_level,
+            });
             res.status(400).json({ error: "Class has already been selected" });
             return;
         }
 
-        // Set role AND initialise the occupation level to 1
-        const updateData: Record<string, any> = { role };
-        if (role === "PROVIDER") {
-            updateData.provider_level = 1;
+        // Initialize selected occupation level to 1
+        const updateData: Record<string, any> = {};
+        if (canonicalJobSlot === "first_job") {
+            updateData.first_job_level = 1;
         } else {
-            updateData.chef_level = 1;
+            updateData.secondary_job_level = 1;
         }
         console.log("Updating user with data:", JSON.stringify(updateData));
 
         const updatedUser = await prisma.user.update({
             where: { id: req.userId },
-            data: updateData,
+            data: updateData as any,
+        }) as any;
+        console.log("Updated user successfully:", {
+            first_job_level: updatedUser.first_job_level,
+            secondary_job_level: updatedUser.secondary_job_level,
         });
-        console.log("Updated user successfully, new role:", updatedUser.role);
 
         res.json({ user: await buildUserResponse(updatedUser) });
         console.log("=== SELECT CLASS END (success) ===");
@@ -210,6 +259,8 @@ export const selectClass = async (
 // GET /auth/me
 export const me = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureCitySchema(prisma);
+
         const user = await syncHunger(req.userId!);
 
         if (!user) {
@@ -217,7 +268,11 @@ export const me = async (req: AuthRequest, res: Response): Promise<void> => {
             return;
         }
 
-        await ensureLegacyCityAssignment({ id: user.id, role: user.role });
+        await ensureLegacyCityAssignment({
+            id: user.id,
+            first_job_level: user.first_job_level,
+            secondary_job_level: user.secondary_job_level,
+        });
 
         res.json({ user: await buildUserResponse(user) });
     } catch (error) {
@@ -232,38 +287,42 @@ export const unlockSecondOccupation = async (
     res: Response
 ): Promise<void> => {
     try {
-        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        await ensureCitySchema(prisma);
+
+        const user = await prisma.user.findUnique({ where: { id: req.userId } }) as any;
         if (!user) {
             res.status(404).json({ error: "User not found" });
             return;
         }
 
-        if (user.role === "NONE") {
+        const firstLevel = Number(user.first_job_level ?? 0);
+        const secondaryLevel = Number(user.secondary_job_level ?? 0);
+
+        if (firstLevel < 1 && secondaryLevel < 1) {
             res.status(400).json({ error: "You must select a primary class first" });
             return;
         }
 
-        // Determine which occupation to unlock
-        const primaryOccupation = user.role === "PROVIDER" ? "provider" : "chef";
-        const secondaryOccupation = primaryOccupation === "provider" ? "chef" : "provider";
-        const primaryLevelField = primaryOccupation === "provider" ? "provider_level" : "chef_level";
-        const secondaryLevelField = secondaryOccupation === "provider" ? "provider_level" : "chef_level";
+        // Unlock whichever occupation is still locked
+        const unlockFirstJob = firstLevel < 1;
+        const secondaryJobSlot = unlockFirstJob ? "first_job" : "secondary_job";
 
         // Check secondary not already unlocked
-        if (user[secondaryLevelField] >= 1) {
+        const targetLevel = unlockFirstJob ? firstLevel : secondaryLevel;
+        if (targetLevel >= 1) {
             res.status(400).json({ error: "Second occupation already unlocked" });
             return;
         }
 
         const updatedUser = await prisma.user.update({
             where: { id: req.userId },
-            data: { [secondaryLevelField]: 1 },
-        });
+            data: (unlockFirstJob ? { first_job_level: 1 } : { secondary_job_level: 1 }) as any,
+        }) as any;
 
         const cityContext = await getUserCityContext(updatedUser.id);
-        const unlockedOccupationLabel = secondaryOccupation === "provider"
-            ? (cityContext.city?.occupation_labels?.provider ?? "Provider")
-            : (cityContext.city?.occupation_labels?.chef ?? "Chef");
+        const unlockedOccupationLabel = secondaryJobSlot === "first_job"
+            ? (cityContext.city?.occupation_labels?.first_job ?? "First Job")
+            : (cityContext.city?.occupation_labels?.secondary_job ?? "Secondary Job");
 
         res.json({
             message: `${unlockedOccupationLabel} occupation unlocked!`,

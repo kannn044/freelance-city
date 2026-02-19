@@ -96,7 +96,7 @@ export interface CookRarityMixRule {
 }
 
 /**
- * Chef ingredient-mix rarity rules (unordered pair; 10 total cases for 4 tiers).
+ * Secondary-job ingredient-mix rarity rules (unordered pair; 10 total cases for 4 tiers).
  * Chance values are weights and do not need to sum to 1.
  */
 export const COOK_INGREDIENT_RARITY_MIX_RULES: CookRarityMixRule[] = [
@@ -144,12 +144,18 @@ export function resolveCookMealRarityByPair(a: EquipmentRarity, b: EquipmentRari
 
 /**
  * Occupation EXP tuning multipliers.
- * Lowering Provider values helps slow early Provider leveling pace.
+ * Lowering first-job values helps slow early first-job leveling pace.
  */
-export const PROVIDER_WORK_EXP_MULTIPLIER = 0.2;
-export const CHEF_WORK_EXP_MULTIPLIER = 0.4;
-export const PROVIDER_MARKET_EXP_MULTIPLIER = 0.2;
-export const CHEF_MARKET_EXP_MULTIPLIER = 0.4;
+export const FIRST_JOB_WORK_EXP_MULTIPLIER = 0.2;
+export const SECONDARY_JOB_WORK_EXP_MULTIPLIER = 0.4;
+export const FIRST_JOB_MARKET_EXP_MULTIPLIER = 0.2;
+export const SECONDARY_JOB_MARKET_EXP_MULTIPLIER = 0.4;
+
+// Legacy aliases (kept for compatibility)
+export const PROVIDER_WORK_EXP_MULTIPLIER = FIRST_JOB_WORK_EXP_MULTIPLIER;
+export const CHEF_WORK_EXP_MULTIPLIER = SECONDARY_JOB_WORK_EXP_MULTIPLIER;
+export const PROVIDER_MARKET_EXP_MULTIPLIER = FIRST_JOB_MARKET_EXP_MULTIPLIER;
+export const CHEF_MARKET_EXP_MULTIPLIER = SECONDARY_JOB_MARKET_EXP_MULTIPLIER;
 
 // ─── Market Bot ─────────────────────────────────────────
 
@@ -168,6 +174,28 @@ export interface MarketBotTuningConfig {
     maxUnitPriceRatio: number;
     /** Minimum listing age before bot can buy (milliseconds). */
     minListingAgeMs: number;
+    /** Chance (0..1) that bot will create sell listings each tick. */
+    sellChancePerTick: number;
+    /** Max number of new bot listings created in one tick. */
+    maxSellListingsPerTick: number;
+    /** Max number of distinct bot sellers per item in active listings. */
+    maxSellersPerItem: number;
+    /** Min quantity for one bot sell listing. */
+    sellMinQtyPerListing: number;
+    /** Max quantity for one bot sell listing. */
+    sellMaxQtyPerListing: number;
+    /** Min unit price ratio vs reference price for bot listings. */
+    sellUnitPriceMinRatio: number;
+    /** Max unit price ratio vs reference price for bot listings. */
+    sellUnitPriceMaxRatio: number;
+    /** Target item names to simulate player selling in market. */
+    sellItemNames: string[];
+    /** Cooldown between sell-feed attempts (milliseconds). */
+    sellFeedCooldownMs: number;
+    /** Hard cap of total ACTIVE bot listings in market. */
+    maxActiveBotListingsTotal: number;
+    /** Hard cap for total bot seller accounts. */
+    maxBotUsers: number;
 }
 
 /**
@@ -189,20 +217,45 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     maxUnitPriceRatio: 1.50,
     // Avoid instant bot buy right after user lists an item.
     minListingAgeMs: 60_000,
+    // 65% chance to create simulated player sell listings each tick.
+    sellChancePerTick: 0.65,
+    // At most 2 new bot listings per tick.
+    maxSellListingsPerTick: 2,
+    // Cap active simulated sellers per item.
+    maxSellersPerItem: 10,
+    // Listing quantity range.
+    sellMinQtyPerListing: 1,
+    sellMaxQtyPerListing: 12,
+    // Price randomization around reference value.
+    sellUnitPriceMinRatio: 0.9,
+    sellUnitPriceMaxRatio: 1.35,
+    // Requested market simulation items.
+    sellItemNames: ["Gas", "Flux", "Oil"],
+    // Prevent bot from feeding market too frequently.
+    sellFeedCooldownMs: 90_000,
+    // Hard cap to keep ACTIVE bot listings bounded.
+    maxActiveBotListingsTotal: 30,
+    // Cap number of NPC seller accounts.
+    maxBotUsers: 30,
 };
 
-// ─── Provider Skill Tree ───────────────────────────────
+// ─── First-job Skill Tree ──────────────────────────────
 
-export type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
+export type FirstJobBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
+export type ProviderBranch = FirstJobBranch;
 
-export const PROVIDER_SKILL_MAX_LEVEL = 4;
+export const FIRST_JOB_SKILL_MAX_LEVEL = 5;
+export const PROVIDER_SKILL_MAX_LEVEL = FIRST_JOB_SKILL_MAX_LEVEL;
 
 /**
  * Time reduction buff by branch skill level.
  * Lv1: 5% total, Lv3: 10% total.
  */
-export function getProviderSkillTimeReduction(level: number): number {
-    if (level >= 3) return 0.10;
+export function getFirstJobSkillTimeReduction(level: number): number {
+    if (level >= 5) return 0.25;
+    if (level >= 4) return 0.20;
+    if (level >= 3) return 0.15;
+    if (level >= 2) return 0.10;
     if (level >= 1) return 0.05;
     return 0;
 }
@@ -211,13 +264,13 @@ export function getProviderSkillTimeReduction(level: number): number {
  * Plot count unlocked by branch skill level.
  * Base: 1 plot, Lv2: 2 plots, Lv4: 3 plots.
  */
-export function getProviderSkillPlotCount(level: number): number {
-    if (level >= 4) return 3;
-    if (level >= 2) return 2;
+export function getFirstJobSkillPlotCount(level: number): number {
+    if (level >= 5) return 3;
+    if (level >= 3) return 2;
     return 1;
 }
 
-export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
+export const FIRST_JOB_SKILL_TREE_CONFIG: Record<FirstJobBranch, {
     title: string;
     color: string;
     effects: {
@@ -225,6 +278,7 @@ export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
         level2: string;
         level3: string;
         level4: string;
+        level5: string;
     };
 }> = {
     VEGETABLE: {
@@ -232,9 +286,10 @@ export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
         color: "#34d399",
         effects: {
             level1: "Lv.1: Reduce task waiting time by 5%",
-            level2: "Lv.2: Increase task plot capacity to 2 (base is 1)",
-            level3: "Lv.3: Reduce task waiting time by another 5% (10% total)",
-            level4: "Lv.4: Increase task plot capacity to 3",
+            level2: "Lv.2: Reduce task waiting time by another 5% (10% total)",
+            level3: "Lv.3: Increase task plot capacity to 2 (base is 1)",
+            level4: "Lv.4: Reduce task waiting time by another 10% (20% total)",
+            level5: "Lv.5: Increase task plot capacity to 3 and cap time reduction at 25%",
         },
     },
     CHICKEN: {
@@ -242,9 +297,10 @@ export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
         color: "#facc15",
         effects: {
             level1: "Lv.1: Reduce task waiting time by 5%",
-            level2: "Lv.2: Increase task plot capacity to 2 (base is 1)",
-            level3: "Lv.3: Reduce task waiting time by another 5% (10% total)",
-            level4: "Lv.4: Increase task plot capacity to 3",
+            level2: "Lv.2: Reduce task waiting time by another 5% (10% total)",
+            level3: "Lv.3: Increase task plot capacity to 2 (base is 1)",
+            level4: "Lv.4: Reduce task waiting time by another 10% (20% total)",
+            level5: "Lv.5: Increase task plot capacity to 3 and cap time reduction at 25%",
         },
     },
     BEEF: {
@@ -252,25 +308,36 @@ export const PROVIDER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
         color: "#f87171",
         effects: {
             level1: "Lv.1: Reduce task waiting time by 5%",
-            level2: "Lv.2: Increase task plot capacity to 2 (base is 1)",
-            level3: "Lv.3: Reduce task waiting time by another 5% (10% total)",
-            level4: "Lv.4: Increase task plot capacity to 3",
+            level2: "Lv.2: Reduce task waiting time by another 5% (10% total)",
+            level3: "Lv.3: Increase task plot capacity to 2 (base is 1)",
+            level4: "Lv.4: Reduce task waiting time by another 10% (20% total)",
+            level5: "Lv.5: Increase task plot capacity to 3 and cap time reduction at 25%",
         },
     },
 };
 
-// ─── Chef Skill Tree ───────────────────────────────────
+// Legacy aliases (kept for compatibility)
+export const getProviderSkillTimeReduction = getFirstJobSkillTimeReduction;
+export const getProviderSkillPlotCount = getFirstJobSkillPlotCount;
+export const PROVIDER_SKILL_TREE_CONFIG = FIRST_JOB_SKILL_TREE_CONFIG;
 
-export type ChefBranch = "PREP_MASTER" | "KITCHEN_ECONOMY" | "MARKET_INTEL";
+// ─── Secondary-job Skill Tree ──────────────────────────
 
-export const CHEF_SKILL_MAX_LEVEL = 4;
+export type SecondaryJobBranch = "PREP_MASTER" | "KITCHEN_ECONOMY" | "MARKET_INTEL";
+export type ChefBranch = SecondaryJobBranch;
+
+export const SECONDARY_JOB_SKILL_MAX_LEVEL = 5;
+export const CHEF_SKILL_MAX_LEVEL = SECONDARY_JOB_SKILL_MAX_LEVEL;
 
 /**
  * PREP_MASTER time reduction by branch level.
  * Lv1: 5% total, Lv3: 10% total.
  */
-export function getChefSkillCookTimeReduction(level: number): number {
-    if (level >= 3) return 0.10;
+export function getSecondaryJobSkillCookTimeReduction(level: number): number {
+    if (level >= 5) return 0.25;
+    if (level >= 4) return 0.20;
+    if (level >= 3) return 0.15;
+    if (level >= 2) return 0.10;
     if (level >= 1) return 0.05;
     return 0;
 }
@@ -279,9 +346,9 @@ export function getChefSkillCookTimeReduction(level: number): number {
  * PREP_MASTER concurrent cook slots.
  * Base: 1, Lv2: 2, Lv4: 3.
  */
-export function getChefSkillConcurrentCookSlots(level: number): number {
-    if (level >= 4) return 3;
-    if (level >= 2) return 2;
+export function getSecondaryJobSkillConcurrentCookSlots(level: number): number {
+    if (level >= 5) return 3;
+    if (level >= 3) return 2;
     return 1;
 }
 
@@ -289,7 +356,10 @@ export function getChefSkillConcurrentCookSlots(level: number): number {
  * KITCHEN_ECONOMY save chance for secondary ingredients.
  * Lv1: 6%, Lv2+: 12% total.
  */
-export function getChefSkillSecondarySaveChance(level: number): number {
+export function getSecondaryJobSkillSecondarySaveChance(level: number): number {
+    if (level >= 5) return 0.30;
+    if (level >= 4) return 0.24;
+    if (level >= 3) return 0.18;
     if (level >= 2) return 0.12;
     if (level >= 1) return 0.06;
     return 0;
@@ -299,13 +369,16 @@ export function getChefSkillSecondarySaveChance(level: number): number {
  * KITCHEN_ECONOMY save chance for primary ingredient.
  * Lv3: 5%, Lv4: 10%.
  */
-export function getChefSkillPrimarySaveChance(level: number): number {
-    if (level >= 4) return 0.10;
-    if (level >= 3) return 0.05;
+export function getSecondaryJobSkillPrimarySaveChance(level: number): number {
+    if (level >= 5) return 0.30;
+    if (level >= 4) return 0.24;
+    if (level >= 3) return 0.18;
+    if (level >= 2) return 0.12;
+    if (level >= 1) return 0.06;
     return 0;
 }
 
-export const CHEF_SKILL_TREE_CONFIG: Record<ChefBranch, {
+export const SECONDARY_JOB_SKILL_TREE_CONFIG: Record<SecondaryJobBranch, {
     title: string;
     color: string;
     effects: {
@@ -313,6 +386,7 @@ export const CHEF_SKILL_TREE_CONFIG: Record<ChefBranch, {
         level2: string;
         level3: string;
         level4: string;
+        level5: string;
     };
 }> = {
     PREP_MASTER: {
@@ -320,9 +394,10 @@ export const CHEF_SKILL_TREE_CONFIG: Record<ChefBranch, {
         color: "#fb923c",
         effects: {
             level1: "Lv.1: Reduce cook time by 5%",
-            level2: "Lv.2: Increase parallel cook slots to 2 (base is 1)",
-            level3: "Lv.3: Reduce cook time by another 5% (10% total)",
-            level4: "Lv.4: Increase parallel cook slots to 3",
+            level2: "Lv.2: Reduce cook time by another 5% (10% total)",
+            level3: "Lv.3: Increase parallel cook slots to 2 (base is 1)",
+            level4: "Lv.4: Reduce cook time by another 10% (20% total)",
+            level5: "Lv.5: Increase parallel cook slots to 3 and cap time reduction at 25%",
         },
     },
     KITCHEN_ECONOMY: {
@@ -330,9 +405,10 @@ export const CHEF_SKILL_TREE_CONFIG: Record<ChefBranch, {
         color: "#34d399",
         effects: {
             level1: "Lv.1: Secondary ingredient save chance +6%",
-            level2: "Lv.2: Secondary ingredient save chance +6% (12% total)",
-            level3: "Lv.3: Primary ingredient save chance +5%",
-            level4: "Lv.4: Primary ingredient save chance +5% (10% total)",
+            level2: "Lv.2: Save chance +6% (12% total)",
+            level3: "Lv.3: Save chance +6% (18% total)",
+            level4: "Lv.4: Save chance +6% (24% total)",
+            level5: "Lv.5: Save chance +6% (30% total)",
         },
     },
     MARKET_INTEL: {
@@ -343,9 +419,17 @@ export const CHEF_SKILL_TREE_CONFIG: Record<ChefBranch, {
             level2: "Lv.2: Expand bot accepted price tolerance",
             level3: "Lv.3: Improve listing relevance duration",
             level4: "Lv.4: Increase overall bot buy weight",
+            level5: "Lv.5: Major boost to bot buy preference",
         },
     },
 };
+
+// Legacy aliases (kept for compatibility)
+export const getChefSkillCookTimeReduction = getSecondaryJobSkillCookTimeReduction;
+export const getChefSkillConcurrentCookSlots = getSecondaryJobSkillConcurrentCookSlots;
+export const getChefSkillSecondarySaveChance = getSecondaryJobSkillSecondarySaveChance;
+export const getChefSkillPrimarySaveChance = getSecondaryJobSkillPrimarySaveChance;
+export const CHEF_SKILL_TREE_CONFIG = SECONDARY_JOB_SKILL_TREE_CONFIG;
 
 // ─── Hunger Penalty Tiers ────────────────────────────────
 
@@ -385,9 +469,10 @@ export function getHungerTier(hunger: number): HungerTier {
 export const MAX_LEVEL = 50;
 
 /**
- * Minimum level in primary occupation required to unlock second occupation.
+ * Minimum level in first job required to unlock secondary job.
  */
-export const UNLOCK_SECOND_OCCUPATION_LEVEL = 5;
+export const UNLOCK_SECONDARY_JOB_LEVEL = 5;
+export const UNLOCK_SECOND_OCCUPATION_LEVEL = UNLOCK_SECONDARY_JOB_LEVEL;
 
 /**
  * Total EXP required to reach each level (index = level).

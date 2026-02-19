@@ -9,10 +9,9 @@ datasource db {
 
 // ─── Enums ───────────────────────────────────────────────
 
-enum Role {
-  NONE
-  PROVIDER
-  CHEF
+enum UserRole {
+  CITIZEN
+  MAYOR
 }
 
 enum ItemType {
@@ -26,6 +25,8 @@ enum ItemType {
 enum WorkType {
   FARM
   COOK
+  MINE
+  SMELT
 }
 
 enum ListingStatus {
@@ -50,25 +51,41 @@ enum EquipmentRarity {
   LEGENDARY
 }
 
+enum JobSlot {
+  first_job
+  secondary_job
+}
+
+enum SkillEffectType {
+  TIME_QUEUE
+  CRAFT_COST
+  OUTPUT_BONUS
+  MARKET_BONUS
+  DROP_RATE_BONUS
+  ENERGY_EFFICIENCY
+  CUSTOM
+}
+
 // ─── User ────────────────────────────────────────────────
 
 model User {
   id                Int      @id @default(autoincrement())
   email             String   @unique
   password_hash     String
-  role              Role     @default(NONE)
+  role              UserRole @default(CITIZEN)
   money             Int      @default(5000)
   hunger            Float    @default(2400)
   hunger_updated_at DateTime @default(now())
   satiety_buff      Float    @default(0)
   buff_expires_at   DateTime?
-  provider_level    Int      @default(0) // 0 = not unlocked, 1+ = active level
-  provider_exp      Int      @default(0)
-  provider_skill_veg     Int @default(0)
-  provider_skill_chicken Int @default(0)
-  provider_skill_beef    Int @default(0)
-  chef_level        Int      @default(0)
-  chef_exp          Int      @default(0)
+  city_key          String?
+  city_selected_at  DateTime?
+  first_job_level   Int      @default(0) // 0 = not unlocked, 1+ = active level
+  first_job_skill_level Int  @default(0)
+  first_job_exp     Int      @default(0)
+  secondary_job_level Int    @default(0)
+  secondary_job_skill_level Int @default(0)
+  secondary_job_exp Int      @default(0)
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
@@ -78,6 +95,8 @@ model User {
   buy_history    MarketListing[]   @relation("buyer")
   recipe_unlocks UserRecipeUnlock[]
   equipments     UserEquipment[]
+  job_progress   UserJobProgress[]
+  skill_progress UserSkillProgress[]
 
   @@map("users")
 }
@@ -89,7 +108,6 @@ model Item {
   name            String         @unique
   type            ItemType
   equipment_slot  EquipmentSlot?
-  equipment_role  Role?
   effect_key      String?
   effect_value    Float?
   effect_value2   Float?
@@ -200,9 +218,11 @@ model WorkOrder {
   type         WorkType
   item_id      Int // The seed/recipe item being worked
   recipe_id    Int? // Recipe ID if cooking
+  output_rarity EquipmentRarity?
   quantity     Int      @default(1)
   started_at   DateTime @default(now())
   completes_at DateTime
+  paused_at    DateTime?
   collected    Boolean  @default(false)
 
   user User @relation(fields: [user_id], references: [id])
@@ -220,6 +240,7 @@ model MarketListing {
   item_id    Int
   quantity   Int
   price      Int           // Total price
+  equipment_rarity EquipmentRarity?
   status     ListingStatus @default(ACTIVE)
   created_at DateTime      @default(now())
   sold_at    DateTime?
@@ -229,4 +250,177 @@ model MarketListing {
   item   Item  @relation(fields: [item_id], references: [id])
 
   @@map("market_listings")
+}
+
+// ─── Dynamic Occupation Progression ─────────────────────
+
+model OccupationCatalog {
+  occupation_key String @id
+  city_key       String
+  job_slot       JobSlot
+  display_name   String
+  workspace_mode String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  skill_branches OccupationSkillBranchCatalog[]
+  job_progress   UserJobProgress[]
+  skill_progress UserSkillProgress[]
+
+  @@unique([city_key, job_slot])
+  @@map("occupation_catalog")
+}
+
+model OccupationSkillBranchCatalog {
+  id                 Int @id @default(autoincrement())
+  occupation_key     String
+  branch_slot        Int
+  branch_key         String
+  branch_name        String
+  effect_type        SkillEffectType
+  max_level          Int @default(5)
+  effect_config_json Json
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  occupation OccupationCatalog @relation(fields: [occupation_key], references: [occupation_key])
+
+  @@unique([occupation_key, branch_slot])
+  @@unique([occupation_key, branch_key])
+  @@map("occupation_skill_branch_catalog")
+}
+
+model UserJobProgress {
+  id             Int @id @default(autoincrement())
+  user_id        Int
+  job_slot       JobSlot
+  occupation_key String
+  level          Int @default(1)
+  exp            Int @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user       User              @relation(fields: [user_id], references: [id])
+  occupation OccupationCatalog @relation(fields: [occupation_key], references: [occupation_key])
+
+  @@unique([user_id, job_slot])
+  @@map("user_job_progress")
+}
+
+model UserSkillProgress {
+  id             Int @id @default(autoincrement())
+  user_id        Int
+  job_slot       JobSlot
+  occupation_key String
+  branch_key     String
+  level          Int @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user       User              @relation(fields: [user_id], references: [id])
+  occupation OccupationCatalog @relation(fields: [occupation_key], references: [occupation_key])
+
+  @@unique([user_id, job_slot, branch_key])
+  @@map("user_skill_progress")
+}
+
+// ─── Dynamic Workspace Rules ───────────────────────────
+
+model CityWorkspaceRule {
+  id               Int      @id @default(autoincrement())
+  city_key         String   @db.VarChar(32)
+  job_slot         JobSlot
+  work_type        WorkType
+  workspace_mode   String   @default("") @db.VarChar(32)
+  matcher_type     String   @db.VarChar(32)
+  matcher_value    String   @default("") @db.VarChar(96)
+  required_item_name String @db.VarChar(96)
+  must_be_equipped Boolean  @default(true)
+  error_code       String   @default("WORKSPACE_REQUIREMENT_FAILED") @db.VarChar(64)
+  error_message    String   @db.VarChar(255)
+  is_enabled       Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@unique([city_key, job_slot, work_type, workspace_mode, matcher_type, matcher_value, required_item_name])
+  @@index([city_key, job_slot, work_type, is_enabled])
+  @@map("city_workspace_rules")
+}
+
+// ─── Runtime SQL-backed tables ─────────────────────────
+
+model GameSetting {
+  setting_key   String   @id
+  setting_value String
+  updated_at    DateTime @updatedAt
+
+  @@map("game_settings")
+}
+
+model CityState {
+  city_key               String   @id
+  display_name           String
+  treasury               BigInt   @default(0)
+  tier                   Int      @default(1)
+  domestic_trade_tax_bp  Int      @default(300)
+  export_tax_bp          Int      @default(300)
+  import_tax_bp          Int      @default(300)
+  mayor_user_id          Int?
+  cycle_started_at       DateTime
+  cycle_ends_at          DateTime
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  @@map("city_states")
+}
+
+model UserCityTransferCycle {
+  user_id         Int
+  cycle_id        Int
+  target_city_key String
+  created_at      DateTime @default(now())
+
+  @@id([user_id, cycle_id])
+  @@map("user_city_transfer_cycles")
+}
+
+model CityMayorVote {
+  city_key          String
+  cycle_id          Int
+  voter_user_id     Int
+  candidate_user_id Int
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@id([city_key, cycle_id, voter_user_id])
+  @@index([city_key, cycle_id, candidate_user_id], map: "idx_city_mayor_votes_candidate")
+  @@map("city_mayor_votes")
+}
+
+model CityShopItemRule {
+  id            Int      @id @default(autoincrement())
+  city_key      String
+  matcher_type  String
+  matcher_value String
+  required_role String   @default("ANY")
+  is_enabled    Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@unique([city_key, matcher_type, matcher_value, required_role], map: "uq_city_shop_item_rule")
+  @@map("city_shop_item_rules")
+}
+
+model CityShopRecipeRule {
+  id            Int      @id @default(autoincrement())
+  city_key      String
+  matcher_type  String
+  matcher_value String
+  required_role String   @default("ANY")
+  is_enabled    Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@unique([city_key, matcher_type, matcher_value, required_role], map: "uq_city_shop_recipe_rule")
+  @@map("city_shop_recipe_rules")
 }

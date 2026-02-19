@@ -1,12 +1,12 @@
 import { prisma } from "../lib/prisma";
 import {
-    CHEF_MARKET_EXP_MULTIPLIER,
-    CHEF_WORK_EXP_MULTIPLIER,
     EQUIPMENT_RARITY_DROP_RATES,
+    FIRST_JOB_MARKET_EXP_MULTIPLIER,
+    FIRST_JOB_WORK_EXP_MULTIPLIER,
     HARVEST_ITEM_RARITY_DROP_RATES,
     HUNGER_TASK_DECAY_PER_SEC,
-    PROVIDER_MARKET_EXP_MULTIPLIER,
-    PROVIDER_WORK_EXP_MULTIPLIER,
+    SECONDARY_JOB_MARKET_EXP_MULTIPLIER,
+    SECONDARY_JOB_WORK_EXP_MULTIPLIER,
     type EquipmentRarity,
 } from "../config/game.config";
 
@@ -21,11 +21,21 @@ export interface GameTaskDecayConfig {
 }
 
 export interface GameTaskTimeConfig {
+    firstJobTaskTimeMultiplier: number;
+    secondaryJobTaskTimeMultiplier: number;
+
+    // Legacy aliases (kept for compatibility)
     providerTaskTimeMultiplier: number;
     chefTaskTimeMultiplier: number;
 }
 
 export interface GameExpConfig {
+    firstJobWorkExpMultiplier: number;
+    secondaryJobWorkExpMultiplier: number;
+    firstJobMarketExpMultiplier: number;
+    secondaryJobMarketExpMultiplier: number;
+
+    // Legacy aliases (kept for compatibility)
     providerWorkExpMultiplier: number;
     chefWorkExpMultiplier: number;
     providerMarketExpMultiplier: number;
@@ -92,15 +102,22 @@ const DEFAULT_TASK_DECAY: GameTaskDecayConfig = {
 };
 
 const DEFAULT_TASK_TIME: GameTaskTimeConfig = {
+    firstJobTaskTimeMultiplier: 1,
+    secondaryJobTaskTimeMultiplier: 1,
     providerTaskTimeMultiplier: 1,
     chefTaskTimeMultiplier: 1,
 };
 
 const DEFAULT_EXP: GameExpConfig = {
-    providerWorkExpMultiplier: PROVIDER_WORK_EXP_MULTIPLIER,
-    chefWorkExpMultiplier: CHEF_WORK_EXP_MULTIPLIER,
-    providerMarketExpMultiplier: PROVIDER_MARKET_EXP_MULTIPLIER,
-    chefMarketExpMultiplier: CHEF_MARKET_EXP_MULTIPLIER,
+    firstJobWorkExpMultiplier: FIRST_JOB_WORK_EXP_MULTIPLIER,
+    secondaryJobWorkExpMultiplier: SECONDARY_JOB_WORK_EXP_MULTIPLIER,
+    firstJobMarketExpMultiplier: FIRST_JOB_MARKET_EXP_MULTIPLIER,
+    secondaryJobMarketExpMultiplier: SECONDARY_JOB_MARKET_EXP_MULTIPLIER,
+
+    providerWorkExpMultiplier: FIRST_JOB_WORK_EXP_MULTIPLIER,
+    chefWorkExpMultiplier: SECONDARY_JOB_WORK_EXP_MULTIPLIER,
+    providerMarketExpMultiplier: FIRST_JOB_MARKET_EXP_MULTIPLIER,
+    chefMarketExpMultiplier: SECONDARY_JOB_MARKET_EXP_MULTIPLIER,
 };
 
 const DEFAULT_RARITY: GameRarityConfig = {
@@ -126,13 +143,7 @@ let tableEnsured = false;
 
 async function ensureGameSettingsTable() {
     if (tableEnsured) return;
-    await prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS game_settings (
-            setting_key VARCHAR(64) NOT NULL PRIMARY KEY,
-            setting_value VARCHAR(255) NOT NULL,
-            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-    `);
+    // Master data/table bootstrap is handled by prisma/seed.ts.
     tableEnsured = true;
 }
 
@@ -167,53 +178,66 @@ function parseTaskDecay(rows: Array<{ setting_key: string; setting_value: string
 }
 
 function parseTaskTime(rows: Array<{ setting_key: string; setting_value: string }>): GameTaskTimeConfig {
-    let providerTaskTimeMultiplier = DEFAULT_TASK_TIME.providerTaskTimeMultiplier;
-    let chefTaskTimeMultiplier = DEFAULT_TASK_TIME.chefTaskTimeMultiplier;
+    let firstJobTaskTimeMultiplier = DEFAULT_TASK_TIME.firstJobTaskTimeMultiplier;
+    let secondaryJobTaskTimeMultiplier = DEFAULT_TASK_TIME.secondaryJobTaskTimeMultiplier;
 
     for (const row of rows) {
-        if (row.setting_key === "task_time_provider_multiplier") {
+        if (row.setting_key === "task_time_first_job_multiplier" || row.setting_key === "task_time_provider_multiplier") {
             const n = Number(row.setting_value);
-            if (Number.isFinite(n) && n > 0) providerTaskTimeMultiplier = clamp(n, 0.1, 10);
+            if (Number.isFinite(n) && n > 0) firstJobTaskTimeMultiplier = clamp(n, 0.1, 10);
         }
-        if (row.setting_key === "task_time_chef_multiplier") {
+        if (row.setting_key === "task_time_secondary_job_multiplier" || row.setting_key === "task_time_chef_multiplier") {
             const n = Number(row.setting_value);
-            if (Number.isFinite(n) && n > 0) chefTaskTimeMultiplier = clamp(n, 0.1, 10);
-        }
-    }
-
-    return { providerTaskTimeMultiplier, chefTaskTimeMultiplier };
-}
-
-function parseExp(rows: Array<{ setting_key: string; setting_value: string }>): GameExpConfig {
-    let providerWorkExpMultiplier = DEFAULT_EXP.providerWorkExpMultiplier;
-    let chefWorkExpMultiplier = DEFAULT_EXP.chefWorkExpMultiplier;
-    let providerMarketExpMultiplier = DEFAULT_EXP.providerMarketExpMultiplier;
-    let chefMarketExpMultiplier = DEFAULT_EXP.chefMarketExpMultiplier;
-
-    for (const row of rows) {
-        if (row.setting_key === "exp_provider_work_multiplier") {
-            const n = Number(row.setting_value);
-            if (Number.isFinite(n)) providerWorkExpMultiplier = clamp(n, 0, 10);
-        }
-        if (row.setting_key === "exp_chef_work_multiplier") {
-            const n = Number(row.setting_value);
-            if (Number.isFinite(n)) chefWorkExpMultiplier = clamp(n, 0, 10);
-        }
-        if (row.setting_key === "exp_provider_market_multiplier") {
-            const n = Number(row.setting_value);
-            if (Number.isFinite(n)) providerMarketExpMultiplier = clamp(n, 0, 10);
-        }
-        if (row.setting_key === "exp_chef_market_multiplier") {
-            const n = Number(row.setting_value);
-            if (Number.isFinite(n)) chefMarketExpMultiplier = clamp(n, 0, 10);
+            if (Number.isFinite(n) && n > 0) secondaryJobTaskTimeMultiplier = clamp(n, 0.1, 10);
         }
     }
 
     return {
-        providerWorkExpMultiplier,
-        chefWorkExpMultiplier,
-        providerMarketExpMultiplier,
-        chefMarketExpMultiplier,
+        firstJobTaskTimeMultiplier,
+        secondaryJobTaskTimeMultiplier,
+
+        // Legacy aliases
+        providerTaskTimeMultiplier: firstJobTaskTimeMultiplier,
+        chefTaskTimeMultiplier: secondaryJobTaskTimeMultiplier,
+    };
+}
+
+function parseExp(rows: Array<{ setting_key: string; setting_value: string }>): GameExpConfig {
+    let firstJobWorkExpMultiplier = DEFAULT_EXP.firstJobWorkExpMultiplier;
+    let secondaryJobWorkExpMultiplier = DEFAULT_EXP.secondaryJobWorkExpMultiplier;
+    let firstJobMarketExpMultiplier = DEFAULT_EXP.firstJobMarketExpMultiplier;
+    let secondaryJobMarketExpMultiplier = DEFAULT_EXP.secondaryJobMarketExpMultiplier;
+
+    for (const row of rows) {
+        if (row.setting_key === "exp_first_job_work_multiplier" || row.setting_key === "exp_provider_work_multiplier") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) firstJobWorkExpMultiplier = clamp(n, 0, 10);
+        }
+        if (row.setting_key === "exp_secondary_job_work_multiplier" || row.setting_key === "exp_chef_work_multiplier") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) secondaryJobWorkExpMultiplier = clamp(n, 0, 10);
+        }
+        if (row.setting_key === "exp_first_job_market_multiplier" || row.setting_key === "exp_provider_market_multiplier") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) firstJobMarketExpMultiplier = clamp(n, 0, 10);
+        }
+        if (row.setting_key === "exp_secondary_job_market_multiplier" || row.setting_key === "exp_chef_market_multiplier") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) secondaryJobMarketExpMultiplier = clamp(n, 0, 10);
+        }
+    }
+
+    return {
+        firstJobWorkExpMultiplier,
+        secondaryJobWorkExpMultiplier,
+        firstJobMarketExpMultiplier,
+        secondaryJobMarketExpMultiplier,
+
+        // Legacy aliases
+        providerWorkExpMultiplier: firstJobWorkExpMultiplier,
+        chefWorkExpMultiplier: secondaryJobWorkExpMultiplier,
+        providerMarketExpMultiplier: firstJobMarketExpMultiplier,
+        chefMarketExpMultiplier: secondaryJobMarketExpMultiplier,
     };
 }
 
@@ -330,12 +354,18 @@ export async function getGameRuntimeConfig(): Promise<GameRuntimeConfig> {
             'equipment_box_price',
             'task_decay_farm_per_plot',
             'task_decay_cook_per_menu',
+            'task_time_first_job_multiplier',
+            'task_time_secondary_job_multiplier',
             'task_time_provider_multiplier',
             'task_time_chef_multiplier',
             'exp_provider_work_multiplier',
             'exp_chef_work_multiplier',
             'exp_provider_market_multiplier',
             'exp_chef_market_multiplier',
+            'exp_first_job_work_multiplier',
+            'exp_secondary_job_work_multiplier',
+            'exp_first_job_market_multiplier',
+            'exp_secondary_job_market_multiplier',
             'harvest_rarity_normal',
             'harvest_rarity_rare',
             'harvest_rarity_epic',
@@ -438,7 +468,12 @@ export async function getGameTaskTimeConfig(): Promise<GameTaskTimeConfig> {
     const rows = await prisma.$queryRaw<Array<{ setting_key: string; setting_value: string }>>`
         SELECT setting_key, setting_value
         FROM game_settings
-        WHERE setting_key IN ('task_time_provider_multiplier', 'task_time_chef_multiplier')
+        WHERE setting_key IN (
+            'task_time_first_job_multiplier',
+            'task_time_secondary_job_multiplier',
+            'task_time_provider_multiplier',
+            'task_time_chef_multiplier'
+        )
     `;
 
     return parseTaskTime(rows);
@@ -453,7 +488,11 @@ export async function getGameExpConfig(): Promise<GameExpConfig> {
             'exp_provider_work_multiplier',
             'exp_chef_work_multiplier',
             'exp_provider_market_multiplier',
-            'exp_chef_market_multiplier'
+            'exp_chef_market_multiplier',
+            'exp_first_job_work_multiplier',
+            'exp_secondary_job_work_multiplier',
+            'exp_first_job_market_multiplier',
+            'exp_secondary_job_market_multiplier'
         )
     `;
     return parseExp(rows);
@@ -510,12 +549,18 @@ export async function updateGameRuntimeConfig(input: {
     equipmentBoxPrice?: number;
     farmPerPlot?: number;
     cookPerMenu?: number;
+    firstJobTaskTimeMultiplier?: number;
+    secondaryJobTaskTimeMultiplier?: number;
     providerTaskTimeMultiplier?: number;
     chefTaskTimeMultiplier?: number;
     providerWorkExpMultiplier?: number;
     chefWorkExpMultiplier?: number;
     providerMarketExpMultiplier?: number;
     chefMarketExpMultiplier?: number;
+    firstJobWorkExpMultiplier?: number;
+    secondaryJobWorkExpMultiplier?: number;
+    firstJobMarketExpMultiplier?: number;
+    secondaryJobMarketExpMultiplier?: number;
     harvestNormalRate?: number;
     harvestRareRate?: number;
     harvestEpicRate?: number;
@@ -569,34 +614,48 @@ export async function updateGameRuntimeConfig(input: {
         await upsertSetting("task_decay_cook_per_menu", String(v));
     }
 
-    if (input.providerTaskTimeMultiplier != null) {
-        const v = clamp(Number(input.providerTaskTimeMultiplier), 0.1, 10);
+    const firstJobTaskTimeInput = input.firstJobTaskTimeMultiplier ?? input.providerTaskTimeMultiplier;
+    const secondaryJobTaskTimeInput = input.secondaryJobTaskTimeMultiplier ?? input.chefTaskTimeMultiplier;
+
+    if (firstJobTaskTimeInput != null) {
+        const v = clamp(Number(firstJobTaskTimeInput), 0.1, 10);
         await upsertSetting("task_time_provider_multiplier", String(v));
+        await upsertSetting("task_time_first_job_multiplier", String(v));
     }
 
-    if (input.chefTaskTimeMultiplier != null) {
-        const v = clamp(Number(input.chefTaskTimeMultiplier), 0.1, 10);
+    if (secondaryJobTaskTimeInput != null) {
+        const v = clamp(Number(secondaryJobTaskTimeInput), 0.1, 10);
         await upsertSetting("task_time_chef_multiplier", String(v));
+        await upsertSetting("task_time_secondary_job_multiplier", String(v));
     }
 
-    if (input.providerWorkExpMultiplier != null) {
-        const v = clamp(Number(input.providerWorkExpMultiplier), 0, 10);
+    const firstJobWorkExpInput = input.firstJobWorkExpMultiplier ?? input.providerWorkExpMultiplier;
+    const secondaryJobWorkExpInput = input.secondaryJobWorkExpMultiplier ?? input.chefWorkExpMultiplier;
+    const firstJobMarketExpInput = input.firstJobMarketExpMultiplier ?? input.providerMarketExpMultiplier;
+    const secondaryJobMarketExpInput = input.secondaryJobMarketExpMultiplier ?? input.chefMarketExpMultiplier;
+
+    if (firstJobWorkExpInput != null) {
+        const v = clamp(Number(firstJobWorkExpInput), 0, 10);
         await upsertSetting("exp_provider_work_multiplier", String(v));
+        await upsertSetting("exp_first_job_work_multiplier", String(v));
     }
 
-    if (input.chefWorkExpMultiplier != null) {
-        const v = clamp(Number(input.chefWorkExpMultiplier), 0, 10);
+    if (secondaryJobWorkExpInput != null) {
+        const v = clamp(Number(secondaryJobWorkExpInput), 0, 10);
         await upsertSetting("exp_chef_work_multiplier", String(v));
+        await upsertSetting("exp_secondary_job_work_multiplier", String(v));
     }
 
-    if (input.providerMarketExpMultiplier != null) {
-        const v = clamp(Number(input.providerMarketExpMultiplier), 0, 10);
+    if (firstJobMarketExpInput != null) {
+        const v = clamp(Number(firstJobMarketExpInput), 0, 10);
         await upsertSetting("exp_provider_market_multiplier", String(v));
+        await upsertSetting("exp_first_job_market_multiplier", String(v));
     }
 
-    if (input.chefMarketExpMultiplier != null) {
-        const v = clamp(Number(input.chefMarketExpMultiplier), 0, 10);
+    if (secondaryJobMarketExpInput != null) {
+        const v = clamp(Number(secondaryJobMarketExpInput), 0, 10);
         await upsertSetting("exp_chef_market_multiplier", String(v));
+        await upsertSetting("exp_secondary_job_market_multiplier", String(v));
     }
 
     if (input.harvestNormalRate != null) {

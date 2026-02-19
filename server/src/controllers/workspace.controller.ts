@@ -4,20 +4,22 @@ import { prisma } from "../lib/prisma";
 import { syncHunger } from "../services/hunger.service";
 import {
     type EquipmentRarity,
-    getChefSkillConcurrentCookSlots,
-    getChefSkillCookTimeReduction,
-    getChefSkillPrimarySaveChance,
-    getChefSkillSecondarySaveChance,
+    getSecondaryJobSkillConcurrentCookSlots,
+    getSecondaryJobSkillCookTimeReduction,
+    getSecondaryJobSkillPrimarySaveChance,
+    getSecondaryJobSkillSecondarySaveChance,
     getHungerTier,
     getLevelFromExp,
-    getProviderSkillPlotCount,
-    getProviderSkillTimeReduction,
+    getFirstJobSkillPlotCount,
+    getFirstJobSkillTimeReduction,
     HUNGER_TIERS,
     resolveCookMealRarityByPair,
 } from "../config/game.config";
 import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equipmentEffects.service";
 import { getFerrumMiningConfig, getGameExpConfig, getGameHarvestRarityConfig, getGameTaskTimeConfig } from "../services/gamePricing.service";
 import { getUserCityProfile } from "../services/city.service";
+import { reconcileWorkspaceOrderPausesForUser, validateWorkspaceRequirements } from "../services/workspaceRules.service";
+import { toJobPayload } from "../lib/userPayload";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -31,10 +33,7 @@ type IngredientSelectionInput = {
 // Small tolerance to avoid client/server clock drift causing false "Not ready yet".
 const READY_GRACE_MS = 5000;
 
-type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
-
 let workOrderRarityColumnEnsured = false;
-let chefSkillColumnsEnsured = false;
 
 const MINING_PERMIT_NAME = "Ferrum Mining Permit";
 type MiningLayer = "SURFACE" | "DEEP" | "CORE";
@@ -73,65 +72,61 @@ async function ensureWorkOrderRarityColumn() {
     workOrderRarityColumnEnsured = true;
 }
 
-async function ensureChefSkillColumns(db: DbClient = prisma) {
-    if (chefSkillColumnsEnsured) return;
-
-    const columns = [
-        "chef_skill_prep",
-        "chef_skill_economy",
-        "chef_skill_market",
-    ];
-
-    for (const column of columns) {
-        const rows = await db.$queryRaw<Array<{ cnt: number | bigint }>>`
-            SELECT COUNT(*) as cnt
-            FROM information_schema.COLUMNS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME = 'users'
-              AND COLUMN_NAME = ${column}
-        `;
-
-        const exists = Number(rows[0]?.cnt ?? 0) > 0;
-        if (!exists) {
-            await db.$executeRawUnsafe(`
-                ALTER TABLE users
-                ADD COLUMN ${column} INT NOT NULL DEFAULT 0
-            `);
-        }
-    }
-
-    chefSkillColumnsEnsured = true;
-}
-
-type ChefSkillLevels = {
+type SecondaryJobSkillLevels = {
     prep: number;
     economy: number;
     market: number;
 };
 
-async function getChefSkillLevels(userId: number, db: DbClient = prisma): Promise<ChefSkillLevels> {
-    try {
-        await ensureChefSkillColumns(db);
-        const rows = await db.$queryRaw<Array<{
-            chef_skill_prep: number;
-            chef_skill_economy: number;
-            chef_skill_market: number;
-        }>>`
-            SELECT chef_skill_prep, chef_skill_economy, chef_skill_market
-            FROM users
-            WHERE id = ${userId}
-            LIMIT 1
-        `;
+type BranchLevels = {
+    branch1: number;
+    branch2: number;
+    branch3: number;
+};
 
-        const row = rows[0];
-        return {
-            prep: Number(row?.chef_skill_prep ?? 0),
-            economy: Number(row?.chef_skill_economy ?? 0),
-            market: Number(row?.chef_skill_market ?? 0),
-        };
-    } catch {
-        return { prep: 0, economy: 0, market: 0 };
+async function getJobBranchLevels(
+    userId: number,
+    jobSlot: "first_job" | "secondary_job",
+    db: DbClient = prisma,
+): Promise<BranchLevels> {
+    const rows = await db.$queryRaw<Array<{ branch_slot: number; level: number }>>`
+        SELECT b.branch_slot,
+               COALESCE(usp.level, 0) as level
+        FROM user_job_progress ujp
+        JOIN occupation_skill_branch_catalog b
+          ON b.occupation_key = ujp.occupation_key
+        LEFT JOIN user_skill_progress usp
+          ON usp.user_id = ujp.user_id
+         AND usp.job_slot = ujp.job_slot
+         AND usp.branch_key = b.branch_key
+        WHERE ujp.user_id = ${userId}
+          AND ujp.job_slot = ${jobSlot}
+        ORDER BY b.branch_slot ASC
+    `;
+
+    if (rows.length <= 0) {
+        return { branch1: 0, branch2: 0, branch3: 0 };
     }
+
+    const bySlot = new Map<number, number>();
+    for (const row of rows) {
+        bySlot.set(Number(row.branch_slot ?? 0), Number(row.level ?? 0));
+    }
+
+    return {
+        branch1: Number(bySlot.get(1) ?? 0),
+        branch2: Number(bySlot.get(2) ?? 0),
+        branch3: Number(bySlot.get(3) ?? 0),
+    };
+}
+
+async function getSecondaryJobSkillLevels(userId: number, db: DbClient = prisma): Promise<SecondaryJobSkillLevels> {
+    const levels = await getJobBranchLevels(userId, "secondary_job", db);
+    return {
+        prep: levels.branch1,
+        economy: levels.branch2,
+        market: levels.branch3,
+    };
 }
 
 async function setWorkOrderOutputRarity(orderId: number, rarity: EquipmentRarity | null, db: DbClient = prisma) {
@@ -154,13 +149,6 @@ async function getWorkOrderOutputRarity(orderId: number, db: DbClient = prisma):
     return rows[0]?.output_rarity ?? null;
 }
 
-function getProviderBranchBySeedName(seedName: string): ProviderBranch | null {
-    if (seedName === "Vegetable Seed") return "VEGETABLE";
-    if (seedName === "Chicken Egg") return "CHICKEN";
-    if (seedName === "Beef Calf") return "BEEF";
-    return null;
-}
-
 async function isRecipeUnlocked(userId: number, recipeId: number): Promise<boolean> {
     const rows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
         SELECT COUNT(*) as cnt
@@ -172,79 +160,21 @@ async function isRecipeUnlocked(userId: number, recipeId: number): Promise<boole
 }
 
 async function ensureFerrumCatalog(db: DbClient = prisma) {
-    const upsertItem = async (name: string, data: any) => {
-        return db.item.upsert({ where: { name }, update: data, create: { name, ...data } as any });
+    const getItemByName = async (name: string) => {
+        const item = await db.item.findUnique({ where: { name } });
+        if (!item) {
+            throw new Error(`Missing master data item: ${name}. Please run prisma seed.`);
+        }
+        return item;
     };
 
-    const miningPermit = await upsertItem(MINING_PERMIT_NAME, {
-        type: "SEED",
-        buy_price: null,
-        sell_price: null,
-        max_stack: 1,
-        grow_mins: 1,
-        exp_value: 0,
-        icon: "mining_permit",
-    });
-
-    await upsertItem("Mattock", {
-        type: "EQUIPMENT",
-        buy_price: 650,
-        sell_price: 220,
-        max_stack: 1,
-        exp_value: 0,
-        icon: "mattock",
-        equipment_role: "PROVIDER",
-        equipment_slot: "ARM",
-    });
-
-    const ironOre = await upsertItem("Iron Ore", { type: "RAW", max_stack: 20, sell_price: 45, exp_value: 0.8, icon: "iron_ore" });
-    const copperOre = await upsertItem("Copper Ore", { type: "RAW", max_stack: 20, sell_price: 55, exp_value: 0.9, icon: "copper_ore" });
-    const steelOre = await upsertItem("Steel Ore", { type: "RAW", max_stack: 20, sell_price: 75, exp_value: 1.1, icon: "steel_ore" });
-    const stone = await upsertItem("Stone", { type: "RAW", max_stack: 30, sell_price: 12, exp_value: 0.4, icon: "stone" });
-    const coal = await upsertItem("Coal", { type: "INGREDIENT", max_stack: 30, sell_price: 20, exp_value: 0.5, icon: "coal" });
-    const gem = await upsertItem("Gem", { type: "RAW", max_stack: 10, sell_price: 200, exp_value: 2.5, icon: "gem" });
-    const flux = await upsertItem("Flux", { type: "INGREDIENT", max_stack: 20, sell_price: 65, buy_price: null, exp_value: 0.8, icon: "flux" });
-    const oil = await upsertItem("Oil", { type: "INGREDIENT", max_stack: 20, sell_price: 90, buy_price: null, exp_value: 1.0, icon: "oil" });
-
-    const ironIngot = await upsertItem("Iron Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 220, exp_value: 1.6, icon: "iron_ingot" });
-    const copperIngot = await upsertItem("Copper Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 250, exp_value: 1.8, icon: "copper_ingot" });
-    const steelIngot = await upsertItem("Steel Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 340, exp_value: 2.3, icon: "steel_ingot" });
-
-    const upsertRecipe = async (name: string, outputId: number, cookMins: number) => {
-        return db.recipe.upsert({
-            where: { name },
-            update: { output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
-            create: { name, output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
-        });
-    };
-
-    const ironRecipe = await upsertRecipe("Iron Ingot Smelt", ironIngot.id, 7);
-    const copperRecipe = await upsertRecipe("Copper Ingot Smelt", copperIngot.id, 8);
-    const steelRecipe = await upsertRecipe("Steel Ingot Smelt", steelIngot.id, 10);
-
-    const upsertIngredient = async (recipeId: number, itemId: number, quantity: number) => {
-        await db.recipeIngredient.upsert({
-            where: { recipe_id_item_id: { recipe_id: recipeId, item_id: itemId } },
-            update: { quantity },
-            create: { recipe_id: recipeId, item_id: itemId, quantity },
-        });
-    };
-
-    // User-defined formula: ore + flux + coal + oil
-    await upsertIngredient(ironRecipe.id, ironOre.id, 2);
-    await upsertIngredient(ironRecipe.id, flux.id, 1);
-    await upsertIngredient(ironRecipe.id, coal.id, 2);
-    await upsertIngredient(ironRecipe.id, oil.id, 1);
-
-    await upsertIngredient(copperRecipe.id, copperOre.id, 2);
-    await upsertIngredient(copperRecipe.id, flux.id, 1);
-    await upsertIngredient(copperRecipe.id, coal.id, 2);
-    await upsertIngredient(copperRecipe.id, oil.id, 1);
-
-    await upsertIngredient(steelRecipe.id, steelOre.id, 2);
-    await upsertIngredient(steelRecipe.id, flux.id, 1);
-    await upsertIngredient(steelRecipe.id, coal.id, 2);
-    await upsertIngredient(steelRecipe.id, oil.id, 1);
+    const miningPermit = await getItemByName(MINING_PERMIT_NAME);
+    const ironOre = await getItemByName("Iron Ore");
+    const copperOre = await getItemByName("Copper Ore");
+    const steelOre = await getItemByName("Steel Ore");
+    const stone = await getItemByName("Stone");
+    const coal = await getItemByName("Coal");
+    const gem = await getItemByName("Gem");
 
     return {
         miningPermitId: miningPermit.id,
@@ -325,7 +255,7 @@ type OutputReward = {
 };
 
 async function getOrderOutput(
-    order: { id: number; type: "FARM" | "COOK"; item_id: number; quantity: number },
+    order: { id: number; type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number },
     userId: number,
     db: DbClient,
     harvestDropRates: Record<EquipmentRarity, number>
@@ -417,6 +347,10 @@ async function getOrderOutput(
         ];
     }
 
+    if (order.type !== "COOK") {
+        throw new Error(`Unsupported work type for output resolution: ${order.type}`);
+    }
+
     const cookedItem = await db.item.findUnique({ where: { id: order.item_id } });
     if (!cookedItem) {
         throw new Error("Cook output item not found");
@@ -429,7 +363,7 @@ async function getOrderOutput(
 
     const city = await getUserCityProfile(userId);
     if (String(city.city_key ?? "").toUpperCase() === "FERRUM") {
-        const skill = await getChefSkillLevels(userId, db);
+        const skill = await getSecondaryJobSkillLevels(userId, db);
         const bonusChance = getBlacksmithAlloyMasteryBonusChance(skill.market);
         if (bonusChance > 0 && Math.random() < bonusChance) {
             outputQty += 1;
@@ -568,45 +502,70 @@ async function placeOutputInInventory(
 
 async function awardOrderExp(
     userId: number,
-    orderType: "FARM" | "COOK",
+    orderType: "FARM" | "COOK" | "MINE" | "SMELT",
     outputItem: { exp_value: number; name: string },
     outputQty: number,
     db: DbClient,
-    expConfig: { providerWorkExpMultiplier: number; chefWorkExpMultiplier: number }
+    expConfig: { firstJobWorkExpMultiplier: number; secondaryJobWorkExpMultiplier: number }
 ) {
-    const user = await db.user.findUnique({ where: { id: userId } });
+    if (orderType !== "FARM" && orderType !== "COOK") {
+        return { expGained: 0, levelUp: false, newLevel: 0, blacksmithUnlocked: false };
+    }
+
+    const userRows = await db.$queryRaw<Array<{
+        first_job_level: number;
+        first_job_exp: number;
+        secondary_job_level: number;
+        secondary_job_exp: number;
+    }>>`
+        SELECT first_job_level, first_job_exp, secondary_job_level, secondary_job_exp
+        FROM users
+        WHERE id = ${userId}
+        LIMIT 1
+    `;
+    const user = userRows[0];
     if (!user) throw new Error("User not found");
 
-    const occupation = orderType === "FARM" ? "provider" : "chef";
-    const levelField = occupation === "provider" ? "provider_level" : "chef_level";
-    const expField = occupation === "provider" ? "provider_exp" : "chef_exp";
+    const occupation = orderType === "FARM" ? "first_job" : "secondary_job";
+    const currentLevel = occupation === "first_job"
+        ? Number(user.first_job_level ?? 0)
+        : Number(user.secondary_job_level ?? 0);
+    const currentExp = occupation === "first_job"
+        ? Number(user.first_job_exp ?? 0)
+        : Number(user.secondary_job_exp ?? 0);
 
     let expGained = 0;
     let levelUp = false;
-    let newLevel = user[levelField];
+    let newLevel = currentLevel;
     let blacksmithUnlocked = false;
-    const workExpMultiplier = occupation === "provider"
-        ? expConfig.providerWorkExpMultiplier
-        : expConfig.chefWorkExpMultiplier;
+    const workExpMultiplier = occupation === "first_job"
+        ? expConfig.firstJobWorkExpMultiplier
+        : expConfig.secondaryJobWorkExpMultiplier;
 
-    if (user[levelField] >= 1) {
+    if (currentLevel >= 1) {
         expGained = Math.floor(outputItem.exp_value * outputQty * 10 * workExpMultiplier);
         if (expGained > 0) {
-            const newExp = user[expField] + expGained;
+            const newExp = currentExp + expGained;
             newLevel = getLevelFromExp(newExp);
-            levelUp = newLevel > user[levelField];
+            levelUp = newLevel > currentLevel;
 
-            const updateData: Record<string, number> = {
-                [expField]: newExp,
-                [levelField]: newLevel,
-            };
+            if (occupation === "first_job") {
+                await db.$executeRaw`
+                    UPDATE users
+                    SET first_job_exp = ${newExp},
+                        first_job_level = ${newLevel}
+                    WHERE id = ${userId}
+                `;
+            } else {
+                await db.$executeRaw`
+                    UPDATE users
+                    SET secondary_job_exp = ${newExp},
+                        secondary_job_level = ${newLevel}
+                    WHERE id = ${userId}
+                `;
+            }
 
-            await db.user.update({
-                where: { id: userId },
-                data: updateData,
-            });
-
-            if (occupation === "provider" && newLevel >= 5 && user.chef_level < 1) {
+            if (occupation === "first_job" && newLevel >= 5 && user.secondary_job_level < 1) {
                 const cityRows = await db.$queryRaw<Array<{ city_key: string | null }>>`
                     SELECT city_key
                     FROM users
@@ -616,7 +575,11 @@ async function awardOrderExp(
                 const cityKey = cityRows[0]?.city_key ?? null;
 
                 if (cityKey === "FERRUM") {
-                    await db.user.update({ where: { id: userId }, data: { chef_level: 1 } });
+                    await db.$executeRaw`
+                        UPDATE users
+                        SET secondary_job_level = 1
+                        WHERE id = ${userId}
+                    `;
 
                     const smeltRecipes = await db.recipe.findMany({
                         where: { name: { in: ["Iron Ingot Smelt", "Copper Ingot Smelt", "Steel Ingot Smelt"] } },
@@ -637,6 +600,28 @@ async function awardOrderExp(
     }
 
     return { expGained, levelUp, newLevel, blacksmithUnlocked };
+}
+
+async function getUserJobPayloadRow(userId: number, db: DbClient = prisma) {
+    const rows = await db.$queryRaw<Array<{
+        id: number;
+        email: string;
+        role: string;
+        money: number;
+        hunger: number;
+        satiety_buff: number;
+        first_job_level: number;
+        first_job_exp: number;
+        secondary_job_level: number;
+        secondary_job_exp: number;
+    }>>`
+        SELECT id, email, role, money, hunger, satiety_buff,
+               first_job_level, first_job_exp, secondary_job_level, secondary_job_exp
+        FROM users
+        WHERE id = ${userId}
+        LIMIT 1
+    `;
+    return rows[0] ?? null;
 }
 
 async function collectSingleReadyOrder(userId: number, orderId: number) {
@@ -680,8 +665,8 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
         });
 
         const exp = await awardOrderExp(userId, order.type, outputItem, outputQty, tx, {
-            providerWorkExpMultiplier: expConfig.providerWorkExpMultiplier,
-            chefWorkExpMultiplier: expConfig.chefWorkExpMultiplier,
+            firstJobWorkExpMultiplier: expConfig.firstJobWorkExpMultiplier,
+            secondaryJobWorkExpMultiplier: expConfig.secondaryJobWorkExpMultiplier,
         });
 
         return {
@@ -697,9 +682,13 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
 }
 
 async function buildCancelRefundOutputs(
-    order: { type: "FARM" | "COOK"; item_id: number; quantity: number; recipe_id: number | null },
+    order: { type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number; recipe_id: number | null },
     db: DbClient,
 ): Promise<OutputReward[]> {
+    if (order.type !== "FARM" && order.type !== "COOK") {
+        return [];
+    }
+
     if (order.type === "FARM") {
         const ferrumCatalog = await ensureFerrumCatalog(db);
         if (order.item_id === ferrumCatalog.miningPermitId) {
@@ -730,10 +719,10 @@ async function buildCancelRefundOutputs(
         }));
 }
 
-async function rescheduleChefQueueAfterCancel(userId: number, db: DbClient) {
+async function rescheduleSecondaryJobQueueAfterCancel(userId: number, db: DbClient) {
     const now = Date.now();
-    const chefSkills = await getChefSkillLevels(userId, db);
-    const maxParallel = Math.max(1, getChefSkillConcurrentCookSlots(chefSkills.prep));
+    const secondaryJobSkills = await getSecondaryJobSkillLevels(userId, db);
+    const maxParallel = Math.max(1, getSecondaryJobSkillConcurrentCookSlots(secondaryJobSkills.prep));
     const remaining = await db.workOrder.findMany({
         where: {
             user_id: userId,
@@ -817,6 +806,8 @@ async function rescheduleFerrumMiningQueueAfterCancel(userId: number, db: DbClie
 export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         await syncHunger(req.userId!);
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         const orders = await prisma.workOrder.findMany({
             where: { user_id: req.userId!, collected: false },
@@ -849,6 +840,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
         };
         const user = await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
         const isFerrum = cityProfile.city_key === "FERRUM";
         const taskTimeConfig = await getGameTaskTimeConfig();
         const ferrumMining = await getFerrumMiningConfig();
@@ -858,13 +850,33 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
         if (type === "FARM") {
             if (isFerrum) {
-                if (user.provider_level < 1) {
+                if (user.first_job_level < 1) {
                     res.status(403).json({ error: "Ferrum requires Miner occupation to run expeditions" });
                     return;
                 }
 
                 if (mode !== "MINE") {
                     res.status(400).json({ error: "Ferrum FARM mode must be MINE" });
+                    return;
+                }
+
+                const ferrumWorkspaceRequirement = await validateWorkspaceRequirements({
+                    userId: req.userId!,
+                    cityKey: cityProfile.city_key,
+                    jobSlot: "first_job",
+                    workType: "MINE",
+                    workspaceMode: "MINE",
+                });
+
+                if (!ferrumWorkspaceRequirement.ok) {
+                    res.status(ferrumWorkspaceRequirement.statusCode).json({
+                        error: ferrumWorkspaceRequirement.errorMessage,
+                        code: ferrumWorkspaceRequirement.errorCode,
+                        requirement: {
+                            requiredItemName: ferrumWorkspaceRequirement.requiredItemName,
+                            mustBeEquipped: ferrumWorkspaceRequirement.mustBeEquipped,
+                        },
+                    });
                     return;
                 }
 
@@ -875,38 +887,18 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                         ? ferrumMining.layerTimeMins.deep
                         : ferrumMining.layerTimeMins.core;
 
-                // Ferrum Miner skill logic mirrors Chef PREP branch timing behavior.
-                const minerPrepLevel = Number((user as any).provider_skill_veg ?? 0);
-                const minerTimeReduction = getChefSkillCookTimeReduction(minerPrepLevel);
+                // First-job branch #1 controls time/queue in dynamic skill design.
+                const firstJobBranchLevels = await getJobBranchLevels(req.userId!, "first_job");
+                const minerPrepLevel = Number(firstJobBranchLevels.branch1 ?? 0);
+                const minerTimeReduction = getSecondaryJobSkillCookTimeReduction(minerPrepLevel);
 
                 if (user.hunger < ferrumMining.hungerCostPerExpedition) {
                     res.status(400).json({ error: `Not enough hunger for expedition. Need ${ferrumMining.hungerCostPerExpedition}` });
                     return;
                 }
 
-                const hasMattock = await prisma.inventorySlot.findFirst({
-                    where: {
-                        user_id: req.userId!,
-                        quantity: { gt: 0 },
-                        item: { name: "Mattock" },
-                    },
-                });
-                const equippedMattockRows = await prisma.$queryRaw<Array<{ cnt: number | bigint }>>`
-                    SELECT COUNT(*) as cnt
-                    FROM user_equipments ue
-                    INNER JOIN items i ON i.id = ue.item_id
-                    WHERE ue.user_id = ${req.userId!}
-                      AND i.name = 'Mattock'
-                `;
-                const hasEquippedMattock = Number(equippedMattockRows[0]?.cnt ?? 0) > 0;
-
-                if (!hasMattock && !hasEquippedMattock) {
-                    res.status(400).json({ error: "Mining requires a Mattock. Buy one from NPC Shop first." });
-                    return;
-                }
-
                 const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
-                const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.providerTaskTimeMultiplier;
+                const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.firstJobTaskTimeMultiplier;
                 const durationMs = Math.max(1000, Math.floor(growMins * 60 * 1000));
 
                 const pendingMiningOrders = await prisma.workOrder.findMany({
@@ -960,9 +952,30 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
-            // Requires Provider occupation
-            if (user.provider_level < 1) {
-                res.status(403).json({ error: "You need the Provider occupation to farm" });
+            // Requires first-job occupation
+            if (user.first_job_level < 1) {
+                res.status(403).json({ error: "You need the first-job occupation to farm" });
+                return;
+            }
+
+            const farmWorkspaceRequirement = await validateWorkspaceRequirements({
+                userId: req.userId!,
+                cityKey: cityProfile.city_key,
+                jobSlot: "first_job",
+                workType: "FARM",
+                workspaceMode: cityProfile.city_key === "FERRUM" ? "MINE" : null,
+                itemId: Number(itemId),
+            });
+
+            if (!farmWorkspaceRequirement.ok) {
+                res.status(farmWorkspaceRequirement.statusCode).json({
+                    error: farmWorkspaceRequirement.errorMessage,
+                    code: farmWorkspaceRequirement.errorCode,
+                    requirement: {
+                        requiredItemName: farmWorkspaceRequirement.requiredItemName,
+                        mustBeEquipped: farmWorkspaceRequirement.mustBeEquipped,
+                    },
+                });
                 return;
             }
 
@@ -995,20 +1008,13 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
-            const branch = getProviderBranchBySeedName(slot.item.name);
-            const providerUser = user as any;
-            const branchSkillLevel = branch === "VEGETABLE"
-                ? Number(providerUser.provider_skill_veg ?? 0)
-                : branch === "CHICKEN"
-                    ? Number(providerUser.provider_skill_chicken ?? 0)
-                    : branch === "BEEF"
-                        ? Number(providerUser.provider_skill_beef ?? 0)
-                        : 0;
+            const firstJobBranchLevels = await getJobBranchLevels(req.userId!, "first_job");
+            const branchSkillLevel = Number(firstJobBranchLevels.branch1 ?? 0);
 
             // Plot limit is controlled by game.config helper.
             // Each plot holds 9 tasks.
             const branchOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
-            const maxPlots = getProviderSkillPlotCount(branchSkillLevel);
+            const maxPlots = getFirstJobSkillPlotCount(branchSkillLevel);
             const maxOrders = maxPlots * 9;
             if (branchOrders.length >= maxOrders) {
                 res.status(400).json({
@@ -1019,14 +1025,14 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
             // Apply hunger penalty to grow time
             const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
-            const skillReduction = getProviderSkillTimeReduction(branchSkillLevel);
+            const skillReduction = getFirstJobSkillTimeReduction(branchSkillLevel);
             const equipmentTimeMultiplier = 1 - equipmentEffects.farmTimeReductionPct;
             const skillTimeMultiplier = 1 - skillReduction;
             const growMins = slot.item.grow_mins
                 * tier.multiplier
                 * skillTimeMultiplier
                 * equipmentTimeMultiplier
-                * taskTimeConfig.providerTaskTimeMultiplier;
+                * taskTimeConfig.firstJobTaskTimeMultiplier;
             const completesAt = new Date(Date.now() + growMins * 60 * 1000);
 
             // Reduce seed from inventory
@@ -1088,19 +1094,15 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 order,
             });
         } else if (type === "COOK") {
-            if (isFerrum && user.provider_level < 5) {
-                res.status(403).json({ error: "Blacksmith unlocks at Miner Level 5" });
-                return;
-            }
 
             if (!recipeId || !Number.isInteger(Number(recipeId))) {
                 res.status(400).json({ error: "recipeId is required for COOK" });
                 return;
             }
 
-            // Requires Chef occupation
-            if (user.chef_level < 1) {
-                res.status(403).json({ error: "You need the Chef occupation to cook" });
+            // Requires secondary-job occupation
+            if (user.secondary_job_level < 1) {
+                res.status(403).json({ error: "You need the secondary-job occupation to cook" });
                 return;
             }
 
@@ -1139,11 +1141,11 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 include: { item: true },
             });
 
-            const chefSkills = await getChefSkillLevels(req.userId!);
-            const chefCookTimeReductionPct = getChefSkillCookTimeReduction(chefSkills.prep);
-            const chefParallelSlots = Math.max(1, getChefSkillConcurrentCookSlots(chefSkills.prep));
-            const chefSecondarySaveChance = getChefSkillSecondarySaveChance(chefSkills.economy);
-            const chefPrimarySaveChance = getChefSkillPrimarySaveChance(chefSkills.economy);
+            const secondaryJobSkills = await getSecondaryJobSkillLevels(req.userId!);
+            const secondaryJobCookTimeReductionPct = getSecondaryJobSkillCookTimeReduction(secondaryJobSkills.prep);
+            const secondaryJobParallelSlots = Math.max(1, getSecondaryJobSkillConcurrentCookSlots(secondaryJobSkills.prep));
+            const secondaryJobSecondarySaveChance = getSecondaryJobSkillSecondarySaveChance(secondaryJobSkills.economy);
+            const secondaryJobPrimarySaveChance = getSecondaryJobSkillPrimarySaveChance(secondaryJobSkills.economy);
 
             const selectedList = Array.isArray(selectedIngredients)
                 ? selectedIngredients
@@ -1218,8 +1220,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     for (let i = 0; i < ingredient.quantity; i++) {
                         const isSecondary = recipe.ingredients.findIndex((x) => x.item_id === ingredient.item_id) > 0;
                         const saveChance = isSecondary
-                            ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + chefSecondarySaveChance))
-                            : Math.min(0.4, Math.max(0, chefPrimarySaveChance));
+                            ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + secondaryJobSecondarySaveChance))
+                            : Math.min(0.4, Math.max(0, secondaryJobPrimarySaveChance));
                         const saved = saveChance > 0 && Math.random() < saveChance;
                         if (!saved) consumeUnits += 1;
                     }
@@ -1263,8 +1265,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     const ingredient = recipe.ingredients[idx];
                     const isSecondary = idx > 0;
                     const saveChance = isSecondary
-                        ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + chefSecondarySaveChance))
-                        : Math.min(0.4, Math.max(0, chefPrimarySaveChance));
+                        ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + secondaryJobSecondarySaveChance))
+                        : Math.min(0.4, Math.max(0, secondaryJobPrimarySaveChance));
 
                     let remaining = 0;
                     for (let i = 0; i < ingredient.quantity; i++) {
@@ -1309,14 +1311,14 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             // Apply hunger penalty to cook time
             const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
             const equipmentCookMultiplier = 1 - equipmentEffects.cookTimeReductionPct;
-            const chefCookMultiplier = 1 - chefCookTimeReductionPct;
+            const secondaryJobCookMultiplier = 1 - secondaryJobCookTimeReductionPct;
             const cookMins = recipe.cook_mins
                 * tier.multiplier
                 * equipmentCookMultiplier
-                * chefCookMultiplier
-                * taskTimeConfig.chefTaskTimeMultiplier;
+                * secondaryJobCookMultiplier
+                * taskTimeConfig.secondaryJobTaskTimeMultiplier;
 
-            // Chef queue logic with PREP_MASTER parallel slots.
+            // Secondary-job queue logic with PREP_MASTER parallel slots.
             const nowMs = Date.now();
             const durationMs = Math.max(1000, Math.floor(cookMins * 60 * 1000));
             const pendingCooks = await prisma.workOrder.findMany({
@@ -1328,7 +1330,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 orderBy: [{ started_at: "asc" }, { id: "asc" }],
             });
 
-            const laneAvailableAt = Array.from({ length: chefParallelSlots }, () => nowMs);
+            const laneAvailableAt = Array.from({ length: secondaryJobParallelSlots }, () => nowMs);
             for (const order of pendingCooks) {
                 const currentStart = new Date(order.started_at).getTime();
                 const currentEnd = new Date(order.completes_at).getTime();
@@ -1385,7 +1387,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
             res.json({
                 message: startsAt.getTime() > nowMs
-                    ? `Queued cooking ${recipe.name}. It will start when a chef slot is available and finish in ${Math.ceil(cookMins)} minutes once started.`
+                    ? `Queued cooking ${recipe.name}. It will start when a secondary-job slot is available and finish in ${Math.ceil(cookMins)} minutes once started.`
                     : `Started cooking ${recipe.name}. Ready in ${Math.ceil(cookMins)} minutes.`,
                 order,
             });
@@ -1404,6 +1406,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 export const collectWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         await syncHunger(req.userId!);
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         if (typeof req.params.orderId !== 'string') {
             res.status(400).json({ error: "Invalid order ID" });
@@ -1440,23 +1444,27 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
             orderBy: { slot: "asc" },
         });
 
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await getUserJobPayloadRow(req.userId!);
+        if (!updatedUser) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
 
         res.json({
             message: `Collected ${result.qty}x ${result.itemName}!${expMessage}${levelUpMessage}${unlockMessage}`,
             slots,
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
-                email: updatedUser!.email,
-                role: updatedUser!.role,
-                money: updatedUser!.money,
-                hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-                satiety_buff: updatedUser!.satiety_buff,
-            },
+                email: updatedUser.email,
+                role: updatedUser.role,
+                money: updatedUser.money,
+                hunger: updatedUser.hunger,
+                first_job_level: updatedUser.first_job_level,
+                first_job_exp: updatedUser.first_job_exp,
+                secondary_job_level: updatedUser.secondary_job_level,
+                secondary_job_exp: updatedUser.secondary_job_exp,
+                satiety_buff: updatedUser.satiety_buff,
+            }),
         });
     } catch (error) {
         console.error("collectWork error:", error);
@@ -1470,6 +1478,8 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
 export const collectReadyWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         await syncHunger(req.userId!);
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         const readyOrders = await prisma.workOrder.findMany({
             where: {
@@ -1506,7 +1516,11 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
             orderBy: { slot: "asc" },
         });
 
-        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } });
+        const updatedUser = await getUserJobPayloadRow(req.userId!);
+        if (!updatedUser) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
 
         const message = collectedCount > 0
             ? `Collected ${collectedCount} ready order(s).${blockedByInventory ? ` ${blockedByInventory}` : ""}`
@@ -1516,18 +1530,18 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
             message,
             collectedCount,
             slots,
-            user: {
+            user: toJobPayload({
                 id: updatedUser!.id,
-                email: updatedUser!.email,
-                role: updatedUser!.role,
-                money: updatedUser!.money,
-                hunger: updatedUser!.hunger,
-                provider_level: updatedUser!.provider_level,
-                provider_exp: updatedUser!.provider_exp,
-                chef_level: updatedUser!.chef_level,
-                chef_exp: updatedUser!.chef_exp,
-                satiety_buff: updatedUser!.satiety_buff,
-            },
+                email: updatedUser.email,
+                role: updatedUser.role,
+                money: updatedUser.money,
+                hunger: updatedUser.hunger,
+                first_job_level: updatedUser.first_job_level,
+                first_job_exp: updatedUser.first_job_exp,
+                secondary_job_level: updatedUser.secondary_job_level,
+                secondary_job_exp: updatedUser.secondary_job_exp,
+                satiety_buff: updatedUser.satiety_buff,
+            }),
         });
     } catch (error) {
         console.error("collectReadyWork error:", error);
@@ -1541,6 +1555,8 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
 export const cancelWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         await syncHunger(req.userId!);
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         if (typeof req.params.orderId !== "string") {
             res.status(400).json({ error: "Invalid order ID" });
@@ -1586,7 +1602,7 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
             await tx.workOrder.delete({ where: { id: order.id } });
 
             if (order.type === "COOK") {
-                await rescheduleChefQueueAfterCancel(req.userId!, tx);
+                await rescheduleSecondaryJobQueueAfterCancel(req.userId!, tx);
             } else if (order.type === "FARM") {
                 const ferrumCatalog = await ensureFerrumCatalog(tx);
                 if (order.item_id === ferrumCatalog.miningPermitId) {
