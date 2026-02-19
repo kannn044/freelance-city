@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import api from '../lib/api';
-import { useAuthStore } from './authStore';
+import { normalizeUserJobFields, useAuthStore } from './authStore';
 import type { EquipmentRarity } from '../lib/equipmentRarity';
 import { getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 import { DEFAULT_HUNGER_TASK_DECAY_PER_SEC, type HungerTaskDecayConfig } from '../lib/gameConstants';
@@ -12,7 +12,6 @@ export interface Item {
     name: string;
     type: 'SEED' | 'RAW' | 'INGREDIENT' | 'MEAL' | 'EQUIPMENT';
     equipment_slot?: 'HEAD' | 'UPPER_BODY' | 'LOWER_BODY' | 'ARM' | 'GLOVE' | 'SHOE' | null;
-    equipment_role?: 'PROVIDER' | 'CHEF' | 'NONE' | null;
     effect_key?: string | null;
     effect_value?: number | null;
     effect_value2?: number | null;
@@ -55,6 +54,7 @@ export interface WorkOrder {
     quantity: number;
     started_at: string;
     completes_at: string;
+    paused_at?: string | null;
     collected: boolean;
     item: Item;
 }
@@ -107,8 +107,20 @@ export interface IngredientSelection {
     quantity: number;
 }
 
+export interface WorkspaceRequirementInfo {
+    requiredItemName: string;
+    mustBeEquipped: boolean;
+}
+
+export interface WorkspaceActionResult {
+    ok: boolean;
+    message?: string;
+    error?: string;
+    code?: string;
+    requirement?: WorkspaceRequirementInfo;
+}
+
 export interface EquipmentBoxOdds {
-    role: 'PROVIDER' | 'CHEF';
     slot: 'HEAD' | 'UPPER_BODY' | 'LOWER_BODY' | 'ARM' | 'GLOVE' | 'SHOE';
     chancePct: number;
 }
@@ -126,7 +138,6 @@ export interface EquipmentBoxInfo {
         description: string;
     };
     formula: {
-        roleBias: { PROVIDER: number; CHEF: number };
         slotWeights: Record<string, number>;
         note: string;
     };
@@ -151,7 +162,8 @@ export interface FerrumMiningConfig {
 function mergeAuthUser(nextUser: any) {
     if (!nextUser) return;
     const prevUser = useAuthStore.getState().user as any;
-    useAuthStore.setState({ user: prevUser ? { ...prevUser, ...nextUser } : nextUser });
+    const merged = prevUser ? { ...prevUser, ...nextUser } : nextUser;
+    useAuthStore.setState({ user: normalizeUserJobFields(merged) });
 }
 
 export interface EquipmentBoxOpenResult {
@@ -159,7 +171,6 @@ export interface EquipmentBoxOpenResult {
     message?: string;
     boxPrice?: number;
     rolled?: {
-        role: 'PROVIDER' | 'CHEF';
         slot: 'HEAD' | 'UPPER_BODY' | 'LOWER_BODY' | 'ARM' | 'GLOVE' | 'SHOE';
         rarity: EquipmentRarity;
         buffMultiplier: number;
@@ -208,9 +219,9 @@ interface GameState {
     buyFromShop: (itemId: number, quantity: number) => Promise<void>;
     buyRecipeUnlock: (recipeId: number) => Promise<void>;
     openEquipmentBox: () => Promise<EquipmentBoxOpenResult>;
-    startFarm: (itemId: number, quantity: number) => Promise<void>;
-    startMine: (layer: 'SURFACE' | 'DEEP' | 'CORE') => Promise<void>;
-    startCook: (recipeId: number, selectedIngredients?: IngredientSelection[]) => Promise<void>;
+    startFarm: (itemId: number, quantity: number) => Promise<WorkspaceActionResult>;
+    startMine: (layer: 'SURFACE' | 'DEEP' | 'CORE') => Promise<WorkspaceActionResult>;
+    startCook: (recipeId: number, selectedIngredients?: IngredientSelection[]) => Promise<WorkspaceActionResult>;
     collectWork: (orderId: number) => Promise<void>;
     collectReadyWork: () => Promise<void>;
     cancelWork: (orderId: number) => Promise<void>;
@@ -463,8 +474,20 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({ actionMessage: data.message });
             get().fetchInventory();
             get().fetchWorkOrders();
+            return {
+                ok: true,
+                message: data.message,
+            } satisfies WorkspaceActionResult;
         } catch (err: any) {
-            set({ actionMessage: err.response?.data?.error || 'Failed to start farm' });
+            const payload = err.response?.data ?? {};
+            const errorMessage = payload.error || 'Failed to start farm';
+            set({ actionMessage: errorMessage });
+            return {
+                ok: false,
+                error: errorMessage,
+                code: payload.code,
+                requirement: payload.requirement,
+            } satisfies WorkspaceActionResult;
         }
     },
 
@@ -479,8 +502,20 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({ actionMessage: data.message });
             get().fetchWorkOrders();
             useAuthStore.getState().fetchMe();
+            return {
+                ok: true,
+                message: data.message,
+            } satisfies WorkspaceActionResult;
         } catch (err: any) {
-            set({ actionMessage: err.response?.data?.error || 'Failed to start mining expedition' });
+            const payload = err.response?.data ?? {};
+            const errorMessage = payload.error || 'Failed to start mining expedition';
+            set({ actionMessage: errorMessage });
+            return {
+                ok: false,
+                error: errorMessage,
+                code: payload.code,
+                requirement: payload.requirement,
+            } satisfies WorkspaceActionResult;
         }
     },
 
@@ -494,8 +529,20 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({ actionMessage: data.message });
             get().fetchInventory();
             get().fetchWorkOrders();
+            return {
+                ok: true,
+                message: data.message,
+            } satisfies WorkspaceActionResult;
         } catch (err: any) {
-            set({ actionMessage: err.response?.data?.error || 'Failed to start cooking' });
+            const payload = err.response?.data ?? {};
+            const errorMessage = payload.error || 'Failed to start cooking';
+            set({ actionMessage: errorMessage });
+            return {
+                ok: false,
+                error: errorMessage,
+                code: payload.code,
+                requirement: payload.requirement,
+            } satisfies WorkspaceActionResult;
         }
     },
 

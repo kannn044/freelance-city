@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
+import { normalizeUserJobFields, useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { getExpProgress } from '../lib/gameConstants';
 import {
@@ -15,7 +15,7 @@ import {
     Unlock,
     TrendingUp,
     Sprout,
-    ChefHat,
+    UtensilsCrossed,
     Pickaxe,
     ShoppingCart,
     Coins,
@@ -33,10 +33,9 @@ import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
-type ProviderSkillBranch = string;
-type ChefSkillBranch = string;
+type SkillBranchKey = string;
 
-interface ProviderSkillTreeData {
+interface JobSkillTreeData {
     points: {
         total: number;
         spent: number;
@@ -48,35 +47,47 @@ interface ProviderSkillTreeData {
         title: string;
         level: number;
         color: string;
-        effects: {
-            level1: string;
-            level2: string;
-            level3: string;
-            level4: string;
-        };
+        effects: Record<string, string>;
     }>;
 }
 
-interface ChefSkillTreeData {
-    points: {
-        total: number;
-        spent: number;
-        available: number;
-    };
-    treeTitle?: string;
-    occupationLabel?: string;
-    branches: Record<string, {
-        title: string;
-        level: number;
-        color: string;
-        effects: {
-            level1: string;
-            level2: string;
-            level3: string;
-            level4: string;
-        };
-    }>;
+interface GovernanceCandidate {
+    user_id: number;
+    email: string;
+    votes: number;
+    is_mayor: boolean;
 }
+
+interface CityGovernanceData {
+    city_key: string | null;
+    cycle: {
+        cycleId: number;
+        cycleStart: string;
+        cycleEnd: string;
+    };
+    taxes: {
+        domesticPct: number;
+        exportPct: number;
+        importPct: number;
+    } | null;
+    mayor: { userId: number } | null;
+    candidates: GovernanceCandidate[];
+    canSetTaxes: boolean;
+    userVoteCandidateId: number | null;
+}
+
+const ROLE_THEME: Record<string, { color: string; bg: string; border: string }> = {
+    MAYOR: {
+        color: '#fbbf24',
+        bg: 'rgba(251, 191, 36, 0.16)',
+        border: '1px solid rgba(251, 191, 36, 0.4)',
+    },
+    CITIZEN: {
+        color: '#22d3ee',
+        bg: 'rgba(34, 211, 238, 0.14)',
+        border: '1px solid rgba(34, 211, 238, 0.35)',
+    },
+};
 
 const CITY_TIER_THRESHOLDS = [
     0,
@@ -103,18 +114,79 @@ const DashboardPage = () => {
         actionMessage,
         clearMessage
     } = useGameStore();
-    const [showProviderSkillModal, setShowProviderSkillModal] = useState(false);
-    const [providerSkillTree, setProviderSkillTree] = useState<ProviderSkillTreeData | null>(null);
-    const [showChefSkillModal, setShowChefSkillModal] = useState(false);
-    const [chefSkillTree, setChefSkillTree] = useState<ChefSkillTreeData | null>(null);
+    const [showFirstJobSkillModal, setShowFirstJobSkillModal] = useState(false);
+    const [firstJobSkillTree, setFirstJobSkillTree] = useState<JobSkillTreeData | null>(null);
+    const [showSecondaryJobSkillModal, setShowSecondaryJobSkillModal] = useState(false);
+    const [secondaryJobSkillTree, setSecondaryJobSkillTree] = useState<JobSkillTreeData | null>(null);
     const [skillLoading, setSkillLoading] = useState(false);
+    const [governance, setGovernance] = useState<CityGovernanceData | null>(null);
+    const [selectedCandidateId, setSelectedCandidateId] = useState<number | null>(null);
+    const [isVoting, setIsVoting] = useState(false);
+    const [isSavingTaxes, setIsSavingTaxes] = useState(false);
+    const [taxDraft, setTaxDraft] = useState({ domesticPct: 3, exportPct: 3, importPct: 3 });
     const [viewportWidth, setViewportWidth] = useState<number>(() =>
         typeof window !== 'undefined' ? window.innerWidth : 1280
     );
 
     const mergeAuthUser = (nextUser: any) => {
         const prevUser = useAuthStore.getState().user as any;
-        useAuthStore.setState({ user: prevUser ? { ...prevUser, ...nextUser } : nextUser });
+        const merged = prevUser ? { ...prevUser, ...nextUser } : nextUser;
+        useAuthStore.setState({ user: normalizeUserJobFields(merged) });
+    };
+
+    const fetchGovernance = async () => {
+        const { data } = await api.get('/game/city/governance');
+        const next = (data?.governance ?? null) as CityGovernanceData | null;
+        setGovernance(next);
+        if (next?.taxes) {
+            setTaxDraft({
+                domesticPct: Number(next.taxes.domesticPct ?? 3),
+                exportPct: Number(next.taxes.exportPct ?? 3),
+                importPct: Number(next.taxes.importPct ?? 3),
+            });
+        }
+        setSelectedCandidateId(next?.userVoteCandidateId ?? null);
+    };
+
+    const submitVoteMayor = async () => {
+        if (!selectedCandidateId) return;
+        try {
+            setIsVoting(true);
+            const { data } = await api.post('/game/city/vote-mayor', { candidateUserId: selectedCandidateId });
+            if (data?.governance) {
+                setGovernance(data.governance as CityGovernanceData);
+            } else {
+                await fetchGovernance();
+            }
+            await fetchMe();
+            useGameStore.getState().setActionMessage(data?.message ?? 'Vote submitted');
+        } catch (err: any) {
+            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to submit vote');
+        } finally {
+            setIsVoting(false);
+        }
+    };
+
+    const saveCityTaxes = async () => {
+        try {
+            setIsSavingTaxes(true);
+            const { data } = await api.post('/game/city/taxes', {
+                domesticPct: Number(taxDraft.domesticPct),
+                exportPct: Number(taxDraft.exportPct),
+                importPct: Number(taxDraft.importPct),
+            });
+            if (data?.governance) {
+                setGovernance(data.governance as CityGovernanceData);
+            } else {
+                await fetchGovernance();
+            }
+            await fetchMe();
+            useGameStore.getState().setActionMessage(data?.message ?? 'Taxes updated');
+        } catch (err: any) {
+            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to update taxes');
+        } finally {
+            setIsSavingTaxes(false);
+        }
     };
 
     useEffect(() => {
@@ -122,6 +194,7 @@ const DashboardPage = () => {
             try {
                 await fetchMe();
                 await fetchAll();
+                await fetchGovernance();
             } catch {
                 navigate('/');
             }
@@ -170,19 +243,69 @@ const DashboardPage = () => {
         );
     }
 
-    const providerLevel = Number(user.provider_level ?? 0);
-    const chefLevel = Number(user.chef_level ?? 0);
-    const providerLabel = user.city?.occupation_labels?.provider ?? 'Provider';
-    const chefLabel = user.city?.occupation_labels?.chef ?? 'Chef';
-    const providerIcon = user.city?.workspace_modes?.provider === 'MINE' ? <Pickaxe size={16} /> : <Sprout size={16} />;
-    const secondaryIcon = user.city?.workspace_modes?.chef === 'SMELT' ? <Hammer size={16} /> : <ChefHat size={16} />;
-    const providerProgress = getExpProgress(user.provider_exp ?? 0, providerLevel);
-    const chefProgress = getExpProgress(user.chef_exp ?? 0, chefLevel);
+    const firstJobLevel = Number(user.first_job_level ?? 0);
+    const secondaryJobLevel = Number(user.secondary_job_level ?? 0);
+    const firstJobLabel = user.city?.occupation_labels?.first_job
+        ?? (user.city?.workspace_modes?.first_job === 'MINE' ? 'Miner' : 'First Job');
+    const secondaryJobLabel = user.city?.occupation_labels?.secondary_job
+        ?? (user.city?.workspace_modes?.secondary_job === 'SMELT' ? 'Blacksmith' : 'Secondary Job');
+    const firstJobIcon = user.city?.workspace_modes?.first_job === 'MINE' ? <Pickaxe size={16} /> : <Sprout size={16} />;
+    const secondaryJobIcon = user.city?.workspace_modes?.secondary_job === 'SMELT' ? <Hammer size={16} /> : <UtensilsCrossed size={16} />;
+    const firstJobProgress = getExpProgress(user.first_job_exp ?? 0, firstJobLevel);
+    const secondaryJobProgress = getExpProgress(user.secondary_job_exp ?? 0, secondaryJobLevel);
+
+    type JobSlotKey = 'first_job' | 'secondary_job';
+    type JobSkillEndpoint = 'first-job' | 'secondary-job';
+
+    const slotToSkillEndpoint: Record<JobSlotKey, JobSkillEndpoint> = {
+        first_job: 'first-job',
+        secondary_job: 'secondary-job',
+    };
+
+    const jobUiBySlot: Record<JobSlotKey, {
+        label: string;
+        icon: ReactNode;
+        level: number;
+        progress: ReturnType<typeof getExpProgress>;
+        color: string;
+        bgColor: string;
+        borderColor: string;
+        glowColor: string;
+    }> = {
+        first_job: {
+            label: firstJobLabel,
+            icon: firstJobIcon,
+            level: firstJobLevel,
+            progress: firstJobProgress,
+            color: '#22d3ee',
+            bgColor: 'rgba(34, 211, 238, 0.09)',
+            borderColor: 'rgba(34, 211, 238, 0.32)',
+            glowColor: 'rgba(34, 211, 238, 0.2)',
+        },
+        secondary_job: {
+            label: secondaryJobLabel,
+            icon: secondaryJobIcon,
+            level: secondaryJobLevel,
+            progress: secondaryJobProgress,
+            color: '#f97316',
+            bgColor: 'rgba(249, 115, 22, 0.09)',
+            borderColor: 'rgba(249, 115, 22, 0.32)',
+            glowColor: 'rgba(249, 115, 22, 0.2)',
+        },
+    };
+
+    const firstJob = jobUiBySlot.first_job;
+    const secondaryJob = jobUiBySlot.secondary_job;
+    const userRole = String(user.role ?? 'CITIZEN').toUpperCase();
+    const roleTheme = ROLE_THEME[userRole] ?? ROLE_THEME.CITIZEN;
+    const mayorCandidate = governance?.candidates?.find((candidate) => candidate.is_mayor);
+    const electionEndText = governance?.cycle?.cycleEnd
+        ? new Date(governance.cycle.cycleEnd).toLocaleString()
+        : '-';
 
     // Determine if the second occupation can be unlocked
-    const secondaryLevel = user.role === 'PROVIDER' ? chefLevel : providerLevel;
+    const secondaryLevel = secondaryJob.level;
     const canUnlockSecond = secondaryLevel < 1;
-    const secondaryOccupation = user.role === 'PROVIDER' ? 'chef' : 'provider';
 
     const handleUnlock = async () => {
         try {
@@ -196,41 +319,60 @@ const DashboardPage = () => {
         }
     };
 
-    const fetchProviderSkillTree = async () => {
+    const fetchSkillTree = async (jobSlot: JobSlotKey) => {
         try {
             setSkillLoading(true);
-            const { data } = await api.get('/game/skills/provider');
-            setProviderSkillTree(data.skillTree);
+            const endpoint = slotToSkillEndpoint[jobSlot];
+            const { data } = await api.get(`/game/skills/${endpoint}`);
+            return data.skillTree as JobSkillTreeData;
         } finally {
             setSkillLoading(false);
         }
     };
 
-    const openProviderSkillModal = async () => {
-        setShowProviderSkillModal(true);
-        await fetchProviderSkillTree();
+    const openFirstJobSkillModal = async () => {
+        setShowFirstJobSkillModal(true);
+        const tree = await fetchSkillTree('first_job');
+        setFirstJobSkillTree(tree);
     };
 
-    const fetchChefSkillTree = async () => {
+    const openSecondaryJobSkillModal = async () => {
+        setShowSecondaryJobSkillModal(true);
+        const tree = await fetchSkillTree('secondary_job');
+        setSecondaryJobSkillTree(tree);
+    };
+
+    const renderBranchEffects = (effects: Record<string, string> | undefined, level: number, color: string) => (
+        <div style={{ fontSize: '0.64rem', lineHeight: 1.45, display: 'flex', flexDirection: 'column', gap: '0.12rem' }}>
+            {Array.from({ length: 5 }, (_, idx) => {
+                const rank = idx + 1;
+                const key = `level${rank}`;
+                const text = effects?.[key] ?? `Lv.${rank} effect`;
+                return (
+                    <span
+                        key={key}
+                        style={{
+                            color: level >= rank ? color : 'rgba(255,255,255,0.55)',
+                            fontWeight: level >= rank ? 700 : 500,
+                        }}
+                    >
+                        {text}
+                    </span>
+                );
+            })}
+        </div>
+    );
+
+    const upgradeSkill = async (jobSlot: JobSlotKey, branch: SkillBranchKey) => {
         try {
             setSkillLoading(true);
-            const { data } = await api.get('/game/skills/chef');
-            setChefSkillTree(data.skillTree);
-        } finally {
-            setSkillLoading(false);
-        }
-    };
-
-    const openChefSkillModal = async () => {
-        setShowChefSkillModal(true);
-        await fetchChefSkillTree();
-    };
-
-    const upgradeProviderSkill = async (branch: ProviderSkillBranch) => {
-        try {
-            setSkillLoading(true);
-            const { data } = await api.post('/game/skills/provider/upgrade', { branch });
-            setProviderSkillTree(data.skillTree);
+            const endpoint = slotToSkillEndpoint[jobSlot];
+            const { data } = await api.post(`/game/skills/${endpoint}/upgrade`, { branch });
+            if (jobSlot === 'first_job') {
+                setFirstJobSkillTree(data.skillTree);
+            } else {
+                setSecondaryJobSkillTree(data.skillTree);
+            }
             if (data.user) {
                 mergeAuthUser(data.user);
             } else {
@@ -240,25 +382,6 @@ const DashboardPage = () => {
             useGameStore.getState().setActionMessage(data.message ?? 'Skill upgraded');
         } catch (err: any) {
             useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade skill');
-        } finally {
-            setSkillLoading(false);
-        }
-    };
-
-    const upgradeChefSkill = async (branch: ChefSkillBranch) => {
-        try {
-            setSkillLoading(true);
-            const { data } = await api.post('/game/skills/chef/upgrade', { branch });
-            setChefSkillTree(data.skillTree);
-            if (data.user) {
-                mergeAuthUser(data.user);
-            } else {
-                await fetchMe();
-            }
-            await fetchWorkOrders();
-            useGameStore.getState().setActionMessage(data.message ?? `${chefLabel} skill upgraded`);
-        } catch (err: any) {
-            useGameStore.getState().setActionMessage(err.response?.data?.error || `Failed to upgrade ${chefLabel.toLowerCase()} skill`);
         } finally {
             setSkillLoading(false);
         }
@@ -513,10 +636,21 @@ const DashboardPage = () => {
                                             width: '0.5rem',
                                             height: '0.5rem',
                                             borderRadius: '9999px',
-                                            background: user.role === 'PROVIDER' ? '#fbbf24' : '#fb7185',
+                                            background: roleTheme.color,
                                         }}
                                     />
-                                    {user.role}
+                                    <span
+                                        style={{
+                                            color: roleTheme.color,
+                                            background: roleTheme.bg,
+                                            border: roleTheme.border,
+                                            borderRadius: '9999px',
+                                            padding: '0.1rem 0.5rem',
+                                            fontWeight: 700,
+                                        }}
+                                    >
+                                        {userRole}
+                                    </span>
                                 </span>
                             </div>
                             <motion.button
@@ -658,6 +792,145 @@ const DashboardPage = () => {
                         </div>
                     </div>
 
+                    <div
+                        style={{
+                            marginTop: '0.7rem',
+                            borderRadius: '0.7rem',
+                            border: '1px solid rgba(148,163,184,0.2)',
+                            background: 'rgba(2,6,23,0.35)',
+                            padding: '0.65rem 0.72rem',
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
+                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)' }}>
+                                Mayor: <span style={{ color: '#fcd34d', fontWeight: 700 }}>{mayorCandidate?.email?.split('@')[0] ?? 'None'}</span>
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.62)' }}>
+                                Election ends: {electionEndText}
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: '0.55rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            {(governance?.candidates ?? []).slice(0, 6).map((candidate) => {
+                                const isSelected = selectedCandidateId === candidate.user_id;
+                                const isMayor = candidate.is_mayor;
+                                return (
+                                    <button
+                                        key={candidate.user_id}
+                                        type="button"
+                                        onClick={() => setSelectedCandidateId(candidate.user_id)}
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            borderRadius: '0.55rem',
+                                            border: isSelected
+                                                ? '1px solid rgba(56,189,248,0.7)'
+                                                : '1px solid rgba(148,163,184,0.24)',
+                                            background: isSelected
+                                                ? 'rgba(56,189,248,0.12)'
+                                                : 'rgba(15,23,42,0.45)',
+                                            color: '#e2e8f0',
+                                            fontSize: '0.69rem',
+                                            padding: '0.38rem 0.5rem',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <span>
+                                            {candidate.email.split('@')[0]} {isMayor ? '👑' : ''}
+                                        </span>
+                                        <span style={{ color: '#93c5fd', fontWeight: 700 }}>{candidate.votes} votes</span>
+                                    </button>
+                                );
+                            })}
+                            {(governance?.candidates?.length ?? 0) === 0 && (
+                                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
+                                    No candidates in your city yet.
+                                </div>
+                            )}
+                        </div>
+
+                        <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button
+                                type="button"
+                                disabled={isVoting || !selectedCandidateId}
+                                onClick={submitVoteMayor}
+                                style={{
+                                    borderRadius: '0.55rem',
+                                    border: '1px solid rgba(56,189,248,0.4)',
+                                    background: 'rgba(56,189,248,0.12)',
+                                    color: '#bae6fd',
+                                    fontSize: '0.68rem',
+                                    fontWeight: 700,
+                                    padding: '0.35rem 0.65rem',
+                                    cursor: isVoting || !selectedCandidateId ? 'not-allowed' : 'pointer',
+                                    opacity: isVoting || !selectedCandidateId ? 0.6 : 1,
+                                }}
+                            >
+                                {isVoting ? 'Submitting...' : 'Vote Mayor'}
+                            </button>
+                        </div>
+
+                        {governance?.canSetTaxes && (
+                            <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid rgba(148,163,184,0.2)' }}>
+                                <div style={{ fontSize: '0.68rem', color: '#fcd34d', fontWeight: 700, marginBottom: '0.42rem' }}>
+                                    Mayor Tax Controls
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.4rem' }}>
+                                    {([
+                                        ['domesticPct', 'Domestic'],
+                                        ['exportPct', 'Export'],
+                                        ['importPct', 'Import'],
+                                    ] as const).map(([key, label]) => (
+                                        <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                            <span style={{ fontSize: '0.63rem', color: '#cbd5e1' }}>{label}</span>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                max={12}
+                                                step={0.5}
+                                                value={taxDraft[key]}
+                                                onChange={(event) => {
+                                                    const nextValue = Number(event.target.value);
+                                                    setTaxDraft((prev) => ({ ...prev, [key]: Number.isFinite(nextValue) ? nextValue : 0 }));
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    borderRadius: '0.4rem',
+                                                    border: '1px solid rgba(148,163,184,0.35)',
+                                                    background: 'rgba(15,23,42,0.75)',
+                                                    color: '#e2e8f0',
+                                                    padding: '0.3rem 0.4rem',
+                                                    fontSize: '0.7rem',
+                                                }}
+                                            />
+                                        </label>
+                                    ))}
+                                </div>
+                                <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button
+                                        type="button"
+                                        disabled={isSavingTaxes}
+                                        onClick={saveCityTaxes}
+                                        style={{
+                                            borderRadius: '0.55rem',
+                                            border: '1px solid rgba(251,191,36,0.45)',
+                                            background: 'rgba(251,191,36,0.14)',
+                                            color: '#fde68a',
+                                            fontSize: '0.68rem',
+                                            fontWeight: 700,
+                                            padding: '0.35rem 0.65rem',
+                                            cursor: isSavingTaxes ? 'not-allowed' : 'pointer',
+                                            opacity: isSavingTaxes ? 0.65 : 1,
+                                        }}
+                                    >
+                                        {isSavingTaxes ? 'Saving...' : 'Save Taxes'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div style={{ marginTop: '0.85rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.38rem', gap: '0.75rem', flexWrap: 'wrap' }}>
                             <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.8)' }}>
@@ -792,9 +1065,19 @@ const DashboardPage = () => {
                                                 {user.email.split('@')[0]}
                                             </h2>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
-                                                <Crown size={12} style={{ color: '#fbbf24' }} />
-                                                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#fbbf24' }}>
-                                                    {user.role}
+                                                <Crown size={12} style={{ color: roleTheme.color }} />
+                                                <span
+                                                    style={{
+                                                        fontSize: '0.72rem',
+                                                        fontWeight: 700,
+                                                        color: roleTheme.color,
+                                                        background: roleTheme.bg,
+                                                        border: roleTheme.border,
+                                                        borderRadius: '9999px',
+                                                        padding: '0.12rem 0.52rem',
+                                                    }}
+                                                >
+                                                    {userRole}
                                                 </span>
                                             </div>
                                         </div>
@@ -828,31 +1111,31 @@ const DashboardPage = () => {
 
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                                             <OccupationCard
-                                                name={providerLabel}
-                                                icon={providerIcon}
-                                                level={providerLevel}
-                                                progress={providerProgress}
-                                                color="#fbbf24"
-                                                bgColor="rgba(251, 191, 36, 0.08)"
-                                                borderColor="rgba(251, 191, 36, 0.2)"
-                                                glowColor="rgba(251, 191, 36, 0.15)"
-                                                canUnlock={secondaryOccupation === 'provider' && canUnlockSecond}
+                                                name={firstJob.label}
+                                                icon={firstJob.icon}
+                                                level={firstJob.level}
+                                                progress={firstJob.progress}
+                                                color={firstJob.color}
+                                                bgColor={firstJob.bgColor}
+                                                borderColor={firstJob.borderColor}
+                                                glowColor={firstJob.glowColor}
+                                                canUnlock={false}
                                                 onUnlock={handleUnlock}
-                                                onOpenSkills={!providerLevel ? undefined : openProviderSkillModal}
+                                                onOpenSkills={!firstJob.level ? undefined : openFirstJobSkillModal}
                                             />
 
                                             <OccupationCard
-                                                name={chefLabel}
-                                                icon={secondaryIcon}
-                                                level={chefLevel}
-                                                progress={chefProgress}
-                                                color="#fb7185"
-                                                bgColor="rgba(251, 113, 133, 0.08)"
-                                                borderColor="rgba(251, 113, 133, 0.2)"
-                                                glowColor="rgba(251, 113, 133, 0.15)"
-                                                canUnlock={secondaryOccupation === 'chef' && canUnlockSecond}
+                                                name={secondaryJob.label}
+                                                icon={secondaryJob.icon}
+                                                level={secondaryJob.level}
+                                                progress={secondaryJob.progress}
+                                                color={secondaryJob.color}
+                                                bgColor={secondaryJob.bgColor}
+                                                borderColor={secondaryJob.borderColor}
+                                                glowColor={secondaryJob.glowColor}
+                                                canUnlock={canUnlockSecond}
                                                 onUnlock={handleUnlock}
-                                                onOpenSkills={!chefLevel ? undefined : openChefSkillModal}
+                                                onOpenSkills={!secondaryJob.level ? undefined : openSecondaryJobSkillModal}
                                             />
                                         </div>
                                     </div>
@@ -992,12 +1275,12 @@ const DashboardPage = () => {
             </main>
 
             <AnimatePresence>
-                {showProviderSkillModal && (
+                {showFirstJobSkillModal && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setShowProviderSkillModal(false)}
+                        onClick={() => setShowFirstJobSkillModal(false)}
                         style={{
                             position: 'fixed',
                             inset: 0,
@@ -1018,7 +1301,7 @@ const DashboardPage = () => {
                                 width: '100%',
                                 maxWidth: '34rem',
                                 borderRadius: '0.9rem',
-                                border: '1px solid rgba(251,191,36,0.28)',
+                                border: `1px solid ${firstJob.borderColor}`,
                                 background: 'rgba(15,23,42,0.96)',
                                 padding: '1rem',
                             }}
@@ -1026,14 +1309,14 @@ const DashboardPage = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                                 <div>
                                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
-                                        {providerSkillTree?.treeTitle ?? `${providerLabel} Skill Tree`}
+                                        {firstJobSkillTree?.treeTitle ?? `${firstJob.label} Skill Tree`}
                                     </div>
                                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        Available Points: {providerSkillTree?.points.available ?? 0}
+                                        Available Points: {firstJobSkillTree?.points.available ?? 0}
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => setShowProviderSkillModal(false)}
+                                    onClick={() => setShowFirstJobSkillModal(false)}
                                     style={{
                                         border: '1px solid rgba(255,255,255,0.16)',
                                         background: 'rgba(255,255,255,0.06)',
@@ -1049,10 +1332,10 @@ const DashboardPage = () => {
                             </div>
 
                             <div style={{ display: 'grid', gap: '0.65rem' }}>
-                                {Object.entries(providerSkillTree?.branches ?? {}).map(([branchKey, branch]) => {
+                                {Object.entries(firstJobSkillTree?.branches ?? {}).map(([branchKey, branch]) => {
                                     const level = branch?.level ?? 0;
-                                    const available = providerSkillTree?.points.available ?? 0;
-                                    const canUpgrade = !skillLoading && level < 4 && available > 0;
+                                    const available = firstJobSkillTree?.points.available ?? 0;
+                                    const canUpgrade = !skillLoading && level < 5 && available > 0;
                                     const title = branch?.title ?? branchKey;
                                     const color = branch?.color ?? '#34d399';
                                     const effects = branch?.effects;
@@ -1069,10 +1352,10 @@ const DashboardPage = () => {
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                                                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color }}>
-                                                    {title} (Lv.{level}/4)
+                                                    {title} (Lv.{level}/5)
                                                 </div>
                                                 <button
-                                                    onClick={() => upgradeProviderSkill(branchKey)}
+                                                    onClick={() => upgradeSkill('first_job', branchKey)}
                                                     disabled={!canUpgrade}
                                                     style={{
                                                         border: `1px solid ${color}66`,
@@ -1088,40 +1371,7 @@ const DashboardPage = () => {
                                                     Upgrade
                                                 </button>
                                             </div>
-                                            <div style={{ fontSize: '0.64rem', lineHeight: 1.45, display: 'flex', flexDirection: 'column', gap: '0.12rem' }}>
-                                                <span
-                                                    style={{
-                                                        color: level >= 1 ? color : 'rgba(255,255,255,0.55)',
-                                                        fontWeight: level >= 1 ? 700 : 500,
-                                                    }}
-                                                >
-                                                    {effects?.level1 ?? 'Lv.1 effect'}
-                                                </span>
-                                                <span
-                                                    style={{
-                                                        color: level >= 2 ? color : 'rgba(255,255,255,0.55)',
-                                                        fontWeight: level >= 2 ? 700 : 500,
-                                                    }}
-                                                >
-                                                    {effects?.level2 ?? 'Lv.2 effect'}
-                                                </span>
-                                                <span
-                                                    style={{
-                                                        color: level >= 3 ? color : 'rgba(255,255,255,0.55)',
-                                                        fontWeight: level >= 3 ? 700 : 500,
-                                                    }}
-                                                >
-                                                    {effects?.level3 ?? 'Lv.3 effect'}
-                                                </span>
-                                                <span
-                                                    style={{
-                                                        color: level >= 4 ? color : 'rgba(255,255,255,0.55)',
-                                                        fontWeight: level >= 4 ? 700 : 500,
-                                                    }}
-                                                >
-                                                    {effects?.level4 ?? 'Lv.4 effect'}
-                                                </span>
-                                            </div>
+                                            {renderBranchEffects(effects, level, color)}
                                         </div>
                                     );
                                 })}
@@ -1130,12 +1380,12 @@ const DashboardPage = () => {
                     </motion.div>
                 )}
 
-                {showChefSkillModal && (
+                {showSecondaryJobSkillModal && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={() => setShowChefSkillModal(false)}
+                        onClick={() => setShowSecondaryJobSkillModal(false)}
                         style={{
                             position: 'fixed',
                             inset: 0,
@@ -1156,7 +1406,7 @@ const DashboardPage = () => {
                                 width: '100%',
                                 maxWidth: '34rem',
                                 borderRadius: '0.9rem',
-                                border: '1px solid rgba(251,113,133,0.28)',
+                                border: `1px solid ${secondaryJob.borderColor}`,
                                 background: 'rgba(15,23,42,0.96)',
                                 padding: '1rem',
                             }}
@@ -1164,14 +1414,14 @@ const DashboardPage = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                                 <div>
                                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
-                                        {chefSkillTree?.treeTitle ?? `${chefLabel} Skill Tree`}
+                                        {secondaryJobSkillTree?.treeTitle ?? `${secondaryJob.label} Skill Tree`}
                                     </div>
                                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        Available Points: {chefSkillTree?.points.available ?? 0}
+                                        Available Points: {secondaryJobSkillTree?.points.available ?? 0}
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => setShowChefSkillModal(false)}
+                                    onClick={() => setShowSecondaryJobSkillModal(false)}
                                     style={{
                                         border: '1px solid rgba(255,255,255,0.16)',
                                         background: 'rgba(255,255,255,0.06)',
@@ -1187,10 +1437,10 @@ const DashboardPage = () => {
                             </div>
 
                             <div style={{ display: 'grid', gap: '0.65rem' }}>
-                                {Object.entries(chefSkillTree?.branches ?? {}).map(([branchKey, branch]) => {
+                                {Object.entries(secondaryJobSkillTree?.branches ?? {}).map(([branchKey, branch]) => {
                                     const level = branch?.level ?? 0;
-                                    const available = chefSkillTree?.points.available ?? 0;
-                                    const canUpgrade = !skillLoading && level < 4 && available > 0;
+                                    const available = secondaryJobSkillTree?.points.available ?? 0;
+                                    const canUpgrade = !skillLoading && level < 5 && available > 0;
                                     const title = branch?.title ?? branchKey;
                                     const color = branch?.color ?? '#fb923c';
                                     const effects = branch?.effects;
@@ -1207,10 +1457,10 @@ const DashboardPage = () => {
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                                                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color }}>
-                                                    {title} (Lv.{level}/4)
+                                                    {title} (Lv.{level}/5)
                                                 </div>
                                                 <button
-                                                    onClick={() => upgradeChefSkill(branchKey)}
+                                                    onClick={() => upgradeSkill('secondary_job', branchKey)}
                                                     disabled={!canUpgrade}
                                                     style={{
                                                         border: `1px solid ${color}66`,
@@ -1226,20 +1476,7 @@ const DashboardPage = () => {
                                                     Upgrade
                                                 </button>
                                             </div>
-                                            <div style={{ fontSize: '0.64rem', lineHeight: 1.45, display: 'flex', flexDirection: 'column', gap: '0.12rem' }}>
-                                                <span style={{ color: level >= 1 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 1 ? 700 : 500 }}>
-                                                    {effects?.level1 ?? 'Lv.1 effect'}
-                                                </span>
-                                                <span style={{ color: level >= 2 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 2 ? 700 : 500 }}>
-                                                    {effects?.level2 ?? 'Lv.2 effect'}
-                                                </span>
-                                                <span style={{ color: level >= 3 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 3 ? 700 : 500 }}>
-                                                    {effects?.level3 ?? 'Lv.3 effect'}
-                                                </span>
-                                                <span style={{ color: level >= 4 ? color : 'rgba(255,255,255,0.55)', fontWeight: level >= 4 ? 700 : 500 }}>
-                                                    {effects?.level4 ?? 'Lv.4 effect'}
-                                                </span>
-                                            </div>
+                                            {renderBranchEffects(effects, level, color)}
                                         </div>
                                     );
                                 })}

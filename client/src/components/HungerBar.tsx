@@ -18,8 +18,12 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
     const user = useAuthStore((s) => s.user);
     const pct = Math.max(0, Math.min(100, (hunger / maxHunger) * 100));
     const info = getHungerState(hunger, maxHunger);
-    const providerLevel = user?.provider_level ?? 0;
-    const chefLevel = user?.chef_level ?? 0;
+    const firstJobLevel = user?.first_job_level ?? 0;
+    const secondaryJobLevel = user?.secondary_job_level ?? 0;
+    const firstJobLabel = user?.city?.occupation_labels?.first_job
+        ?? (user?.city?.workspace_modes?.first_job === 'MINE' ? 'Miner' : 'First Job');
+    const secondaryJobLabel = user?.city?.occupation_labels?.secondary_job
+        ?? (user?.city?.workspace_modes?.secondary_job === 'SMELT' ? 'Blacksmith' : 'Secondary Job');
 
     return (
         <div
@@ -102,7 +106,7 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
                         background: 'rgba(255,255,255,0.02)',
                     }}
                 >
-                    Provider Lv. {providerLevel}
+                    {firstJobLabel} Lv. {firstJobLevel}
                 </div>
                 <div
                     style={{
@@ -115,7 +119,7 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
                         background: 'rgba(255,255,255,0.02)',
                     }}
                 >
-                    Chef Lv. {chefLevel}
+                    {secondaryJobLabel} Lv. {secondaryJobLevel}
                 </div>
             </div>
         </div>

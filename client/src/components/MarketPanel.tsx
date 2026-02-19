@@ -780,7 +780,7 @@ const MarketPanel = () => {
                     {recipeShop.length > 0 && (
                         <>
                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>
-                                Recipe Scrolls (Chef only)
+                                Recipe Scrolls (Secondary Job only)
                             </div>
                             {recipeShop.map((recipe) => (
                                 <motion.div
@@ -834,7 +834,7 @@ const MarketPanel = () => {
                         </>
                     )}
 
-                    {shopItems.length === 0 && (!(user?.chef_level && user.chef_level > 0) || recipeShop.length === 0) ? (
+                    {shopItems.length === 0 && (!((user?.secondary_job_level ?? 0) > 0) || recipeShop.length === 0) ? (
                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '1rem 0' }}>
                             No items available. Unlock an occupation first!
                         </p>
@@ -1039,11 +1039,11 @@ const MarketPanel = () => {
                                 Equipment Box Drop Details
                             </div>
                             <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.45rem' }}>
-                                Formula: Role Bias × Slot Weight
+                                Formula: Slot Weight
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem 0.45rem', fontSize: '0.62rem', color: 'rgba(255,255,255,0.82)' }}>
                                 {equipmentBoxInfo?.odds?.map((o) => (
-                                    <div key={`${o.role}-${o.slot}`}>[{o.role}] {o.slot}: {o.chancePct}%</div>
+                                    <div key={o.slot}>{o.slot}: {o.chancePct}%</div>
                                 ))}
                             </div>
 
@@ -1193,7 +1193,6 @@ const MarketPanel = () => {
                                             color: 'rgba(255,255,255,0.82)',
                                         }}
                                     >
-                                        <div><b style={{ color: '#ddd6fe' }}>Role:</b> {boxOpenResult.rolled.role}</div>
                                         <div><b style={{ color: '#ddd6fe' }}>Slot:</b> {boxOpenResult.rolled.slot}</div>
                                         <div>
                                             <b style={{ color: '#ddd6fe' }}>Rarity:</b>{' '}

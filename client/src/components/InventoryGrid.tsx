@@ -104,7 +104,7 @@ const InventoryGrid = () => {
             const effectText = formatEquipmentEffect(slot);
             askConfirm(
                 'Confirm Equip Item',
-                `Item: ${slot.item.name} (${rarity})\nType: EQUIPMENT\nRole: ${slot.item.equipment_role ?? '-'}\nSlot: ${slot.item.equipment_slot ?? '-'}${effectText ? `\nEffect: ${effectText}` : ''}`,
+                `Item: ${slot.item.name} (${rarity})\nType: EQUIPMENT\nSlot: ${slot.item.equipment_slot ?? '-'}${effectText ? `\nEffect: ${effectText}` : ''}`,
                 'Equip',
                 () => equipItem(slot.id)
             );
@@ -520,7 +520,7 @@ const InventoryGrid = () => {
                             {hoveredSlot.item.type === 'EQUIPMENT' ? (
                                 <>
                                     <br />
-                                    Role: {hoveredSlot.item.equipment_role ?? '-'} • Slot: {hoveredSlot.item.equipment_slot ?? '-'}
+                                    Slot: {hoveredSlot.item.equipment_slot ?? '-'}
                                     <br />
                                     Rarity: {getEquipmentRarityLabel(hoveredSlot.equipment_rarity)}
                                     {formatEquipmentEffect(hoveredSlot) ? (

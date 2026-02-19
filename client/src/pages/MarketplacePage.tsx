@@ -65,6 +65,19 @@ const MarketplacePage = () => {
     const [sellQtyInput, setSellQtyInput] = useState('1');
     const [sellPriceInput, setSellPriceInput] = useState('100');
     const [lastRefreshedAt, setLastRefreshedAt] = useState<string>('');
+    const [confirmState, setConfirmState] = useState<{
+        open: boolean;
+        title: string;
+        description: string;
+        confirmLabel: string;
+        onConfirm: (() => void) | null;
+    }>({
+        open: false,
+        title: '',
+        description: '',
+        confirmLabel: 'Confirm',
+        onConfirm: null,
+    });
 
     const refreshMarketNow = () => {
         setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -167,6 +180,21 @@ const MarketplacePage = () => {
     const selectedSellSlot = sellSlotId === null ? null : sellableSlots.find((s) => s.id === sellSlotId) ?? null;
     const sellQty = Math.max(1, Math.floor(Number(sellQtyInput || 1)));
     const sellPrice = Math.max(1, Math.floor(Number(sellPriceInput || 1)));
+    const formatCredits = (value: number) => `${Math.max(0, value).toLocaleString()} credits`;
+
+    const askConfirm = (title: string, description: string, confirmLabel: string, onConfirm: () => void) => {
+        setConfirmState({ open: true, title, description, confirmLabel, onConfirm });
+    };
+
+    const closeConfirm = () => {
+        setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }));
+    };
+
+    const runConfirm = () => {
+        const fn = confirmState.onConfirm;
+        closeConfirm();
+        fn?.();
+    };
 
     return (
         <div
@@ -526,7 +554,22 @@ const MarketplacePage = () => {
                                         <button
                                             disabled={!canBuy}
                                             onClick={() => {
-                                                void buyListing(listing.id, qty);
+                                                askConfirm(
+                                                    'Confirm Market Purchase',
+                                                    `คุณกำลังจะซื้อไอเทมจากผู้เล่น\n\n` +
+                                                    `Item: ${listing.item.name}${rarity ? ` (${getEquipmentRarityLabel(rarity)})` : ''}\n` +
+                                                    `Seller: ${sellerName}\n` +
+                                                    `City: ${cityName}\n` +
+                                                    `Quantity: ${qty.toLocaleString()} / ${listing.quantity.toLocaleString()} available\n` +
+                                                    `Unit Price: ${formatCredits(listing.price)}\n` +
+                                                    `Total Cost: ${formatCredits(totalPrice)}\n\n` +
+                                                    `เงินปัจจุบัน: ${formatCredits(user?.money ?? 0)}\n` +
+                                                    `เงินหลังซื้อ: ${formatCredits((user?.money ?? 0) - totalPrice)}`,
+                                                    'Confirm Buy',
+                                                    () => {
+                                                        void buyListing(listing.id, qty);
+                                                    }
+                                                );
                                             }}
                                             style={{
                                                 border: '1px solid rgba(52,211,153,0.35)',
@@ -573,6 +616,41 @@ const MarketplacePage = () => {
                                     ))}
                                 </select>
 
+                                {selectedSellSlot?.item && (
+                                    <div
+                                        style={{
+                                            border: '1px solid rgba(148,163,184,0.22)',
+                                            borderRadius: '0.65rem',
+                                            background: 'rgba(2,6,23,0.45)',
+                                            padding: '0.48rem 0.55rem',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.45rem',
+                                        }}
+                                    >
+                                        {renderItemIcon(selectedSellSlot.item, 22)}
+                                        <div style={{ minWidth: 0 }}>
+                                            <div
+                                                style={{
+                                                    fontSize: '0.76rem',
+                                                    fontWeight: 700,
+                                                    color: selectedSellSlot.equipment_rarity
+                                                        ? getEquipmentRarityColor(selectedSellSlot.equipment_rarity)
+                                                        : '#f8fafc',
+                                                }}
+                                            >
+                                                {selectedSellSlot.item.name}
+                                                {selectedSellSlot.equipment_rarity
+                                                    ? ` (${getEquipmentRarityLabel(selectedSellSlot.equipment_rarity)})`
+                                                    : ''}
+                                            </div>
+                                            <div style={{ fontSize: '0.68rem', color: 'rgba(226,232,240,0.72)' }}>
+                                                In bag: {selectedSellSlot.quantity.toLocaleString()} • Slot #{selectedSellSlot.slot}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
                                     <input
                                         value={sellQtyInput}
@@ -604,9 +682,23 @@ const MarketplacePage = () => {
                                     onClick={() => {
                                         if (!selectedSellSlot) return;
                                         const finalQty = Math.max(1, Math.min(selectedSellSlot.quantity, sellQty));
-                                        void createListing(selectedSellSlot.id, finalQty, sellPrice);
-                                        setSellQtyInput('1');
-                                        setSellPriceInput('100');
+                                        const totalPrice = finalQty * sellPrice;
+                                        askConfirm(
+                                            'Confirm Create Listing',
+                                            `คุณกำลังจะลงขายไอเทมใน Market\n\n` +
+                                            `Item: ${selectedSellSlot.item?.name}${selectedSellSlot.equipment_rarity ? ` (${getEquipmentRarityLabel(selectedSellSlot.equipment_rarity)})` : ''}\n` +
+                                            `Inventory Slot: ${selectedSellSlot.slot}\n` +
+                                            `Quantity to List: ${finalQty.toLocaleString()}\n` +
+                                            `Remaining in Inventory: ${(selectedSellSlot.quantity - finalQty).toLocaleString()}\n` +
+                                            `Unit Price: ${formatCredits(sellPrice)}\n` +
+                                            `Listing Value: ${formatCredits(totalPrice)}`,
+                                            'Create Listing',
+                                            () => {
+                                                void createListing(selectedSellSlot.id, finalQty, sellPrice);
+                                                setSellQtyInput('1');
+                                                setSellPriceInput('100');
+                                            }
+                                        );
                                     }}
                                     style={{
                                         border: '1px solid rgba(251,191,36,0.35)',
@@ -644,13 +736,35 @@ const MarketplacePage = () => {
                                         }}
                                     >
                                         <div style={{ minWidth: 0 }}>
-                                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e2e8f0' }}>{listing.item.name}</div>
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.42rem' }}>
+                                                {renderItemIcon(listing.item, 18)}
+                                                <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e2e8f0' }}>
+                                                    {listing.item.name}
+                                                    {listing.equipment_rarity ? ` (${getEquipmentRarityLabel(listing.equipment_rarity)})` : ''}
+                                                </div>
+                                            </div>
                                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
                                                 {listing.quantity} x {listing.price} = {(listing.quantity * listing.price).toLocaleString()}
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => { void cancelListing(listing.id); }}
+                                            onClick={() => {
+                                                const totalValue = listing.quantity * listing.price;
+                                                askConfirm(
+                                                    'Confirm Cancel Listing',
+                                                    `คุณกำลังจะยกเลิกรายการขาย\n\n` +
+                                                    `Item: ${listing.item.name}${listing.equipment_rarity ? ` (${getEquipmentRarityLabel(listing.equipment_rarity)})` : ''}\n` +
+                                                    `Listing ID: #${listing.id}\n` +
+                                                    `Listed Quantity: ${listing.quantity.toLocaleString()}\n` +
+                                                    `Unit Price: ${formatCredits(listing.price)}\n` +
+                                                    `Total Listing Value: ${formatCredits(totalValue)}\n\n` +
+                                                    `หลังยกเลิก: ไอเทมจะถูกส่งคืนเข้า Inventory`,
+                                                    'Cancel Listing',
+                                                    () => {
+                                                        void cancelListing(listing.id);
+                                                    }
+                                                );
+                                            }}
                                             style={{
                                                 border: '1px solid rgba(248,113,113,0.35)',
                                                 background: 'rgba(248,113,113,0.15)',
@@ -771,7 +885,23 @@ const MarketplacePage = () => {
                                         <button
                                             type="button"
                                             disabled={!canBuy}
-                                            onClick={() => { void buyFromShop(item.id, qty); }}
+                                            onClick={() => {
+                                                askConfirm(
+                                                    'Confirm NPC Shop Purchase',
+                                                    `คุณกำลังจะซื้อไอเทมจาก NPC Shop\n\n` +
+                                                    `Item: ${item.name}\n` +
+                                                    `Type: ${item.type}\n` +
+                                                    `Quantity: ${qty.toLocaleString()}\n` +
+                                                    `Unit Price: ${formatCredits(unitPrice)}\n` +
+                                                    `Total Cost: ${formatCredits(total)}\n\n` +
+                                                    `เงินปัจจุบัน: ${formatCredits(user?.money ?? 0)}\n` +
+                                                    `เงินหลังซื้อ: ${formatCredits((user?.money ?? 0) - total)}`,
+                                                    'Confirm Buy',
+                                                    () => {
+                                                        void buyFromShop(item.id, qty);
+                                                    }
+                                                );
+                                            }}
                                             style={{
                                                 border: '1px solid rgba(52,211,153,0.35)',
                                                 background: canBuy ? 'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(52,211,153,0.16))' : 'rgba(100,116,139,0.18)',
@@ -824,7 +954,21 @@ const MarketplacePage = () => {
                                         <button
                                             type="button"
                                             disabled={!canBuyRecipe}
-                                            onClick={() => { void buyRecipeUnlock(recipe.id); }}
+                                            onClick={() => {
+                                                askConfirm(
+                                                    'Confirm Recipe Unlock',
+                                                    `คุณกำลังจะปลดล็อกสูตรอาหาร\n\n` +
+                                                    `Recipe: ${recipe.name}\n` +
+                                                    `Unlock Cost: ${formatCredits(unlockPrice)}\n\n` +
+                                                    `เงินปัจจุบัน: ${formatCredits(user?.money ?? 0)}\n` +
+                                                    `เงินหลังปลดล็อก: ${formatCredits((user?.money ?? 0) - unlockPrice)}\n\n` +
+                                                    `หลังยืนยัน: Recipe นี้จะพร้อมใช้งานทันที`,
+                                                    'Unlock Recipe',
+                                                    () => {
+                                                        void buyRecipeUnlock(recipe.id);
+                                                    }
+                                                );
+                                            }}
                                             style={{
                                                 marginTop: '0.45rem',
                                                 border: '1px solid rgba(251,191,36,0.35)',
@@ -854,6 +998,86 @@ const MarketplacePage = () => {
                 </>
                 )}
             </main>
+
+            {confirmState.open && (
+                <div
+                    onClick={closeConfirm}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(2,6,23,0.72)',
+                        backdropFilter: 'blur(4px)',
+                        zIndex: 40,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '1rem',
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            width: '100%',
+                            maxWidth: '520px',
+                            borderRadius: '0.9rem',
+                            border: '1px solid rgba(148,163,184,0.28)',
+                            background: 'linear-gradient(135deg, rgba(15,23,42,0.96), rgba(2,6,23,0.96))',
+                            boxShadow: '0 20px 45px rgba(2,6,23,0.55)',
+                            padding: '1rem',
+                        }}
+                    >
+                        <h3 style={{ margin: 0, marginBottom: '0.55rem', fontSize: '1rem', color: '#e2e8f0' }}>
+                            {confirmState.title}
+                        </h3>
+                        <p
+                            style={{
+                                margin: 0,
+                                fontSize: '0.78rem',
+                                lineHeight: 1.55,
+                                color: 'rgba(226,232,240,0.92)',
+                                whiteSpace: 'pre-line',
+                            }}
+                        >
+                            {confirmState.description}
+                        </p>
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.9rem' }}>
+                            <button
+                                type="button"
+                                onClick={closeConfirm}
+                                style={{
+                                    borderRadius: '0.55rem',
+                                    border: '1px solid rgba(148,163,184,0.25)',
+                                    background: 'rgba(30,41,59,0.6)',
+                                    color: '#cbd5e1',
+                                    padding: '0.42rem 0.7rem',
+                                    fontSize: '0.76rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={runConfirm}
+                                style={{
+                                    borderRadius: '0.55rem',
+                                    border: '1px solid rgba(99,102,241,0.34)',
+                                    background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(56,189,248,0.18))',
+                                    color: '#dbeafe',
+                                    padding: '0.42rem 0.78rem',
+                                    fontSize: '0.76rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                {confirmState.confirmLabel}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

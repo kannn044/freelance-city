@@ -1,39 +1,40 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, CheckCircle, Sprout, ChefHat, X, Pickaxe, Hammer, Flame, ShieldAlert } from 'lucide-react';
+import { Clock, CheckCircle, Sprout, UtensilsCrossed, X, Pickaxe, Hammer, Flame, ShieldAlert } from 'lucide-react';
 import { useGameStore } from '../stores/gameStore';
 import type { WorkOrder } from '../stores/gameStore';
 import { renderItemIcon } from '../lib/itemVisual';
 import { useAuthStore } from '../stores/authStore';
 
 const ORDERS_COLUMN_HEIGHT = '20rem';
-const PROVIDER_PLOT_SIZE = 132;
-const PROVIDER_CELL_RADIUS = '0.5rem';
-const PROVIDER_PLOT_PALETTE = [
-    { accent: '#34d399', border: 'rgba(52,211,153,0.45)', bg: 'rgba(52,211,153,0.08)' },
-    { accent: '#facc15', border: 'rgba(250,204,21,0.45)', bg: 'rgba(250,204,21,0.08)' },
-    { accent: '#f87171', border: 'rgba(248,113,113,0.45)', bg: 'rgba(248,113,113,0.08)' },
-    { accent: '#60a5fa', border: 'rgba(96,165,250,0.45)', bg: 'rgba(96,165,250,0.08)' },
-    { accent: '#c084fc', border: 'rgba(192,132,252,0.45)', bg: 'rgba(192,132,252,0.08)' },
+const FIRST_JOB_PLOT_SIZE = 132;
+const FIRST_JOB_CELL_RADIUS = '0.5rem';
+const FARMER_PLOT_CONFIGS = [
+    {
+        itemName: 'Vegetable Seed',
+        label: 'Vegetable Plot',
+        accent: '#34d399',
+        border: 'rgba(52,211,153,0.45)',
+        bg: 'rgba(52,211,153,0.10)',
+        icon: '🥬',
+    },
+    {
+        itemName: 'Chicken Egg',
+        label: 'Chicken Plot',
+        accent: '#facc15',
+        border: 'rgba(250,204,21,0.45)',
+        bg: 'rgba(250,204,21,0.10)',
+        icon: '🐔',
+    },
+    {
+        itemName: 'Beef Calf',
+        label: 'Cow Plot',
+        accent: '#f87171',
+        border: 'rgba(248,113,113,0.45)',
+        bg: 'rgba(248,113,113,0.10)',
+        icon: '🐄',
+    },
 ] as const;
-
-function getProviderSeedPalette(index: number) {
-    return PROVIDER_PLOT_PALETTE[index % PROVIDER_PLOT_PALETTE.length];
-}
-
-function getProviderBranchSkillLevel(seedName: string, user: ReturnType<typeof useAuthStore.getState>['user']): number {
-    if (!user) return 0;
-    if (seedName === 'Vegetable Seed') return Number(user.provider_skill_veg ?? 0);
-    if (seedName === 'Chicken Egg') return Number(user.provider_skill_chicken ?? 0);
-    if (seedName === 'Beef Calf') return Number(user.provider_skill_beef ?? 0);
-    return 0;
-}
-
-function getUnlockedPlotCountBySkillLevel(level: number): number {
-    if (level >= 4) return 3;
-    if (level >= 2) return 2;
-    return 1;
-}
 
 function formatTimeLeft(completesAt: string, nowMs: number = Date.now()): string {
     const diff = new Date(completesAt).getTime() - nowMs;
@@ -44,13 +45,20 @@ function formatTimeLeft(completesAt: string, nowMs: number = Date.now()): string
     return `${secs}s`;
 }
 
-function isQueuedChefOrder(order: WorkOrder, nowMs: number = Date.now()): boolean {
+function isQueuedSecondaryJobOrder(order: WorkOrder, nowMs: number = Date.now()): boolean {
     if (order.type !== 'COOK') return false;
     return nowMs < new Date(order.started_at).getTime();
 }
 
 function getRemainingMs(completesAt: string, nowMs: number = Date.now()): number {
     return Math.max(0, new Date(completesAt).getTime() - nowMs);
+}
+
+function getOrderNowMs(order: WorkOrder, fallbackNowMs: number): number {
+    if (order.paused_at) {
+        return new Date(order.paused_at).getTime();
+    }
+    return fallbackNowMs;
 }
 
 function getProgress(order: WorkOrder, nowMs: number = Date.now()): number {
@@ -63,20 +71,20 @@ function getProgress(order: WorkOrder, nowMs: number = Date.now()): number {
 }
 
 const ActiveOrdersGrid = () => {
-    const { workOrders, inventory, collectWork, collectReadyWork, cancelWork, hunger, equipment } = useGameStore();
+    const { workOrders, collectWork, collectReadyWork, cancelWork, hunger, equipment } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [, setTick] = useState(0);
-    const providerSlotBySeedRef = useRef<Record<string, Map<number, number>>>({});
     const pausedNowRef = useRef<number | null>(null);
+    const [cancelConfirm, setCancelConfirm] = useState<{ orderId: number; message: string } | null>(null);
 
-    const showProviderColumn = (user?.provider_level ?? 0) > 0;
-    const showChefColumn = (user?.chef_level ?? 0) > 0;
-    const providerWorkspaceMode = user?.city?.workspace_modes?.provider ?? 'FARM';
-    const chefWorkspaceMode = user?.city?.workspace_modes?.chef ?? 'COOK';
-    const providerLabel = user?.city?.occupation_labels?.provider ?? 'Provider';
-    const chefLabel = user?.city?.occupation_labels?.chef ?? 'Chef';
-    const isMiningMode = providerWorkspaceMode === 'MINE';
-    const providerSpecialTaskItemName = user?.city?.provider_special_task_item_name ?? 'Ferrum Mining Permit';
+    const showFirstJobColumn = (user?.first_job_level ?? 0) > 0;
+    const showSecondaryJobColumn = (user?.secondary_job_level ?? 0) > 0;
+    const firstJobWorkspaceMode = user?.city?.workspace_modes?.first_job ?? 'FARM';
+    const secondaryJobWorkspaceMode = user?.city?.workspace_modes?.secondary_job ?? 'COOK';
+    const firstJobLabel = user?.city?.occupation_labels?.first_job ?? 'First Job';
+    const secondaryJobLabel = user?.city?.occupation_labels?.secondary_job ?? 'Secondary Job';
+    const isMiningMode = firstJobWorkspaceMode === 'MINE';
+    const firstJobSpecialTaskItemName = user?.city?.first_job_special_task_item_name ?? 'Ferrum Mining Permit';
     const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
     useEffect(() => {
@@ -96,122 +104,71 @@ const ActiveOrdersGrid = () => {
 
     const effectiveNowMs = pausedNowRef.current ?? Date.now();
 
-    const providerOrders = workOrders
+    const firstJobOrders = workOrders
         .filter((o) => o.type === 'FARM')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
-    const chefOrders = workOrders
+    const secondaryJobOrders = workOrders
         .filter((o) => o.type === 'COOK')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
-    const miningOrders = providerOrders.filter((o) => o.item?.name === providerSpecialTaskItemName);
-    const regularProviderOrders = providerOrders.filter((o) => o.item?.name !== providerSpecialTaskItemName);
+    const miningOrders = firstJobOrders.filter((o) => o.item?.name === firstJobSpecialTaskItemName);
+    const regularFirstJobOrders = firstJobOrders.filter((o) => o.item?.name !== firstJobSpecialTaskItemName);
     const layerMeta = (code: number | null) => {
         if (code === 2) return { key: 'DEEP', label: 'Deep Layer', color: '#f59e0b', risk: !hasSafetyHelmet };
         if (code === 3) return { key: 'CORE', label: 'Core Layer', color: '#ef4444', risk: !hasSafetyHelmet };
         return { key: 'SURFACE', label: 'Surface Layer', color: '#38bdf8', risk: false };
     };
 
-    const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at, effectiveNowMs) <= 0).length;
-    const providerSeedTypeNames = Array.from(new Set([
-        ...regularProviderOrders.filter((o) => o.item?.type === 'SEED').map((o) => o.item.name),
-        ...inventory.filter((slot) => slot.item?.type === 'SEED' && slot.item?.name !== providerSpecialTaskItemName).map((slot) => slot.item!.name),
-    ])).sort((a, b) => a.localeCompare(b));
-
-    const providerPlotsByType = providerSeedTypeNames.map((seedName, seedIndex) => {
-        const palette = getProviderSeedPalette(seedIndex);
-        const branchSkillLevel = getProviderBranchSkillLevel(seedName, user);
-        const unlockedPlots = getUnlockedPlotCountBySkillLevel(branchSkillLevel);
-        const typeOrders = regularProviderOrders.filter((o) => o.item?.name === seedName);
-        const slotMap = providerSlotBySeedRef.current[seedName] ?? new Map<number, number>();
-        providerSlotBySeedRef.current[seedName] = slotMap;
-
-        const currentIds = new Set(typeOrders.map((o) => o.id));
-
-        // Clean old collected/removed order ids
-        for (const existingId of Array.from(slotMap.keys())) {
-            if (!currentIds.has(existingId)) {
-                slotMap.delete(existingId);
-            }
-        }
-
-        const usedIndexes = new Set<number>();
-        for (const order of typeOrders) {
-            const existingIndex = slotMap.get(order.id);
-            if (typeof existingIndex === 'number') {
-                usedIndexes.add(existingIndex);
-            }
-        }
-
-        const findFirstFreeIndex = () => {
-            let idx = 0;
-            while (usedIndexes.has(idx)) idx += 1;
-            return idx;
-        };
-
-        // Assign only new orders to the first empty slot; existing orders keep their slot forever
-        for (const order of typeOrders) {
-            if (slotMap.has(order.id)) continue;
-            const freeIndex = findFirstFreeIndex();
-            slotMap.set(order.id, freeIndex);
-            usedIndexes.add(freeIndex);
-        }
-
-        const highestSlotIndex = usedIndexes.size > 0 ? Math.max(...Array.from(usedIndexes)) : -1;
-        const plotCount = Math.max(unlockedPlots, Math.max(1, Math.floor(highestSlotIndex / 9) + 1));
-        const allSlots = Array.from({ length: plotCount * 9 }, () => null as WorkOrder | null);
-
-        for (const order of typeOrders) {
-            const slotIndex = slotMap.get(order.id);
-            if (typeof slotIndex === 'number' && slotIndex >= 0 && slotIndex < allSlots.length) {
-                allSlots[slotIndex] = order;
-            }
-        }
-
-        const plots = Array.from({ length: plotCount }, (_, plotIndex) => {
-            const start = plotIndex * 9;
-            const slots = allSlots.slice(start, start + 9);
-            const orders = slots.filter((o): o is WorkOrder => o !== null);
-            return {
-                index: plotIndex,
-                orders,
-                slots,
-                filled: orders.length,
-                full: orders.length === 9,
-            };
-        });
+    const readyCount = workOrders.filter((o) => {
+        const orderNow = getOrderNowMs(o, effectiveNowMs);
+        return getRemainingMs(o.completes_at, orderNow) <= 0;
+    }).length;
+    const firstJobPlotsByType = FARMER_PLOT_CONFIGS.map((config) => {
+        const typeOrders = regularFirstJobOrders.filter((o) => o.item?.name === config.itemName);
+        const slots = Array.from({ length: 9 }, (_, i) => typeOrders[i] ?? null);
+        const ordersInPlot = slots.filter((o): o is WorkOrder => o !== null);
+        const soonestOrder = ordersInPlot.length > 0
+            ? ordersInPlot.reduce((soonest, current) =>
+                getRemainingMs(current.completes_at, getOrderNowMs(current, effectiveNowMs)) < getRemainingMs(soonest.completes_at, getOrderNowMs(soonest, effectiveNowMs))
+                    ? current
+                    : soonest
+            )
+            : null;
 
         return {
-            name: seedName,
-            label: `${seedName} Plot`,
-            accent: palette.accent,
-            border: palette.border,
-            bg: palette.bg,
-            branchSkillLevel,
-            unlockedPlots,
+            ...config,
+            slots,
+            filled: ordersInPlot.length,
+            full: ordersInPlot.length === 9,
             ordersCount: typeOrders.length,
-            plots,
+            overflowOrders: Math.max(0, typeOrders.length - 9),
+            soonestReadyLabel: soonestOrder ? formatTimeLeft(soonestOrder.completes_at, getOrderNowMs(soonestOrder, effectiveNowMs)) : null,
         };
     });
 
-    const renderOrderCard = (order: WorkOrder, accent: 'provider' | 'chef') => {
-        const progress = getProgress(order, effectiveNowMs);
+    const renderOrderCard = (order: WorkOrder, accent: 'first_job' | 'secondary_job') => {
+        const orderNow = getOrderNowMs(order, effectiveNowMs);
+        const progress = getProgress(order, orderNow);
         const ready = progress >= 100;
-        const queued = isQueuedChefOrder(order, effectiveNowMs);
+        const queued = isQueuedSecondaryJobOrder(order, orderNow);
+        const pausedByRequirement = Boolean(order.paused_at) && !ready;
         const pausedByKcal = hunger <= 0 && !ready;
         const timeLabel = ready
             ? 'Ready!'
             : queued
                 ? 'Queued'
+                : pausedByRequirement
+                    ? 'Paused (Required gear)'
                 : pausedByKcal
                     ? 'Paused (No Kcal)'
-                    : formatTimeLeft(order.completes_at, effectiveNowMs);
+                    : formatTimeLeft(order.completes_at, orderNow);
 
-        const color = accent === 'provider' ? '#34d399' : '#fb923c';
-        const border = accent === 'provider'
+        const color = accent === 'first_job' ? '#34d399' : '#fb923c';
+        const border = accent === 'first_job'
             ? '1px solid rgba(52, 211, 153, 0.22)'
             : '1px solid rgba(251, 146, 60, 0.22)';
-        const bg = accent === 'provider'
+        const bg = accent === 'first_job'
             ? 'rgba(52, 211, 153, 0.04)'
             : 'rgba(251, 146, 60, 0.04)';
 
@@ -259,7 +216,7 @@ const ActiveOrdersGrid = () => {
                         ) : (
                             <Clock style={{ width: '0.8rem', height: '0.8rem', color }} />
                         )}
-                        <span style={{ fontSize: '0.62rem', fontWeight: 600, color: ready ? '#34d399' : queued ? '#facc15' : pausedByKcal ? '#f87171' : color }}>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 600, color: ready ? '#34d399' : queued ? '#facc15' : pausedByRequirement || pausedByKcal ? '#f87171' : color }}>
                             {timeLabel}
                         </span>
                     </div>
@@ -280,7 +237,7 @@ const ActiveOrdersGrid = () => {
                             borderRadius: '0.25rem',
                             background: ready
                                 ? 'linear-gradient(90deg, #34d399, #10b981)'
-                                : accent === 'provider'
+                                : accent === 'first_job'
                                     ? 'linear-gradient(90deg, #34d399, #10b981)'
                                     : 'linear-gradient(90deg, #fb923c, #f97316)',
                             transition: 'width 1s linear',
@@ -312,10 +269,7 @@ const ActiveOrdersGrid = () => {
                     <motion.button
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => {
-                            const ok = window.confirm(`Cancel order for ${order.item.name} and refund materials?`);
-                            if (ok) cancelWork(order.id);
-                        }}
+                        onClick={() => setCancelConfirm({ orderId: order.id, message: `Cancel order for ${order.item.name} and refund materials?` })}
                         style={{
                             padding: '0.32rem 0.6rem',
                             borderRadius: '0.5rem',
@@ -334,7 +288,7 @@ const ActiveOrdersGrid = () => {
         );
     };
 
-    const renderProviderPlotCell = (
+    const renderFirstJobPlotCell = (
         order: WorkOrder | null,
         index: number,
         palette: { accent: string; border: string; bg: string }
@@ -342,11 +296,11 @@ const ActiveOrdersGrid = () => {
         if (!order) {
             return (
                 <div
-                    key={`provider-empty-${index}`}
+                    key={`first-job-empty-${index}`}
                     style={{
                         width: '100%',
                         aspectRatio: '1 / 1',
-                        borderRadius: PROVIDER_CELL_RADIUS,
+                        borderRadius: FIRST_JOB_CELL_RADIUS,
                         border: `1px solid ${palette.border}`,
                         background: `linear-gradient(145deg, ${palette.bg}, rgba(15,23,42,0.12))`,
                         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 18px rgba(0,0,0,0.12)',
@@ -362,10 +316,11 @@ const ActiveOrdersGrid = () => {
             );
         }
 
-        const ready = getRemainingMs(order.completes_at, effectiveNowMs) <= 0;
+        const orderNow = getOrderNowMs(order, effectiveNowMs);
+        const ready = getRemainingMs(order.completes_at, orderNow) <= 0;
         return (
             <motion.div
-                key={`provider-order-${order.id}`}
+                key={`first-job-order-${order.id}`}
                 layout
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -375,7 +330,7 @@ const ActiveOrdersGrid = () => {
                 style={{
                     width: '100%',
                     aspectRatio: '1 / 1',
-                    borderRadius: PROVIDER_CELL_RADIUS,
+                    borderRadius: FIRST_JOB_CELL_RADIUS,
                     border: ready ? `1px solid ${palette.accent}` : `1px solid ${palette.border}`,
                     background: ready
                         ? `linear-gradient(145deg, ${palette.bg}, rgba(255,255,255,0.08))`
@@ -396,8 +351,7 @@ const ActiveOrdersGrid = () => {
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            const ok = window.confirm(`Cancel order for ${order.item.name} and refund materials?`);
-                            if (ok) cancelWork(order.id);
+                            setCancelConfirm({ orderId: order.id, message: `Cancel order for ${order.item.name} and refund materials?` });
                         }}
                         title="Cancel order"
                         style={{
@@ -436,9 +390,87 @@ const ActiveOrdersGrid = () => {
         );
     };
 
+    const renderCancelConfirmModal = () => {
+        if (!cancelConfirm) return null;
+
+        return (
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(2,6,23,0.68)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1200,
+                    padding: '1rem',
+                }}
+            >
+                <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    style={{
+                        width: 'min(100%, 24rem)',
+                        borderRadius: '0.85rem',
+                        border: '1px solid rgba(248,113,113,0.35)',
+                        background: 'linear-gradient(180deg, rgba(30,41,59,0.96), rgba(15,23,42,0.96))',
+                        boxShadow: '0 14px 44px rgba(0,0,0,0.45)',
+                        padding: '0.95rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                    }}
+                >
+                    <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#fecaca' }}>
+                        Confirm cancel order
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.84)', lineHeight: 1.5 }}>
+                        {cancelConfirm.message}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.45rem' }}>
+                        <button
+                            onClick={() => setCancelConfirm(null)}
+                            style={{
+                                padding: '0.38rem 0.68rem',
+                                borderRadius: '0.48rem',
+                                border: '1px solid rgba(148,163,184,0.45)',
+                                background: 'rgba(148,163,184,0.12)',
+                                color: '#e2e8f0',
+                                fontSize: '0.68rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Keep Order
+                        </button>
+                        <button
+                            onClick={() => {
+                                cancelWork(cancelConfirm.orderId);
+                                setCancelConfirm(null);
+                            }}
+                            style={{
+                                padding: '0.38rem 0.68rem',
+                                borderRadius: '0.48rem',
+                                border: '1px solid rgba(248,113,113,0.55)',
+                                background: 'rgba(248,113,113,0.18)',
+                                color: '#fecaca',
+                                fontSize: '0.68rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Cancel Order
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    };
+
     if (isMiningMode) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <motion.button
                         whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
@@ -460,7 +492,7 @@ const ActiveOrdersGrid = () => {
                     </motion.button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: showChefColumn ? 'repeat(2, minmax(280px, 1fr))' : '1fr', gap: '0.9rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: showSecondaryJobColumn ? 'repeat(2, minmax(280px, 1fr))' : '1fr', gap: '0.9rem' }}>
                     <div
                         style={{
                             display: 'flex',
@@ -474,7 +506,7 @@ const ActiveOrdersGrid = () => {
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(56,189,248,0.22)', color: '#67e8f9', fontSize: '0.8rem', fontWeight: 700 }}>
-                            <Pickaxe style={{ width: '0.9rem', height: '0.9rem' }} /> {providerLabel} Expeditions
+                            <Pickaxe style={{ width: '0.9rem', height: '0.9rem' }} /> {firstJobLabel} Expeditions
                         </div>
                         <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
                             {miningOrders.length === 0 ? (
@@ -484,17 +516,21 @@ const ActiveOrdersGrid = () => {
                             ) : (
                                 miningOrders.map((order) => {
                                     const meta = layerMeta(order.recipe_id);
-                                    const progress = getProgress(order, effectiveNowMs);
+                                    const orderNow = getOrderNowMs(order, effectiveNowMs);
+                                    const progress = getProgress(order, orderNow);
                                     const ready = progress >= 100;
-                                    const queued = effectiveNowMs < new Date(order.started_at).getTime();
+                                    const queued = orderNow < new Date(order.started_at).getTime();
+                                    const pausedByRequirement = Boolean(order.paused_at) && !ready;
                                     const pausedByKcal = hunger <= 0 && !ready;
                                     const timeLabel = ready
                                         ? 'Ore Ready'
                                         : queued
                                             ? 'Queued'
+                                            : pausedByRequirement
+                                                ? 'Paused (Required gear)'
                                             : pausedByKcal
                                                 ? 'Paused (No Kcal)'
-                                                : formatTimeLeft(order.completes_at, effectiveNowMs);
+                                                : formatTimeLeft(order.completes_at, orderNow);
                                     return (
                                         <motion.div
                                             key={`mine-${order.id}`}
@@ -516,7 +552,7 @@ const ActiveOrdersGrid = () => {
                                                     <Pickaxe style={{ width: '0.78rem', height: '0.78rem', color: meta.color }} />
                                                     <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#e2e8f0' }}>{meta.label}</span>
                                                 </div>
-                                                <span style={{ fontSize: '0.62rem', color: ready ? '#34d399' : queued ? '#facc15' : meta.color, fontWeight: 700 }}>{timeLabel}</span>
+                                                <span style={{ fontSize: '0.62rem', color: ready ? '#34d399' : queued ? '#facc15' : pausedByRequirement || pausedByKcal ? '#f87171' : meta.color, fontWeight: 700 }}>{timeLabel}</span>
                                             </div>
 
                                             <div style={{ height: '0.26rem', borderRadius: '0.26rem', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
@@ -550,8 +586,7 @@ const ActiveOrdersGrid = () => {
                                                 ) : (
                                                     <button
                                                         onClick={() => {
-                                                            const ok = window.confirm(`Cancel ${meta.label} expedition and discard progress?`);
-                                                            if (ok) cancelWork(order.id);
+                                                            setCancelConfirm({ orderId: order.id, message: `Cancel ${meta.label} expedition and discard progress?` });
                                                         }}
                                                         style={{
                                                             padding: '0.3rem 0.6rem',
@@ -575,7 +610,7 @@ const ActiveOrdersGrid = () => {
                         </div>
                     </div>
 
-                    {showChefColumn && (
+                    {showSecondaryJobColumn && (
                         <div
                             style={{
                                 display: 'flex',
@@ -589,31 +624,34 @@ const ActiveOrdersGrid = () => {
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(251,146,60,0.22)', color: '#fb923c', fontSize: '0.8rem', fontWeight: 700 }}>
-                                <Hammer style={{ width: '0.9rem', height: '0.9rem' }} /> {chefWorkspaceMode === 'SMELT' ? `${chefLabel} Queue` : `${chefLabel} Orders`}
+                                <Hammer style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobWorkspaceMode === 'SMELT' ? `${secondaryJobLabel} Queue` : `${secondaryJobLabel} Orders`}
                             </div>
                             <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.62rem', color: 'rgba(251,191,36,0.9)' }}>
                                     <Flame style={{ width: '0.72rem', height: '0.72rem' }} /> Fuel-sensitive smelting pipeline
                                 </div>
                                 <AnimatePresence>
-                                    {chefOrders.length === 0 ? (
+                                    {secondaryJobOrders.length === 0 ? (
                                         <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                            No active {chefWorkspaceMode === 'SMELT' ? 'smelting' : 'orders'}
+                                            No active {secondaryJobWorkspaceMode === 'SMELT' ? 'smelting' : 'orders'}
                                         </p>
                                     ) : (
-                                        chefOrders.map((order) => renderOrderCard(order, 'chef'))
+                                        secondaryJobOrders.map((order) => renderOrderCard(order, 'secondary_job'))
                                     )}
                                 </AnimatePresence>
                             </div>
                         </div>
                     )}
                 </div>
-            </div>
+                </div>
+                {renderCancelConfirmModal()}
+            </>
         );
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <motion.button
                     whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
@@ -639,13 +677,13 @@ const ActiveOrdersGrid = () => {
                 style={{
                     display: 'grid',
                     gridTemplateColumns:
-                        showProviderColumn && showChefColumn
+                        showFirstJobColumn && showSecondaryJobColumn
                             ? 'repeat(2, minmax(260px, 1fr))'
                             : 'minmax(260px, 1fr)',
                     gap: '0.9rem',
                 }}
             >
-                {showProviderColumn && (
+                {showFirstJobColumn && (
                     <div
                         style={{
                             display: 'flex',
@@ -668,7 +706,7 @@ const ActiveOrdersGrid = () => {
                             fontSize: '0.8rem',
                             fontWeight: 700,
                         }}>
-                            <Sprout style={{ width: '0.9rem', height: '0.9rem' }} /> {providerLabel} Orders
+                            <Sprout style={{ width: '0.9rem', height: '0.9rem' }} /> {firstJobLabel} Orders
                         </div>
                         <div
                             style={{
@@ -683,77 +721,66 @@ const ActiveOrdersGrid = () => {
                             }}
                         >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                {providerPlotsByType.map((seedType) => (
-                                    <div key={`seed-type-${seedType.name}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                        <div style={{ fontSize: '0.63rem', fontWeight: 700, color: seedType.accent }}>
-                                            {seedType.label} • {seedType.ordersCount} order(s)
+                                {firstJobPlotsByType.map((seedType, seedTypeIndex) => (
+                                    <div
+                                        key={`seed-type-${seedType.itemName}`}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '0.35rem',
+                                            border: `1px solid ${seedType.border}`,
+                                            background: `linear-gradient(180deg, ${seedType.bg}, rgba(15,23,42,0.08))`,
+                                            borderRadius: '0.75rem',
+                                            padding: '0.45rem',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.45rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                <span style={{ fontSize: '0.82rem' }}>{seedType.icon}</span>
+                                                <span style={{ fontSize: '0.66rem', fontWeight: 800, color: seedType.accent }}>
+                                                    {seedType.label}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.68)' }}>
+                                                {seedType.filled}/9 active
+                                                {seedType.overflowOrders > 0 ? ` • +${seedType.overflowOrders} queued` : ''}
+                                            </span>
                                         </div>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.55rem', alignItems: 'flex-start' }}>
-                                            {seedType.plots.map((plot) => (
-                                                <div
-                                                    key={`provider-plot-${seedType.name}-${plot.index}`}
-                                                    style={{
-                                                        border: plot.full ? `1px solid ${seedType.accent}` : `1px solid ${seedType.border}`,
-                                                        background: plot.full ? seedType.bg : 'rgba(255,255,255,0.02)',
-                                                        borderRadius: '0.65rem',
-                                                        padding: '0.35rem',
-                                                        boxShadow: plot.full ? `0 0 12px ${seedType.bg}` : 'none',
-                                                        width: 'fit-content',
-                                                        overflow: 'visible',
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            width: `${PROVIDER_PLOT_SIZE}px`,
-                                                            height: `${PROVIDER_PLOT_SIZE}px`,
-                                                            display: 'grid',
-                                                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                                                            gridTemplateRows: 'repeat(3, minmax(0, 1fr))',
-                                                            gap: '0.24rem',
-                                                            boxSizing: 'border-box',
-                                                            borderRadius: '0.5rem',
-                                                        }}
-                                                    >
-                                                        {plot.slots.map((order, i) =>
-                                                            renderProviderPlotCell(order, plot.index * 9 + i, {
-                                                                accent: seedType.accent,
-                                                                border: seedType.border,
-                                                                bg: seedType.bg,
-                                                            })
-                                                        )}
-                                                    </div>
-                                                    <div style={{ marginTop: '0.25rem', fontSize: '0.55rem', color: plot.full ? seedType.accent : 'rgba(255,255,255,0.55)' }}>
-                                                        Plot {plot.index + 1}: {plot.filled}/9 {plot.full ? '• Bonus 10%' : ''}
-                                                        {plot.orders.length > 0 && (
-                                                            <>
-                                                                {' • '}
-                                                                {`${formatTimeLeft(
-                                                                    plot.orders.reduce((soonest, current) =>
-                                                                        getRemainingMs(current.completes_at, effectiveNowMs) < getRemainingMs(soonest.completes_at, effectiveNowMs)
-                                                                            ? current
-                                                                            : soonest
-                                                                    ).completes_at,
-                                                                    effectiveNowMs
-                                                                )}`}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
+
+                                        <div
+                                            style={{
+                                                width: `${FIRST_JOB_PLOT_SIZE}px`,
+                                                height: `${FIRST_JOB_PLOT_SIZE}px`,
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                                                gridTemplateRows: 'repeat(3, minmax(0, 1fr))',
+                                                gap: '0.24rem',
+                                                boxSizing: 'border-box',
+                                                borderRadius: '0.55rem',
+                                                alignSelf: 'center',
+                                            }}
+                                        >
+                                            {seedType.slots.map((order, i) =>
+                                                renderFirstJobPlotCell(order, seedTypeIndex * 100 + i, {
+                                                    accent: seedType.accent,
+                                                    border: seedType.border,
+                                                    bg: seedType.bg,
+                                                })
+                                            )}
+                                        </div>
+
+                                        <div style={{ fontSize: '0.56rem', color: seedType.full ? seedType.accent : 'rgba(255,255,255,0.62)', textAlign: 'center' }}>
+                                            {seedType.full ? 'Full Plot • Bonus 10%' : 'Growing'}
+                                            {seedType.soonestReadyLabel ? ` • Next ready ${seedType.soonestReadyLabel}` : ' • Waiting for orders'}
                                         </div>
                                     </div>
                                 ))}
-                                {providerPlotsByType.length === 0 && (
-                                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                        No active provider plots
-                                    </p>
-                                )}
                             </div>
                         </div>
                     </div>
                 )}
 
-                {showChefColumn && (
+                {showSecondaryJobColumn && (
                     <div
                         style={{
                             display: 'flex',
@@ -776,7 +803,7 @@ const ActiveOrdersGrid = () => {
                             fontSize: '0.8rem',
                             fontWeight: 700,
                         }}>
-                            <ChefHat style={{ width: '0.9rem', height: '0.9rem' }} /> {chefLabel} Orders
+                            <UtensilsCrossed style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobLabel} Orders
                         </div>
                         <div
                             style={{
@@ -791,19 +818,19 @@ const ActiveOrdersGrid = () => {
                             }}
                         >
                             <AnimatePresence>
-                                {chefOrders.length === 0 ? (
+                                {secondaryJobOrders.length === 0 ? (
                                     <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                        No chef orders
+                                        No secondary job orders
                                     </p>
                                 ) : (
-                                    chefOrders.map((order) => renderOrderCard(order, 'chef'))
+                                    secondaryJobOrders.map((order) => renderOrderCard(order, 'secondary_job'))
                                 )}
                             </AnimatePresence>
                         </div>
                     </div>
                 )}
 
-                {!showProviderColumn && !showChefColumn && (
+                {!showFirstJobColumn && !showSecondaryJobColumn && (
                     <div
                         style={{
                             border: '1px solid rgba(255,255,255,0.1)',
@@ -819,7 +846,9 @@ const ActiveOrdersGrid = () => {
                     </div>
                 )}
             </div>
-        </div>
+            </div>
+            {renderCancelConfirmModal()}
+        </>
     );
 };
 

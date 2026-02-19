@@ -119,7 +119,7 @@ Players must choose one role upon first login. Dependencies enforce trading.
 > สถานะ: แนวคิดสำหรับรีวิวก่อนลงโค้ดจริง
 
 แนวคิดรวม:
-* ใช้รูปแบบเดียวกับ Provider: 3 สาย, สูงสุด Lv.4, ใช้แต้มจาก `chef_level`
+* ใช้รูปแบบเดียวกับ Provider: 3 สาย, สูงสุด Lv.4, ใช้แต้มจาก `secondary_job_level`
 * จุดประสงค์: ทำให้ Chef มีความลึกด้าน **ความเร็ว / ความคุ้มวัตถุดิบ / ความสามารถขายออกในตลาด**
 * ต้องไม่ทับกับ Equipment ทั้งหมด แต่ควรเสริมกันได้
 
@@ -532,7 +532,7 @@ Hunger level directly affects action duration (Work Efficiency).
 * Unlock second occupation เมื่อ primary level ถึงเกณฑ์
 * `/auth/me` เรียก `syncHunger` ทุกครั้ง
 
-ผู้เล่น 1 คนมีหลายอาชีพได้จริงผ่าน `provider_level` และ `chef_level`
+ผู้เล่น 1 คนมีหลายอาชีพได้จริงผ่าน `first_job_level` และ `secondary_job_level`
 
 ---
 
@@ -643,7 +643,7 @@ Hunger level directly affects action duration (Work Efficiency).
 
 #### Provider Skill
 * Branch: `VEGETABLE`, `CHICKEN`, `BEEF`
-* point budget = provider_level - spent
+* point budget = first_job_level - spent
 * max level branch = 4
 * ผลจริง:
     * ลดเวลา farm ทันทีบนงาน active (เมื่อได้ Lv1/Lv3)
@@ -651,7 +651,7 @@ Hunger level directly affects action duration (Work Efficiency).
 
 #### Chef Skill
 * Branch: `PREP_MASTER`, `KITCHEN_ECONOMY`, `MARKET_INTEL`
-* point budget = chef_level - spent
+* point budget = secondary_job_level - spent
 * max level branch = 4
 * มีการ ensure columns ใน `users` อัตโนมัติ:
     * `chef_skill_prep`, `chef_skill_economy`, `chef_skill_market`

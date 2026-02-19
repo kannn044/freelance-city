@@ -28,7 +28,7 @@ const LoginPage = () => {
                 await login(email, password);
             }
             const user = useAuthStore.getState().user;
-            if (user?.role === 'NONE') {
+            if ((Number(user?.first_job_level ?? 0) < 1) && (Number(user?.secondary_job_level ?? 0) < 1)) {
                 navigate('/select-class');
             } else {
                 navigate('/dashboard');

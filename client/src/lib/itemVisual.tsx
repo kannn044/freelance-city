@@ -11,6 +11,7 @@ import copperOrePng from '../assets/items/raw/copper_ore.png';
 import steelOrePng from '../assets/items/raw/steel_ore.png';
 import stonePng from '../assets/items/raw/stone.png';
 import gemPng from '../assets/items/raw/gem.png';
+import gasPng from '../assets/items/raw/gas.png';
 import saltPng from '../assets/items/ingredients/salt.png';
 import coalPng from '../assets/items/ingredients/coal.png';
 import fluxPng from '../assets/items/ingredients/flux.png';
@@ -28,6 +29,7 @@ import sweatbandPng from '../assets/items/equipment/provider/sweatband.png';
 import workGlovesPng from '../assets/items/equipment/provider/work_gloves.png';
 import mudBootsPng from '../assets/items/equipment/provider/mud_boots.png';
 import mattockPng from '../assets/items/equipment/miner/mattock.png';
+import forkPng from '../assets/items/equipment/provider/fork.png';
 import toqueBlanchePng from '../assets/items/equipment/chef/toque_blanche.png';
 import apronPng from '../assets/items/equipment/chef/apron.png';
 import slackPantsPng from '../assets/items/equipment/chef/slack_pants.png';
@@ -51,6 +53,7 @@ const rawImageByName: Record<string, string> = {
     'Steel Ore': steelOrePng,
     Stone: stonePng,
     Gem: gemPng,
+    Gas: gasPng,
 };
 
 const ingredientImageByName: Record<string, string> = {
@@ -70,6 +73,7 @@ const mealImageByName: Record<string, string> = {
 
 const equipmentImageByName: Record<string, string> = {
     Mattock: mattockPng,
+    Fork: forkPng,
     'Sun Hat': sunHatPng,
     'Field Shirt': fieldShirtPng,
     'Cargo Pants': cargoPantsPng,
