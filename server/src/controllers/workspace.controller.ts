@@ -183,7 +183,7 @@ async function ensureFerrumCatalog(db: DbClient = prisma) {
         max_stack: 1,
         grow_mins: 1,
         exp_value: 0,
-        icon: "⛏️",
+        icon: "mining_permit",
     });
 
     await upsertItem("Mattock", {
@@ -192,23 +192,23 @@ async function ensureFerrumCatalog(db: DbClient = prisma) {
         sell_price: 220,
         max_stack: 1,
         exp_value: 0,
-        icon: "⛏️",
+        icon: "mattock",
         equipment_role: "PROVIDER",
         equipment_slot: "ARM",
     });
 
-    const ironOre = await upsertItem("Iron Ore", { type: "RAW", max_stack: 20, sell_price: 45, exp_value: 0.8, icon: "🪨" });
-    const copperOre = await upsertItem("Copper Ore", { type: "RAW", max_stack: 20, sell_price: 55, exp_value: 0.9, icon: "🟠" });
-    const steelOre = await upsertItem("Steel Ore", { type: "RAW", max_stack: 20, sell_price: 75, exp_value: 1.1, icon: "⚙️" });
-    const stone = await upsertItem("Stone", { type: "RAW", max_stack: 30, sell_price: 12, exp_value: 0.4, icon: "🧱" });
-    const coal = await upsertItem("Coal", { type: "INGREDIENT", max_stack: 30, sell_price: 20, exp_value: 0.5, icon: "⚫" });
-    const gem = await upsertItem("Gem", { type: "RAW", max_stack: 10, sell_price: 200, exp_value: 2.5, icon: "💎" });
-    const flux = await upsertItem("Flux", { type: "INGREDIENT", max_stack: 20, sell_price: 65, buy_price: null, exp_value: 0.8, icon: "🧪" });
-    const oil = await upsertItem("Oil", { type: "INGREDIENT", max_stack: 20, sell_price: 90, buy_price: null, exp_value: 1.0, icon: "🛢️" });
+    const ironOre = await upsertItem("Iron Ore", { type: "RAW", max_stack: 20, sell_price: 45, exp_value: 0.8, icon: "iron_ore" });
+    const copperOre = await upsertItem("Copper Ore", { type: "RAW", max_stack: 20, sell_price: 55, exp_value: 0.9, icon: "copper_ore" });
+    const steelOre = await upsertItem("Steel Ore", { type: "RAW", max_stack: 20, sell_price: 75, exp_value: 1.1, icon: "steel_ore" });
+    const stone = await upsertItem("Stone", { type: "RAW", max_stack: 30, sell_price: 12, exp_value: 0.4, icon: "stone" });
+    const coal = await upsertItem("Coal", { type: "INGREDIENT", max_stack: 30, sell_price: 20, exp_value: 0.5, icon: "coal" });
+    const gem = await upsertItem("Gem", { type: "RAW", max_stack: 10, sell_price: 200, exp_value: 2.5, icon: "gem" });
+    const flux = await upsertItem("Flux", { type: "INGREDIENT", max_stack: 20, sell_price: 65, buy_price: null, exp_value: 0.8, icon: "flux" });
+    const oil = await upsertItem("Oil", { type: "INGREDIENT", max_stack: 20, sell_price: 90, buy_price: null, exp_value: 1.0, icon: "oil" });
 
-    const ironIngot = await upsertItem("Iron Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 220, exp_value: 1.6, icon: "🔩" });
-    const copperIngot = await upsertItem("Copper Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 250, exp_value: 1.8, icon: "🟧" });
-    const steelIngot = await upsertItem("Steel Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 340, exp_value: 2.3, icon: "🧰" });
+    const ironIngot = await upsertItem("Iron Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 220, exp_value: 1.6, icon: "iron_ingot" });
+    const copperIngot = await upsertItem("Copper Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 250, exp_value: 1.8, icon: "copper_ingot" });
+    const steelIngot = await upsertItem("Steel Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 340, exp_value: 2.3, icon: "steel_ingot" });
 
     const upsertRecipe = async (name: string, outputId: number, cookMins: number) => {
         return db.recipe.upsert({
@@ -308,6 +308,14 @@ function splitByHarvestRarity(
     return (Object.entries(tally) as Array<[EquipmentRarity, number]>)
         .filter(([, qty]) => qty > 0)
         .map(([rarity, qty]) => ({ rarity, qty }));
+}
+
+function getBlacksmithAlloyMasteryBonusChance(level: number): number {
+    if (level >= 4) return 0.15;
+    if (level >= 3) return 0.10;
+    if (level >= 2) return 0.06;
+    if (level >= 1) return 0.03;
+    return 0;
 }
 
 type OutputReward = {
@@ -417,6 +425,15 @@ async function getOrderOutput(
     let outputQty = order.quantity;
     if (effects.gourmetChance > 0 && Math.random() < effects.gourmetChance) {
         outputQty += 1;
+    }
+
+    const city = await getUserCityProfile(userId);
+    if (String(city.city_key ?? "").toUpperCase() === "FERRUM") {
+        const skill = await getChefSkillLevels(userId, db);
+        const bonusChance = getBlacksmithAlloyMasteryBonusChance(skill.market);
+        if (bonusChance > 0 && Math.random() < bonusChance) {
+            outputQty += 1;
+        }
     }
 
     // Chef meal rarity follows harvest drop-rate profile for consistent tier economy.
@@ -931,8 +948,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
                 res.json({
                     message: startsAtMs > nowMs
-                        ? `⛏️ Queued ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Starts when previous run completes.`
-                        : `⛏️ Started ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Ready in ${Math.ceil(growMins)} min.`,
+                        ? `Queued ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Starts when previous run completes.`
+                        : `Started ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Ready in ${Math.ceil(growMins)} min.`,
                     order,
                 });
                 return;
@@ -1413,8 +1430,8 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
         }
 
         const expMessage = result.expGained > 0 ? ` (+${result.expGained} EXP)` : "";
-        const levelUpMessage = result.levelUp ? ` 🎉 Level up! Now Lvl ${result.newLevel}!` : "";
-        const unlockMessage = result.blacksmithUnlocked ? " 🔓 Blacksmith unlocked in Ferrum!" : "";
+        const levelUpMessage = result.levelUp ? ` Level up! Now Lvl ${result.newLevel}!` : "";
+        const unlockMessage = result.blacksmithUnlocked ? " Blacksmith unlocked in Ferrum!" : "";
 
         // Return updated inventory + user
         const slots = await prisma.inventorySlot.findMany({

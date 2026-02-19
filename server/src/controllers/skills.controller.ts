@@ -15,7 +15,31 @@ interface AuthRequest extends Request {
 }
 
 type ProviderBranch = "VEGETABLE" | "CHICKEN" | "BEEF";
-type ChefBranch = "PREP_MASTER" | "KITCHEN_ECONOMY" | "MARKET_INTEL";
+type SecondaryBranchKey = string;
+type SecondaryStorageField = "chef_skill_prep" | "chef_skill_economy" | "chef_skill_market";
+type SecondaryEffectKind = "TIME_AND_QUEUE" | "RESOURCE_EFFICIENCY" | "OUTPUT_MASTERY";
+
+type SecondaryBranchProfile = {
+    key: SecondaryBranchKey;
+    storageField: SecondaryStorageField;
+    effectKind: SecondaryEffectKind;
+    title: string;
+    color: string;
+    effects: {
+        level1: string;
+        level2: string;
+        level3: string;
+        level4: string;
+    };
+};
+
+type SecondarySkillProfile = {
+    treeTitle: string;
+    occupationLabel: string;
+    timeEffectLabel: string;
+    queueLabel: string;
+    branches: SecondaryBranchProfile[];
+};
 
 const FERRUM_MINER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
     title: string;
@@ -59,6 +83,96 @@ const FERRUM_MINER_SKILL_TREE_CONFIG: Record<ProviderBranch, {
     },
 };
 
+const DEFAULT_SECONDARY_SKILL_PROFILE: SecondarySkillProfile = {
+    treeTitle: "Chef Skill Tree",
+    occupationLabel: "Chef",
+    timeEffectLabel: "cook-time",
+    queueLabel: "queue",
+    branches: [
+        {
+            key: "PREP_MASTER",
+            storageField: "chef_skill_prep",
+            effectKind: "TIME_AND_QUEUE",
+            title: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.title,
+            color: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.color,
+            effects: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.effects,
+        },
+        {
+            key: "KITCHEN_ECONOMY",
+            storageField: "chef_skill_economy",
+            effectKind: "RESOURCE_EFFICIENCY",
+            title: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.title,
+            color: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.color,
+            effects: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.effects,
+        },
+        {
+            key: "MARKET_INTEL",
+            storageField: "chef_skill_market",
+            effectKind: "OUTPUT_MASTERY",
+            title: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.title,
+            color: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.color,
+            effects: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.effects,
+        },
+    ],
+};
+
+const FERRUM_BLACKSMITH_SKILL_PROFILE: SecondarySkillProfile = {
+    treeTitle: "Blacksmith Skill Tree",
+    occupationLabel: "Blacksmith",
+    timeEffectLabel: "smelting-time",
+    queueLabel: "smelting queue",
+    branches: [
+        {
+            key: "SMELTING_SPEED",
+            storageField: "chef_skill_prep",
+            effectKind: "TIME_AND_QUEUE",
+            title: "Smelting Speed",
+            color: "#f97316",
+            effects: {
+                level1: "Lv.1: Reduce smelting time by 5%",
+                level2: "Lv.2: Increase concurrent smelting queue to 2",
+                level3: "Lv.3: Reduce smelting time by another 5% (10% total)",
+                level4: "Lv.4: Increase concurrent smelting queue to 3",
+            },
+        },
+        {
+            key: "FUEL_EFFICIENCY",
+            storageField: "chef_skill_economy",
+            effectKind: "RESOURCE_EFFICIENCY",
+            title: "Fuel Efficiency",
+            color: "#22c55e",
+            effects: {
+                level1: "Lv.1: Secondary smelting ingredient save chance +6%",
+                level2: "Lv.2: Secondary smelting ingredient save chance +6% (12% total)",
+                level3: "Lv.3: Primary smelting ingredient save chance +5%",
+                level4: "Lv.4: Primary smelting ingredient save chance +10%",
+            },
+        },
+        {
+            key: "ALLOY_MASTERY",
+            storageField: "chef_skill_market",
+            effectKind: "OUTPUT_MASTERY",
+            title: "Alloy Mastery",
+            color: "#a78bfa",
+            effects: {
+                level1: "Lv.1: +3% chance to produce +1 extra ingot",
+                level2: "Lv.2: +6% chance to produce +1 extra ingot",
+                level3: "Lv.3: +10% chance to produce +1 extra ingot",
+                level4: "Lv.4: +15% chance to produce +1 extra ingot",
+            },
+        },
+    ],
+};
+
+const CITY_SECONDARY_SKILL_PROFILES: Record<string, SecondarySkillProfile> = {
+    FERRUM: FERRUM_BLACKSMITH_SKILL_PROFILE,
+};
+
+function resolveSecondarySkillProfile(cityKey?: string | null): SecondarySkillProfile {
+    const key = String(cityKey ?? "").toUpperCase();
+    return CITY_SECONDARY_SKILL_PROFILES[key] ?? DEFAULT_SECONDARY_SKILL_PROFILE;
+}
+
 let chefSkillColumnsEnsured = false;
 
 async function ensureChefSkillColumns() {
@@ -89,6 +203,17 @@ async function ensureChefSkillColumns() {
     }
 
     chefSkillColumnsEnsured = true;
+}
+
+async function getSmeltingRecipeIds(): Promise<Set<number>> {
+    const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT r.id
+        FROM recipes r
+        JOIN items i ON i.id = r.output_item_id
+        WHERE LOWER(r.name) LIKE '%smelt%'
+           OR LOWER(i.name) LIKE '%ingot%'
+    `;
+    return new Set(rows.map((r) => Number(r.id)).filter((id) => Number.isFinite(id) && id > 0));
 }
 
 function getSeedNameByBranch(branch: ProviderBranch): string {
@@ -161,6 +286,7 @@ async function applyImmediateChefPrepReduction(
     userId: number,
     oldLevel: number,
     newLevel: number,
+    cityKey?: string | null,
 ): Promise<number> {
     const oldReduction = getChefSkillCookTimeReduction(oldLevel);
     const newReduction = getChefSkillCookTimeReduction(newLevel);
@@ -173,6 +299,9 @@ async function applyImmediateChefPrepReduction(
 
     const remainingScale = newMultiplier / oldMultiplier;
 
+    const isFerrum = String(cityKey ?? "").toUpperCase() === "FERRUM";
+    const smeltingRecipeIds = isFerrum ? await getSmeltingRecipeIds() : null;
+
     return prisma.$transaction(async (tx) => {
         const orders = await tx.workOrder.findMany({
             where: {
@@ -183,6 +312,7 @@ async function applyImmediateChefPrepReduction(
             select: {
                 id: true,
                 completes_at: true,
+                recipe_id: true,
             },
         });
 
@@ -190,6 +320,10 @@ async function applyImmediateChefPrepReduction(
         let adjusted = 0;
 
         for (const order of orders) {
+            if (smeltingRecipeIds && !smeltingRecipeIds.has(Number(order.recipe_id ?? -1))) {
+                continue;
+            }
+
             const remainingMs = Math.max(0, new Date(order.completes_at).getTime() - nowMs);
             if (remainingMs <= 0) continue;
 
@@ -211,6 +345,15 @@ async function rebalanceChefQueueSlots(userId: number, prepLevel: number): Promi
     const maxParallel = Math.max(1, getChefSkillConcurrentCookSlots(prepLevel));
     const now = Date.now();
 
+    const cityRows = await prisma.$queryRaw<Array<{ city_key: string | null }>>`
+        SELECT city_key
+        FROM users
+        WHERE id = ${userId}
+        LIMIT 1
+    `;
+    const isFerrum = String(cityRows[0]?.city_key ?? "").toUpperCase() === "FERRUM";
+    const smeltingRecipeIds = isFerrum ? await getSmeltingRecipeIds() : null;
+
     return prisma.$transaction(async (tx) => {
         const orders = await tx.workOrder.findMany({
             where: {
@@ -221,12 +364,16 @@ async function rebalanceChefQueueSlots(userId: number, prepLevel: number): Promi
             orderBy: [{ started_at: "asc" }, { id: "asc" }],
         });
 
-        if (orders.length === 0) return 0;
+        const scopedOrders = smeltingRecipeIds
+            ? orders.filter((o) => smeltingRecipeIds.has(Number(o.recipe_id ?? -1)))
+            : orders;
+
+        if (scopedOrders.length === 0) return 0;
 
         const laneAvailableAt = Array.from({ length: maxParallel }, () => now);
         let updated = 0;
 
-        for (const order of orders) {
+        for (const order of scopedOrders) {
             const currentStart = new Date(order.started_at).getTime();
             const currentEnd = new Date(order.completes_at).getTime();
             const durationMs = Math.max(1000, currentEnd - currentStart);
@@ -453,7 +600,8 @@ function buildChefSkillTree(user: {
     chef_skill_prep: number;
     chef_skill_economy: number;
     chef_skill_market: number;
-}) {
+}, cityKey?: string | null) {
+    const profile = resolveSecondarySkillProfile(cityKey);
     const spent =
         user.chef_skill_prep +
         user.chef_skill_economy +
@@ -461,32 +609,33 @@ function buildChefSkillTree(user: {
     const total = Math.max(0, user.chef_level);
     const available = Math.max(0, total - spent);
 
+    const readLevel = (field: SecondaryStorageField): number => {
+        if (field === "chef_skill_prep") return Number(user.chef_skill_prep ?? 0);
+        if (field === "chef_skill_economy") return Number(user.chef_skill_economy ?? 0);
+        return Number(user.chef_skill_market ?? 0);
+    };
+
+    const branches = Object.fromEntries(
+        profile.branches.map((branch) => [
+            branch.key,
+            {
+                level: readLevel(branch.storageField),
+                title: branch.title,
+                color: branch.color,
+                effects: branch.effects,
+            },
+        ])
+    );
+
     return {
+        treeTitle: profile.treeTitle,
+        occupationLabel: profile.occupationLabel,
         points: {
             total,
             spent,
             available,
         },
-        branches: {
-            PREP_MASTER: {
-                level: user.chef_skill_prep,
-                title: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.title,
-                color: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.color,
-                effects: CHEF_SKILL_TREE_CONFIG.PREP_MASTER.effects,
-            },
-            KITCHEN_ECONOMY: {
-                level: user.chef_skill_economy,
-                title: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.title,
-                color: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.color,
-                effects: CHEF_SKILL_TREE_CONFIG.KITCHEN_ECONOMY.effects,
-            },
-            MARKET_INTEL: {
-                level: user.chef_skill_market,
-                title: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.title,
-                color: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.color,
-                effects: CHEF_SKILL_TREE_CONFIG.MARKET_INTEL.effects,
-            },
-        },
+        branches,
     };
 }
 
@@ -625,7 +774,14 @@ export const getChefSkills = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
-        res.json({ skillTree: buildChefSkillTree(user) });
+        const profile = resolveSecondarySkillProfile(user.city_key);
+        res.json({
+            skillTree: buildChefSkillTree(user, user.city_key),
+            profile: {
+                treeTitle: profile.treeTitle,
+                occupationLabel: profile.occupationLabel,
+            },
+        });
     } catch (error) {
         console.error("getChefSkills error:", error);
         res.status(500).json({ error: "Failed to fetch chef skill tree" });
@@ -638,11 +794,7 @@ export const getChefSkills = async (req: AuthRequest, res: Response): Promise<vo
  */
 export const upgradeChefSkill = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const branch = String(req.body?.branch ?? "") as ChefBranch;
-        if (!["PREP_MASTER", "KITCHEN_ECONOMY", "MARKET_INTEL"].includes(branch)) {
-            res.status(400).json({ error: "Invalid branch" });
-            return;
-        }
+        const branch = String(req.body?.branch ?? "").trim().toUpperCase();
 
         const user = await getProviderSkillUserRow(req.userId!);
         if (!user) {
@@ -650,8 +802,15 @@ export const upgradeChefSkill = async (req: AuthRequest, res: Response): Promise
             return;
         }
 
+        const profile = resolveSecondarySkillProfile(user.city_key);
+        const branchProfile = profile.branches.find((b) => b.key === branch);
+        if (!branchProfile) {
+            res.status(400).json({ error: "Invalid branch" });
+            return;
+        }
+
         if (user.chef_level < 1) {
-            res.status(403).json({ error: "Chef occupation is required" });
+            res.status(403).json({ error: `${profile.occupationLabel} occupation is required` });
             return;
         }
 
@@ -662,13 +821,7 @@ export const upgradeChefSkill = async (req: AuthRequest, res: Response): Promise
             return;
         }
 
-        const fieldMap: Record<ChefBranch, "chef_skill_prep" | "chef_skill_economy" | "chef_skill_market"> = {
-            PREP_MASTER: "chef_skill_prep",
-            KITCHEN_ECONOMY: "chef_skill_economy",
-            MARKET_INTEL: "chef_skill_market",
-        };
-
-        const targetField = fieldMap[branch];
+        const targetField = branchProfile.storageField;
         const currentLevel = Number(user[targetField] ?? 0);
         if (currentLevel >= CHEF_SKILL_MAX_LEVEL) {
             res.status(400).json({ error: "This branch is already max level" });
@@ -683,9 +836,9 @@ export const upgradeChefSkill = async (req: AuthRequest, res: Response): Promise
         let adjustedOrders = 0;
         let rebalancedOrders = 0;
 
-        if (branch === "PREP_MASTER") {
+        if (branchProfile.effectKind === "TIME_AND_QUEUE") {
             const nextLevel = currentLevel + 1;
-            adjustedOrders = await applyImmediateChefPrepReduction(req.userId!, currentLevel, nextLevel);
+            adjustedOrders = await applyImmediateChefPrepReduction(req.userId!, currentLevel, nextLevel, user.city_key);
             rebalancedOrders = await rebalanceChefQueueSlots(req.userId!, nextLevel);
         }
 
@@ -696,13 +849,13 @@ export const upgradeChefSkill = async (req: AuthRequest, res: Response): Promise
         }
 
         const nextLevel = currentLevel + 1;
-        const message = branch === "PREP_MASTER"
-            ? `Upgraded ${branch} to level ${nextLevel}. Applied cook-time buff to ${adjustedOrders} order(s), rebalanced ${rebalancedOrders} queue order(s).`
+        const message = branchProfile.effectKind === "TIME_AND_QUEUE"
+            ? `Upgraded ${branch} to level ${nextLevel}. Applied ${profile.timeEffectLabel} buff to ${adjustedOrders} order(s), rebalanced ${rebalancedOrders} ${profile.queueLabel} order(s).`
             : `Upgraded ${branch} to level ${nextLevel}.`;
 
         res.json({
             message,
-            skillTree: buildChefSkillTree(updated),
+            skillTree: buildChefSkillTree(updated, updated.city_key),
             user: {
                 id: updated.id,
                 email: updated.email,

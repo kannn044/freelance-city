@@ -128,7 +128,7 @@ const InventoryGrid = () => {
                     borderRadius: '0.6rem',
                     border: '1px solid rgba(255,255,255,0.08)',
                     background: 'rgba(255,255,255,0.02)',
-                    padding: '0.6rem',
+                    padding: '1rem',
                     marginBottom: '0.75rem',
                 }}
             >
@@ -233,7 +233,7 @@ const InventoryGrid = () => {
                     borderRadius: '0.5rem',
                     border: '1px solid rgba(255,255,255,0.08)',
                     background: 'rgba(255,255,255,0.02)',
-                    padding: '0.4rem 0.5rem',
+                    padding: '0.6rem 0.8rem',
                     marginBottom: '0.6rem',
                 }}
             >
@@ -326,12 +326,16 @@ const InventoryGrid = () => {
                     <Trash2 style={{ width: '0.9rem', height: '0.9rem' }} />
                 </motion.div>
             </div>
-
+                    
             <div
                 style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: '0.5rem',
+                    gap: '0.45rem',
+                    padding: '0.75rem',
+                    borderRadius: '0.6rem',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.02)',
                 }}
             >
                 {Array.from({ length: 8 }, (_, i) => {
@@ -362,22 +366,23 @@ const InventoryGrid = () => {
                             style={{
                                 position: 'relative',
                                 aspectRatio: '1',
-                                borderRadius: '0.6rem',
-                                background: hasItem
-                                    ? 'rgba(255, 255, 255, 0.06)'
-                                    : 'rgba(255, 255, 255, 0.03)',
+                                borderRadius: '0.58rem',
                                 border: hasItem
-                                    ? '1px solid rgba(255, 255, 255, 0.14)'
-                                    : '1px dashed rgba(255, 255, 255, 0.12)',
+                                    ? '1px solid rgba(255,255,255,0.16)'
+                                    : '1px dashed rgba(255,255,255,0.16)',
+                                background: hasItem
+                                    ? 'linear-gradient(135deg, rgba(30,41,59,0.72), rgba(15,23,42,0.84))'
+                                    : 'rgba(255, 255, 255, 0.02)',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: hasItem ? 'grab' : 'default',
                                 transition: 'all 0.2s',
-                                padding: '0.3rem',
+                                padding: '0.22rem',
                                 overflow: 'hidden',
                                 opacity: draggingSlotId === slot?.id ? 0.5 : 1,
+                                boxShadow: hasItem ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
                             }}
                         >
                             {hasItem ? (
@@ -461,7 +466,7 @@ const InventoryGrid = () => {
                                     style={{
                                         width: '1rem',
                                         height: '1rem',
-                                        color: 'rgba(255,255,255,0.08)',
+                                        color: 'rgba(255,255,255,0.14)',
                                     }}
                                 />
                             )}

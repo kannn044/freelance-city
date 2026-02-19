@@ -213,31 +213,309 @@ async function hasRecipeUnlocked(userId: number, recipeId: number): Promise<bool
     return count > 0;
 }
 
-async function ensureFerrumNpcShopItems() {
-    await prisma.item.upsert({
-        where: { name: "Mattock" },
-        update: {
-            type: "EQUIPMENT",
-            buy_price: 650,
-            sell_price: 220,
-            max_stack: 1,
-            icon: "⛏️",
-            exp_value: 0,
-            equipment_role: "PROVIDER",
-            equipment_slot: "ARM",
-        } as any,
-        create: {
-            name: "Mattock",
-            type: "EQUIPMENT",
-            buy_price: 650,
-            sell_price: 220,
-            max_stack: 1,
-            icon: "⛏️",
-            exp_value: 0,
-            equipment_role: "PROVIDER",
-            equipment_slot: "ARM",
-        } as any,
+type ShopItemRuleRow = {
+    city_key: string;
+    matcher_type: string;
+    matcher_value: string;
+    required_role: string;
+};
+
+type ShopRecipeRuleRow = {
+    city_key: string;
+    matcher_type: string;
+    matcher_value: string;
+    required_role: string;
+};
+
+let shopCatalogEnsured = false;
+
+function normalizeCityKey(cityKey: string | null | undefined): string {
+    const normalized = String(cityKey ?? "").trim().toUpperCase();
+    return normalized || "AGRARIA";
+}
+
+function getUserRoleTokens(user: {
+    role: string;
+    provider_level: number;
+    chef_level: number;
+}): Set<string> {
+    const tokens = new Set<string>(["ANY"]);
+
+    if ((user.provider_level ?? 0) >= 1) {
+        tokens.add("PROVIDER");
+    }
+    if ((user.chef_level ?? 0) >= 1) {
+        tokens.add("CHEF");
+    }
+
+    const primary = String(user.role ?? "").toUpperCase();
+    if (primary && primary !== "NONE") {
+        tokens.add(primary);
+    }
+
+    return tokens;
+}
+
+function roleRuleMatches(requiredRole: string | null | undefined, userRoles: Set<string>): boolean {
+    const required = String(requiredRole ?? "ANY").toUpperCase();
+    if (!required || required === "ANY") return true;
+    return userRoles.has(required);
+}
+
+function sqlLikePatternToRegex(pattern: string): RegExp {
+    const escaped = pattern
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        .replace(/%/g, ".*")
+        .replace(/_/g, ".");
+    return new RegExp(`^${escaped}$`, "i");
+}
+
+function itemRuleMatches(item: { id: number; name: string; type: string }, rule: ShopItemRuleRow): boolean {
+    const matcherType = String(rule.matcher_type || "").toUpperCase();
+    const value = String(rule.matcher_value ?? "");
+
+    if (matcherType === "ITEM_ID") {
+        return String(item.id) === value;
+    }
+    if (matcherType === "ITEM_TYPE") {
+        return String(item.type).toUpperCase() === value.toUpperCase();
+    }
+    if (matcherType === "ITEM_NAME") {
+        return item.name.toLowerCase() === value.toLowerCase();
+    }
+    if (matcherType === "ITEM_NAME_LIKE") {
+        return sqlLikePatternToRegex(value).test(item.name);
+    }
+
+    return false;
+}
+
+function recipeRuleMatches(
+    recipe: { id: number; name: string; output_item?: { type: string } | null },
+    rule: ShopRecipeRuleRow,
+): boolean {
+    const matcherType = String(rule.matcher_type || "").toUpperCase();
+    const value = String(rule.matcher_value ?? "");
+
+    if (matcherType === "RECIPE_ID") {
+        return String(recipe.id) === value;
+    }
+    if (matcherType === "RECIPE_NAME") {
+        return recipe.name.toLowerCase() === value.toLowerCase();
+    }
+    if (matcherType === "RECIPE_NAME_LIKE") {
+        return sqlLikePatternToRegex(value).test(recipe.name);
+    }
+    if (matcherType === "OUTPUT_ITEM_TYPE") {
+        return String(recipe.output_item?.type ?? "").toUpperCase() === value.toUpperCase();
+    }
+
+    return false;
+}
+
+async function upsertShopItemRule(cityKey: string, matcherType: string, matcherValue: string, requiredRole = "ANY") {
+    await prisma.$executeRaw`
+        INSERT INTO city_shop_item_rules (city_key, matcher_type, matcher_value, required_role, is_enabled)
+        VALUES (${cityKey}, ${matcherType}, ${matcherValue}, ${requiredRole}, 1)
+        ON DUPLICATE KEY UPDATE
+            is_enabled = VALUES(is_enabled),
+            required_role = VALUES(required_role)
+    `;
+}
+
+async function upsertShopRecipeRule(cityKey: string, matcherType: string, matcherValue: string, requiredRole = "ANY") {
+    await prisma.$executeRaw`
+        INSERT INTO city_shop_recipe_rules (city_key, matcher_type, matcher_value, required_role, is_enabled)
+        VALUES (${cityKey}, ${matcherType}, ${matcherValue}, ${requiredRole}, 1)
+        ON DUPLICATE KEY UPDATE
+            is_enabled = VALUES(is_enabled),
+            required_role = VALUES(required_role)
+    `;
+}
+
+async function ensureFerrumShopCatalog() {
+    const upsertItem = async (name: string, data: any) => {
+        return prisma.item.upsert({ where: { name }, update: data, create: { name, ...data } as any });
+    };
+
+    await upsertItem("Mattock", {
+        type: "EQUIPMENT",
+        buy_price: 650,
+        sell_price: 220,
+        max_stack: 1,
+        icon: "mattock",
+        exp_value: 0,
+        equipment_role: "PROVIDER",
+        equipment_slot: "ARM",
     });
+
+    const ironOre = await upsertItem("Iron Ore", { type: "RAW", max_stack: 20, sell_price: 45, exp_value: 0.8, icon: "iron_ore" });
+    const copperOre = await upsertItem("Copper Ore", { type: "RAW", max_stack: 20, sell_price: 55, exp_value: 0.9, icon: "copper_ore" });
+    const steelOre = await upsertItem("Steel Ore", { type: "RAW", max_stack: 20, sell_price: 75, exp_value: 1.1, icon: "steel_ore" });
+    const coal = await upsertItem("Coal", { type: "INGREDIENT", max_stack: 30, sell_price: 20, exp_value: 0.5, icon: "coal" });
+    const flux = await upsertItem("Flux", { type: "INGREDIENT", max_stack: 20, sell_price: 65, buy_price: null, exp_value: 0.8, icon: "flux" });
+    const oil = await upsertItem("Oil", { type: "INGREDIENT", max_stack: 20, sell_price: 90, buy_price: null, exp_value: 1.0, icon: "oil" });
+
+    const ironIngot = await upsertItem("Iron Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 220, exp_value: 1.6, icon: "iron_ingot" });
+    const copperIngot = await upsertItem("Copper Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 250, exp_value: 1.8, icon: "copper_ingot" });
+    const steelIngot = await upsertItem("Steel Ingot", { type: "INGREDIENT", max_stack: 20, sell_price: 340, exp_value: 2.3, icon: "steel_ingot" });
+
+    const upsertRecipe = async (name: string, outputId: number, cookMins: number) => {
+        return prisma.recipe.upsert({
+            where: { name },
+            update: { output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
+            create: { name, output_item_id: outputId, output_qty: 1, cook_mins: cookMins, unlock_price: 0 },
+        });
+    };
+
+    const ironRecipe = await upsertRecipe("Iron Ingot Smelt", ironIngot.id, 7);
+    const copperRecipe = await upsertRecipe("Copper Ingot Smelt", copperIngot.id, 8);
+    const steelRecipe = await upsertRecipe("Steel Ingot Smelt", steelIngot.id, 10);
+
+    const upsertIngredient = async (recipeId: number, itemId: number, quantity: number) => {
+        await prisma.recipeIngredient.upsert({
+            where: { recipe_id_item_id: { recipe_id: recipeId, item_id: itemId } },
+            update: { quantity },
+            create: { recipe_id: recipeId, item_id: itemId, quantity },
+        });
+    };
+
+    await upsertIngredient(ironRecipe.id, ironOre.id, 2);
+    await upsertIngredient(ironRecipe.id, flux.id, 1);
+    await upsertIngredient(ironRecipe.id, coal.id, 2);
+    await upsertIngredient(ironRecipe.id, oil.id, 1);
+
+    await upsertIngredient(copperRecipe.id, copperOre.id, 2);
+    await upsertIngredient(copperRecipe.id, flux.id, 1);
+    await upsertIngredient(copperRecipe.id, coal.id, 2);
+    await upsertIngredient(copperRecipe.id, oil.id, 1);
+
+    await upsertIngredient(steelRecipe.id, steelOre.id, 2);
+    await upsertIngredient(steelRecipe.id, flux.id, 1);
+    await upsertIngredient(steelRecipe.id, coal.id, 2);
+    await upsertIngredient(steelRecipe.id, oil.id, 1);
+}
+
+async function ensureShopCatalogSchemaAndDefaults() {
+    if (shopCatalogEnsured) return;
+
+    await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS city_shop_item_rules (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            city_key VARCHAR(32) NOT NULL,
+            matcher_type VARCHAR(32) NOT NULL,
+            matcher_value VARCHAR(191) NOT NULL,
+            required_role VARCHAR(32) NOT NULL DEFAULT 'ANY',
+            is_enabled TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_city_shop_item_rule (city_key, matcher_type, matcher_value, required_role)
+        )
+    `);
+
+    await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS city_shop_recipe_rules (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            city_key VARCHAR(32) NOT NULL,
+            matcher_type VARCHAR(32) NOT NULL,
+            matcher_value VARCHAR(191) NOT NULL,
+            required_role VARCHAR(32) NOT NULL DEFAULT 'ANY',
+            is_enabled TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_city_shop_recipe_rule (city_key, matcher_type, matcher_value, required_role)
+        )
+    `);
+
+    await ensureFerrumShopCatalog();
+
+    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Chicken Egg", "PROVIDER");
+    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Beef Calf", "PROVIDER");
+    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Vegetable Seed", "PROVIDER");
+    await upsertShopItemRule("AGRARIA", "ITEM_NAME", "Salt", "CHEF");
+
+    await upsertShopItemRule("FERRUM", "ITEM_NAME", "Mattock", "PROVIDER");
+
+    await upsertShopRecipeRule("AGRARIA", "OUTPUT_ITEM_TYPE", "MEAL", "CHEF");
+    await upsertShopRecipeRule("FERRUM", "RECIPE_NAME_LIKE", "%Smelt%", "CHEF");
+
+    shopCatalogEnsured = true;
+}
+
+async function getCityItemRules(cityKey: string): Promise<ShopItemRuleRow[]> {
+    return prisma.$queryRaw<ShopItemRuleRow[]>`
+        SELECT city_key, matcher_type, matcher_value, required_role
+        FROM city_shop_item_rules
+        WHERE city_key = ${cityKey}
+          AND is_enabled = 1
+    `;
+}
+
+async function getCityRecipeRules(cityKey: string): Promise<ShopRecipeRuleRow[]> {
+    return prisma.$queryRaw<ShopRecipeRuleRow[]>`
+        SELECT city_key, matcher_type, matcher_value, required_role
+        FROM city_shop_recipe_rules
+        WHERE city_key = ${cityKey}
+          AND is_enabled = 1
+    `;
+}
+
+async function getAllowedShopItemsForUser(
+    cityKey: string,
+    user: { role: string; provider_level: number; chef_level: number },
+) {
+    const rules = await getCityItemRules(cityKey);
+    const userRoles = getUserRoleTokens(user);
+
+    if (rules.length === 0) {
+        const fallbackTypes: string[] = [];
+        if (user.provider_level >= 1) fallbackTypes.push("SEED");
+        if (user.chef_level >= 1) fallbackTypes.push("INGREDIENT");
+        if (fallbackTypes.length === 0) return [];
+
+        return prisma.item.findMany({
+            where: {
+                buy_price: { not: null },
+                type: { in: fallbackTypes as any },
+            },
+            orderBy: [{ type: "asc" }, { name: "asc" }],
+        });
+    }
+
+    const buyableItems = await prisma.item.findMany({
+        where: { buy_price: { not: null } },
+        orderBy: [{ type: "asc" }, { name: "asc" }],
+    });
+
+    return buyableItems.filter((item) =>
+        rules.some((rule) => roleRuleMatches(rule.required_role, userRoles) && itemRuleMatches(item as any, rule))
+    );
+}
+
+async function getAllowedRecipeCatalogForUser(
+    cityKey: string,
+    user: { role: string; provider_level: number; chef_level: number },
+) {
+    if (user.chef_level < 1) return [];
+
+    const rules = await getCityRecipeRules(cityKey);
+    const userRoles = getUserRoleTokens(user);
+
+    const allRecipes = await prisma.recipe.findMany({
+        include: {
+            output_item: true,
+            ingredients: { include: { item: true } },
+        },
+        orderBy: ({ unlock_price: "asc" } as any),
+    });
+
+    if (rules.length === 0) {
+        return allRecipes;
+    }
+
+    return allRecipes.filter((recipe) =>
+        rules.some((rule) => roleRuleMatches(rule.required_role, userRoles) && recipeRuleMatches(recipe as any, rule))
+    );
 }
 
 /**
@@ -248,6 +526,8 @@ async function ensureFerrumNpcShopItems() {
  */
 export const getShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureShopCatalogSchemaAndDefaults();
+
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
         const pricing = await getGamePricing();
         const city = await getUserCityProfile(req.userId!);
@@ -256,46 +536,12 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
             return;
         }
 
-        if (city.city_key === "FERRUM") {
-            await ensureFerrumNpcShopItems();
-            const ferrumItems = await prisma.item.findMany({
-                where: {
-                    buy_price: { not: null },
-                    name: { in: ["Mattock"] },
-                },
-                orderBy: { name: "asc" },
-            });
-
-            const pricedFerrum = ferrumItems.map((item) => ({
-                ...item,
-                buy_price: getEffectiveNpcBuyPrice(item.buy_price, pricing.npcShopMultiplier),
-            }));
-
-            res.json({ items: pricedFerrum });
-            return;
-        }
-
-        const canProvider = user.provider_level >= 1;
-        const canChef = user.chef_level >= 1;
-
-        if (!canProvider && !canChef) {
-            res.json({ items: [] });
-            return;
-        }
-
-        const normalTypes: string[] = [];
-        if (canProvider) normalTypes.push("SEED");
-        if (canChef) normalTypes.push("INGREDIENT");
-
-        const items = normalTypes.length
-            ? await prisma.item.findMany({
-                where: {
-                    buy_price: { not: null },
-                    type: { in: normalTypes as any },
-                },
-                orderBy: { type: "asc" },
-            })
-            : [];
+        const cityKey = normalizeCityKey(city.city_key);
+        const items = await getAllowedShopItemsForUser(cityKey, {
+            role: String(user.role),
+            provider_level: Number(user.provider_level ?? 0),
+            chef_level: Number(user.chef_level ?? 0),
+        });
 
         const pricedItems = items.map((item) => ({
             ...item,
@@ -315,6 +561,8 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
  */
 export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureShopCatalogSchemaAndDefaults();
+
         const { itemId, quantity = 1 } = req.body;
         const pricing = await getGamePricing();
         const city = await getUserCityProfile(req.userId!);
@@ -337,21 +585,16 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
 
-        if (item.type === "SEED" && user.provider_level < 1) {
-            res.status(403).json({ error: "You need the Provider occupation to buy seeds" });
-            return;
-        }
-        if (item.type === "INGREDIENT" && user.chef_level < 1) {
-            res.status(403).json({ error: "You need the Chef occupation to buy ingredients" });
-            return;
-        }
-        if ((item as any).type === "EQUIPMENT" && item.name !== "Mattock") {
-            res.status(400).json({ error: "Equipment cannot be bought directly. Use Equipment Box." });
-            return;
-        }
+        const cityKey = normalizeCityKey(city.city_key);
+        const allowedItems = await getAllowedShopItemsForUser(cityKey, {
+            role: String(user.role),
+            provider_level: Number(user.provider_level ?? 0),
+            chef_level: Number(user.chef_level ?? 0),
+        });
 
-        if (city.city_key === "FERRUM" && item.name !== "Mattock") {
-            res.status(403).json({ error: "Ferrum NPC Shop currently sells Mattock only." });
+        const isAllowed = allowedItems.some((shopItem) => shopItem.id === item.id);
+        if (!isAllowed) {
+            res.status(403).json({ error: "This item is not available in your current city NPC Shop." });
             return;
         }
 
@@ -561,25 +804,38 @@ export const openEquipmentBox = async (req: AuthRequest, res: Response): Promise
  */
 export const getRecipes = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureShopCatalogSchemaAndDefaults();
+
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
         if (!user || user.chef_level < 1) {
             res.json({ recipes: [] });
             return;
         }
 
-        const unlockedRecipeIds = await getUnlockedRecipeIds(req.userId!);
+        const city = await getUserCityProfile(req.userId!);
+        const cityKey = normalizeCityKey(city.city_key);
+        const allowedCatalog = await getAllowedRecipeCatalogForUser(cityKey, {
+            role: String(user.role),
+            provider_level: Number(user.provider_level ?? 0),
+            chef_level: Number(user.chef_level ?? 0),
+        });
+        const allowedRecipeIds = new Set(allowedCatalog.map((r) => r.id));
 
-        if (unlockedRecipeIds.length === 0) {
+        const unlockedRecipeIds = await getUnlockedRecipeIds(req.userId!);
+        const visibleUnlocked = unlockedRecipeIds.filter((id) => allowedRecipeIds.has(id));
+
+        if (visibleUnlocked.length === 0) {
             res.json({ recipes: [] });
             return;
         }
 
         const recipes = await prisma.recipe.findMany({
-            where: { id: { in: unlockedRecipeIds } },
+            where: { id: { in: visibleUnlocked } },
             include: {
                 output_item: true,
                 ingredients: { include: { item: true } },
             },
+            orderBy: ({ unlock_price: "asc" } as any),
         });
 
         res.json({ recipes });
@@ -594,22 +850,25 @@ export const getRecipes = async (req: AuthRequest, res: Response): Promise<void>
  */
 export const getRecipeShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureShopCatalogSchemaAndDefaults();
+
         const user = await prisma.user.findUnique({ where: { id: req.userId! } });
         if (!user || user.chef_level < 1) {
             res.json({ recipes: [] });
             return;
         }
 
+        const city = await getUserCityProfile(req.userId!);
+        const cityKey = normalizeCityKey(city.city_key);
+        const allowedCatalog = await getAllowedRecipeCatalogForUser(cityKey, {
+            role: String(user.role),
+            provider_level: Number(user.provider_level ?? 0),
+            chef_level: Number(user.chef_level ?? 0),
+        });
+
         const unlockedRecipeIds = await getUnlockedRecipeIds(req.userId!);
 
-        const recipes = await prisma.recipe.findMany({
-            where: unlockedRecipeIds.length > 0 ? { id: { notIn: unlockedRecipeIds } } : undefined,
-            include: {
-                output_item: true,
-                ingredients: { include: { item: true } },
-            },
-            orderBy: ({ unlock_price: "asc" } as any),
-        });
+        const recipes = allowedCatalog.filter((recipe) => !unlockedRecipeIds.includes(recipe.id));
 
         res.json({ recipes });
     } catch (error) {
@@ -624,6 +883,8 @@ export const getRecipeShop = async (req: AuthRequest, res: Response): Promise<vo
  */
 export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await ensureShopCatalogSchemaAndDefaults();
+
         const { recipeId } = req.body as { recipeId?: number };
 
         if (!recipeId || recipeId <= 0) {
@@ -642,6 +903,15 @@ export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<
             return;
         }
 
+        const city = await getUserCityProfile(req.userId!);
+        const cityKey = normalizeCityKey(city.city_key);
+        const allowedCatalog = await getAllowedRecipeCatalogForUser(cityKey, {
+            role: String(user.role),
+            provider_level: Number(user.provider_level ?? 0),
+            chef_level: Number(user.chef_level ?? 0),
+        });
+        const allowedRecipeIds = new Set(allowedCatalog.map((r) => r.id));
+
         const recipe = await prisma.recipe.findUnique({
             where: { id: recipeId },
             include: {
@@ -652,6 +922,11 @@ export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<
 
         if (!recipe) {
             res.status(404).json({ error: "Recipe not found" });
+            return;
+        }
+
+        if (!allowedRecipeIds.has(recipe.id)) {
+            res.status(403).json({ error: "This recipe is not available in your current city NPC Shop." });
             return;
         }
 

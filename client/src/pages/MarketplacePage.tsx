@@ -7,6 +7,7 @@ import {
     Filter,
     Gem,
     Layers,
+    Coins,
     RefreshCw,
     Search,
     ShoppingCart,
@@ -22,6 +23,7 @@ import { getEquipmentRarityColor, getEquipmentRarityLabel, type EquipmentRarity 
 type SortMode = 'PRICE_ASC' | 'PRICE_DESC' | 'NEWEST' | 'QTY_DESC';
 type ItemTypeFilter = 'ALL' | 'SEED' | 'RAW' | 'INGREDIENT' | 'MEAL' | 'EQUIPMENT';
 type RarityFilter = 'ALL' | EquipmentRarity;
+type MarketplaceTab = 'MARKET' | 'NPC_SHOP';
 
 const itemTypeOptions: ItemTypeFilter[] = ['ALL', 'SEED', 'RAW', 'INGREDIENT', 'MEAL', 'EQUIPMENT'];
 const rarityOptions: RarityFilter[] = ['ALL', 'NORMAL', 'RARE', 'EPIC', 'LEGENDARY'];
@@ -33,10 +35,16 @@ const MarketplacePage = () => {
         marketListings,
         inventory,
         salesHistory,
+        shopItems,
+        recipeShop,
         fetchMarket,
         fetchInventory,
         fetchSalesHistory,
+        fetchShop,
+        fetchRecipeShop,
         buyListing,
+        buyFromShop,
+        buyRecipeUnlock,
         createListing,
         cancelListing,
     } = useGameStore();
@@ -49,23 +57,50 @@ const MarketplacePage = () => {
     const [maxPriceInput, setMaxPriceInput] = useState('');
     const [showAffordableOnly, setShowAffordableOnly] = useState(false);
     const [sortMode, setSortMode] = useState<SortMode>('PRICE_ASC');
+    const [activeTab, setActiveTab] = useState<MarketplaceTab>('MARKET');
 
     const [marketBuyQty, setMarketBuyQty] = useState<Record<number, number>>({});
+    const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
     const [sellSlotId, setSellSlotId] = useState<number | null>(null);
     const [sellQtyInput, setSellQtyInput] = useState('1');
     const [sellPriceInput, setSellPriceInput] = useState('100');
     const [lastRefreshedAt, setLastRefreshedAt] = useState<string>('');
 
-    const refreshNow = () => {
+    const refreshMarketNow = () => {
         setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         void Promise.all([fetchMarket(), fetchInventory(), fetchSalesHistory()]);
     };
 
+    const refreshNpcShopNow = () => {
+        setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        void Promise.all([fetchShop(), fetchRecipeShop(), fetchInventory()]);
+    };
+
+    const refreshNow = () => {
+        if (activeTab === 'MARKET') {
+            refreshMarketNow();
+            return;
+        }
+        refreshNpcShopNow();
+    };
+
     useEffect(() => {
-        refreshNow();
-        const interval = setInterval(refreshNow, 5000);
+        if (activeTab === 'MARKET') {
+            refreshMarketNow();
+        } else {
+            refreshNpcShopNow();
+        }
+
+        const interval = setInterval(() => {
+            if (activeTab === 'MARKET') {
+                refreshMarketNow();
+                return;
+            }
+            refreshNpcShopNow();
+        }, 5000);
+
         return () => clearInterval(interval);
-    }, [fetchInventory, fetchMarket, fetchSalesHistory]);
+    }, [activeTab, fetchInventory, fetchMarket, fetchRecipeShop, fetchSalesHistory, fetchShop]);
 
     const ownListings = useMemo(
         () => marketListings.filter((l) => l.seller_id === user?.id).sort((a, b) => b.id - a.id),
@@ -222,9 +257,7 @@ const MarketplacePage = () => {
                                 <Sparkles size={15} style={{ color: '#c4b5fd' }} />
                                 Marketplace Hub
                             </div>
-                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.62)' }}>
-                                Trading Terminal แบบเต็มจอ • ฟิลเตอร์ละเอียด • ลงขายจาก Inventory ได้ทันที
-                            </div>
+
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
@@ -240,7 +273,9 @@ const MarketplacePage = () => {
                                 fontWeight: 700,
                             }}
                         >
-                            💰 {user?.money?.toLocaleString() ?? '-'}
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <Coins size={13} /> {user?.money?.toLocaleString() ?? '-'}
+                            </span>
                         </div>
                         <button
                             onClick={refreshNow}
@@ -265,6 +300,59 @@ const MarketplacePage = () => {
             </header>
 
             <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '1.2rem', position: 'relative', zIndex: 1 }}>
+                <div
+                    style={{
+                        display: 'inline-flex',
+                        borderRadius: '0.8rem',
+                        background: 'rgba(15,23,42,0.6)',
+                        border: '1px solid rgba(148,163,184,0.2)',
+                        padding: '0.25rem',
+                        gap: '0.25rem',
+                        marginBottom: '0.9rem',
+                    }}
+                >
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('MARKET')}
+                        style={{
+                            borderRadius: '0.58rem',
+                            border: 'none',
+                            background: activeTab === 'MARKET' ? 'rgba(99,102,241,0.28)' : 'transparent',
+                            color: activeTab === 'MARKET' ? '#dbeafe' : 'rgba(226,232,240,0.72)',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            padding: '0.4rem 0.7rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                        }}
+                    >
+                        <ShoppingCart size={13} /> Market
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('NPC_SHOP')}
+                        style={{
+                            borderRadius: '0.58rem',
+                            border: 'none',
+                            background: activeTab === 'NPC_SHOP' ? 'rgba(99,102,241,0.28)' : 'transparent',
+                            color: activeTab === 'NPC_SHOP' ? '#dbeafe' : 'rgba(226,232,240,0.72)',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            padding: '0.4rem 0.7rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                        }}
+                    >
+                        <Store size={13} /> NPC Shop
+                    </button>
+                </div>
+
+                {activeTab === 'MARKET' ? (
+                <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.8rem', marginBottom: '0.8rem' }}>
                     <div style={statCardStyle}>
                         <div style={statLabelStyle}>Listed Items</div>
@@ -600,6 +688,171 @@ const MarketplacePage = () => {
                         </section>
                     </div>
                 </div>
+                </>
+                ) : (
+                <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                    <div style={statCardStyle}>
+                        <div style={statLabelStyle}>NPC Items</div>
+                        <div style={statValueStyle}>{shopItems.length.toLocaleString()}</div>
+                    </div>
+                    <div style={statCardStyle}>
+                        <div style={statLabelStyle}>Recipe Scrolls</div>
+                        <div style={statValueStyle}>{recipeShop.length.toLocaleString()}</div>
+                    </div>
+                    <div style={statCardStyle}>
+                        <div style={statLabelStyle}>Money</div>
+                        <div style={statValueStyle}>{user?.money?.toLocaleString() ?? '-'}</div>
+                    </div>
+                    <div style={statCardStyle}>
+                        <div style={statLabelStyle}>Last Sync</div>
+                        <div style={{ ...statValueStyle, fontSize: '1rem' }}>{lastRefreshedAt || '--:--'}</div>
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', alignItems: 'start' }}>
+                    <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(99,102,241,0.24)', background: 'rgba(15,23,42,0.7)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+                            <h2 style={{ margin: 0, fontSize: '0.98rem', display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
+                                <Store size={15} /> NPC Shop Items ({shopItems.length})
+                            </h2>
+                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.56)', display: 'inline-flex', alignItems: 'center', gap: '0.28rem' }}>
+                                <Clock3 size={12} /> auto refresh ทุก 5 วินาที
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                            {shopItems.map((item) => {
+                                const unitPrice = Math.max(0, Number(item.buy_price ?? 0));
+                                const qty = Math.max(1, Math.floor(shopBuyQty[item.id] ?? 1));
+                                const total = unitPrice * qty;
+                                const canBuy = unitPrice > 0 && !!user && user.money >= total;
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        style={{
+                                            border: '1px solid rgba(148,163,184,0.18)',
+                                            borderRadius: '0.85rem',
+                                            padding: '0.75rem',
+                                            background: 'linear-gradient(135deg, rgba(30,41,59,0.8), rgba(2,6,23,0.92))',
+                                            display: 'grid',
+                                            gridTemplateColumns: '1.65fr 0.7fr 0.7fr',
+                                            alignItems: 'center',
+                                            gap: '0.7rem',
+                                        }}
+                                    >
+                                        <div>
+                                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.84rem', fontWeight: 700 }}>
+                                                {renderItemIcon(item, 20)}
+                                                {item.name}
+                                            </div>
+                                            <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: '#c7d2fe' }}>
+                                                Type: {item.type} • Unit: {unitPrice.toLocaleString()} credits
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <input
+                                                value={qty}
+                                                onChange={(e) => {
+                                                    const next = Math.max(1, Math.floor(Number(e.target.value || 1)));
+                                                    setShopBuyQty((prev) => ({ ...prev, [item.id]: next }));
+                                                }}
+                                                type="number"
+                                                min={1}
+                                                style={inputStyle}
+                                            />
+                                            <div style={{ marginTop: '0.24rem', fontSize: '0.7rem', color: canBuy ? '#86efac' : '#fda4af', fontWeight: 600 }}>
+                                                Total: {total.toLocaleString()}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            disabled={!canBuy}
+                                            onClick={() => { void buyFromShop(item.id, qty); }}
+                                            style={{
+                                                border: '1px solid rgba(52,211,153,0.35)',
+                                                background: canBuy ? 'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(52,211,153,0.16))' : 'rgba(100,116,139,0.18)',
+                                                color: canBuy ? '#d1fae5' : '#94a3b8',
+                                                borderRadius: '0.65rem',
+                                                padding: '0.5rem 0.65rem',
+                                                cursor: canBuy ? 'pointer' : 'not-allowed',
+                                                fontSize: '0.78rem',
+                                                fontWeight: 700,
+                                            }}
+                                        >
+                                            Buy
+                                        </button>
+                                    </div>
+                                );
+                            })}
+
+                            {shopItems.length === 0 && (
+                                <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(2,6,23,0.45)' }}>
+                                    ตอนนี้ไม่มีไอเทมใน NPC Shop สำหรับอาชีพของคุณ
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,41,59,0.55)' }}>
+                        <h3 style={{ margin: 0, marginBottom: '0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
+                            <Tag size={15} /> Recipe Shop ({recipeShop.length})
+                        </h3>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                            {recipeShop.map((recipe) => {
+                                const unlockPrice = Math.max(0, Number(recipe.unlock_price ?? 0));
+                                const canBuyRecipe = unlockPrice > 0 && !!user && user.money >= unlockPrice;
+
+                                return (
+                                    <div
+                                        key={recipe.id}
+                                        style={{
+                                            border: '1px solid rgba(255,255,255,0.12)',
+                                            borderRadius: '0.6rem',
+                                            padding: '0.55rem',
+                                            background: 'rgba(2,6,23,0.55)',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc' }}>{recipe.name}</div>
+                                        <div style={{ marginTop: '0.26rem', fontSize: '0.72rem', color: '#cbd5e1' }}>
+                                            Unlock: {unlockPrice.toLocaleString()} credits
+                                        </div>
+                                        <button
+                                            type="button"
+                                            disabled={!canBuyRecipe}
+                                            onClick={() => { void buyRecipeUnlock(recipe.id); }}
+                                            style={{
+                                                marginTop: '0.45rem',
+                                                border: '1px solid rgba(251,191,36,0.35)',
+                                                background: canBuyRecipe ? 'linear-gradient(135deg, rgba(251,191,36,0.22), rgba(245,158,11,0.12))' : 'rgba(100,116,139,0.18)',
+                                                color: canBuyRecipe ? '#fef3c7' : '#94a3b8',
+                                                borderRadius: '0.55rem',
+                                                padding: '0.38rem 0.55rem',
+                                                cursor: canBuyRecipe ? 'pointer' : 'not-allowed',
+                                                fontSize: '0.72rem',
+                                                fontWeight: 700,
+                                            }}
+                                        >
+                                            Unlock Recipe
+                                        </button>
+                                    </div>
+                                );
+                            })}
+
+                            {recipeShop.length === 0 && (
+                                <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.55)' }}>
+                                    ไม่มี Recipe ที่ต้องปลดล็อกแล้ว
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+                </>
+                )}
             </main>
         </div>
     );

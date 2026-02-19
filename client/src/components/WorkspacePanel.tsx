@@ -50,7 +50,11 @@ const getCookMixOutcomes = (a: EquipmentRarity, b: EquipmentRarity) => {
 const WorkspacePanel = () => {
     const { inventory, recipes, recipeShop, startFarm, startMine, startCook, ferrumMiningConfig } = useGameStore();
     const user = useAuthStore((s) => s.user);
-    const isFerrum = user?.city_key === 'FERRUM';
+    const providerWorkspaceMode = user?.city?.workspace_modes?.provider ?? 'FARM';
+    const chefWorkspaceMode = user?.city?.workspace_modes?.chef ?? 'COOK';
+    const isMiningMode = providerWorkspaceMode === 'MINE';
+    const providerLabel = user?.city?.occupation_labels?.provider ?? 'Provider';
+    const chefLabel = user?.city?.occupation_labels?.chef ?? 'Chef';
 
     const canFarm = (user?.provider_level ?? 0) > 0;
     const canCook = (user?.chef_level ?? 0) > 0;
@@ -59,8 +63,8 @@ const WorkspacePanel = () => {
 
     // Seeds in inventory (for providers to farm)
     const seedSlots = inventory.filter((s) => s.item?.type === 'SEED');
-    const smeltRecipes = isFerrum ? recipes.filter((r) => r.output_item?.name?.toLowerCase?.().includes('ingot')) : recipes;
-    const selectedRecipe = smeltRecipes.find((r) => r.id === selectedRecipeId) ?? null;
+    const visibleRecipes = recipes;
+    const selectedRecipe = visibleRecipes.find((r) => r.id === selectedRecipeId) ?? null;
 
     const getSelectedQtyForItem = (itemId: number) => {
         return Object.entries(selectedQtyBySlot).reduce((sum, [slotIdRaw, qty]) => {
@@ -152,10 +156,10 @@ const WorkspacePanel = () => {
 
                 {canFarm && (
                     <>
-                        {isFerrum ? (
+                        {isMiningMode ? (
                             <>
                                 <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
-                                    <Pickaxe style={{ width: '0.7rem', height: '0.7rem' }} /> Ferrum Mining Zones
+                                    <Pickaxe style={{ width: '0.7rem', height: '0.7rem' }} /> {providerLabel} Mining Zones
                                 </div>
                                 {([
                                     { key: 'SURFACE', label: 'Surface Layer', mins: ferrumMiningConfig.layerTimeMins.surface, note: 'Low risk, common ore veins' },
@@ -235,11 +239,11 @@ const WorkspacePanel = () => {
                 {canCook && (
                     <>
                         <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <ChefHat style={{ width: '0.7rem', height: '0.7rem' }} /> {isFerrum ? 'Blacksmith Smelter' : 'Cook a recipe'}
+                            <ChefHat style={{ width: '0.7rem', height: '0.7rem' }} /> {chefWorkspaceMode === 'SMELT' ? `${chefLabel} Smelter` : `${chefLabel} Recipes`}
                         </div>
 
-                        {smeltRecipes.length > 0 && (
-                            smeltRecipes.map((recipe) => (
+                        {visibleRecipes.length > 0 && (
+                            visibleRecipes.map((recipe) => (
                                 <motion.button
                                     key={recipe.id}
                                     whileHover={{ scale: 1.02 }}
@@ -275,7 +279,7 @@ const WorkspacePanel = () => {
                             </div>
                         )}
 
-                        {smeltRecipes.length === 0 && recipeShop.length === 0 && (
+                        {visibleRecipes.length === 0 && recipeShop.length === 0 && (
                             <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
                                 No recipes available.
                             </p>

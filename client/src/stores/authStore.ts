@@ -21,6 +21,17 @@ interface User {
     city?: {
         key: string;
         name: string;
+        description?: string;
+        occupations?: string[];
+        occupation_labels?: {
+            provider: string;
+            chef: string;
+        };
+        workspace_modes?: {
+            provider: 'FARM' | 'MINE';
+            chef: 'COOK' | 'SMELT';
+        };
+        provider_special_task_item_name?: string | null;
         tier: number;
         treasury: number;
         taxes: {
@@ -43,6 +54,15 @@ interface CityOption {
     playable: boolean;
     description?: string;
     occupations?: string[];
+    occupation_labels?: {
+        provider: string;
+        chef: string;
+    };
+    workspace_modes?: {
+        provider: 'FARM' | 'MINE';
+        chef: 'COOK' | 'SMELT';
+    };
+    provider_special_task_item_name?: string | null;
     tier: number;
     treasury: number;
     taxes: {

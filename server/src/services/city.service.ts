@@ -18,6 +18,15 @@ const CITY_CATALOG: Array<{
     playable: boolean;
     description: string;
     occupations: string[];
+    occupation_labels: {
+        provider: string;
+        chef: string;
+    };
+    workspace_modes: {
+        provider: "FARM" | "MINE";
+        chef: "COOK" | "SMELT";
+    };
+    provider_special_task_item_name?: string;
 }> = [
     {
         key: "AGRARIA",
@@ -28,6 +37,14 @@ const CITY_CATALOG: Array<{
             "Farmer: ปลูกผัก เลี้ยงสัตว์ (ผลิตวัตถุดิบสด)",
             "Chef: ปรุงอาหาร (เปลี่ยนวัตถุดิบเป็นพลังงานให้คนทั้งเซิร์ฟเวอร์)",
         ],
+        occupation_labels: {
+            provider: "Farmer",
+            chef: "Chef",
+        },
+        workspace_modes: {
+            provider: "FARM",
+            chef: "COOK",
+        },
     },
     {
         key: "FERRUM",
@@ -38,6 +55,15 @@ const CITY_CATALOG: Array<{
             "Miner: ขุดแร่เหล็ก หิน (แลกแรงกายกับทรัพยากรหนัก)",
             "Blacksmith: ถลุงแร่ ตีเครื่องมือเกษตร/เครื่องครัว",
         ],
+        occupation_labels: {
+            provider: "Miner",
+            chef: "Blacksmith",
+        },
+        workspace_modes: {
+            provider: "MINE",
+            chef: "SMELT",
+        },
+        provider_special_task_item_name: "Ferrum Mining Permit",
     },
     {
         key: "VOLTARA",
@@ -48,6 +74,14 @@ const CITY_CATALOG: Array<{
             "Technician: ขุดเจาะน้ำมันดิบ ดูแลเครื่องปั่นไฟ",
             "Engineer: กลั่นก๊าซหุงต้มและน้ำมันเชื้อเพลิง",
         ],
+        occupation_labels: {
+            provider: "Technician",
+            chef: "Engineer",
+        },
+        workspace_modes: {
+            provider: "FARM",
+            chef: "COOK",
+        },
     },
     {
         key: "TEXTILIS",
@@ -58,6 +92,14 @@ const CITY_CATALOG: Array<{
             "Weaver: ปลูกฝ้าย เลี้ยงแกะเก็บขน",
             "Tailor: ตัดเย็บชุดทำงานและกระเป๋าเป้ขยายช่องเก็บของ",
         ],
+        occupation_labels: {
+            provider: "Weaver",
+            chef: "Tailor",
+        },
+        workspace_modes: {
+            provider: "FARM",
+            chef: "COOK",
+        },
     },
     {
         key: "MEDICO",
@@ -68,6 +110,14 @@ const CITY_CATALOG: Array<{
             "Gatherer: เก็บสมุนไพร หาแร่เคมี",
             "Alchemist: ปรุงปุ๋ย น้ำยา Flux และยารักษา",
         ],
+        occupation_labels: {
+            provider: "Gatherer",
+            chef: "Alchemist",
+        },
+        workspace_modes: {
+            provider: "FARM",
+            chef: "COOK",
+        },
     },
 ];
 
@@ -254,6 +304,9 @@ export async function getAvailableCities() {
             playable: playableSet.has(r.city_key as CityKey),
             description: catalog?.description ?? "",
             occupations: catalog?.occupations ?? [],
+            occupation_labels: catalog?.occupation_labels ?? { provider: "Provider", chef: "Chef" },
+            workspace_modes: catalog?.workspace_modes ?? { provider: "FARM", chef: "COOK" },
+            provider_special_task_item_name: catalog?.provider_special_task_item_name ?? null,
             tier,
             treasury: Number(r.treasury || 0),
             taxes: {
@@ -438,9 +491,16 @@ export async function getCityByKey(cityKey: string) {
         `;
     }
 
+    const catalog = CITY_CATALOG.find((c) => c.key === (cityKey as CityKey));
+
     return {
         key: row.city_key,
         name: row.display_name,
+        description: catalog?.description ?? "",
+        occupations: catalog?.occupations ?? [],
+        occupation_labels: catalog?.occupation_labels ?? { provider: "Provider", chef: "Chef" },
+        workspace_modes: catalog?.workspace_modes ?? { provider: "FARM", chef: "COOK" },
+        provider_special_task_item_name: catalog?.provider_special_task_item_name ?? null,
         tier,
         treasury,
         mayorUserId: row.mayor_user_id,

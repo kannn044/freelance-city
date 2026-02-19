@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import { ShoppingCart, Tag, Store, Gift, CircleHelp, Sparkles } from 'lucide-react';
+import { ShoppingCart, Tag, Store, Gift, CircleHelp, Sparkles, Coins, ScrollText, Dices } from 'lucide-react';
 import { renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, getEquipmentRarityLabel } from '../lib/equipmentRarity';
 
@@ -140,7 +140,7 @@ const MarketPanel = () => {
         const extraCount = newSales.length - 1;
         const extraText = extraCount > 0 ? ` (+${extraCount} more)` : '';
         setActionMessage(
-            `🔔 ${newest.buyer_name} bought ${newest.quantity}x ${newest.item.name}${formatTierSuffix(newest.equipment_rarity)} for ${newest.total} credits${extraText}`
+            `[Sale] ${newest.buyer_name} bought ${newest.quantity}x ${newest.item.name}${formatTierSuffix(newest.equipment_rarity)} for ${newest.total} credits${extraText}`
         );
     }, [tab, salesHistory, setActionMessage]);
 
@@ -486,7 +486,7 @@ const MarketPanel = () => {
                                 </div>
                                 {sellSlotId !== null && (
                                     <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
-                                        Total: 💰 <span style={{ color: '#fbbf24', fontWeight: 600 }}>{sellQty * sellPrice}</span>
+                                        Total: <span style={{ color: '#fbbf24', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={12} /> {sellQty * sellPrice}</span>
                                     </div>
                                 )}
                                 <motion.button
@@ -614,7 +614,7 @@ const MarketPanel = () => {
                                                 cursor: 'pointer',
                                             }}
                                         >
-                                            💰 {listing.price}
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {listing.price}</span>
                                         </motion.button>
                                     </div>
                                 </motion.div>
@@ -677,7 +677,7 @@ const MarketPanel = () => {
                                         </div>
                                     </div>
                                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#93c5fd' }}>
-                                        💰 {getTotalPrice(listing.price, listing.quantity)}
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {getTotalPrice(listing.price, listing.quantity)}</span>
                                     </span>
                                     <motion.button
                                         whileHover={{ scale: 1.04 }}
@@ -765,7 +765,7 @@ const MarketPanel = () => {
                                         </div>
                                     </div>
                                     <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#4ade80' }}>
-                                        💰 {sale.total}
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {sale.total}</span>
                                     </span>
                                 </motion.div>
                             ))
@@ -798,8 +798,8 @@ const MarketPanel = () => {
                                     }}
                                 >
                                     <div>
-                                        <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(255,255,255,0.92)' }}>
-                                            📜 {recipe.name}
+                                        <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(255,255,255,0.92)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                            <ScrollText size={12} /> {recipe.name}
                                         </div>
                                         <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
                                             Unlock to cook in workspace
@@ -827,7 +827,7 @@ const MarketPanel = () => {
                                             cursor: 'pointer',
                                         }}
                                     >
-                                        💰 {recipe.unlock_price ?? 300}
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {recipe.unlock_price ?? 300}</span>
                                     </motion.button>
                                 </motion.div>
                             ))}
@@ -889,7 +889,7 @@ const MarketPanel = () => {
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    💰 {item.buy_price}
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {item.buy_price}</span>
                                 </motion.button>
                                 <input
                                     type="number"
@@ -935,8 +935,8 @@ const MarketPanel = () => {
                     >
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                             <div>
-                                <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#ddd6fe' }}>
-                                    🎁 Equipment Box
+                                <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#ddd6fe', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                                    <Gift size={12} /> Equipment Box
                                 </div>
                                 <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.55)' }}>
                                     1 Box = 1 Random Equipment (can roll other occupation)
@@ -967,7 +967,7 @@ const MarketPanel = () => {
                                     whiteSpace: 'nowrap',
                                 }}
                             >
-                                💰 {equipmentBoxInfo?.box?.price ?? 420}
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {equipmentBoxInfo?.box?.price ?? 420}</span>
                             </motion.button>
                         </div>
 
@@ -1131,7 +1131,7 @@ const MarketPanel = () => {
                                     </motion.div>
                                     <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ddd6fe' }}>Opening Equipment Box...</div>
                                     <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.65)' }}>
-                                        Please wait... luck is rolling 🎲
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Dices size={12} /> Please wait... luck is rolling</span>
                                     </div>
                                 </div>
                             ) : boxOpenResult?.ok && boxOpenResult.rolled?.item ? (

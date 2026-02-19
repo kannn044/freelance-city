@@ -35,6 +35,34 @@ Core gameplay loop:
 - Player marketplace (list/buy/sales history)
 - Market bot support for simulated economy activity
 
+### Dynamic City & NPC Catalog (New)
+
+The game now supports city-specific NPC catalog rules via database tables, so expanding city content no longer requires editing controllers each time.
+
+**Rule tables (auto-created on first shop request):**
+
+- `city_shop_item_rules`
+- `city_shop_recipe_rules`
+
+Each rule maps:
+
+- `city_key`
+- matcher (`ITEM_NAME`, `ITEM_TYPE`, `ITEM_NAME_LIKE`, `RECIPE_NAME`, `RECIPE_NAME_LIKE`, `OUTPUT_ITEM_TYPE`, etc.)
+- `required_role` (`ANY`, `PROVIDER`, `CHEF`)
+
+Current defaults:
+
+- **AGRARIA**
+   - Items: `Chicken Egg`, `Beef Calf`, `Vegetable Seed`, `Salt`
+   - Recipes: output type `MEAL`
+- **FERRUM**
+   - Items: `Mattock`
+   - Recipes: `%Smelt%`
+
+To add a new city catalog, only add rules in these tables (and ensure your items/recipes exist).
+
+Additionally, city metadata now carries dynamic UI labels/modes (`occupation_labels`, `workspace_modes`, `provider_special_task_item_name`) so frontend can adapt city behavior without hardcoded city-key checks.
+
 ---
 
 ## Tech Stack

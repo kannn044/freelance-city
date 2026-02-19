@@ -23,10 +23,10 @@ app.use(express.json());
 
 // Request logger (debug)
 app.use((req, res, next) => {
-    console.log(`📥 ${req.method} ${req.url}`);
+    console.log(`[REQ] ${req.method} ${req.url}`);
     const start = Date.now();
     res.on('finish', () => {
-        console.log(`📤 ${req.method} ${req.url} → ${res.statusCode} (${Date.now() - start}ms)`);
+        console.log(`[RES] ${req.method} ${req.url} -> ${res.statusCode} (${Date.now() - start}ms)`);
     });
     next();
 });
@@ -42,7 +42,7 @@ app.get("/health", (_req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
     marketBotService.start();
 });
 

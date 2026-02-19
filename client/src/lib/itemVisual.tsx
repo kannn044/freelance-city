@@ -6,15 +6,28 @@ import vegetableSeedPng from '../assets/items/seeds/vegetable_seed.png';
 import chickenMeatPng from '../assets/items/raw/chicken_meat.png';
 import beefMeatPng from '../assets/items/raw/beef_meat.png';
 import vegetablePng from '../assets/items/raw/vegetable.png';
+import ironOrePng from '../assets/items/raw/iron_ore.png';
+import copperOrePng from '../assets/items/raw/copper_ore.png';
+import steelOrePng from '../assets/items/raw/steel_ore.png';
+import stonePng from '../assets/items/raw/stone.png';
+import gemPng from '../assets/items/raw/gem.png';
 import saltPng from '../assets/items/ingredients/salt.png';
+import coalPng from '../assets/items/ingredients/coal.png';
+import fluxPng from '../assets/items/ingredients/flux.png';
+import oilPng from '../assets/items/ingredients/oil.png';
+import ironIngotPng from '../assets/items/ingredients/iron_ingot.png';
+import copperIngotPng from '../assets/items/ingredients/copper_ingot.png';
+import steelIngotPng from '../assets/items/ingredients/steel_ingot.png';
 import chickenSaladPng from '../assets/items/meals/chicken_salad.png';
 import beefSteakPng from '../assets/items/meals/beef_steak.png';
+import miningPermitPng from '../assets/items/permits/mining_permit.png';
 import sunHatPng from '../assets/items/equipment/provider/sun_hat.png';
 import fieldShirtPng from '../assets/items/equipment/provider/field_shirt.png';
 import cargoPantsPng from '../assets/items/equipment/provider/cargo_pants.png';
 import sweatbandPng from '../assets/items/equipment/provider/sweatband.png';
 import workGlovesPng from '../assets/items/equipment/provider/work_gloves.png';
 import mudBootsPng from '../assets/items/equipment/provider/mud_boots.png';
+import mattockPng from '../assets/items/equipment/miner/mattock.png';
 import toqueBlanchePng from '../assets/items/equipment/chef/toque_blanche.png';
 import apronPng from '../assets/items/equipment/chef/apron.png';
 import slackPantsPng from '../assets/items/equipment/chef/slack_pants.png';
@@ -26,16 +39,28 @@ const seedImageByName: Record<string, string> = {
     'Chicken Egg': chickenEggPng,
     'Beef Calf': beefCalfPng,
     'Vegetable Seed': vegetableSeedPng,
+    'Ferrum Mining Permit': miningPermitPng,
 };
 
 const rawImageByName: Record<string, string> = {
     'Chicken Meat': chickenMeatPng,
     'Beef Meat': beefMeatPng,
     Vegetable: vegetablePng,
+    'Iron Ore': ironOrePng,
+    'Copper Ore': copperOrePng,
+    'Steel Ore': steelOrePng,
+    Stone: stonePng,
+    Gem: gemPng,
 };
 
 const ingredientImageByName: Record<string, string> = {
     Salt: saltPng,
+    Coal: coalPng,
+    Flux: fluxPng,
+    Oil: oilPng,
+    'Iron Ingot': ironIngotPng,
+    'Copper Ingot': copperIngotPng,
+    'Steel Ingot': steelIngotPng,
 };
 
 const mealImageByName: Record<string, string> = {
@@ -44,6 +69,7 @@ const mealImageByName: Record<string, string> = {
 };
 
 const equipmentImageByName: Record<string, string> = {
+    Mattock: mattockPng,
     'Sun Hat': sunHatPng,
     'Field Shirt': fieldShirtPng,
     'Cargo Pants': cargoPantsPng,
@@ -92,5 +118,5 @@ export const renderItemIcon = (item?: Item | null, size = 18) => {
         );
     }
 
-    return <span style={{ fontSize: `${Math.max(12, size)}px`, lineHeight: 1 }}>{item?.icon ?? '📦'}</span>;
+    return <span style={{ fontSize: `${Math.max(12, size)}px`, lineHeight: 1 }}>{item?.icon ?? '□'}</span>;
 };

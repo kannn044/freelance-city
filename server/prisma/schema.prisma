@@ -103,7 +103,7 @@ model Item {
   yield_item_id   Int? // Item produced when harvested
   yield_qty       Int? // Quantity produced
   exp_value       Float          @default(1.0) // Base EXP multiplier for market sales
-  icon            String         @default("📦")
+  icon            String         @default("box")
 
   yield_item         Item?                @relation("yield", fields: [yield_item_id], references: [id])
   yielded_from       Item[]               @relation("yield")

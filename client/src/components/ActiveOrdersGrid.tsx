@@ -9,29 +9,17 @@ import { useAuthStore } from '../stores/authStore';
 const ORDERS_COLUMN_HEIGHT = '20rem';
 const PROVIDER_PLOT_SIZE = 132;
 const PROVIDER_CELL_RADIUS = '0.5rem';
-const PROVIDER_SEED_PLOTS = [
-    {
-        name: 'Vegetable Seed',
-        label: 'Vegetable Seed Plot',
-        accent: '#34d399',
-        border: 'rgba(52,211,153,0.45)',
-        bg: 'rgba(52,211,153,0.08)',
-    },
-    {
-        name: 'Chicken Egg',
-        label: 'Chicken Egg Plot',
-        accent: '#facc15',
-        border: 'rgba(250,204,21,0.45)',
-        bg: 'rgba(250,204,21,0.08)',
-    },
-    {
-        name: 'Beef Calf',
-        label: 'Beef Calf Plot',
-        accent: '#f87171',
-        border: 'rgba(248,113,113,0.45)',
-        bg: 'rgba(248,113,113,0.08)',
-    },
+const PROVIDER_PLOT_PALETTE = [
+    { accent: '#34d399', border: 'rgba(52,211,153,0.45)', bg: 'rgba(52,211,153,0.08)' },
+    { accent: '#facc15', border: 'rgba(250,204,21,0.45)', bg: 'rgba(250,204,21,0.08)' },
+    { accent: '#f87171', border: 'rgba(248,113,113,0.45)', bg: 'rgba(248,113,113,0.08)' },
+    { accent: '#60a5fa', border: 'rgba(96,165,250,0.45)', bg: 'rgba(96,165,250,0.08)' },
+    { accent: '#c084fc', border: 'rgba(192,132,252,0.45)', bg: 'rgba(192,132,252,0.08)' },
 ] as const;
+
+function getProviderSeedPalette(index: number) {
+    return PROVIDER_PLOT_PALETTE[index % PROVIDER_PLOT_PALETTE.length];
+}
 
 function getProviderBranchSkillLevel(seedName: string, user: ReturnType<typeof useAuthStore.getState>['user']): number {
     if (!user) return 0;
@@ -75,7 +63,7 @@ function getProgress(order: WorkOrder, nowMs: number = Date.now()): number {
 }
 
 const ActiveOrdersGrid = () => {
-    const { workOrders, collectWork, collectReadyWork, cancelWork, hunger, equipment } = useGameStore();
+    const { workOrders, inventory, collectWork, collectReadyWork, cancelWork, hunger, equipment } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const [, setTick] = useState(0);
     const providerSlotBySeedRef = useRef<Record<string, Map<number, number>>>({});
@@ -83,7 +71,12 @@ const ActiveOrdersGrid = () => {
 
     const showProviderColumn = (user?.provider_level ?? 0) > 0;
     const showChefColumn = (user?.chef_level ?? 0) > 0;
-    const isFerrum = user?.city_key === 'FERRUM';
+    const providerWorkspaceMode = user?.city?.workspace_modes?.provider ?? 'FARM';
+    const chefWorkspaceMode = user?.city?.workspace_modes?.chef ?? 'COOK';
+    const providerLabel = user?.city?.occupation_labels?.provider ?? 'Provider';
+    const chefLabel = user?.city?.occupation_labels?.chef ?? 'Chef';
+    const isMiningMode = providerWorkspaceMode === 'MINE';
+    const providerSpecialTaskItemName = user?.city?.provider_special_task_item_name ?? 'Ferrum Mining Permit';
     const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
     useEffect(() => {
@@ -111,7 +104,8 @@ const ActiveOrdersGrid = () => {
         .filter((o) => o.type === 'COOK')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
-    const miningOrders = providerOrders.filter((o) => o.item?.name === 'Ferrum Mining Permit');
+    const miningOrders = providerOrders.filter((o) => o.item?.name === providerSpecialTaskItemName);
+    const regularProviderOrders = providerOrders.filter((o) => o.item?.name !== providerSpecialTaskItemName);
     const layerMeta = (code: number | null) => {
         if (code === 2) return { key: 'DEEP', label: 'Deep Layer', color: '#f59e0b', risk: !hasSafetyHelmet };
         if (code === 3) return { key: 'CORE', label: 'Core Layer', color: '#ef4444', risk: !hasSafetyHelmet };
@@ -119,12 +113,18 @@ const ActiveOrdersGrid = () => {
     };
 
     const readyCount = workOrders.filter((o) => getRemainingMs(o.completes_at, effectiveNowMs) <= 0).length;
-    const providerPlotsByType = PROVIDER_SEED_PLOTS.map((seedType) => {
-        const branchSkillLevel = getProviderBranchSkillLevel(seedType.name, user);
+    const providerSeedTypeNames = Array.from(new Set([
+        ...regularProviderOrders.filter((o) => o.item?.type === 'SEED').map((o) => o.item.name),
+        ...inventory.filter((slot) => slot.item?.type === 'SEED' && slot.item?.name !== providerSpecialTaskItemName).map((slot) => slot.item!.name),
+    ])).sort((a, b) => a.localeCompare(b));
+
+    const providerPlotsByType = providerSeedTypeNames.map((seedName, seedIndex) => {
+        const palette = getProviderSeedPalette(seedIndex);
+        const branchSkillLevel = getProviderBranchSkillLevel(seedName, user);
         const unlockedPlots = getUnlockedPlotCountBySkillLevel(branchSkillLevel);
-        const typeOrders = providerOrders.filter((o) => o.item?.name === seedType.name);
-        const slotMap = providerSlotBySeedRef.current[seedType.name] ?? new Map<number, number>();
-        providerSlotBySeedRef.current[seedType.name] = slotMap;
+        const typeOrders = regularProviderOrders.filter((o) => o.item?.name === seedName);
+        const slotMap = providerSlotBySeedRef.current[seedName] ?? new Map<number, number>();
+        providerSlotBySeedRef.current[seedName] = slotMap;
 
         const currentIds = new Set(typeOrders.map((o) => o.id));
 
@@ -182,7 +182,11 @@ const ActiveOrdersGrid = () => {
         });
 
         return {
-            ...seedType,
+            name: seedName,
+            label: `${seedName} Plot`,
+            accent: palette.accent,
+            border: palette.border,
+            bg: palette.bg,
             branchSkillLevel,
             unlockedPlots,
             ordersCount: typeOrders.length,
@@ -300,7 +304,7 @@ const ActiveOrdersGrid = () => {
                             cursor: 'pointer',
                         }}
                     >
-                        ✅ Collect
+                        Collect
                     </motion.button>
                 )}
 
@@ -432,7 +436,7 @@ const ActiveOrdersGrid = () => {
         );
     };
 
-    if (isFerrum) {
+    if (isMiningMode) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -452,7 +456,7 @@ const ActiveOrdersGrid = () => {
                             cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
                         }}
                     >
-                        ✅ Collect All Ready ({readyCount})
+                        Collect All Ready ({readyCount})
                     </motion.button>
                 </div>
 
@@ -470,7 +474,7 @@ const ActiveOrdersGrid = () => {
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(56,189,248,0.22)', color: '#67e8f9', fontSize: '0.8rem', fontWeight: 700 }}>
-                            <Pickaxe style={{ width: '0.9rem', height: '0.9rem' }} /> Mining Expeditions
+                            <Pickaxe style={{ width: '0.9rem', height: '0.9rem' }} /> {providerLabel} Expeditions
                         </div>
                         <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
                             {miningOrders.length === 0 ? (
@@ -585,7 +589,7 @@ const ActiveOrdersGrid = () => {
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(251,146,60,0.22)', color: '#fb923c', fontSize: '0.8rem', fontWeight: 700 }}>
-                                <Hammer style={{ width: '0.9rem', height: '0.9rem' }} /> Smelter Queue
+                                <Hammer style={{ width: '0.9rem', height: '0.9rem' }} /> {chefWorkspaceMode === 'SMELT' ? `${chefLabel} Queue` : `${chefLabel} Orders`}
                             </div>
                             <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.62rem', color: 'rgba(251,191,36,0.9)' }}>
@@ -594,7 +598,7 @@ const ActiveOrdersGrid = () => {
                                 <AnimatePresence>
                                     {chefOrders.length === 0 ? (
                                         <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                            No active smelting
+                                            No active {chefWorkspaceMode === 'SMELT' ? 'smelting' : 'orders'}
                                         </p>
                                     ) : (
                                         chefOrders.map((order) => renderOrderCard(order, 'chef'))
@@ -627,7 +631,7 @@ const ActiveOrdersGrid = () => {
                         cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
                     }}
                 >
-                    ✅ Collect All Ready ({readyCount})
+                    Collect All Ready ({readyCount})
                 </motion.button>
             </div>
 
@@ -664,7 +668,7 @@ const ActiveOrdersGrid = () => {
                             fontSize: '0.8rem',
                             fontWeight: 700,
                         }}>
-                            <Sprout style={{ width: '0.9rem', height: '0.9rem' }} /> Provider Orders
+                            <Sprout style={{ width: '0.9rem', height: '0.9rem' }} /> {providerLabel} Orders
                         </div>
                         <div
                             style={{
@@ -739,6 +743,11 @@ const ActiveOrdersGrid = () => {
                                         </div>
                                     </div>
                                 ))}
+                                {providerPlotsByType.length === 0 && (
+                                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
+                                        No active provider plots
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -767,7 +776,7 @@ const ActiveOrdersGrid = () => {
                             fontSize: '0.8rem',
                             fontWeight: 700,
                         }}>
-                            <ChefHat style={{ width: '0.9rem', height: '0.9rem' }} /> Chef Orders
+                            <ChefHat style={{ width: '0.9rem', height: '0.9rem' }} /> {chefLabel} Orders
                         </div>
                         <div
                             style={{

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
-import { getExpProgress, UNLOCK_SECOND_OCCUPATION_LEVEL } from '../lib/gameConstants';
+import { getExpProgress } from '../lib/gameConstants';
 import {
     LogOut,
     User as UserIcon,
@@ -16,8 +16,15 @@ import {
     TrendingUp,
     Sprout,
     ChefHat,
+    Pickaxe,
     ShoppingCart,
+    Coins,
+    Hammer,
 } from 'lucide-react';
+
+import iconCityStatusPng from '../assets/items/ui/icon_city_status.png';
+import iconActiveOrdersPng from '../assets/items/ui/icon_active_orders.png';
+import iconInventoryPng from '../assets/items/ui/icon_inventory.png';
 
 import HungerBar from '../components/HungerBar';
 import InventoryGrid from '../components/InventoryGrid';
@@ -26,8 +33,8 @@ import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 
-type ProviderSkillBranch = 'VEGETABLE' | 'CHICKEN' | 'BEEF';
-type ChefSkillBranch = 'PREP_MASTER' | 'KITCHEN_ECONOMY' | 'MARKET_INTEL';
+type ProviderSkillBranch = string;
+type ChefSkillBranch = string;
 
 interface ProviderSkillTreeData {
     points: {
@@ -35,7 +42,9 @@ interface ProviderSkillTreeData {
         spent: number;
         available: number;
     };
-    branches: Record<ProviderSkillBranch, {
+    treeTitle?: string;
+    occupationLabel?: string;
+    branches: Record<string, {
         title: string;
         level: number;
         color: string;
@@ -54,7 +63,9 @@ interface ChefSkillTreeData {
         spent: number;
         available: number;
     };
-    branches: Record<ChefSkillBranch, {
+    treeTitle?: string;
+    occupationLabel?: string;
+    branches: Record<string, {
         title: string;
         level: number;
         color: string;
@@ -66,6 +77,19 @@ interface ChefSkillTreeData {
         };
     }>;
 }
+
+const CITY_TIER_THRESHOLDS = [
+    0,
+    20_000_000,
+    40_000_000,
+    70_000_000,
+    120_000_000,
+    250_000_000,
+    400_000_000,
+    600_000_000,
+    850_000_000,
+    1_100_000_000,
+];
 
 const DashboardPage = () => {
     const navigate = useNavigate();
@@ -84,6 +108,9 @@ const DashboardPage = () => {
     const [showChefSkillModal, setShowChefSkillModal] = useState(false);
     const [chefSkillTree, setChefSkillTree] = useState<ChefSkillTreeData | null>(null);
     const [skillLoading, setSkillLoading] = useState(false);
+    const [viewportWidth, setViewportWidth] = useState<number>(() =>
+        typeof window !== 'undefined' ? window.innerWidth : 1280
+    );
 
     const mergeAuthUser = (nextUser: any) => {
         const prevUser = useAuthStore.getState().user as any;
@@ -114,6 +141,12 @@ const DashboardPage = () => {
         }
     }, [actionMessage]);
 
+    useEffect(() => {
+        const onResize = () => setViewportWidth(window.innerWidth);
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
+
     if (!user) {
         return (
             <div
@@ -139,15 +172,16 @@ const DashboardPage = () => {
 
     const providerLevel = Number(user.provider_level ?? 0);
     const chefLevel = Number(user.chef_level ?? 0);
-    const isFerrum = user.city_key === 'FERRUM';
-    const providerLabel = isFerrum ? 'Miner' : 'Provider';
-    const chefLabel = isFerrum ? 'Blacksmith' : 'Chef';
+    const providerLabel = user.city?.occupation_labels?.provider ?? 'Provider';
+    const chefLabel = user.city?.occupation_labels?.chef ?? 'Chef';
+    const providerIcon = user.city?.workspace_modes?.provider === 'MINE' ? <Pickaxe size={16} /> : <Sprout size={16} />;
+    const secondaryIcon = user.city?.workspace_modes?.chef === 'SMELT' ? <Hammer size={16} /> : <ChefHat size={16} />;
     const providerProgress = getExpProgress(user.provider_exp ?? 0, providerLevel);
     const chefProgress = getExpProgress(user.chef_exp ?? 0, chefLevel);
 
     // Determine if the second occupation can be unlocked
-    const primaryLevel = user.role === 'PROVIDER' ? providerLevel : chefLevel;
-    const canUnlockSecond = !isFerrum && primaryLevel >= UNLOCK_SECOND_OCCUPATION_LEVEL;
+    const secondaryLevel = user.role === 'PROVIDER' ? chefLevel : providerLevel;
+    const canUnlockSecond = secondaryLevel < 1;
     const secondaryOccupation = user.role === 'PROVIDER' ? 'chef' : 'provider';
 
     const handleUnlock = async () => {
@@ -222,9 +256,9 @@ const DashboardPage = () => {
                 await fetchMe();
             }
             await fetchWorkOrders();
-            useGameStore.getState().setActionMessage(data.message ?? 'Chef skill upgraded');
+            useGameStore.getState().setActionMessage(data.message ?? `${chefLabel} skill upgraded`);
         } catch (err: any) {
-            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade chef skill');
+            useGameStore.getState().setActionMessage(err.response?.data?.error || `Failed to upgrade ${chefLabel.toLowerCase()} skill`);
         } finally {
             setSkillLoading(false);
         }
@@ -274,6 +308,23 @@ const DashboardPage = () => {
             description: formatEquipmentEffect(eq),
         }))
         .filter((row) => !!row.description);
+
+    const cityTier = Math.max(1, Math.min(10, Number(user.city?.tier ?? 1)));
+    const cityTreasury = Math.max(0, Number(user.city?.treasury ?? 0));
+    const currentTierFloor = CITY_TIER_THRESHOLDS[Math.max(0, cityTier - 1)] ?? 0;
+    const nextTierTarget = cityTier >= 10 ? null : (CITY_TIER_THRESHOLDS[cityTier] ?? null);
+    const tierSpan = nextTierTarget !== null ? Math.max(1, nextTierTarget - currentTierFloor) : 1;
+    const treasuryInTier = nextTierTarget !== null
+        ? Math.max(0, Math.min(tierSpan, cityTreasury - currentTierFloor))
+        : tierSpan;
+    const cityProgressPct = nextTierTarget !== null ? Math.min(100, (treasuryInTier / tierSpan) * 100) : 100;
+    const remainingToNextTier = nextTierTarget !== null ? Math.max(0, nextTierTarget - cityTreasury) : 0;
+    const isMobile = viewportWidth < 900;
+    const isTablet = viewportWidth >= 900 && viewportWidth < 1200;
+    const isCompactTopBar = viewportWidth < 1140;
+    const topSummaryGridTemplate = viewportWidth < 1100 ? '1fr' : '1.1fr 1.9fr';
+    const dashboardGridTemplate = isMobile ? '1fr' : isTablet ? 'repeat(2, minmax(0, 1fr))' : '1.15fr 1fr 1fr';
+    const panelHeight = isMobile ? 'auto' : isTablet ? '30rem' : '32rem';
 
     return (
         <div
@@ -350,14 +401,16 @@ const DashboardPage = () => {
                         maxWidth: '1280px',
                         margin: '0 auto',
                         display: 'flex',
-                        height: '4rem',
+                        minHeight: '4rem',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '0 1.5rem',
+                        flexWrap: isCompactTopBar ? 'wrap' : 'nowrap',
+                        gap: isCompactTopBar ? '0.6rem' : 0,
+                        padding: isMobile ? '0.65rem 0.9rem' : '0 1.5rem',
                     }}
                 >
                     {/* Logo */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
                         <motion.div
                             whileHover={{ scale: 1.1, rotate: 5 }}
                             style={{
@@ -372,11 +425,11 @@ const DashboardPage = () => {
                                 boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)',
                             }}
                         >
-                            <span style={{ fontSize: '1.25rem' }}>🏙️</span>
+                            <img src={iconCityStatusPng} alt="City" style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }} />
                         </motion.div>
                         <h1
                             style={{
-                                fontSize: '1.25rem',
+                                fontSize: isMobile ? '1.02rem' : '1.25rem',
                                 fontWeight: 700,
                                 letterSpacing: '-0.02em',
                                 background: 'linear-gradient(135deg, #c7d2fe, #e0e7ff)',
@@ -389,7 +442,7 @@ const DashboardPage = () => {
                     </div>
 
                     {/* Right side */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.7rem' : '1.15rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                         <motion.button
                             whileHover={{ scale: 1.04 }}
                             whileTap={{ scale: 0.96 }}
@@ -402,14 +455,14 @@ const DashboardPage = () => {
                                 border: '1px solid rgba(99, 102, 241, 0.35)',
                                 background: 'rgba(99, 102, 241, 0.12)',
                                 color: '#c7d2fe',
-                                fontSize: '0.76rem',
+                                fontSize: isMobile ? '0.7rem' : '0.76rem',
                                 fontWeight: 700,
-                                padding: '0.45rem 0.72rem',
+                                padding: isMobile ? '0.38rem 0.58rem' : '0.45rem 0.72rem',
                                 cursor: 'pointer',
                             }}
                         >
                             <ShoppingCart size={14} />
-                            Marketplace Hub
+                            {!isMobile && 'Marketplace Hub'}
                         </motion.button>
 
                         {/* Money Pill */}
@@ -421,18 +474,18 @@ const DashboardPage = () => {
                                 gap: '0.5rem',
                                 borderRadius: '9999px',
                                 background: 'rgba(52, 211, 153, 0.08)',
-                                padding: '0.375rem 1rem',
+                                padding: isMobile ? '0.3rem 0.6rem' : '0.375rem 1rem',
                                 border: '1px solid rgba(52, 211, 153, 0.2)',
                                 boxShadow: '0 0 10px rgba(52, 211, 153, 0.1)',
                             }}
                         >
-                            <span style={{ fontSize: '0.875rem' }}>💰</span>
+                            <Coins size={14} />
                             <span
                                 style={{
                                     fontFamily: 'monospace',
                                     fontWeight: 600,
                                     color: '#6ee7b7',
-                                    fontSize: '0.875rem',
+                                    fontSize: isMobile ? '0.78rem' : '0.875rem',
                                 }}
                             >
                                 {user.money.toLocaleString()}
@@ -440,9 +493,9 @@ const DashboardPage = () => {
                         </motion.div>
 
                         {/* User Info */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#e2e8f0' }}>
+                                <span style={{ fontSize: isMobile ? '0.76rem' : '0.875rem', fontWeight: 600, color: '#e2e8f0' }}>
                                     {user.email.split('@')[0]}
                                 </span>
                                 <span
@@ -494,7 +547,7 @@ const DashboardPage = () => {
             <div
                 style={{
                     position: 'fixed',
-                    top: '5rem',
+                    top: isMobile ? '4.5rem' : '5rem',
                     left: '50%',
                     transform: 'translateX(-50%)',
                     zIndex: 50,
@@ -545,21 +598,117 @@ const DashboardPage = () => {
                 style={{
                     maxWidth: '1280px',
                     margin: '0 auto',
-                    padding: '1.5rem',
+                    padding: isMobile ? '1rem' : '1.5rem',
                     position: 'relative',
                     zIndex: 1,
                 }}
             >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: topSummaryGridTemplate,
+                            gap: '1rem',
+                            alignItems: 'stretch',
+                        }}
+                    >
+                <motion.section
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: 0.06 }}
+                    className="glass-card"
+                    style={{
+                        padding: '0.85rem 0.95rem',
+                        border: '1px solid rgba(56, 189, 248, 0.28)',
+                        background: 'linear-gradient(135deg, rgba(30,41,59,0.7), rgba(14,116,144,0.12))',
+                        overflow: 'hidden',
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.8rem', flexWrap: 'wrap' }}>
+                        <div>
+                            <h2
+                                style={{
+                                    fontSize: '0.98rem',
+                                    fontWeight: 700,
+                                    color: '#e2e8f0',
+                                    marginBottom: '0.35rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.45rem',
+                                }}
+                            >
+                                <img src={iconCityStatusPng} alt="City Status" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> City Status
+                            </h2>
+                            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.78)' }}>
+                                Current City: <strong style={{ color: '#bfdbfe' }}>{user.city?.name ?? user.city_key ?? 'Unknown'}</strong>
+                                {' '}• Tier {cityTier}
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                Domestic: <span style={{ color: '#fde68a', fontWeight: 700 }}>{user.city?.taxes?.domesticPct ?? 0}%</span>
+                            </div>
+                            <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                Export: <span style={{ color: '#fca5a5', fontWeight: 700 }}>{user.city?.taxes?.exportPct ?? 0}%</span>
+                            </div>
+                            <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                Import: <span style={{ color: '#86efac', fontWeight: 700 }}>{user.city?.taxes?.importPct ?? 0}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.38rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.8)' }}>
+                                City Treasury Progress
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontFamily: 'monospace' }}>
+                                {nextTierTarget !== null
+                                    ? `${cityTreasury.toLocaleString()} / ${nextTierTarget.toLocaleString()}`
+                                    : `${cityTreasury.toLocaleString()} / MAX`}
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                width: '100%',
+                                height: '0.56rem',
+                                borderRadius: '9999px',
+                                background: 'rgba(148,163,184,0.2)',
+                                overflow: 'hidden',
+                                border: '1px solid rgba(148,163,184,0.28)',
+                            }}
+                        >
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${cityProgressPct}%` }}
+                                transition={{ duration: 0.8, ease: 'easeOut' }}
+                                style={{
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ marginTop: '0.42rem', fontSize: '0.72rem', color: 'rgba(255,255,255,0.72)' }}>
+                            {nextTierTarget !== null
+                                ? `เหลืออีก ${remainingToNextTier.toLocaleString()} credits เพื่ออัปเกรดเป็น Tier ${cityTier + 1}`
+                                : 'เมืองของคุณถึง Tier สูงสุดแล้ว'}
+                        </div>
+                    </div>
+                </motion.section>
+
                     <motion.section
                         initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.45 }}
                         className="glass-card"
                         style={{
-                            padding: '1rem 1.1rem',
+                            padding: '0.85rem 0.95rem',
                             border: '1px solid rgba(99, 102, 241, 0.15)',
                             background: 'rgba(99, 102, 241, 0.04)',
+                            overflow: 'hidden',
                         }}
                     >
                         <h2
@@ -573,16 +722,20 @@ const DashboardPage = () => {
                                 gap: '0.5rem',
                             }}
                         >
-                            <span>📋</span> Active Orders by Occupation
+                            <img src={iconActiveOrdersPng} alt="Active Orders" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> Active Orders by Occupation
                         </h2>
                         <ActiveOrdersGrid />
                     </motion.section>
+                    </div>
+
+
 
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: '1.5rem',
+                            gridTemplateColumns: dashboardGridTemplate,
+                            gap: '1rem',
+                            alignItems: 'stretch',
                         }}
                     >
                         {/* ═══════ Column 1: Profile & Stats ═══════ */}
@@ -590,15 +743,15 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '1rem', height: '36rem' }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem', height: panelHeight }}
                         >
                             <section
                                 className="glass-card glow-indigo"
                                 style={{
-                                    padding: '1.25rem',
+                                    padding: '1rem',
                                     position: 'relative',
                                     overflow: 'hidden',
-                                    height: '100%',
+                                    height: isMobile ? 'auto' : '100%',
                                     display: 'flex',
                                     flexDirection: 'column',
                                 }}
@@ -673,10 +826,10 @@ const DashboardPage = () => {
                                             <Briefcase size={13} /> Occupations
                                         </h3>
 
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                                             <OccupationCard
                                                 name={providerLabel}
-                                                icon={<Sprout size={16} />}
+                                                icon={providerIcon}
                                                 level={providerLevel}
                                                 progress={providerProgress}
                                                 color="#fbbf24"
@@ -690,7 +843,7 @@ const DashboardPage = () => {
 
                                             <OccupationCard
                                                 name={chefLabel}
-                                                icon={<ChefHat size={16} />}
+                                                icon={secondaryIcon}
                                                 level={chefLevel}
                                                 progress={chefProgress}
                                                 color="#fb7185"
@@ -705,12 +858,13 @@ const DashboardPage = () => {
                                     </div>
 
                                     <section
-                                        className="glass-card"
                                         style={{
-                                            marginTop: '1rem',
-                                            padding: '0.85rem',
-                                            border: '1px solid rgba(99, 102, 241, 0.22)',
-                                            background: 'rgba(99, 102, 241, 0.05)',
+                                            marginTop: '0.8rem',
+                                            padding: '0.7rem',
+                                            borderRadius: '0.72rem',
+                                            border: '1px solid rgba(99, 102, 241, 0.16)',
+                                            background: 'rgba(99, 102, 241, 0.03)',
+                                            overflow: 'hidden',
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
@@ -761,13 +915,13 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            style={{ height: '36rem' }}
+                            style={{ height: panelHeight }}
                         >
                             <section
                                 className="glass-card"
                                 style={{
                                     height: '100%',
-                                    padding: '1rem',
+                                    padding: '0.8rem',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     overflow: 'hidden',
@@ -784,9 +938,9 @@ const DashboardPage = () => {
                                         gap: '0.5rem',
                                     }}
                                 >
-                                    <span>🎒</span> Inventory
+                                    <img src={iconInventoryPng} alt="Inventory" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> Inventory
                                 </h2>
-                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
                                     <InventoryGrid />
                                 </div>
                             </section>
@@ -797,7 +951,7 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.15 }}
-                            style={{ height: '36rem' }}
+                            style={{ height: panelHeight }}
                         >
                             <section
                                 className="glass-card"
@@ -810,7 +964,7 @@ const DashboardPage = () => {
                             >
                                 <div
                                     style={{
-                                        padding: '1.25rem 1.5rem',
+                                        padding: '0.95rem 1rem',
                                         borderBottom: '1px solid rgba(99, 102, 241, 0.1)',
                                         background: 'rgba(99, 102, 241, 0.03)',
                                     }}
@@ -825,10 +979,10 @@ const DashboardPage = () => {
                                             gap: '0.5rem',
                                         }}
                                     >
-                                        <span>🏗️</span> Workspace
+                                        <Hammer size={16} /> Workspace
                                     </h2>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '0.9rem 1rem' }}>
                                     <WorkspacePanel />
                                 </div>
                             </section>
@@ -871,7 +1025,9 @@ const DashboardPage = () => {
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                                 <div>
-                                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Provider Skill Tree</div>
+                                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
+                                        {providerSkillTree?.treeTitle ?? `${providerLabel} Skill Tree`}
+                                    </div>
                                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
                                         Available Points: {providerSkillTree?.points.available ?? 0}
                                     </div>
@@ -893,22 +1049,17 @@ const DashboardPage = () => {
                             </div>
 
                             <div style={{ display: 'grid', gap: '0.65rem' }}>
-                                {([
-                                    { key: 'VEGETABLE', title: 'Vegetable Farming', color: '#34d399' },
-                                    { key: 'CHICKEN', title: 'Chicken Farming', color: '#facc15' },
-                                    { key: 'BEEF', title: 'Beef Farming', color: '#f87171' },
-                                ] as Array<{ key: ProviderSkillBranch; title: string; color: string }>).map((branchMeta) => {
-                                    const branch = providerSkillTree?.branches?.[branchMeta.key];
+                                {Object.entries(providerSkillTree?.branches ?? {}).map(([branchKey, branch]) => {
                                     const level = branch?.level ?? 0;
                                     const available = providerSkillTree?.points.available ?? 0;
                                     const canUpgrade = !skillLoading && level < 4 && available > 0;
-                                    const title = branch?.title ?? branchMeta.title;
-                                    const color = branch?.color ?? branchMeta.color;
+                                    const title = branch?.title ?? branchKey;
+                                    const color = branch?.color ?? '#34d399';
                                     const effects = branch?.effects;
 
                                     return (
                                         <div
-                                            key={branchMeta.key}
+                                            key={branchKey}
                                             style={{
                                                 borderRadius: '0.7rem',
                                                 border: `1px solid ${color}55`,
@@ -921,7 +1072,7 @@ const DashboardPage = () => {
                                                     {title} (Lv.{level}/4)
                                                 </div>
                                                 <button
-                                                    onClick={() => upgradeProviderSkill(branchMeta.key)}
+                                                    onClick={() => upgradeProviderSkill(branchKey)}
                                                     disabled={!canUpgrade}
                                                     style={{
                                                         border: `1px solid ${color}66`,
@@ -944,7 +1095,7 @@ const DashboardPage = () => {
                                                         fontWeight: level >= 1 ? 700 : 500,
                                                     }}
                                                 >
-                                                    {effects?.level1 ?? 'Lv.1: Reduce task waiting time by 5%'}
+                                                    {effects?.level1 ?? 'Lv.1 effect'}
                                                 </span>
                                                 <span
                                                     style={{
@@ -952,7 +1103,7 @@ const DashboardPage = () => {
                                                         fontWeight: level >= 2 ? 700 : 500,
                                                     }}
                                                 >
-                                                    {effects?.level2 ?? 'Lv.2: Increase task plot capacity to 2 (base is 1)'}
+                                                    {effects?.level2 ?? 'Lv.2 effect'}
                                                 </span>
                                                 <span
                                                     style={{
@@ -960,7 +1111,7 @@ const DashboardPage = () => {
                                                         fontWeight: level >= 3 ? 700 : 500,
                                                     }}
                                                 >
-                                                    {effects?.level3 ?? 'Lv.3: Reduce task waiting time by another 5% (10% total)'}
+                                                    {effects?.level3 ?? 'Lv.3 effect'}
                                                 </span>
                                                 <span
                                                     style={{
@@ -968,7 +1119,7 @@ const DashboardPage = () => {
                                                         fontWeight: level >= 4 ? 700 : 500,
                                                     }}
                                                 >
-                                                    {effects?.level4 ?? 'Lv.4: Increase task plot capacity to 3'}
+                                                    {effects?.level4 ?? 'Lv.4 effect'}
                                                 </span>
                                             </div>
                                         </div>
@@ -1012,7 +1163,9 @@ const DashboardPage = () => {
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                                 <div>
-                                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>Chef Skill Tree</div>
+                                    <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
+                                        {chefSkillTree?.treeTitle ?? `${chefLabel} Skill Tree`}
+                                    </div>
                                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
                                         Available Points: {chefSkillTree?.points.available ?? 0}
                                     </div>
@@ -1034,22 +1187,17 @@ const DashboardPage = () => {
                             </div>
 
                             <div style={{ display: 'grid', gap: '0.65rem' }}>
-                                {([
-                                    { key: 'PREP_MASTER', title: 'Prep Master', color: '#fb923c' },
-                                    { key: 'KITCHEN_ECONOMY', title: 'Kitchen Economy', color: '#34d399' },
-                                    { key: 'MARKET_INTEL', title: 'Market Intel', color: '#c084fc' },
-                                ] as Array<{ key: ChefSkillBranch; title: string; color: string }>).map((branchMeta) => {
-                                    const branch = chefSkillTree?.branches?.[branchMeta.key];
+                                {Object.entries(chefSkillTree?.branches ?? {}).map(([branchKey, branch]) => {
                                     const level = branch?.level ?? 0;
                                     const available = chefSkillTree?.points.available ?? 0;
                                     const canUpgrade = !skillLoading && level < 4 && available > 0;
-                                    const title = branch?.title ?? branchMeta.title;
-                                    const color = branch?.color ?? branchMeta.color;
+                                    const title = branch?.title ?? branchKey;
+                                    const color = branch?.color ?? '#fb923c';
                                     const effects = branch?.effects;
 
                                     return (
                                         <div
-                                            key={branchMeta.key}
+                                            key={branchKey}
                                             style={{
                                                 borderRadius: '0.7rem',
                                                 border: `1px solid ${color}55`,
@@ -1062,7 +1210,7 @@ const DashboardPage = () => {
                                                     {title} (Lv.{level}/4)
                                                 </div>
                                                 <button
-                                                    onClick={() => upgradeChefSkill(branchMeta.key)}
+                                                    onClick={() => upgradeChefSkill(branchKey)}
                                                     disabled={!canUpgrade}
                                                     style={{
                                                         border: `1px solid ${color}66`,

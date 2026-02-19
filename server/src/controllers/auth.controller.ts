@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../lib/prisma";
 import { AuthRequest } from "../middleware/auth.middleware";
-import { INVENTORY_SLOTS, UNLOCK_SECOND_OCCUPATION_LEVEL } from "../config/game.config";
+import { INVENTORY_SLOTS } from "../config/game.config";
 import { syncHunger } from "../services/hunger.service";
 import {
     ensureLegacyCityAssignment,
@@ -249,14 +249,6 @@ export const unlockSecondOccupation = async (
         const primaryLevelField = primaryOccupation === "provider" ? "provider_level" : "chef_level";
         const secondaryLevelField = secondaryOccupation === "provider" ? "provider_level" : "chef_level";
 
-        // Check primary is high enough level
-        if (user[primaryLevelField] < UNLOCK_SECOND_OCCUPATION_LEVEL) {
-            res.status(400).json({
-                error: `You need Level ${UNLOCK_SECOND_OCCUPATION_LEVEL} in your primary occupation to unlock the second one. Current: Level ${user[primaryLevelField]}`,
-            });
-            return;
-        }
-
         // Check secondary not already unlocked
         if (user[secondaryLevelField] >= 1) {
             res.status(400).json({ error: "Second occupation already unlocked" });
@@ -268,8 +260,13 @@ export const unlockSecondOccupation = async (
             data: { [secondaryLevelField]: 1 },
         });
 
+        const cityContext = await getUserCityContext(updatedUser.id);
+        const unlockedOccupationLabel = secondaryOccupation === "provider"
+            ? (cityContext.city?.occupation_labels?.provider ?? "Provider")
+            : (cityContext.city?.occupation_labels?.chef ?? "Chef");
+
         res.json({
-            message: `🔓 ${secondaryOccupation === "provider" ? "Provider" : "Chef"} occupation unlocked!`,
+            message: `${unlockedOccupationLabel} occupation unlocked!`,
             user: await buildUserResponse(updatedUser),
         });
     } catch (error) {

@@ -28,7 +28,7 @@ class MarketBotService {
 
     start() {
         this.restartTimer();
-        console.log("🤖 Market bot started", this.config);
+        console.log("Market bot started", this.config);
     }
 
     stop() {

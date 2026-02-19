@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log("🌱 Seeding items...");
+    console.log("Seeding items...");
 
     // ─── Raw materials / Seeds ───────────────────────────
     const chickenSeed = await prisma.item.upsert({
@@ -16,7 +16,7 @@ async function main() {
             max_stack: 10,
             grow_mins: 10,
             exp_value: 0.5,
-            icon: "🥚",
+            icon: "chicken_egg",
         },
     });
 
@@ -30,7 +30,7 @@ async function main() {
             max_stack: 10,
             grow_mins: 20,
             exp_value: 0.8,
-            icon: "🐄",
+            icon: "beef_calf",
         },
     });
 
@@ -44,7 +44,7 @@ async function main() {
             max_stack: 10,
             grow_mins: 8,
             exp_value: 0.3,
-            icon: "🌱",
+            icon: "vegetable_seed",
         },
     });
 
@@ -58,7 +58,7 @@ async function main() {
             sell_price: 80,
             max_stack: 5,
             exp_value: 1.0,
-            icon: "🍗",
+            icon: "chicken_meat",
         },
     });
 
@@ -71,7 +71,7 @@ async function main() {
             sell_price: 180,
             max_stack: 5,
             exp_value: 1.5,
-            icon: "🥩",
+            icon: "beef_meat",
         },
     });
 
@@ -84,7 +84,7 @@ async function main() {
             sell_price: 40,
             max_stack: 10,
             exp_value: 0.5,
-            icon: "🥬",
+            icon: "vegetable",
         },
     });
 
@@ -98,7 +98,7 @@ async function main() {
             buy_price: 20,
             max_stack: 20,
             exp_value: 0.2,
-            icon: "🧂",
+            icon: "salt",
         },
     });
 
@@ -113,18 +113,18 @@ async function main() {
         effectValue: number;
         effectValue2?: number;
     }> = [
-        { name: "Sun Hat", icon: "🧢", role: "PROVIDER", slot: "HEAD", buyPrice: 320, effectKey: "hunger_penalty_tier_reduction", effectValue: 1 },
-        { name: "Toque Blanche", icon: "👨‍🍳", role: "CHEF", slot: "HEAD", buyPrice: 360, effectKey: "cook_secondary_ingredient_save_chance", effectValue: 0.1 },
-        { name: "Field Shirt", icon: "👕", role: "PROVIDER", slot: "UPPER_BODY", buyPrice: 420, effectKey: "max_hunger_bonus", effectValue: 300 },
-        { name: "Apron", icon: "🥼", role: "CHEF", slot: "UPPER_BODY", buyPrice: 440, effectKey: "max_hunger_and_satiety_bonus", effectValue: 150, effectValue2: 0.1 },
-        { name: "Cargo Pants", icon: "👖", role: "PROVIDER", slot: "LOWER_BODY", buyPrice: 520, effectKey: "raw_stack_bonus", effectValue: 5 },
-        { name: "Slack Pants", icon: "🩳", role: "CHEF", slot: "LOWER_BODY", buyPrice: 520, effectKey: "ingredient_stack_bonus", effectValue: 5 },
-        { name: "Sweatband", icon: "💪", role: "PROVIDER", slot: "ARM", buyPrice: 600, effectKey: "farm_time_reduction_pct", effectValue: 0.1 },
-        { name: "Wrist Support", icon: "⌚", role: "CHEF", slot: "ARM", buyPrice: 600, effectKey: "cook_time_reduction_pct", effectValue: 0.1 },
-        { name: "Work Gloves", icon: "🧤", role: "PROVIDER", slot: "GLOVE", buyPrice: 650, effectKey: "farm_double_yield_chance", effectValue: 0.08 },
-        { name: "Latex Gloves", icon: "🧤", role: "CHEF", slot: "GLOVE", buyPrice: 650, effectKey: "gourmet_chance", effectValue: 0.08 },
-        { name: "Mud Boots", icon: "🥾", role: "PROVIDER", slot: "SHOE", buyPrice: 700, effectKey: "hunger_decay_reduction_per_min", effectValue: 1.5 },
-        { name: "Anti-Slip Shoes", icon: "👟", role: "CHEF", slot: "SHOE", buyPrice: 700, effectKey: "cook_state_hunger_decay_reduction_pct", effectValue: 0.2 },
+        { name: "Sun Hat", icon: "sun_hat", role: "PROVIDER", slot: "HEAD", buyPrice: 320, effectKey: "hunger_penalty_tier_reduction", effectValue: 1 },
+        { name: "Toque Blanche", icon: "toque_blanche", role: "CHEF", slot: "HEAD", buyPrice: 360, effectKey: "cook_secondary_ingredient_save_chance", effectValue: 0.1 },
+        { name: "Field Shirt", icon: "field_shirt", role: "PROVIDER", slot: "UPPER_BODY", buyPrice: 420, effectKey: "max_hunger_bonus", effectValue: 300 },
+        { name: "Apron", icon: "apron", role: "CHEF", slot: "UPPER_BODY", buyPrice: 440, effectKey: "max_hunger_and_satiety_bonus", effectValue: 150, effectValue2: 0.1 },
+        { name: "Cargo Pants", icon: "cargo_pants", role: "PROVIDER", slot: "LOWER_BODY", buyPrice: 520, effectKey: "raw_stack_bonus", effectValue: 5 },
+        { name: "Slack Pants", icon: "slack_pants", role: "CHEF", slot: "LOWER_BODY", buyPrice: 520, effectKey: "ingredient_stack_bonus", effectValue: 5 },
+        { name: "Sweatband", icon: "sweatband", role: "PROVIDER", slot: "ARM", buyPrice: 600, effectKey: "farm_time_reduction_pct", effectValue: 0.1 },
+        { name: "Wrist Support", icon: "wrist_support", role: "CHEF", slot: "ARM", buyPrice: 600, effectKey: "cook_time_reduction_pct", effectValue: 0.1 },
+        { name: "Work Gloves", icon: "work_gloves", role: "PROVIDER", slot: "GLOVE", buyPrice: 650, effectKey: "farm_double_yield_chance", effectValue: 0.08 },
+        { name: "Latex Gloves", icon: "latex_gloves", role: "CHEF", slot: "GLOVE", buyPrice: 650, effectKey: "gourmet_chance", effectValue: 0.08 },
+        { name: "Mud Boots", icon: "mud_boots", role: "PROVIDER", slot: "SHOE", buyPrice: 700, effectKey: "hunger_decay_reduction_per_min", effectValue: 1.5 },
+        { name: "Anti-Slip Shoes", icon: "anti_slip_shoes", role: "CHEF", slot: "SHOE", buyPrice: 700, effectKey: "cook_state_hunger_decay_reduction_pct", effectValue: 0.2 },
     ];
 
     for (const eq of equipments) {
@@ -185,7 +185,7 @@ async function main() {
             buff_mins: 30,
             max_stack: 3,
             exp_value: 2.0,
-            icon: "🥗",
+            icon: "chicken_salad",
         },
     });
 
@@ -201,12 +201,12 @@ async function main() {
             buff_mins: 60,
             max_stack: 3,
             exp_value: 3.0,
-            icon: "🥩",
+            icon: "beef_steak",
         },
     });
 
     // ─── Recipes ─────────────────────────────────────────
-    console.log("🍳 Seeding recipes...");
+    console.log("Seeding recipes...");
 
     // Chicken Salad: 1 Chicken Meat + 2 Vegetable
     const saladRecipe = await prisma.recipe.upsert({
@@ -261,7 +261,7 @@ async function main() {
         create: { recipe_id: steakRecipe.id, item_id: salt.id, quantity: 1 },
     });
 
-    console.log("✅ Seed complete!");
+    console.log("Seed complete!");
 }
 
 main()
