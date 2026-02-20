@@ -21,6 +21,8 @@ import copperIngotPng from '../assets/items/ingredients/copper_ingot.png';
 import steelIngotPng from '../assets/items/ingredients/steel_ingot.png';
 import chickenSaladPng from '../assets/items/meals/chicken_salad.png';
 import beefSteakPng from '../assets/items/meals/beef_steak.png';
+import beefStewPng from '../assets/items/meals/beef_stew.png';
+import chickenStewPng from '../assets/items/meals/chicken_stew.png';
 import miningPermitPng from '../assets/items/permits/mining_permit.png';
 import sunHatPng from '../assets/items/equipment/provider/sun_hat.png';
 import fieldShirtPng from '../assets/items/equipment/provider/field_shirt.png';
@@ -69,6 +71,8 @@ const ingredientImageByName: Record<string, string> = {
 const mealImageByName: Record<string, string> = {
     'Chicken Salad': chickenSaladPng,
     'Beef Steak': beefSteakPng,
+    'Beef Stew': beefStewPng,
+    'Chicken Stew': chickenStewPng,
 };
 
 const equipmentImageByName: Record<string, string> = {

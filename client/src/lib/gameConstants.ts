@@ -2,6 +2,7 @@
 
 export const MAX_LEVEL = 50;
 export const UNLOCK_SECOND_OCCUPATION_LEVEL = 5;
+export const INVENTORY_SLOTS = 16;
 
 /**
  * Client mirror of task-driven hunger decay (kcal/sec).

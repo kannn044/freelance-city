@@ -46,7 +46,10 @@
     { "name": "Steel Ingot", "type": "INGREDIENT", "max_stack": 20, "sell_price": 340, "exp_value": 2.3, "icon": "steel_ingot" },
 
     { "name": "Chicken Salad", "type": "MEAL", "sell_price": 150, "kcal": 200, "buff_pct": 0.05, "buff_mins": 30, "max_stack": 10, "exp_value": 2.0, "icon": "chicken_salad" },
-    { "name": "Beef Steak", "type": "MEAL", "sell_price": 400, "kcal": 300, "buff_pct": 0.15, "buff_mins": 45, "max_stack": 10, "exp_value": 3.0, "icon": "beef_steak" }
+    { "name": "Beef Steak", "type": "MEAL", "sell_price": 400, "kcal": 300, "buff_pct": 0.15, "buff_mins": 45, "max_stack": 10, "exp_value": 3.0, "icon": "beef_steak" },
+    { "name": "Beef Stew", "type": "MEAL", "sell_price": 400, "kcal": 350, "buff_pct": 0.15, "buff_mins": 45, "max_stack": 10, "exp_value": 3.0, "icon": "beef_stew" },
+    { "name": "Chicken Stew", "type": "MEAL", "sell_price": 400, "kcal": 280, "buff_pct": 0.15, "buff_mins": 45, "max_stack": 10, "exp_value": 3.0, "icon": "chicken_stew" }
+    
   ],
   "yieldLinks": [
     { "seedItemName": "Chicken Egg", "yieldItemName": "Chicken Meat", "yield_qty": 1 },
@@ -81,11 +84,37 @@
       ]
     },
     {
+        "name": "Beef Stew",
+        "outputItemName": "Beef Stew",
+        "output_qty": 1,
+        "cook_mins": 12,
+        "unlock_price": 650,
+        "ingredients": [
+          { "itemName": "Beef Meat", "quantity": 2 },
+          { "itemName": "Vegetable", "quantity": 3 },
+          { "itemName": "Salt", "quantity": 1 },
+          { "itemName": "Gas", "quantity": 1 }
+        ]
+    },
+    {
+        "name": "Chicken Stew",
+        "outputItemName": "Chicken Stew",
+        "output_qty": 1,
+        "cook_mins": 12,
+        "unlock_price": 550,
+        "ingredients": [
+        { "itemName": "Chicken Meat", "quantity": 2 },
+        { "itemName": "Vegetable", "quantity": 3 },
+        { "itemName": "Salt", "quantity": 1 },
+        { "itemName": "Gas", "quantity": 1 }
+        ]
+    },
+    {
       "name": "Iron Ingot Smelt",
       "outputItemName": "Iron Ingot",
       "output_qty": 1,
       "cook_mins": 7,
-      "unlock_price": 0,
+      "unlock_price": 450,
       "ingredients": [
         { "itemName": "Iron Ore", "quantity": 2 },
         { "itemName": "Flux", "quantity": 1 },
@@ -98,7 +127,7 @@
       "outputItemName": "Copper Ingot",
       "output_qty": 1,
       "cook_mins": 8,
-      "unlock_price": 0,
+      "unlock_price": 350,
       "ingredients": [
         { "itemName": "Copper Ore", "quantity": 2 },
         { "itemName": "Flux", "quantity": 1 },
@@ -111,14 +140,49 @@
       "outputItemName": "Steel Ingot",
       "output_qty": 1,
       "cook_mins": 10,
-      "unlock_price": 0,
+      "unlock_price": 550,
       "ingredients": [
         { "itemName": "Steel Ore", "quantity": 2 },
         { "itemName": "Flux", "quantity": 1 },
         { "itemName": "Coal", "quantity": 2 },
         { "itemName": "Oil", "quantity": 1 }
       ]
+    },
+    {
+      "name": "Extract stone",
+      "outputItemName": "Stone",
+      "output_qty": 1,
+      "cook_mins": 6,
+      "unlock_price": 500,
+      "ingredients": [
+        { "itemName": "Stone", "quantity": 20 }
+      ]
+    },
+    {
+      "name": "Fork Crafting",
+      "outputItemName": "Fork",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 500,
+      "ingredients": [
+        { "itemName": "Iron Ingot", "quantity": 3 },
+        { "itemName": "Coal", "quantity": 1 },
+        { "itemName": "Steel Ore", "quantity": 2 }
+      ]
+    },
+    {
+      "name": "Mattock Crafting",
+      "outputItemName": "Mattock",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 500,
+      "ingredients": [
+        { "itemName": "Iron Ingot", "quantity": 2 },
+        { "itemName": "Coal", "quantity": 1 },
+        { "itemName": "Steel Ore", "quantity": 3 }
+      ]
     }
+    
   ],
   "shopRules": {
     "itemRules": [
@@ -131,7 +195,10 @@
     ],
     "recipeRules": [
       { "cityKey": "AGRARIA", "matcherType": "OUTPUT_ITEM_TYPE", "matcherValue": "MEAL"},
-      { "cityKey": "FERRUM", "matcherType": "RECIPE_NAME_LIKE", "matcherValue": "%Smelt%"}
+      { "cityKey": "FERRUM", "matcherType": "RECIPE_NAME_LIKE", "matcherValue": "%Smelt%"},
+      { "cityKey": "FERRUM", "matcherType": "RECIPE_NAME", "matcherValue": "Extract stone"},
+      { "cityKey": "FERRUM", "matcherType": "RECIPE_NAME", "matcherValue": "Mattock Crafting"},
+      { "cityKey": "FERRUM", "matcherType": "RECIPE_NAME", "matcherValue": "Fork Crafting"}
     ]
   },
   "workspaceRules": [

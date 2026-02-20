@@ -183,7 +183,7 @@ model UserRecipeUnlock {
 model InventorySlot {
   id       Int @id @default(autoincrement())
   user_id  Int
-  slot     Int // 0–7
+  slot     Int // 0–15
   item_id  Int?
   quantity Int @default(0)
   equipment_rarity EquipmentRarity?

@@ -43,7 +43,7 @@ export const HARVEST_ITEM_RARITY_DROP_RATES: Record<EquipmentRarity, number> = {
 /**
  * Initial total inventory slots for each user.
  */
-export const INVENTORY_SLOTS = 8;
+export const INVENTORY_SLOTS = 16;
 
 // ─── Equipment Rarity ───────────────────────────────────
 

@@ -240,6 +240,67 @@ function splitByHarvestRarity(
         .map(([rarity, qty]) => ({ rarity, qty }));
 }
 
+type WeightedItemDrop = {
+    itemId: number;
+    weight: number;
+};
+
+function randomIntInclusive(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function rollWeightedItemId(weights: WeightedItemDrop[]): number {
+    const totalWeight = weights.reduce((sum, entry) => sum + Math.max(0, entry.weight), 0);
+    if (totalWeight <= 0) {
+        return weights[0]?.itemId ?? 0;
+    }
+
+    let cursor = Math.random() * totalWeight;
+    for (const entry of weights) {
+        const w = Math.max(0, entry.weight);
+        if (cursor <= w) return entry.itemId;
+        cursor -= w;
+    }
+
+    return weights[weights.length - 1]?.itemId ?? 0;
+}
+
+function buildExtractStoneOutputs(
+    harvestDropRates: Record<EquipmentRarity, number>,
+    oreWeights: WeightedItemDrop[]
+): OutputReward[] {
+    const totalQty = randomIntInclusive(1, 5);
+    const tally = new Map<number, number>();
+
+    for (let i = 0; i < totalQty; i++) {
+        const itemId = rollWeightedItemId(oreWeights);
+        if (itemId <= 0) continue;
+        tally.set(itemId, (tally.get(itemId) ?? 0) + 1);
+    }
+
+    const outputs: OutputReward[] = [];
+    for (const [itemId, qty] of tally.entries()) {
+        const raritySplits = splitByHarvestRarity(qty, harvestDropRates);
+        for (const split of raritySplits) {
+            outputs.push({
+                outputItemId: itemId,
+                outputQty: split.qty,
+                outputRarity: split.rarity,
+            });
+        }
+    }
+
+    if (outputs.length === 0 && oreWeights.length > 0) {
+        outputs.push({
+            outputItemId: oreWeights[0].itemId,
+            outputQty: 1,
+            outputRarity: rollHarvestRarity(harvestDropRates),
+        });
+    }
+
+    return outputs;
+}
+
 function getBlacksmithAlloyMasteryBonusChance(level: number): number {
     if (level >= 4) return 0.15;
     if (level >= 3) return 0.10;
@@ -254,8 +315,21 @@ type OutputReward = {
     outputRarity: EquipmentRarity | null;
 };
 
+type OutputSummary = {
+    itemId: number;
+    itemName: string;
+    qty: number;
+};
+
+function formatOutputSummary(summary: OutputSummary[]): string {
+    if (summary.length <= 0) return "Unknown output";
+    return summary
+        .map((entry) => `${entry.qty}x ${entry.itemName}`)
+        .join(", ");
+}
+
 async function getOrderOutput(
-    order: { id: number; type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number },
+    order: { id: number; type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number; recipe_id?: number | null },
     userId: number,
     db: DbClient,
     harvestDropRates: Record<EquipmentRarity, number>
@@ -354,6 +428,21 @@ async function getOrderOutput(
     const cookedItem = await db.item.findUnique({ where: { id: order.item_id } });
     if (!cookedItem) {
         throw new Error("Cook output item not found");
+    }
+
+    if (order.recipe_id) {
+        const recipe = await db.recipe.findUnique({
+            where: { id: order.recipe_id },
+            select: { name: true },
+        });
+
+        if (recipe?.name === "Extract stone") {
+            return buildExtractStoneOutputs(harvestDropRates, [
+                { itemId: ferrumCatalog.oreItemIds.copperOreId, weight: 70 },
+                { itemId: ferrumCatalog.oreItemIds.ironOreId, weight: 20 },
+                { itemId: ferrumCatalog.oreItemIds.steelOreId, weight: 10 },
+            ]);
+        }
     }
 
     let outputQty = order.quantity;
@@ -503,8 +592,7 @@ async function placeOutputInInventory(
 async function awardOrderExp(
     userId: number,
     orderType: "FARM" | "COOK" | "MINE" | "SMELT",
-    outputItem: { exp_value: number; name: string },
-    outputQty: number,
+    outputRewards: Array<{ expValue: number; qty: number }>,
     db: DbClient,
     expConfig: { firstJobWorkExpMultiplier: number; secondaryJobWorkExpMultiplier: number }
 ) {
@@ -543,7 +631,14 @@ async function awardOrderExp(
         : expConfig.secondaryJobWorkExpMultiplier;
 
     if (currentLevel >= 1) {
-        expGained = Math.floor(outputItem.exp_value * outputQty * 10 * workExpMultiplier);
+        const expBase = outputRewards.reduce((sum, reward) => {
+            const expValue = Number(reward.expValue ?? 0);
+            const qty = Number(reward.qty ?? 0);
+            if (expValue <= 0 || qty <= 0) return sum;
+            return sum + expValue * qty;
+        }, 0);
+
+        expGained = Math.floor(expBase * 10 * workExpMultiplier);
         if (expGained > 0) {
             const newExp = currentExp + expGained;
             newLevel = getLevelFromExp(newExp);
@@ -582,7 +677,7 @@ async function awardOrderExp(
                     `;
 
                     const smeltRecipes = await db.recipe.findMany({
-                        where: { name: { in: ["Iron Ingot Smelt", "Copper Ingot Smelt", "Steel Ingot Smelt"] } },
+                        where: { name: { in: ["Iron Ingot Smelt", "Copper Ingot Smelt", "Steel Ingot Smelt", "Extract stone"] } },
                         select: { id: true },
                     });
                     for (const r of smeltRecipes) {
@@ -644,19 +739,53 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
         }
 
         const outputs = await getOrderOutput(order, userId, tx, harvestDropRates);
-        const outputItemId = outputs[0]?.outputItemId;
         const outputQty = outputs.reduce((sum, o) => sum + o.outputQty, 0);
-        if (!outputItemId || outputQty <= 0) {
-            return { ok: false as const, reason: "output_missing" as const };
-        }
-        const outputItem = await tx.item.findUnique({ where: { id: outputItemId } });
-        if (!outputItem) {
+        if (outputQty <= 0) {
             return { ok: false as const, reason: "output_missing" as const };
         }
 
+        const outputByItemId = new Map<number, number>();
+        for (const output of outputs) {
+            if (output.outputQty <= 0) continue;
+            outputByItemId.set(output.outputItemId, (outputByItemId.get(output.outputItemId) ?? 0) + output.outputQty);
+        }
+
+        const itemIds = Array.from(outputByItemId.keys());
+        const outputItems = itemIds.length > 0
+            ? await tx.item.findMany({
+                where: { id: { in: itemIds } },
+                select: { id: true, name: true, exp_value: true },
+            })
+            : [];
+
+        if (outputItems.length <= 0) {
+            return { ok: false as const, reason: "output_missing" as const };
+        }
+
+        const itemById = new Map(outputItems.map((item) => [item.id, item]));
+        const outputSummary: OutputSummary[] = itemIds
+            .map((id) => {
+                const item = itemById.get(id);
+                if (!item) return null;
+                return {
+                    itemId: id,
+                    itemName: item.name,
+                    qty: Number(outputByItemId.get(id) ?? 0),
+                } satisfies OutputSummary;
+            })
+            .filter((entry): entry is OutputSummary => entry !== null && entry.qty > 0)
+            .sort((a, b) => b.qty - a.qty || a.itemName.localeCompare(b.itemName));
+
+        if (outputSummary.length <= 0) {
+            return { ok: false as const, reason: "output_missing" as const };
+        }
+
+        const outputSummaryText = formatOutputSummary(outputSummary);
+        const primaryOutput = outputSummary[0];
+
         const placed = await placeOutputInInventory(userId, outputs, tx);
         if (!placed) {
-            return { ok: false as const, reason: "inventory_full" as const, itemName: outputItem.name, qty: outputQty };
+            return { ok: false as const, reason: "inventory_full" as const, itemName: primaryOutput.itemName, qty: outputQty };
         }
 
         await tx.workOrder.update({
@@ -664,15 +793,28 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             data: { collected: true },
         });
 
-        const exp = await awardOrderExp(userId, order.type, outputItem, outputQty, tx, {
-            firstJobWorkExpMultiplier: expConfig.firstJobWorkExpMultiplier,
-            secondaryJobWorkExpMultiplier: expConfig.secondaryJobWorkExpMultiplier,
-        });
+        const exp = await awardOrderExp(
+            userId,
+            order.type,
+            outputSummary.map((entry) => {
+                const item = itemById.get(entry.itemId);
+                return {
+                    expValue: Number(item?.exp_value ?? 0),
+                    qty: entry.qty,
+                };
+            }),
+            tx,
+            {
+                firstJobWorkExpMultiplier: expConfig.firstJobWorkExpMultiplier,
+                secondaryJobWorkExpMultiplier: expConfig.secondaryJobWorkExpMultiplier,
+            }
+        );
 
         return {
             ok: true as const,
-            itemName: outputItem.name,
+            itemName: primaryOutput.itemName,
             qty: outputQty,
+            outputSummaryText,
             expGained: exp.expGained,
             levelUp: exp.levelUp,
             newLevel: exp.newLevel,
@@ -1129,8 +1271,10 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
             if (isFerrum) {
                 const outName = String(recipe.output_item?.name ?? "").toLowerCase();
-                if (!outName.includes("ingot")) {
-                    res.status(403).json({ error: "Ferrum Blacksmith can only smelt ingot recipes" });
+                const recipeName = String(recipe.name ?? "").toLowerCase();
+                const isExtractStoneRecipe = recipeName === "extract stone";
+                if (!outName.includes("ingot") && !isExtractStoneRecipe) {
+                    res.status(403).json({ error: "Ferrum Blacksmith can only smelt ingot recipes or Extract stone" });
                     return;
                 }
             }
@@ -1451,7 +1595,7 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
         }
 
         res.json({
-            message: `Collected ${result.qty}x ${result.itemName}!${expMessage}${levelUpMessage}${unlockMessage}`,
+            message: `Collected ${result.outputSummaryText}!${expMessage}${levelUpMessage}${unlockMessage}`,
             slots,
             user: toJobPayload({
                 id: updatedUser!.id,

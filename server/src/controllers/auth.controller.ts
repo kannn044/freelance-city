@@ -101,7 +101,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             data: { email, password_hash, role: "CITIZEN" as any },
         });
 
-        // Initialize 8 empty inventory slots
+        // Initialize 16 empty inventory slots
         await prisma.inventorySlot.createMany({
             data: Array.from({ length: INVENTORY_SLOTS }, (_, i) => ({
                 user_id: user.id,

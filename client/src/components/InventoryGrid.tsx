@@ -5,6 +5,7 @@ import type { InventorySlot } from '../stores/gameStore';
 import { UtensilsCrossed, Package, ArrowDownAZ, Rows3, Trash2 } from 'lucide-react';
 import { getEquipmentImageByName, renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
+import { INVENTORY_SLOTS } from '../lib/gameConstants';
 
 const equipmentSlots = [
     { key: 'HEAD', label: 'Head' },
@@ -241,7 +242,7 @@ const InventoryGrid = () => {
                     Capacity
                 </span>
                 <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
-                    {occupiedSlots}/8 slots
+                    {occupiedSlots}/{INVENTORY_SLOTS} slots
                 </span>
             </div>
 
@@ -338,7 +339,7 @@ const InventoryGrid = () => {
                     background: 'rgba(255,255,255,0.02)',
                 }}
             >
-                {Array.from({ length: 8 }, (_, i) => {
+                {Array.from({ length: INVENTORY_SLOTS }, (_, i) => {
                     const slot = inventory.find((s) => s.slot === i);
                     const hasItem = slot?.item;
                     const canEat = hasItem?.kcal && hasItem.kcal > 0;

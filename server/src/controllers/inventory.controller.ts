@@ -117,11 +117,11 @@ async function addItemToInventory(
 }
 
 /**
- * GET /game/inventory — Get player's 8 inventory slots
+ * GET /game/inventory — Get player's 16 inventory slots
  */
 export const getInventory = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        // Ensure 8 slots exist
+        // Ensure 16 slots exist
         const existing = await prisma.inventorySlot.findMany({
             where: { user_id: req.userId! },
             include: { item: true },
