@@ -32,6 +32,7 @@ import WorkspacePanel from '../components/WorkspacePanel';
 import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
+import { useTranslation } from 'react-i18next';
 
 type SkillBranchKey = string;
 
@@ -103,6 +104,7 @@ const CITY_TIER_THRESHOLDS = [
 ];
 
 const DashboardPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { user, logout, fetchMe } = useAuthStore();
     const {
@@ -159,9 +161,9 @@ const DashboardPage = () => {
                 await fetchGovernance();
             }
             await fetchMe();
-            useGameStore.getState().setActionMessage(data?.message ?? 'Vote submitted');
+            useGameStore.getState().setActionMessage(data?.message ?? t('dashboard.vote_submitted'));
         } catch (err: any) {
-            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to submit vote');
+            useGameStore.getState().setActionMessage(err.response?.data?.error || t('dashboard.vote_failed'));
         } finally {
             setIsVoting(false);
         }
@@ -181,9 +183,9 @@ const DashboardPage = () => {
                 await fetchGovernance();
             }
             await fetchMe();
-            useGameStore.getState().setActionMessage(data?.message ?? 'Taxes updated');
+            useGameStore.getState().setActionMessage(data?.message ?? t('dashboard.taxes_updated'));
         } catch (err: any) {
-            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to update taxes');
+            useGameStore.getState().setActionMessage(err.response?.data?.error || t('dashboard.taxes_update_failed'));
         } finally {
             setIsSavingTaxes(false);
         }
@@ -237,7 +239,7 @@ const DashboardPage = () => {
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                    Loading...
+                    {t('common.loading')}
                 </motion.div>
             </div>
         );
@@ -379,9 +381,9 @@ const DashboardPage = () => {
                 await fetchMe();
             }
             await fetchWorkOrders();
-            useGameStore.getState().setActionMessage(data.message ?? 'Skill upgraded');
+            useGameStore.getState().setActionMessage(data.message ?? t('dashboard.skill_upgraded'));
         } catch (err: any) {
-            useGameStore.getState().setActionMessage(err.response?.data?.error || 'Failed to upgrade skill');
+            useGameStore.getState().setActionMessage(err.response?.data?.error || t('dashboard.skill_upgrade_failed'));
         } finally {
             setSkillLoading(false);
         }
@@ -560,7 +562,7 @@ const DashboardPage = () => {
                                 WebkitTextFillColor: 'transparent',
                             }}
                         >
-                            Freelance City
+                            {t('dashboard.title')}
                         </h1>
                     </div>
 
@@ -585,7 +587,7 @@ const DashboardPage = () => {
                             }}
                         >
                             <ShoppingCart size={14} />
-                            {!isMobile && 'Marketplace Hub'}
+                            {!isMobile && t('dashboard.marketplace_hub')}
                         </motion.button>
 
                         {/* Money Pill */}
@@ -771,23 +773,23 @@ const DashboardPage = () => {
                                     gap: '0.45rem',
                                 }}
                             >
-                                <img src={iconCityStatusPng} alt="City Status" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> City Status
+                                <img src={iconCityStatusPng} alt="City Status" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.city_status')}
                             </h2>
                             <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.78)' }}>
-                                Current City: <strong style={{ color: '#bfdbfe' }}>{user.city?.name ?? user.city_key ?? 'Unknown'}</strong>
-                                {' '}• Tier {cityTier}
+                                {t('dashboard.current_city')}: <strong style={{ color: '#bfdbfe' }}>{user.city?.name ?? user.city_key ?? t('common.unknown')}</strong>
+                                {' '}• {t('dashboard.tier')} {cityTier}
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                             <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
-                                Domestic: <span style={{ color: '#fde68a', fontWeight: 700 }}>{user.city?.taxes?.domesticPct ?? 0}%</span>
+                                {t('dashboard.taxes.domestic')}: <span style={{ color: '#fde68a', fontWeight: 700 }}>{user.city?.taxes?.domesticPct ?? 0}%</span>
                             </div>
                             <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
-                                Export: <span style={{ color: '#fca5a5', fontWeight: 700 }}>{user.city?.taxes?.exportPct ?? 0}%</span>
+                                {t('dashboard.taxes.export')}: <span style={{ color: '#fca5a5', fontWeight: 700 }}>{user.city?.taxes?.exportPct ?? 0}%</span>
                             </div>
                             <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
-                                Import: <span style={{ color: '#86efac', fontWeight: 700 }}>{user.city?.taxes?.importPct ?? 0}%</span>
+                                {t('dashboard.taxes.import')}: <span style={{ color: '#86efac', fontWeight: 700 }}>{user.city?.taxes?.importPct ?? 0}%</span>
                             </div>
                         </div>
                     </div>
@@ -803,10 +805,10 @@ const DashboardPage = () => {
                     >
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
                             <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)' }}>
-                                Mayor: <span style={{ color: '#fcd34d', fontWeight: 700 }}>{mayorCandidate?.email?.split('@')[0] ?? 'None'}</span>
+                                {t('dashboard.mayor')}: <span style={{ color: '#fcd34d', fontWeight: 700 }}>{mayorCandidate?.email?.split('@')[0] ?? t('common.none')}</span>
                             </div>
                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.62)' }}>
-                                Election ends: {electionEndText}
+                                {t('dashboard.election_ends')}: {electionEndText}
                             </div>
                         </div>
 
@@ -839,13 +841,13 @@ const DashboardPage = () => {
                                         <span>
                                             {candidate.email.split('@')[0]} {isMayor ? '👑' : ''}
                                         </span>
-                                        <span style={{ color: '#93c5fd', fontWeight: 700 }}>{candidate.votes} votes</span>
+                                        <span style={{ color: '#93c5fd', fontWeight: 700 }}>{t('dashboard.votes_count', { count: candidate.votes })}</span>
                                     </button>
                                 );
                             })}
                             {(governance?.candidates?.length ?? 0) === 0 && (
                                 <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
-                                    No candidates in your city yet.
+                                    {t('dashboard.no_candidates')}
                                 </div>
                             )}
                         </div>
@@ -867,20 +869,20 @@ const DashboardPage = () => {
                                     opacity: isVoting || !selectedCandidateId ? 0.6 : 1,
                                 }}
                             >
-                                {isVoting ? 'Submitting...' : 'Vote Mayor'}
+                                {isVoting ? t('dashboard.submitting') : t('dashboard.vote_mayor')}
                             </button>
                         </div>
 
                         {governance?.canSetTaxes && (
                             <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid rgba(148,163,184,0.2)' }}>
                                 <div style={{ fontSize: '0.68rem', color: '#fcd34d', fontWeight: 700, marginBottom: '0.42rem' }}>
-                                    Mayor Tax Controls
+                                    {t('dashboard.mayor_tax_controls')}
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.4rem' }}>
                                     {([
-                                        ['domesticPct', 'Domestic'],
-                                        ['exportPct', 'Export'],
-                                        ['importPct', 'Import'],
+                                        ['domesticPct', t('dashboard.taxes.domestic')],
+                                        ['exportPct', t('dashboard.taxes.export')],
+                                        ['importPct', t('dashboard.taxes.import')],
                                     ] as const).map(([key, label]) => (
                                         <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                             <span style={{ fontSize: '0.63rem', color: '#cbd5e1' }}>{label}</span>
@@ -924,7 +926,7 @@ const DashboardPage = () => {
                                             opacity: isSavingTaxes ? 0.65 : 1,
                                         }}
                                     >
-                                        {isSavingTaxes ? 'Saving...' : 'Save Taxes'}
+                                        {isSavingTaxes ? t('common.saving') : t('dashboard.save_taxes')}
                                     </button>
                                 </div>
                             </div>
@@ -934,12 +936,12 @@ const DashboardPage = () => {
                     <div style={{ marginTop: '0.85rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.38rem', gap: '0.75rem', flexWrap: 'wrap' }}>
                             <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.8)' }}>
-                                City Treasury Progress
+                                {t('dashboard.treasury_progress')}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontFamily: 'monospace' }}>
                                 {nextTierTarget !== null
                                     ? `${cityTreasury.toLocaleString()} / ${nextTierTarget.toLocaleString()}`
-                                    : `${cityTreasury.toLocaleString()} / MAX`}
+                                    : `${cityTreasury.toLocaleString()} / ${t('common.max')}`}
                             </div>
                         </div>
 
@@ -966,8 +968,8 @@ const DashboardPage = () => {
 
                         <div style={{ marginTop: '0.42rem', fontSize: '0.72rem', color: 'rgba(255,255,255,0.72)' }}>
                             {nextTierTarget !== null
-                                ? `เหลืออีก ${remainingToNextTier.toLocaleString()} credits เพื่ออัปเกรดเป็น Tier ${cityTier + 1}`
-                                : 'เมืองของคุณถึง Tier สูงสุดแล้ว'}
+                                ? t('dashboard.remaining_for_next_tier', { credits: remainingToNextTier.toLocaleString(), tier: cityTier + 1 })
+                                : t('dashboard.max_tier_reached')}
                         </div>
                     </div>
                 </motion.section>
@@ -995,7 +997,7 @@ const DashboardPage = () => {
                                 gap: '0.5rem',
                             }}
                         >
-                            <img src={iconActiveOrdersPng} alt="Active Orders" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> Active Orders by Occupation
+                            <img src={iconActiveOrdersPng} alt="Active Orders" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.active_orders')}
                         </h2>
                         <ActiveOrdersGrid />
                     </motion.section>
@@ -1106,7 +1108,7 @@ const DashboardPage = () => {
                                                 letterSpacing: '0.05em',
                                             }}
                                         >
-                                            <Briefcase size={13} /> Occupations
+                                            <Briefcase size={13} /> {t('dashboard.occupations')}
                                         </h3>
 
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
@@ -1122,6 +1124,7 @@ const DashboardPage = () => {
                                                 canUnlock={false}
                                                 onUnlock={handleUnlock}
                                                 onOpenSkills={!firstJob.level ? undefined : openFirstJobSkillModal}
+                                                t={t}
                                             />
 
                                             <OccupationCard
@@ -1136,6 +1139,7 @@ const DashboardPage = () => {
                                                 canUnlock={canUnlockSecond}
                                                 onUnlock={handleUnlock}
                                                 onOpenSkills={!secondaryJob.level ? undefined : openSecondaryJobSkillModal}
+                                                t={t}
                                             />
                                         </div>
                                     </div>
@@ -1152,27 +1156,27 @@ const DashboardPage = () => {
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
                                             <Zap size={14} style={{ color: '#818cf8' }} />
-                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c7d2fe' }}>Active Buffs</span>
+                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c7d2fe' }}>{t('dashboard.active_buffs')}</span>
                                         </div>
 
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                                             <div style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.86)', fontWeight: 700 }}>
-                                                Food Buff
+                                                {t('dashboard.food_buff')}
                                             </div>
                                             {hasActiveFoodBuff ? (
                                                 <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.4 }}>
-                                                    Satiety buff: -{Math.round((user.satiety_buff ?? 0) * 100)}% hunger decay
+                                                    {t('dashboard.satiety_buff_desc', { value: Math.round((user.satiety_buff ?? 0) * 100) })}
                                                     <br />
-                                                    Expires in: <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{formatDuration(foodBuffRemainingMs)}</span>
+                                                    {t('dashboard.expires_in')}: <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{formatDuration(foodBuffRemainingMs)}</span>
                                                 </div>
                                             ) : (
                                                 <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.45)' }}>
-                                                    No active food buff
+                                                    {t('dashboard.no_food_buff')}
                                                 </div>
                                             )}
 
                                             <div style={{ marginTop: '0.15rem', fontSize: '0.66rem', color: 'rgba(255,255,255,0.86)', fontWeight: 700 }}>
-                                                Equipment Buffs
+                                                {t('dashboard.equipment_buffs')}
                                             </div>
                                             {activeEquipmentBuffs.length > 0 ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
@@ -1184,7 +1188,7 @@ const DashboardPage = () => {
                                                 </div>
                                             ) : (
                                                 <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.45)' }}>
-                                                    No active equipment buff
+                                                    {t('dashboard.no_equipment_buff')}
                                                 </div>
                                             )}
                                         </div>
@@ -1221,7 +1225,7 @@ const DashboardPage = () => {
                                         gap: '0.5rem',
                                     }}
                                 >
-                                    <img src={iconInventoryPng} alt="Inventory" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> Inventory
+                                    <img src={iconInventoryPng} alt="Inventory" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.inventory')}
                                 </h2>
                                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
                                     <InventoryGrid />
@@ -1262,7 +1266,7 @@ const DashboardPage = () => {
                                             gap: '0.5rem',
                                         }}
                                     >
-                                        <Hammer size={16} /> Workspace
+                                        <Hammer size={16} /> {t('dashboard.workspace')}
                                     </h2>
                                 </div>
                                 <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '0.9rem 1rem' }}>
@@ -1309,10 +1313,10 @@ const DashboardPage = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                                 <div>
                                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
-                                        {firstJobSkillTree?.treeTitle ?? `${firstJob.label} Skill Tree`}
+                                        {firstJobSkillTree?.treeTitle ?? t('dashboard.skill_tree')}
                                     </div>
                                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        Available Points: {firstJobSkillTree?.points.available ?? 0}
+                                        {t('dashboard.available_points')}: {firstJobSkillTree?.points.available ?? 0}
                                     </div>
                                 </div>
                                 <button
@@ -1327,7 +1331,7 @@ const DashboardPage = () => {
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    Close
+                                    {t('common.close')}
                                 </button>
                             </div>
 
@@ -1368,7 +1372,7 @@ const DashboardPage = () => {
                                                         cursor: canUpgrade ? 'pointer' : 'not-allowed',
                                                     }}
                                                 >
-                                                    Upgrade
+                                                    {t('dashboard.upgrade')}
                                                 </button>
                                             </div>
                                             {renderBranchEffects(effects, level, color)}
@@ -1414,10 +1418,10 @@ const DashboardPage = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                                 <div>
                                     <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
-                                        {secondaryJobSkillTree?.treeTitle ?? `${secondaryJob.label} Skill Tree`}
+                                        {secondaryJobSkillTree?.treeTitle ?? t('dashboard.skill_tree')}
                                     </div>
                                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        Available Points: {secondaryJobSkillTree?.points.available ?? 0}
+                                        {t('dashboard.available_points')}: {secondaryJobSkillTree?.points.available ?? 0}
                                     </div>
                                 </div>
                                 <button
@@ -1432,7 +1436,7 @@ const DashboardPage = () => {
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    Close
+                                    {t('common.close')}
                                 </button>
                             </div>
 
@@ -1473,7 +1477,7 @@ const DashboardPage = () => {
                                                         cursor: canUpgrade ? 'pointer' : 'not-allowed',
                                                     }}
                                                 >
-                                                    Upgrade
+                                                    {t('dashboard.upgrade')}
                                                 </button>
                                             </div>
                                             {renderBranchEffects(effects, level, color)}
@@ -1517,9 +1521,10 @@ interface OccupationCardProps {
     canUnlock?: boolean;
     onUnlock?: () => void;
     onOpenSkills?: () => void;
+    t: any;
 }
 
-const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderColor, glowColor, canUnlock, onUnlock, onOpenSkills }: OccupationCardProps) => {
+const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderColor, glowColor, canUnlock, onUnlock, onOpenSkills, t }: OccupationCardProps) => {
     const normalizedLevel = Number(level ?? 0);
     const isLocked = normalizedLevel <= 0;
 
@@ -1589,7 +1594,7 @@ const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderCol
                                 cursor: 'pointer',
                             }}
                         >
-                            Skill
+                            {t('dashboard.skill')}
                         </motion.button>
                     )}
                     {isLocked ? (
@@ -1614,12 +1619,12 @@ const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderCol
                                 }}
                             >
                                 <Unlock size={10} />
-                                Unlock
+                                {t('dashboard.unlock')}
                             </motion.button>
                         ) : (
                             <>
                                 <Lock size={11} style={{ color: '#64748b' }} />
-                                <span style={{ fontSize: '0.65rem', color: '#64748b' }}>Locked</span>
+                                <span style={{ fontSize: '0.65rem', color: '#64748b' }}>{t('dashboard.locked')}</span>
                             </>
                         )
                     ) : (
@@ -1640,7 +1645,7 @@ const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderCol
                                         marginLeft: '0.2rem',
                                     }}
                                 >
-                                    MAX
+                                    {t('common.max')}
                                 </span>
                             )}
                         </>
@@ -1691,12 +1696,12 @@ const OccupationCard = ({ name, icon, level, progress, color, bgColor, borderCol
                             }}
                         >
                             <TrendingUp size={9} />
-                            {progress.currentExp.toLocaleString()} EXP
+                            {progress.currentExp.toLocaleString()} {t('common.exp')}
                         </span>
                         <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)' }}>
                             {progress.isMaxLevel
-                                ? 'Max Level'
-                                : `${progress.nextThreshold?.toLocaleString()} to next`
+                                ? t('common.max')
+                                : `${progress.nextThreshold?.toLocaleString()} ${t('dashboard.to_next_level')}`
                             }
                         </span>
                     </div>

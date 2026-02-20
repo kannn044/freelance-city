@@ -4,19 +4,21 @@ import { useGameStore } from '../stores/gameStore';
 import type { InventorySlot } from '../stores/gameStore';
 import { UtensilsCrossed, Package, ArrowDownAZ, Rows3, Trash2 } from 'lucide-react';
 import { getEquipmentImageByName, renderItemIcon } from '../lib/itemVisual';
-import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
+import { getEquipmentRarityColor, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 import { INVENTORY_SLOTS } from '../lib/gameConstants';
-
-const equipmentSlots = [
-    { key: 'HEAD', label: 'Head' },
-    { key: 'UPPER_BODY', label: 'Upper Body' },
-    { key: 'LOWER_BODY', label: 'Lower Body' },
-    { key: 'ARM', label: 'Arm' },
-    { key: 'GLOVE', label: 'Glove' },
-    { key: 'SHOE', label: 'Shoe' },
-] as const;
+import { useTranslation } from 'react-i18next';
 
 const InventoryGrid = () => {
+    const { t } = useTranslation();
+    const equipmentSlots = [
+        { key: 'HEAD', label: t('inventory.equip_slots.HEAD') },
+        { key: 'UPPER_BODY', label: t('inventory.equip_slots.UPPER_BODY') },
+        { key: 'LOWER_BODY', label: t('inventory.equip_slots.LOWER_BODY') },
+        { key: 'ARM', label: t('inventory.equip_slots.ARM') },
+        { key: 'GLOVE', label: t('inventory.equip_slots.GLOVE') },
+        { key: 'SHOE', label: t('inventory.equip_slots.SHOE') },
+    ] as const;
+
     const { inventory, equipment, eatItem, equipItem, unequipItem, organizeInventory, discardItem } = useGameStore();
     const occupiedSlots = inventory.filter((s) => s.item && s.quantity > 0).length;
     const [hoveredSlot, setHoveredSlot] = useState<InventorySlot | null>(null);
@@ -32,7 +34,7 @@ const InventoryGrid = () => {
         open: false,
         title: '',
         description: '',
-        confirmLabel: 'Confirm',
+        confirmLabel: t('common.confirm'),
         onConfirm: null,
     });
 
@@ -58,15 +60,15 @@ const InventoryGrid = () => {
 
         if (!slot?.item || slot.quantity <= 0) return;
 
-        const rarityOrTier = slot.item.type === 'EQUIPMENT' ? 'Rarity' : 'Tier';
+        const rarityOrTier = slot.item.type === 'EQUIPMENT' ? t('common.rarity') : t('dashboard.tier');
         const rarityText = slot.equipment_rarity
-            ? `\n${rarityOrTier}: ${getEquipmentRarityLabel(slot.equipment_rarity)}`
+            ? `\n${rarityOrTier}: ${t(`common.rarity_labels.${slot.equipment_rarity.toUpperCase()}`)}`
             : '';
 
         askConfirm(
-            'Confirm Discard Item',
-            `Item: ${slot.item.name}${rarityText}\nQuantity: ${slot.quantity}`,
-            'Discard',
+            t('inventory.confirm_discard'),
+            `${t('inventory.item_label')}: ${slot.item.name}${rarityText}\n${t('inventory.qty_label')}: ${slot.quantity}`,
+            t('inventory.discard'),
             () => discardItem(slot.id, slot.quantity)
         );
     };
@@ -79,21 +81,21 @@ const InventoryGrid = () => {
         const v = Number(item.effect_value ?? 0) * m;
         const v2 = Number(item.effect_value2 ?? 0) * m;
 
-        if (item.effect_key === 'hunger_penalty_tier_reduction') return `Reduce hunger penalty by ${v} tier`;
-        if (item.effect_key === 'cook_secondary_ingredient_save_chance') return `${Math.round(v * 100)}% chance to save secondary ingredients`;
-        if (item.effect_key === 'max_hunger_bonus') return `Max Hunger +${v}`;
+        if (item.effect_key === 'hunger_penalty_tier_reduction') return t('inventory.effects.hunger_penalty', { v });
+        if (item.effect_key === 'cook_secondary_ingredient_save_chance') return t('inventory.effects.save_ingredient', { v: Math.round(v * 100) });
+        if (item.effect_key === 'max_hunger_bonus') return t('inventory.effects.max_hunger', { v });
         if (item.effect_key === 'max_hunger_and_satiety_bonus') {
             const satietyPct = Math.round(v2 * 100);
-            return `Max Hunger +${v}, Satiety Buff +${satietyPct}%`;
+            return t('inventory.effects.max_hunger_satiety', { v, s: satietyPct });
         }
-        if (item.effect_key === 'raw_stack_bonus') return `Raw stack limit +${v}`;
-        if (item.effect_key === 'ingredient_stack_bonus') return `Ingredient stack limit +${v}`;
-        if (item.effect_key === 'farm_time_reduction_pct') return `Farm time -${Math.round(v * 100)}%`;
-        if (item.effect_key === 'cook_time_reduction_pct') return `Cook time -${Math.round(v * 100)}%`;
-        if (item.effect_key === 'farm_double_yield_chance') return `${Math.round(v * 100)}% chance for double yield`;
-        if (item.effect_key === 'gourmet_chance') return `${Math.round(v * 100)}% chance to cook Gourmet quality`;
-        if (item.effect_key === 'hunger_decay_reduction_per_min') return `Hunger decay -${v}/min`;
-        if (item.effect_key === 'cook_state_hunger_decay_reduction_pct') return `While cooking: decay -${Math.round(v * 100)}%`;
+        if (item.effect_key === 'raw_stack_bonus') return t('inventory.effects.raw_stack', { v });
+        if (item.effect_key === 'ingredient_stack_bonus') return t('inventory.effects.ingredient_stack', { v });
+        if (item.effect_key === 'farm_time_reduction_pct') return t('inventory.effects.farm_time', { v: Math.round(v * 100) });
+        if (item.effect_key === 'cook_time_reduction_pct') return t('inventory.effects.cook_time', { v: Math.round(v * 100) });
+        if (item.effect_key === 'farm_double_yield_chance') return t('inventory.effects.farm_double', { v: Math.round(v * 100) });
+        if (item.effect_key === 'gourmet_chance') return t('inventory.effects.gourmet', { v: Math.round(v * 100) });
+        if (item.effect_key === 'hunger_decay_reduction_per_min') return t('inventory.effects.hunger_decay_min', { v });
+        if (item.effect_key === 'cook_state_hunger_decay_reduction_pct') return t('inventory.effects.cook_decay', { v: Math.round(v * 100) });
 
         return null;
     };
@@ -101,22 +103,22 @@ const InventoryGrid = () => {
     const handleSlotClick = (slot: InventorySlot) => {
         if (!slot.item) return;
         if (slot.item.type === 'EQUIPMENT') {
-            const rarity = getEquipmentRarityLabel(slot.equipment_rarity);
+            const rarity = t(`common.rarity_labels.${(slot.equipment_rarity ?? 'NORMAL').toUpperCase()}`);
             const effectText = formatEquipmentEffect(slot);
             askConfirm(
-                'Confirm Equip Item',
-                `Item: ${slot.item.name} (${rarity})\nType: EQUIPMENT\nSlot: ${slot.item.equipment_slot ?? '-'}${effectText ? `\nEffect: ${effectText}` : ''}`,
-                'Equip',
+                t('inventory.confirm_equip'),
+                `${t('inventory.item_label')}: ${slot.item.name} (${rarity})\n${t('inventory.type_label')}: EQUIPMENT\n${t('inventory.slot_label')}: ${slot.item.equipment_slot ?? '-'}${effectText ? `\n${t('inventory.effect_label')}: ${effectText}` : ''}`,
+                t('inventory.equip'),
                 () => equipItem(slot.id)
             );
             return;
         }
         if (slot.item.kcal && slot.item.kcal > 0) {
-            const rarityText = hasTierRarity(slot) ? `\nTier: ${getEquipmentRarityLabel(slot.equipment_rarity)}` : '';
+            const rarityText = hasTierRarity(slot) ? `\n${t('dashboard.tier')}: ${t(`common.rarity_labels.${(slot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}` : '';
             askConfirm(
-                'Confirm Eat Item',
-                `Item: ${slot.item.name}${rarityText}\nKcal: +${slot.item.kcal}${slot.item.buff_pct ? `\nBuff: ${Math.round(slot.item.buff_pct * 100)}% for ${slot.item.buff_mins ?? 0}m` : ''}`,
-                'Eat',
+                t('inventory.confirm_eat'),
+                `${t('inventory.item_label')}: ${slot.item.name}${rarityText}\n${t('inventory.kcal_label')}: +${slot.item.kcal}${slot.item.buff_pct ? `\n${t('inventory.buff_label')}: ${t('inventory.buff_desc', { v: Math.round(slot.item.buff_pct * 100), m: slot.item.buff_mins ?? 0 })}` : ''}`,
+                t('inventory.eat'),
                 () => eatItem(slot.id)
             );
         }
@@ -143,7 +145,7 @@ const InventoryGrid = () => {
                         letterSpacing: '0.04em',
                     }}
                 >
-                    Equipment
+                    {t('inventory.equipment')}
                 </div>
 
                 <div
@@ -217,7 +219,7 @@ const InventoryGrid = () => {
                                 {(() => {
                                     const eq = equipment.find((e) => e.slot === slot.key);
                                     if (!eq?.item_name) return slot.label;
-                                    const rarity = getEquipmentRarityLabel(eq.item_rarity);
+                                    const rarity = t(`common.rarity_labels.${(eq.item_rarity ?? 'NORMAL').toUpperCase()}`);
                                     return `${eq.item_name} (${rarity})`;
                                 })()}
                             </span>
@@ -239,10 +241,10 @@ const InventoryGrid = () => {
                 }}
             >
                 <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
-                    Capacity
+                    {t('inventory.capacity')}
                 </span>
                 <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>
-                    {occupiedSlots}/{INVENTORY_SLOTS} slots
+                    {occupiedSlots}/{INVENTORY_SLOTS} {t('inventory.slots')}
                 </span>
             </div>
 
@@ -258,7 +260,7 @@ const InventoryGrid = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => organizeInventory('combine')}
-                    title="Combine same items"
+                    title={t('inventory.combine_title')}
                     style={{
                         width: '1.9rem',
                         height: '1.9rem',
@@ -278,7 +280,7 @@ const InventoryGrid = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => organizeInventory('sort-az')}
-                    title="Sort items A-Z"
+                    title={t('inventory.sort_az_title')}
                     style={{
                         width: '1.9rem',
                         height: '1.9rem',
@@ -322,7 +324,7 @@ const InventoryGrid = () => {
                         justifyContent: 'center',
                         transition: 'all 0.15s ease',
                     }}
-                    title="Drag item here to discard"
+                    title={t('inventory.discard_title')}
                 >
                     <Trash2 style={{ width: '0.9rem', height: '0.9rem' }} />
                 </motion.div>
@@ -407,7 +409,7 @@ const InventoryGrid = () => {
                                         }}
                                     >
                                         {slot?.equipment_rarity
-                                            ? `${hasItem.name} (${getEquipmentRarityLabel(slot.equipment_rarity)})`
+                                            ? `${hasItem.name} (${t(`common.rarity_labels.${slot.equipment_rarity.toUpperCase()}`)})`
                                             : hasItem.name}
                                     </span>
                                     {/* Quantity badge */}
@@ -458,7 +460,7 @@ const InventoryGrid = () => {
                                                 fontWeight: 700,
                                             }}
                                         >
-                                            EQUIP
+                                            {t('inventory.equip').toUpperCase()}
                                         </div>
                                     )}
                                 </>
@@ -501,47 +503,47 @@ const InventoryGrid = () => {
                                 }}
                             >
                                 {hoveredSlot.equipment_rarity
-                                    ? `${hoveredSlot.item.name} (${getEquipmentRarityLabel(hoveredSlot.equipment_rarity)})`
+                                    ? `${hoveredSlot.item.name} (${t(`common.rarity_labels.${hoveredSlot.equipment_rarity.toUpperCase()}`)})`
                                     : hoveredSlot.item.name}
                             </span>
                         </div>
                         <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.45 }}>
-                            Type: {hoveredSlot.item.type} • Qty: {hoveredSlot.quantity}
+                            {t('common.type')}: {hoveredSlot.item.type} • {t('common.qty')}: {hoveredSlot.quantity}
                             <br />
-                            Buy: {hoveredSlot.item.buy_price ?? '-'} • Sell: {hoveredSlot.item.sell_price ?? '-'}
+                            {t('marketplace.buy')}: {hoveredSlot.item.buy_price ?? '-'} • Sell: {hoveredSlot.item.sell_price ?? '-'}
                             {hoveredSlot.item.kcal ? (
                                 <>
                                     <br />
-                                    Kcal: +{hoveredSlot.item.kcal}
+                                    {t('inventory.kcal')}: +{hoveredSlot.item.kcal}
                                     {hoveredSlot.item.buff_pct
-                                        ? ` • Buff: ${Math.round(hoveredSlot.item.buff_pct * 100)}% for ${hoveredSlot.item.buff_mins ?? 0}m`
+                                        ? ` • ${t('inventory.buff')}: ${Math.round(hoveredSlot.item.buff_pct * 100)}% for ${hoveredSlot.item.buff_mins ?? 0}m`
                                         : ''}
                                 </>
                             ) : null}
                             {hoveredSlot.item.type === 'EQUIPMENT' ? (
                                 <>
                                     <br />
-                                    Slot: {hoveredSlot.item.equipment_slot ?? '-'}
+                                    {t('inventory.slot')}: {hoveredSlot.item.equipment_slot ?? '-'}
                                     <br />
-                                    Rarity: {getEquipmentRarityLabel(hoveredSlot.equipment_rarity)}
+                                    {t('common.rarity')}: {t(`common.rarity_labels.${(hoveredSlot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}
                                     {formatEquipmentEffect(hoveredSlot) ? (
                                         <>
                                             <br />
-                                            Effect: {formatEquipmentEffect(hoveredSlot)}
+                                            {t('inventory.effect')}: {formatEquipmentEffect(hoveredSlot)}
                                         </>
                                     ) : null}
                                 </>
                             ) : hoveredSlot.equipment_rarity ? (
                                 <>
                                     <br />
-                                    Tier: {getEquipmentRarityLabel(hoveredSlot.equipment_rarity)}
+                                    {t('dashboard.tier')}: {t(`common.rarity_labels.${(hoveredSlot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}
                                 </>
                             ) : null}
                         </div>
                     </>
                 ) : (
                     <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.45)' }}>
-                        Hover an item to view details.
+                        {t('inventory.hover_details')}
                     </div>
                 )}
             </div>
@@ -597,7 +599,7 @@ const InventoryGrid = () => {
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button
                                     onClick={runConfirm}

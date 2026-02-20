@@ -18,7 +18,8 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { renderItemIcon } from '../lib/itemVisual';
-import { getEquipmentRarityColor, getEquipmentRarityLabel, type EquipmentRarity } from '../lib/equipmentRarity';
+import { getEquipmentRarityColor, type EquipmentRarity } from '../lib/equipmentRarity';
+import { useTranslation } from 'react-i18next';
 
 type SortMode = 'PRICE_ASC' | 'PRICE_DESC' | 'NEWEST' | 'QTY_DESC';
 type ItemTypeFilter = 'ALL' | 'SEED' | 'RAW' | 'INGREDIENT' | 'MEAL' | 'EQUIPMENT';
@@ -29,6 +30,7 @@ const itemTypeOptions: ItemTypeFilter[] = ['ALL', 'SEED', 'RAW', 'INGREDIENT', '
 const rarityOptions: RarityFilter[] = ['ALL', 'NORMAL', 'RARE', 'EPIC', 'LEGENDARY'];
 
 const MarketplacePage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
     const {
@@ -75,7 +77,7 @@ const MarketplacePage = () => {
         open: false,
         title: '',
         description: '',
-        confirmLabel: 'Confirm',
+        confirmLabel: t('common.confirm'),
         onConfirm: null,
     });
 
@@ -127,8 +129,8 @@ const MarketplacePage = () => {
             unique.set(listing.seller.city_key, listing.seller.city_name ?? listing.seller.city_key);
         }
 
-        return [{ key: 'ALL', name: 'All Cities' }, ...Array.from(unique.entries()).map(([key, name]) => ({ key, name }))];
-    }, [marketListings]);
+        return [{ key: 'ALL', name: t('common.all') }, ...Array.from(unique.entries()).map(([key, name]) => ({ key, name }))];
+    }, [marketListings, t]);
 
     const minPrice = minPriceInput.trim() === '' ? null : Number(minPriceInput);
     const maxPrice = maxPriceInput.trim() === '' ? null : Number(maxPriceInput);
@@ -180,7 +182,7 @@ const MarketplacePage = () => {
     const selectedSellSlot = sellSlotId === null ? null : sellableSlots.find((s) => s.id === sellSlotId) ?? null;
     const sellQty = Math.max(1, Math.floor(Number(sellQtyInput || 1)));
     const sellPrice = Math.max(1, Math.floor(Number(sellPriceInput || 1)));
-    const formatCredits = (value: number) => `${Math.max(0, value).toLocaleString()} credits`;
+    const formatCredits = (value: number) => `${Math.max(0, value).toLocaleString()} ${t('common.credits')}`;
 
     const askConfirm = (title: string, description: string, confirmLabel: string, onConfirm: () => void) => {
         setConfirmState({ open: true, title, description, confirmLabel, onConfirm });
@@ -278,12 +280,12 @@ const MarketplacePage = () => {
                             }}
                         >
                             <ArrowLeft size={14} />
-                            Dashboard
+                            {t('common.back')}
                         </button>
                         <div>
                             <div style={{ fontSize: '1.08rem', fontWeight: 700, letterSpacing: '-0.02em', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
                                 <Sparkles size={15} style={{ color: '#c4b5fd' }} />
-                                Marketplace Hub
+                                {t('marketplace.title')}
                             </div>
 
                         </div>
@@ -321,7 +323,7 @@ const MarketplacePage = () => {
                             }}
                         >
                             <RefreshCw size={13} />
-                            Refresh
+                            {t('common.refresh')}
                         </button>
                     </div>
                 </div>
@@ -356,7 +358,7 @@ const MarketplacePage = () => {
                             gap: '0.35rem',
                         }}
                     >
-                        <ShoppingCart size={13} /> Market
+                        <ShoppingCart size={13} /> {t('marketplace.tabs.market')}
                     </button>
                     <button
                         type="button"
@@ -375,7 +377,7 @@ const MarketplacePage = () => {
                             gap: '0.35rem',
                         }}
                     >
-                        <Store size={13} /> NPC Shop
+                        <Store size={13} /> {t('marketplace.tabs.npc_shop')}
                     </button>
                 </div>
 
@@ -383,19 +385,19 @@ const MarketplacePage = () => {
                 <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.8rem', marginBottom: '0.8rem' }}>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>Listed Items</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.listed_items')}</div>
                         <div style={statValueStyle}>{listings.length.toLocaleString()}</div>
                     </div>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>My Active Listings</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.my_listings')}</div>
                         <div style={statValueStyle}>{ownListings.length.toLocaleString()}</div>
                     </div>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>Recent Sales</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.recent_sales')}</div>
                         <div style={statValueStyle}>{salesHistory.length.toLocaleString()}</div>
                     </div>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>Last Sync</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.last_sync')}</div>
                         <div style={{ ...statValueStyle, fontSize: '1rem' }}>{lastRefreshedAt || '--:--'}</div>
                     </div>
                 </div>
@@ -405,10 +407,10 @@ const MarketplacePage = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                             <h2 style={{ margin: 0, fontSize: '0.98rem', display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
                                 <ShoppingCart size={15} />
-                                Player Listings ({listings.length})
+                                {t('marketplace.player_listings', { count: listings.length })}
                             </h2>
                             <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.56)', display: 'inline-flex', alignItems: 'center', gap: '0.28rem' }}>
-                                <Clock3 size={12} /> auto refresh ทุก 5 วินาที
+                                <Clock3 size={12} /> {t('marketplace.auto_refresh_desc')}
                             </div>
                         </div>
 
@@ -422,7 +424,7 @@ const MarketplacePage = () => {
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.55rem', color: '#c7d2fe', fontSize: '0.8rem', fontWeight: 600 }}>
-                                <Filter size={14} /> Filters
+                                <Filter size={14} /> {t('marketplace.filters')}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.1fr 0.8fr 0.8fr 1fr', gap: '0.45rem' }}>
                                 <div style={{ position: 'relative' }}>
@@ -430,18 +432,18 @@ const MarketplacePage = () => {
                                     <input
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        placeholder="Search item / seller / city"
+                                        placeholder={t('marketplace.search_placeholder')}
                                         style={{ ...inputStyle, paddingLeft: '1.65rem' }}
                                     />
                                 </div>
                                 <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as ItemTypeFilter)} style={inputStyle}>
-                                    {itemTypeOptions.map((t) => (
-                                        <option key={t} value={t}>{t}</option>
+                                    {itemTypeOptions.map((tOpt) => (
+                                        <option key={tOpt} value={tOpt}>{tOpt === 'ALL' ? t('common.all') : tOpt}</option>
                                     ))}
                                 </select>
                                 <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value as RarityFilter)} style={inputStyle}>
                                     {rarityOptions.map((r) => (
-                                        <option key={r} value={r}>{r}</option>
+                                        <option key={r} value={r}>{r === 'ALL' ? t('common.all') : t(`common.rarity_labels.${r.toUpperCase()}`)}</option>
                                     ))}
                                 </select>
                                 <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} style={inputStyle}>
@@ -452,7 +454,7 @@ const MarketplacePage = () => {
                                 <input
                                     value={minPriceInput}
                                     onChange={(e) => setMinPriceInput(e.target.value)}
-                                    placeholder="Min"
+                                    placeholder={t('common.min')}
                                     type="number"
                                     min={0}
                                     style={inputStyle}
@@ -460,16 +462,16 @@ const MarketplacePage = () => {
                                 <input
                                     value={maxPriceInput}
                                     onChange={(e) => setMaxPriceInput(e.target.value)}
-                                    placeholder="Max"
+                                    placeholder={t('common.max')}
                                     type="number"
                                     min={0}
                                     style={inputStyle}
                                 />
                                 <select value={sortMode} onChange={(e) => setSortMode(e.target.value as SortMode)} style={inputStyle}>
-                                    <option value="PRICE_ASC">Price ↑</option>
-                                    <option value="PRICE_DESC">Price ↓</option>
-                                    <option value="NEWEST">Newest</option>
-                                    <option value="QTY_DESC">Quantity</option>
+                                    <option value="PRICE_ASC">{t('common.price')} ↑</option>
+                                    <option value="PRICE_DESC">{t('common.price')} ↓</option>
+                                    <option value="NEWEST">{t('common.newest')}</option>
+                                    <option value="QTY_DESC">{t('common.quantity')}</option>
                                 </select>
                             </div>
                             <div style={{ marginTop: '0.55rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -479,13 +481,13 @@ const MarketplacePage = () => {
                                         checked={showAffordableOnly}
                                         onChange={(e) => setShowAffordableOnly(e.target.checked)}
                                     />
-                                    แสดงเฉพาะที่เงินพอซื้อ
+                                    {t('marketplace.affordable_only')}
                                 </label>
 
                                 <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                                    <button type="button" onClick={() => { setTypeFilter('EQUIPMENT'); setSortMode('PRICE_DESC'); }} style={chipButtonStyle}>High-end Gear</button>
-                                    <button type="button" onClick={() => { setSortMode('PRICE_ASC'); setShowAffordableOnly(true); }} style={chipButtonStyle}>Budget Deals</button>
-                                    <button type="button" onClick={() => { setSearch(''); setTypeFilter('ALL'); setRarityFilter('ALL'); setCityFilter('ALL'); setMinPriceInput(''); setMaxPriceInput(''); setShowAffordableOnly(false); setSortMode('PRICE_ASC'); }} style={chipButtonStyle}>Reset</button>
+                                    <button type="button" onClick={() => { setTypeFilter('EQUIPMENT'); setSortMode('PRICE_DESC'); }} style={chipButtonStyle}>{t('marketplace.high_end_gear')}</button>
+                                    <button type="button" onClick={() => { setSortMode('PRICE_ASC'); setShowAffordableOnly(true); }} style={chipButtonStyle}>{t('marketplace.budget_deals')}</button>
+                                    <button type="button" onClick={() => { setSearch(''); setTypeFilter('ALL'); setRarityFilter('ALL'); setCityFilter('ALL'); setMinPriceInput(''); setMaxPriceInput(''); setShowAffordableOnly(false); setSortMode('PRICE_ASC'); }} style={chipButtonStyle}>{t('common.reset')}</button>
                                 </div>
                             </div>
                         </div>
@@ -521,7 +523,7 @@ const MarketplacePage = () => {
                                                 {renderItemIcon(listing.item, 20)}
                                                 <span style={{ fontSize: '0.85rem', fontWeight: 700, color: rarity ? getEquipmentRarityColor(rarity) : '#f8fafc' }}>
                                                     {listing.item.name}
-                                                    {rarity ? ` (${getEquipmentRarityLabel(rarity)})` : ''}
+                                                    {rarity ? ` (${t(`common.rarity_labels.${rarity.toUpperCase()}`)})` : ''}
                                                 </span>
                                             </div>
                                             <div style={{ marginTop: '0.35rem', display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
@@ -530,7 +532,7 @@ const MarketplacePage = () => {
                                                 <span style={metaPillStyle}><Gem size={11} /> {cityName}</span>
                                             </div>
                                             <div style={{ marginTop: '0.3rem', fontSize: '0.73rem', color: '#c7d2fe' }}>
-                                                Available: {listing.quantity.toLocaleString()} • Unit: {listing.price.toLocaleString()} credits
+                                                {t('marketplace.available')}: {listing.quantity.toLocaleString()} • {t('marketplace.unit')}: {listing.price.toLocaleString()} {t('common.credits')}
                                             </div>
                                         </div>
 
@@ -547,7 +549,7 @@ const MarketplacePage = () => {
                                                 style={inputStyle}
                                             />
                                             <div style={{ fontSize: '0.72rem', color: canBuy ? '#86efac' : '#fda4af', fontWeight: 600 }}>
-                                                Total: {totalPrice.toLocaleString()}
+                                                {t('common.total')}: {totalPrice.toLocaleString()}
                                             </div>
                                         </div>
 
@@ -555,17 +557,17 @@ const MarketplacePage = () => {
                                             disabled={!canBuy}
                                             onClick={() => {
                                                 askConfirm(
-                                                    'Confirm Market Purchase',
-                                                    `คุณกำลังจะซื้อไอเทมจากผู้เล่น\n\n` +
-                                                    `Item: ${listing.item.name}${rarity ? ` (${getEquipmentRarityLabel(rarity)})` : ''}\n` +
-                                                    `Seller: ${sellerName}\n` +
-                                                    `City: ${cityName}\n` +
-                                                    `Quantity: ${qty.toLocaleString()} / ${listing.quantity.toLocaleString()} available\n` +
-                                                    `Unit Price: ${formatCredits(listing.price)}\n` +
-                                                    `Total Cost: ${formatCredits(totalPrice)}\n\n` +
-                                                    `เงินปัจจุบัน: ${formatCredits(user?.money ?? 0)}\n` +
-                                                    `เงินหลังซื้อ: ${formatCredits((user?.money ?? 0) - totalPrice)}`,
-                                                    'Confirm Buy',
+                                                    t('marketplace.confirm_buy_title'),
+                                                    `${t('marketplace.confirm_buy_desc')}\n\n` +
+                                                    `${t('marketplace.item')}: ${listing.item.name}${rarity ? ` (${t(`common.rarity_labels.${rarity.toUpperCase()}`)})` : ''}\n` +
+                                                    `${t('marketplace.seller')}: ${sellerName}\n` +
+                                                    `${t('marketplace.city')}: ${cityName}\n` +
+                                                    `${t('marketplace.quantity')}: ${qty.toLocaleString()} / ${listing.quantity.toLocaleString()} available\n` +
+                                                    `${t('marketplace.unit_price')}: ${formatCredits(listing.price)}\n` +
+                                                    `${t('marketplace.total_cost')}: ${formatCredits(totalPrice)}\n\n` +
+                                                    `${t('marketplace.current_money')}: ${formatCredits(user?.money ?? 0)}\n` +
+                                                    `${t('marketplace.money_after_purchase')}: ${formatCredits((user?.money ?? 0) - totalPrice)}`,
+                                                    t('marketplace.buy'),
                                                     () => {
                                                         void buyListing(listing.id, qty);
                                                     }
@@ -582,7 +584,7 @@ const MarketplacePage = () => {
                                                 fontWeight: 700,
                                             }}
                                         >
-                                            Buy
+                                            {t('marketplace.buy')}
                                         </button>
                                     </motion.div>
                                 );
@@ -590,7 +592,7 @@ const MarketplacePage = () => {
 
                             {listings.length === 0 && (
                                 <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(2,6,23,0.45)' }}>
-                                    ไม่พบรายการที่ตรงกับตัวกรอง
+                                    {t('marketplace.no_listings')}
                                 </div>
                             )}
                         </div>
@@ -599,7 +601,7 @@ const MarketplacePage = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', position: 'sticky', top: '5.3rem' }}>
                         <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,41,59,0.55)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
-                                <Tag size={15} /> Sell from Inventory
+                                <Tag size={15} /> {t('marketplace.sell_from_inventory')}
                             </h3>
 
                             <div style={{ display: 'grid', gap: '0.45rem' }}>
@@ -608,10 +610,10 @@ const MarketplacePage = () => {
                                     onChange={(e) => setSellSlotId(e.target.value ? Number(e.target.value) : null)}
                                     style={inputStyle}
                                 >
-                                    <option value="">Select inventory item</option>
+                                    <option value="">{t('marketplace.select_item')}</option>
                                     {sellableSlots.map((slot) => (
                                         <option key={slot.id} value={slot.id}>
-                                            {slot.item?.name} {slot.equipment_rarity ? `(${getEquipmentRarityLabel(slot.equipment_rarity)})` : ''} x{slot.quantity}
+                                            {slot.item?.name} {slot.equipment_rarity ? `(${t(`common.rarity_labels.${slot.equipment_rarity.toUpperCase()}`)})` : ''} x{slot.quantity}
                                         </option>
                                     ))}
                                 </select>
@@ -641,11 +643,11 @@ const MarketplacePage = () => {
                                             >
                                                 {selectedSellSlot.item.name}
                                                 {selectedSellSlot.equipment_rarity
-                                                    ? ` (${getEquipmentRarityLabel(selectedSellSlot.equipment_rarity)})`
+                                                    ? ` (${t(`common.rarity_labels.${selectedSellSlot.equipment_rarity.toUpperCase()}`)})`
                                                     : ''}
                                             </div>
                                             <div style={{ fontSize: '0.68rem', color: 'rgba(226,232,240,0.72)' }}>
-                                                In bag: {selectedSellSlot.quantity.toLocaleString()} • Slot #{selectedSellSlot.slot}
+                                                {t('marketplace.in_bag')}: {selectedSellSlot.quantity.toLocaleString()} • Slot #{selectedSellSlot.slot}
                                             </div>
                                         </div>
                                     </div>
@@ -658,7 +660,7 @@ const MarketplacePage = () => {
                                         type="number"
                                         min={1}
                                         max={selectedSellSlot?.quantity ?? 1}
-                                        placeholder="Qty"
+                                        placeholder={t('common.qty')}
                                         style={inputStyle}
                                     />
                                     <input
@@ -666,14 +668,18 @@ const MarketplacePage = () => {
                                         onChange={(e) => setSellPriceInput(e.target.value)}
                                         type="number"
                                         min={1}
-                                        placeholder="Unit Price"
+                                        placeholder={t('common.price')}
                                         style={inputStyle}
                                     />
                                 </div>
 
                                 {selectedSellSlot?.item && (
                                     <div style={{ fontSize: '0.72rem', color: '#fde68a' }}>
-                                        จะลงขาย: {selectedSellSlot.item.name} x{Math.min(sellQty, selectedSellSlot.quantity)} = {(Math.min(sellQty, selectedSellSlot.quantity) * sellPrice).toLocaleString()} credits
+                                        {t('marketplace.listing_preview', {
+                                            item: selectedSellSlot.item.name,
+                                            qty: Math.min(sellQty, selectedSellSlot.quantity),
+                                            total: (Math.min(sellQty, selectedSellSlot.quantity) * sellPrice).toLocaleString()
+                                        })}
                                     </div>
                                 )}
 
@@ -684,15 +690,15 @@ const MarketplacePage = () => {
                                         const finalQty = Math.max(1, Math.min(selectedSellSlot.quantity, sellQty));
                                         const totalPrice = finalQty * sellPrice;
                                         askConfirm(
-                                            'Confirm Create Listing',
-                                            `คุณกำลังจะลงขายไอเทมใน Market\n\n` +
-                                            `Item: ${selectedSellSlot.item?.name}${selectedSellSlot.equipment_rarity ? ` (${getEquipmentRarityLabel(selectedSellSlot.equipment_rarity)})` : ''}\n` +
-                                            `Inventory Slot: ${selectedSellSlot.slot}\n` +
-                                            `Quantity to List: ${finalQty.toLocaleString()}\n` +
-                                            `Remaining in Inventory: ${(selectedSellSlot.quantity - finalQty).toLocaleString()}\n` +
-                                            `Unit Price: ${formatCredits(sellPrice)}\n` +
-                                            `Listing Value: ${formatCredits(totalPrice)}`,
-                                            'Create Listing',
+                                            t('marketplace.confirm_listing_title'),
+                                            `${t('marketplace.confirm_listing_desc')}\n\n` +
+                                            `${t('marketplace.item')}: ${selectedSellSlot.item?.name}${selectedSellSlot.equipment_rarity ? ` (${t(`common.rarity_labels.${selectedSellSlot.equipment_rarity.toUpperCase()}`)})` : ''}\n` +
+                                            `${t('marketplace.inventory_slot')}: ${selectedSellSlot.slot}\n` +
+                                            `${t('marketplace.quantity_to_list')}: ${finalQty.toLocaleString()}\n` +
+                                            `${t('marketplace.remaining_in_inventory')}: ${(selectedSellSlot.quantity - finalQty).toLocaleString()}\n` +
+                                            `${t('marketplace.unit_price')}: ${formatCredits(sellPrice)}\n` +
+                                            `${t('marketplace.listing_value')}: ${formatCredits(totalPrice)}`,
+                                            t('marketplace.create_listing'),
                                             () => {
                                                 void createListing(selectedSellSlot.id, finalQty, sellPrice);
                                                 setSellQtyInput('1');
@@ -711,14 +717,14 @@ const MarketplacePage = () => {
                                         fontWeight: 700,
                                     }}
                                 >
-                                    Create Listing
+                                    {t('marketplace.create_listing')}
                                 </button>
                             </div>
                         </section>
 
                         <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(56,189,248,0.24)', background: 'rgba(15,23,42,0.7)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
-                                <Store size={15} /> My Active Listings ({ownListings.length})
+                                <Store size={15} /> {t('marketplace.stats.my_listings')} ({ownListings.length})
                             </h3>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '14.5rem', overflowY: 'auto' }}>
@@ -740,7 +746,7 @@ const MarketplacePage = () => {
                                                 {renderItemIcon(listing.item, 18)}
                                                 <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e2e8f0' }}>
                                                     {listing.item.name}
-                                                    {listing.equipment_rarity ? ` (${getEquipmentRarityLabel(listing.equipment_rarity)})` : ''}
+                                                    {listing.equipment_rarity ? ` (${t(`common.rarity_labels.${listing.equipment_rarity.toUpperCase()}`)})` : ''}
                                                 </div>
                                             </div>
                                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
@@ -751,15 +757,15 @@ const MarketplacePage = () => {
                                             onClick={() => {
                                                 const totalValue = listing.quantity * listing.price;
                                                 askConfirm(
-                                                    'Confirm Cancel Listing',
-                                                    `คุณกำลังจะยกเลิกรายการขาย\n\n` +
-                                                    `Item: ${listing.item.name}${listing.equipment_rarity ? ` (${getEquipmentRarityLabel(listing.equipment_rarity)})` : ''}\n` +
-                                                    `Listing ID: #${listing.id}\n` +
-                                                    `Listed Quantity: ${listing.quantity.toLocaleString()}\n` +
-                                                    `Unit Price: ${formatCredits(listing.price)}\n` +
-                                                    `Total Listing Value: ${formatCredits(totalValue)}\n\n` +
-                                                    `หลังยกเลิก: ไอเทมจะถูกส่งคืนเข้า Inventory`,
-                                                    'Cancel Listing',
+                                                    t('marketplace.confirm_cancel_title'),
+                                                    `${t('marketplace.confirm_cancel_desc')}\n\n` +
+                                                    `${t('marketplace.item')}: ${listing.item.name}${listing.equipment_rarity ? ` (${t(`common.rarity_labels.${listing.equipment_rarity.toUpperCase()}`)})` : ''}\n` +
+                                                    `${t('marketplace.listing_id')}: #${listing.id}\n` +
+                                                    `${t('marketplace.quantity')}: ${listing.quantity.toLocaleString()}\n` +
+                                                    `${t('marketplace.unit_price')}: ${formatCredits(listing.price)}\n` +
+                                                    `${t('marketplace.listing_value')}: ${formatCredits(totalValue)}\n\n` +
+                                                    `${t('marketplace.after_cancel_desc')}`,
+                                                    t('marketplace.cancel_listing'),
                                                     () => {
                                                         void cancelListing(listing.id);
                                                     }
@@ -775,28 +781,33 @@ const MarketplacePage = () => {
                                                 cursor: 'pointer',
                                             }}
                                         >
-                                            Cancel
+                                            {t('marketplace.cancel_listing')}
                                         </button>
                                     </div>
                                 ))}
                                 {ownListings.length === 0 && (
                                     <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        ยังไม่มีรายการขายของคุณ
+                                        {t('marketplace.no_own_listings')}
                                     </div>
                                 )}
                             </div>
                         </section>
 
                         <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.7)' }}>
-                            <h3 style={{ margin: 0, marginBottom: '0.65rem', fontSize: '0.86rem' }}>Recent Sales ({salesHistory.length})</h3>
+                            <h3 style={{ margin: 0, marginBottom: '0.65rem', fontSize: '0.86rem' }}>{t('marketplace.recent_sales_title', { count: salesHistory.length })}</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.36rem', maxHeight: '11rem', overflowY: 'auto' }}>
                                 {salesHistory.slice(0, 12).map((sale) => (
                                     <div key={sale.id} style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.75)', borderBottom: '1px dashed rgba(255,255,255,0.08)', paddingBottom: '0.28rem' }}>
-                                        {sale.buyer_name} ซื้อ {sale.quantity}x {sale.item.name} = {sale.total.toLocaleString()}
+                                        {t('marketplace.sold_history', {
+                                            buyer: sale.buyer_name,
+                                            qty: sale.quantity,
+                                            item: sale.item.name,
+                                            total: sale.total.toLocaleString()
+                                        })}
                                     </div>
                                 ))}
                                 {salesHistory.length === 0 && (
-                                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)' }}>ยังไม่มีประวัติการขาย</div>
+                                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)' }}>{t('marketplace.no_sales_history')}</div>
                                 )}
                             </div>
                         </section>
@@ -807,19 +818,19 @@ const MarketplacePage = () => {
                 <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.8rem', marginBottom: '0.8rem' }}>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>NPC Items</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.npc_items')}</div>
                         <div style={statValueStyle}>{shopItems.length.toLocaleString()}</div>
                     </div>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>Recipe Scrolls</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.recipe_scrolls')}</div>
                         <div style={statValueStyle}>{recipeShop.length.toLocaleString()}</div>
                     </div>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>Money</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.money')}</div>
                         <div style={statValueStyle}>{user?.money?.toLocaleString() ?? '-'}</div>
                     </div>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>Last Sync</div>
+                        <div style={statLabelStyle}>{t('marketplace.stats.last_sync')}</div>
                         <div style={{ ...statValueStyle, fontSize: '1rem' }}>{lastRefreshedAt || '--:--'}</div>
                     </div>
                 </div>
@@ -828,10 +839,10 @@ const MarketplacePage = () => {
                     <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(99,102,241,0.24)', background: 'rgba(15,23,42,0.7)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                             <h2 style={{ margin: 0, fontSize: '0.98rem', display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
-                                <Store size={15} /> NPC Shop Items ({shopItems.length})
+                                <Store size={15} /> {t('marketplace.npc_shop_items', { count: shopItems.length })}
                             </h2>
                             <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.56)', display: 'inline-flex', alignItems: 'center', gap: '0.28rem' }}>
-                                <Clock3 size={12} /> auto refresh ทุก 5 วินาที
+                                <Clock3 size={12} /> {t('marketplace.auto_refresh_desc')}
                             </div>
                         </div>
 
@@ -862,7 +873,7 @@ const MarketplacePage = () => {
                                                 {item.name}
                                             </div>
                                             <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: '#c7d2fe' }}>
-                                                Type: {item.type} • Unit: {unitPrice.toLocaleString()} credits
+                                                {t('marketplace.type')}: {item.type} • {t('marketplace.unit')}: {unitPrice.toLocaleString()} {t('common.credits')}
                                             </div>
                                         </div>
 
@@ -878,7 +889,7 @@ const MarketplacePage = () => {
                                                 style={inputStyle}
                                             />
                                             <div style={{ marginTop: '0.24rem', fontSize: '0.7rem', color: canBuy ? '#86efac' : '#fda4af', fontWeight: 600 }}>
-                                                Total: {total.toLocaleString()}
+                                                {t('common.total')}: {total.toLocaleString()}
                                             </div>
                                         </div>
 
@@ -887,16 +898,16 @@ const MarketplacePage = () => {
                                             disabled={!canBuy}
                                             onClick={() => {
                                                 askConfirm(
-                                                    'Confirm NPC Shop Purchase',
-                                                    `คุณกำลังจะซื้อไอเทมจาก NPC Shop\n\n` +
-                                                    `Item: ${item.name}\n` +
-                                                    `Type: ${item.type}\n` +
-                                                    `Quantity: ${qty.toLocaleString()}\n` +
-                                                    `Unit Price: ${formatCredits(unitPrice)}\n` +
-                                                    `Total Cost: ${formatCredits(total)}\n\n` +
-                                                    `เงินปัจจุบัน: ${formatCredits(user?.money ?? 0)}\n` +
-                                                    `เงินหลังซื้อ: ${formatCredits((user?.money ?? 0) - total)}`,
-                                                    'Confirm Buy',
+                                                    t('marketplace.confirm_buy_npc_title'),
+                                                    `${t('marketplace.confirm_buy_npc_desc')}\n\n` +
+                                                    `${t('marketplace.item')}: ${item.name}\n` +
+                                                    `${t('marketplace.type')}: ${item.type}\n` +
+                                                    `${t('marketplace.quantity')}: ${qty.toLocaleString()}\n` +
+                                                    `${t('marketplace.unit_price')}: ${formatCredits(unitPrice)}\n` +
+                                                    `${t('marketplace.total_cost')}: ${formatCredits(total)}\n\n` +
+                                                    `${t('marketplace.current_money')}: ${formatCredits(user?.money ?? 0)}\n` +
+                                                    `${t('marketplace.money_after_purchase')}: ${formatCredits((user?.money ?? 0) - total)}`,
+                                                    t('marketplace.buy'),
                                                     () => {
                                                         void buyFromShop(item.id, qty);
                                                     }
@@ -913,7 +924,7 @@ const MarketplacePage = () => {
                                                 fontWeight: 700,
                                             }}
                                         >
-                                            Buy
+                                            {t('marketplace.buy')}
                                         </button>
                                     </div>
                                 );
@@ -921,7 +932,7 @@ const MarketplacePage = () => {
 
                             {shopItems.length === 0 && (
                                 <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(2,6,23,0.45)' }}>
-                                    ตอนนี้ไม่มีไอเทมใน NPC Shop สำหรับอาชีพของคุณ
+                                    {t('marketplace.no_npc_items')}
                                 </div>
                             )}
                         </div>
@@ -929,7 +940,7 @@ const MarketplacePage = () => {
 
                     <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,41,59,0.55)' }}>
                         <h3 style={{ margin: 0, marginBottom: '0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
-                            <Tag size={15} /> Recipe Shop ({recipeShop.length})
+                            <Tag size={15} /> {t('marketplace.recipe_shop', { count: recipeShop.length })}
                         </h3>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
@@ -949,21 +960,21 @@ const MarketplacePage = () => {
                                     >
                                         <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc' }}>{recipe.name}</div>
                                         <div style={{ marginTop: '0.26rem', fontSize: '0.72rem', color: '#cbd5e1' }}>
-                                            Unlock: {unlockPrice.toLocaleString()} credits
+                                            {t('marketplace.unlock')}: {unlockPrice.toLocaleString()} {t('common.credits')}
                                         </div>
                                         <button
                                             type="button"
                                             disabled={!canBuyRecipe}
                                             onClick={() => {
                                                 askConfirm(
-                                                    'Confirm Recipe Unlock',
-                                                    `คุณกำลังจะปลดล็อกสูตรอาหาร\n\n` +
-                                                    `Recipe: ${recipe.name}\n` +
-                                                    `Unlock Cost: ${formatCredits(unlockPrice)}\n\n` +
-                                                    `เงินปัจจุบัน: ${formatCredits(user?.money ?? 0)}\n` +
-                                                    `เงินหลังปลดล็อก: ${formatCredits((user?.money ?? 0) - unlockPrice)}\n\n` +
-                                                    `หลังยืนยัน: Recipe นี้จะพร้อมใช้งานทันที`,
-                                                    'Unlock Recipe',
+                                                    t('marketplace.confirm_unlock_title'),
+                                                    `${t('marketplace.confirm_unlock_desc')}\n\n` +
+                                                    `${t('marketplace.recipe')}: ${recipe.name}\n` +
+                                                    `${t('marketplace.unlock_cost')}: ${formatCredits(unlockPrice)}\n\n` +
+                                                    `${t('marketplace.current_money')}: ${formatCredits(user?.money ?? 0)}\n` +
+                                                    `${t('marketplace.money_after_unlock')}: ${formatCredits((user?.money ?? 0) - unlockPrice)}\n\n` +
+                                                    `${t('marketplace.after_confirm_desc')}`,
+                                                    t('marketplace.unlock_recipe'),
                                                     () => {
                                                         void buyRecipeUnlock(recipe.id);
                                                     }
@@ -981,7 +992,7 @@ const MarketplacePage = () => {
                                                 fontWeight: 700,
                                             }}
                                         >
-                                            Unlock Recipe
+                                            {t('marketplace.unlock_recipe')}
                                         </button>
                                     </div>
                                 );
@@ -989,7 +1000,7 @@ const MarketplacePage = () => {
 
                             {recipeShop.length === 0 && (
                                 <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.55)' }}>
-                                    ไม่มี Recipe ที่ต้องปลดล็อกแล้ว
+                                    {t('marketplace.no_recipes')}
                                 </div>
                             )}
                         </div>
@@ -1056,7 +1067,7 @@ const MarketplacePage = () => {
                                     cursor: 'pointer',
                                 }}
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                             <button
                                 type="button"

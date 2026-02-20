@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Mail, Lock, ArrowRight, Gamepad2, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const LoginPage = () => {
+    const { t } = useTranslation();
     const [isRegister, setIsRegister] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,7 +19,7 @@ const LoginPage = () => {
         clearError();
 
         if (isRegister && password !== confirmPassword) {
-            useAuthStore.setState({ error: 'Passwords do not match' });
+            useAuthStore.setState({ error: t('auth.passwords_do_not_match') });
             return;
         }
 
@@ -115,10 +117,10 @@ const LoginPage = () => {
                             backgroundImage: 'linear-gradient(135deg, #c7d2fe, #e0e7ff, #a5b4fc)',
                         }}
                     >
-                        Freelance City
+                        {t('auth.title')}
                     </h1>
                     <p className="text-text-secondary text-sm" style={{ marginTop: '0.75rem' }}>
-                        Build your empire. Feed the city.
+                        {t('auth.subtitle')}
                     </p>
                 </motion.div>
 
@@ -160,7 +162,7 @@ const LoginPage = () => {
                                 <input
                                     id="email-input"
                                     type="email"
-                                    placeholder="Email address"
+                                    placeholder={t('auth.email_placeholder')}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="input-cyber"
@@ -175,7 +177,7 @@ const LoginPage = () => {
                                 <input
                                     id="password-input"
                                     type="password"
-                                    placeholder="Password"
+                                    placeholder={t('auth.password_placeholder')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="input-cyber"
@@ -197,7 +199,7 @@ const LoginPage = () => {
                                     <input
                                         id="confirm-password-input"
                                         type="password"
-                                        placeholder="Confirm password"
+                                        placeholder={t('auth.confirm_password_placeholder')}
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         className="input-cyber"
@@ -224,7 +226,7 @@ const LoginPage = () => {
                             <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
                             <>
-                                {isRegister ? 'Create Account' : 'Sign In'}
+                                {isRegister ? t('auth.register') : t('auth.login')}
                                 <ArrowRight className="w-4 h-4" />
                             </>
                         )}
@@ -240,8 +242,8 @@ const LoginPage = () => {
                         whileHover={{ scale: 1.02 }}
                     >
                         {isRegister
-                            ? 'Already have an account? Sign in'
-                            : "Don't have an account? Register"}
+                            ? t('auth.already_have_account')
+                            : t('auth.dont_have_account')}
                     </motion.button>
                 </div>
 

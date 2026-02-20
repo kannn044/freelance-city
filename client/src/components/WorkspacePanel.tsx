@@ -5,9 +5,10 @@ import { Sprout, UtensilsCrossed, Pickaxe } from 'lucide-react';
 import { renderItemIcon } from '../lib/itemVisual';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { getEquipmentRarityColor, getEquipmentRarityLabel, type EquipmentRarity } from '../lib/equipmentRarity';
+import { getEquipmentRarityColor, type EquipmentRarity } from '../lib/equipmentRarity';
 import type { IngredientSelection, WorkspaceActionResult } from '../stores/gameStore';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 type CookMixRule = {
     key: `${EquipmentRarity}+${EquipmentRarity}`;
@@ -50,6 +51,7 @@ const getCookMixOutcomes = (a: EquipmentRarity, b: EquipmentRarity) => {
 };
 
 const WorkspacePanel = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { inventory, recipes, recipeShop, startFarm, startMine, startCook, ferrumMiningConfig } = useGameStore();
     const user = useAuthStore((s) => s.user);
@@ -107,7 +109,7 @@ const WorkspacePanel = () => {
     const pairA = (topTwo[0] ?? 'NORMAL') as EquipmentRarity;
     const pairB = (topTwo[1] ?? 'NORMAL') as EquipmentRarity;
     const predictedOutcomes = getCookMixOutcomes(pairA, pairB);
-    const predictedPairLabel = `${getEquipmentRarityLabel(pairA)} + ${getEquipmentRarityLabel(pairB)}`;
+    const predictedPairLabel = `${t(`common.rarity_labels.${pairA.toUpperCase()}`)} + ${t(`common.rarity_labels.${pairB.toUpperCase()}`)}`;
 
     const openCookPicker = (recipeId: number) => {
         setSelectedRecipeId(recipeId);
@@ -125,20 +127,20 @@ const WorkspacePanel = () => {
         if (!requirement?.requiredItemName) {
             setRequirementModal({
                 open: true,
-                title: isSecondarySmeltMode ? 'ไม่สามารถเริ่มหลอมได้' : 'ไม่สามารถเริ่มงานได้',
-                description: result.error ?? 'เกิดข้อผิดพลาดในการเริ่มงาน',
+                title: isSecondarySmeltMode ? t('workspace.cannot_start_smelt') : t('workspace.cannot_start_job'),
+                description: result.error ?? t('workspace.error_start_job'),
             });
             return;
         }
 
         const howTo = requirement.mustBeEquipped
-            ? `กรุณาสวมใส่ ${requirement.requiredItemName} ก่อนเริ่มงานนี้`
-            : `กรุณามี ${requirement.requiredItemName} ในกระเป๋าก่อนเริ่มงานนี้`;
+            ? t('workspace.must_equip', { name: requirement.requiredItemName })
+            : t('workspace.must_have', { name: requirement.requiredItemName });
 
         setRequirementModal({
             open: true,
-            title: 'ไม่สามารถเริ่มงานได้',
-            description: `${result.error ?? 'เงื่อนไขไม่ผ่าน'}\n\n${howTo}\nสามารถซื้อได้ที่ NPC Shop`,
+            title: t('workspace.cannot_start_job'),
+            description: `${result.error ?? t('workspace.condition_failed')}\n\n${howTo}\n${t('workspace.buy_at_npc')}`,
         });
     };
 
@@ -200,7 +202,7 @@ const WorkspacePanel = () => {
                         textAlign: 'center',
                         padding: '1rem 0',
                     }}>
-                        No workspace actions available yet.
+                        {t('workspace.no_actions')}
                     </p>
                 )}
 
@@ -209,12 +211,12 @@ const WorkspacePanel = () => {
                         {isMiningMode ? (
                             <>
                                 <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
-                                    <Pickaxe style={{ width: '0.7rem', height: '0.7rem' }} /> {firstJobLabel} Mining Zones
+                                    <Pickaxe style={{ width: '0.7rem', height: '0.7rem' }} /> {t('workspace.mining_zones', { label: firstJobLabel })}
                                 </div>
                                 {([
-                                    { key: 'SURFACE', label: 'Surface Layer', mins: ferrumMiningConfig.layerTimeMins.surface, note: 'Low risk, common ore veins' },
-                                    { key: 'DEEP', label: 'Deep Layer', mins: ferrumMiningConfig.layerTimeMins.deep, note: 'Higher steel chance, helmet recommended' },
-                                    { key: 'CORE', label: 'Core Layer', mins: ferrumMiningConfig.layerTimeMins.core, note: 'High-value zone, heavy fatigue' },
+                                    { key: 'SURFACE', label: t('workspace.mine_layers.SURFACE.label'), mins: ferrumMiningConfig.layerTimeMins.surface, note: t('workspace.mine_layers.SURFACE.note') },
+                                    { key: 'DEEP', label: t('workspace.mine_layers.DEEP.label'), mins: ferrumMiningConfig.layerTimeMins.deep, note: t('workspace.mine_layers.DEEP.note') },
+                                    { key: 'CORE', label: t('workspace.mine_layers.CORE.label'), mins: ferrumMiningConfig.layerTimeMins.core, note: t('workspace.mine_layers.CORE.note') },
                                 ] as const).map((layer) => (
                                     <motion.button
                                         key={layer.key}
@@ -240,7 +242,7 @@ const WorkspacePanel = () => {
                                         <span>{layer.label}</span>
                                         <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)' }}>{layer.note}</span>
                                         <span style={{ fontSize: '0.62rem', color: '#67e8f9' }}>
-                                            Time ~{layer.mins}m • Cost {ferrumMiningConfig.hungerCostPerExpedition} hunger
+                                            {t('workspace.mine_time_cost', { mins: layer.mins, hunger: ferrumMiningConfig.hungerCostPerExpedition })}
                                         </span>
                                     </motion.button>
                                 ))}
@@ -248,11 +250,11 @@ const WorkspacePanel = () => {
                         ) : (
                             <>
                                 <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                    <Sprout style={{ width: '0.7rem', height: '0.7rem' }} /> Farm your seeds
+                                    <Sprout style={{ width: '0.7rem', height: '0.7rem' }} /> {t('workspace.farm_seeds')}
                                 </div>
                                 {seedSlots.length === 0 ? (
                                     <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)' }}>
-                                        No seeds in inventory.
+                                        {t('workspace.no_seeds')}
                                     </p>
                                 ) : (
                                     seedSlots.map((slot) => (
@@ -289,7 +291,7 @@ const WorkspacePanel = () => {
                 {canCook && (
                     <>
                         <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <UtensilsCrossed style={{ width: '0.7rem', height: '0.7rem' }} /> {isSecondarySmeltMode ? `${secondaryJobLabel} Smelter` : `${secondaryJobLabel} Recipes`}
+                            <UtensilsCrossed style={{ width: '0.7rem', height: '0.7rem' }} /> {isSecondarySmeltMode ? t('workspace.smelter', { label: secondaryJobLabel }) : t('workspace.recipes', { label: secondaryJobLabel })}
                         </div>
 
                         {visibleRecipes.length > 0 && (
@@ -331,13 +333,13 @@ const WorkspacePanel = () => {
 
                         {recipeShop.length > 0 && (
                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.42)' }}>
-                                Some recipes are locked. Buy recipe scrolls in NPC Shop.
+                                {t('workspace.locked_recipes_desc')}
                             </div>
                         )}
 
                         {visibleRecipes.length === 0 && recipeShop.length === 0 && (
                             <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
-                                No recipes available.
+                                {t('workspace.no_recipes')}
                             </p>
                         )}
                     </>
@@ -384,10 +386,10 @@ const WorkspacePanel = () => {
                                 }}
                             >
                             <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
-                                {isSecondarySmeltMode ? 'เลือกวัตถุดิบสำหรับการหลอม' : 'เลือกวัตถุดิบสำหรับการปรุง'} {selectedRecipe.name}
+                                {isSecondarySmeltMode ? t('workspace.choose_ingredients_smelt', { name: selectedRecipe.name }) : t('workspace.choose_ingredients_cook', { name: selectedRecipe.name })}
                             </div>
                             <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.55)' }}>
-                                เลือกจาก inventory slot เพื่อควบคุม rarity ของผลผลิต
+                                {t('workspace.rarity_control_desc')}
                             </div>
 
                             <div
@@ -413,10 +415,10 @@ const WorkspacePanel = () => {
                                     }}
                                 >
                                     <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
-                                        โอกาสผลลัพธ์ที่คาดการณ์ (Realtime)
+                                        {t('workspace.predicted_outcomes')}
                                     </div>
                                     <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        Base Pair: {predictedPairLabel}
+                                        {t('workspace.base_pair', { label: predictedPairLabel })}
                                     </div>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
                                         {predictedOutcomes.map((o) => (
@@ -431,7 +433,7 @@ const WorkspacePanel = () => {
                                                     fontWeight: 700,
                                                 }}
                                             >
-                                                {getEquipmentRarityLabel(o.rarity)} {o.chancePct.toFixed(1)}%
+                                                {t(`common.rarity_labels.${o.rarity.toUpperCase()}`)} {o.chancePct.toFixed(1)}%
                                             </div>
                                         ))}
                                     </div>
@@ -466,7 +468,7 @@ const WorkspacePanel = () => {
                                             </div>
 
                                             {candidates.length === 0 ? (
-                                                <div style={{ fontSize: '0.62rem', color: '#fda4af' }}>ไม่มีวัตถุดิบชนิดนี้ใน inventory</div>
+                                                <div style={{ fontSize: '0.62rem', color: '#fda4af' }}>{t('workspace.no_ingredient_in_inv')}</div>
                                             ) : (
                                                 candidates.map((slot) => {
                                                     const current = selectedQtyBySlot[slot.id] ?? 0;
@@ -487,9 +489,9 @@ const WorkspacePanel = () => {
                                                         >
                                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                                                 <span style={{ fontSize: '0.64rem', color: rarity ? getEquipmentRarityColor(rarity) : 'rgba(255,255,255,0.85)' }}>
-                                                                    Slot #{slot.slot + 1} {rarity ? `• ${getEquipmentRarityLabel(rarity)}` : '• Normal'}
+                                                                    Slot #{slot.slot + 1} {rarity ? `• ${t(`common.rarity_labels.${rarity.toUpperCase()}`)}` : `• ${t('workspace.normal')}`}
                                                                 </span>
-                                                                <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.5)' }}>มีอยู่ x{slot.quantity}</span>
+                                                                <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.5)' }}>{t('workspace.in_stock', { qty: slot.quantity })}</span>
                                                             </div>
 
                                                             <input
@@ -533,7 +535,7 @@ const WorkspacePanel = () => {
                                             cursor: 'pointer',
                                         }}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                     <button
                                         onClick={submitCookSelection}
@@ -549,7 +551,7 @@ const WorkspacePanel = () => {
                                             cursor: recipeSelectionValid ? 'pointer' : 'not-allowed',
                                         }}
                                     >
-                                        {isSecondarySmeltMode ? 'Start Smelting' : 'Start Cooking'}
+                                        {isSecondarySmeltMode ? t('workspace.start_smelting') : t('workspace.start_cooking')}
                                     </button>
                                 </div>
                             </motion.div>
@@ -621,7 +623,7 @@ const WorkspacePanel = () => {
                                             cursor: 'pointer',
                                         }}
                                     >
-                                        ปิด
+                                        {t('workspace.close')}
                                     </button>
                                     <button
                                         onClick={() => {
@@ -639,7 +641,7 @@ const WorkspacePanel = () => {
                                             cursor: 'pointer',
                                         }}
                                     >
-                                        ไปที่ NPC Shop
+                                        {t('workspace.go_to_npc')}
                                     </button>
                                 </div>
                             </motion.div>

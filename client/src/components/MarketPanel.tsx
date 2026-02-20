@@ -4,11 +4,13 @@ import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
 import { ShoppingCart, Tag, Store, Gift, CircleHelp, Sparkles, Coins, ScrollText, Dices } from 'lucide-react';
 import { renderItemIcon } from '../lib/itemVisual';
-import { getEquipmentRarityColor, getEquipmentRarityLabel } from '../lib/equipmentRarity';
+import { getEquipmentRarityColor } from '../lib/equipmentRarity';
+import { useTranslation } from 'react-i18next';
 
 type Tab = 'market' | 'shop' | 'equipment';
 
 const MarketPanel = () => {
+    const { t } = useTranslation();
     const {
         marketListings,
         salesHistory,
@@ -56,7 +58,7 @@ const MarketPanel = () => {
         open: false,
         title: '',
         description: '',
-        confirmLabel: 'Confirm',
+        confirmLabel: t('common.confirm'),
         onConfirm: null,
     });
 
@@ -160,7 +162,7 @@ const MarketPanel = () => {
         fn?.();
     };
 
-    const formatTierSuffix = (rarity?: string | null) => (rarity ? ` (${getEquipmentRarityLabel(rarity)})` : '');
+    const formatTierSuffix = (rarity?: string | null) => (rarity ? ` (${t(`common.rarity_labels.${rarity.toUpperCase()}`)})` : '');
     const getTierColor = (rarity?: string | null) => (rarity ? getEquipmentRarityColor(rarity) : 'rgba(255,255,255,0.92)');
 
     const formatEquipmentStatus = (
@@ -169,40 +171,40 @@ const MarketPanel = () => {
         effectValue2?: number | null,
         multiplier = 1
     ) => {
-        if (!effectKey) return ['No special status'];
+        if (!effectKey) return [t('inventory.no_special_status')];
 
         const v = Number(effectValue ?? 0) * multiplier;
         const v2 = Number(effectValue2 ?? 0) * multiplier;
 
         switch (effectKey) {
             case 'hunger_penalty_tier_reduction':
-                return [`Hunger Penalty Tier -${Math.round(v)}`];
+                return [t('inventory.effects.hunger_penalty', { v: Math.round(v) })];
             case 'cook_secondary_ingredient_save_chance':
-                return [`Secondary Ingredient Save Chance +${Math.round(v * 100)}%`];
+                return [t('inventory.effects.save_ingredient', { v: Math.round(v * 100) })];
             case 'max_hunger_bonus':
-                return [`Max Hunger +${Math.round(v)}`];
+                return [t('inventory.effects.max_hunger', { v: Math.round(v) })];
             case 'max_hunger_and_satiety_bonus':
                 return [
-                    `Max Hunger +${Math.round(v)}`,
-                    `Satiety Bonus +${Math.round(v2 * 100)}%`,
+                    t('inventory.effects.max_hunger', { v: Math.round(v) }),
+                    t('dashboard.satiety_buff_desc', { value: Math.round(v2 * 100) }),
                 ];
             case 'raw_stack_bonus':
-                return [`Raw Stack Capacity +${Math.round(v)}`];
+                return [t('inventory.effects.raw_stack', { v: Math.round(v) })];
             case 'ingredient_stack_bonus':
-                return [`Ingredient Stack Capacity +${Math.round(v)}`];
+                return [t('inventory.effects.ingredient_stack', { v: Math.round(v) })];
             case 'farm_time_reduction_pct':
-                return [`Farm Time Reduction +${Math.round(v * 100)}%`];
+                return [t('inventory.effects.farm_time', { v: Math.round(v * 100) })];
             case 'cook_time_reduction_pct':
-                return [`Cook Time Reduction +${Math.round(v * 100)}%`];
+                return [t('inventory.effects.cook_time', { v: Math.round(v * 100) })];
             case 'farm_double_yield_chance':
-                return [`Double Yield Chance +${Math.round(v * 100)}%`];
+                return [t('inventory.effects.farm_double', { v: Math.round(v * 100) })];
             case 'gourmet_chance':
-                return [`Gourmet Chance +${Math.round(v * 100)}%`];
+                return [t('inventory.effects.gourmet', { v: Math.round(v * 100) })];
             case 'hunger_decay_reduction_per_min':
-                return [`Hunger Decay Reduction ${v.toFixed(1)}/min`];
+                return [t('inventory.effects.hunger_decay_min', { v: v.toFixed(1) })];
             case 'cook_state_hunger_decay_reduction_pct':
                 return [
-                    `Cooking Hunger Decay Reduction +${Math.round(v * 100)}%`,
+                    t('inventory.effects.cook_decay', { v: Math.round(v * 100) }),
                 ].filter(Boolean);
             default:
                 return [`${effectKey}: ${v}${effectValue2 != null ? ` / ${v2}` : ''}`];
@@ -230,9 +232,9 @@ const MarketPanel = () => {
     const handleSell = () => {
         if (sellSlotId === null) return;
         askConfirm(
-            'Confirm Sell Listing',
-            `List this item for sale?\nQuantity: ${sellQty}\nUnit Price: ${sellPrice}\nTotal: ${sellQty * sellPrice}`,
-            'List Item',
+            t('marketplace.confirm_listing_title'),
+            `${t('marketplace.confirm_listing_desc')}?\n${t('common.quantity')}: ${sellQty}\n${t('marketplace.unit_price')}: ${sellPrice}\n${t('common.total')}: ${sellQty * sellPrice}`,
+            t('marketplace.create_listing'),
             () => {
                 createListing(sellSlotId, sellQty, sellPrice);
                 setShowSellForm(false);
@@ -271,10 +273,10 @@ const MarketPanel = () => {
                     gap: '0.25rem',
                 }}
             >
-                {(['market', 'shop', 'equipment'] as Tab[]).map((t) => (
+                {(['market', 'shop', 'equipment'] as Tab[]).map((tTab) => (
                     <button
-                        key={t}
-                        onClick={() => setTab(t)}
+                        key={tTab}
+                        onClick={() => setTab(tTab)}
                         style={{
                             flex: 1,
                             padding: '0.35rem',
@@ -287,19 +289,19 @@ const MarketPanel = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '0.3rem',
-                            background: tab === t ? 'rgba(255,255,255,0.1)' : 'transparent',
-                            color: tab === t ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.5)',
+                            background: tab === tTab ? 'rgba(255,255,255,0.1)' : 'transparent',
+                            color: tab === tTab ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.5)',
                             transition: 'all 0.2s',
                         }}
                     >
-                        {t === 'market' ? (
+                        {tTab === 'market' ? (
                             <ShoppingCart style={{ width: '0.7rem', height: '0.7rem' }} />
-                        ) : t === 'shop' ? (
+                        ) : tTab === 'shop' ? (
                             <Store style={{ width: '0.7rem', height: '0.7rem' }} />
                         ) : (
                             <Gift style={{ width: '0.7rem', height: '0.7rem' }} />
                         )}
-                        {t === 'market' ? 'Market' : t === 'shop' ? 'NPC Shop' : 'Equipment Shop'}
+                        {tTab === 'market' ? t('marketplace.tabs.market') : tTab === 'shop' ? t('marketplace.tabs.npc_shop') : t('marketplace.tabs.equipment_shop')}
                     </button>
                 ))}
             </div>
@@ -328,7 +330,7 @@ const MarketPanel = () => {
                         }}
                     >
                         <Tag style={{ width: '0.7rem', height: '0.7rem' }} />
-                        {showSellForm ? 'Cancel' : 'Sell Item'}
+                        {showSellForm ? t('common.cancel') : t('marketplace.sell_from_inventory')}
                     </motion.button>
 
                     {/* Sell form */}
@@ -375,7 +377,7 @@ const MarketPanel = () => {
                                             </span>
                                         </span>
                                     ) : (
-                                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Select item...</span>
+                                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>{t('marketplace.select_item')}...</span>
                                     )}
                                     <span style={{ color: 'rgba(255,255,255,0.6)' }}>{showSellPicker ? '▲' : '▼'}</span>
                                 </button>
@@ -400,7 +402,7 @@ const MarketPanel = () => {
                                         >
                                             {sellableSlots.length === 0 ? (
                                                 <div style={{ padding: '0.4rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)' }}>
-                                                    No sellable item
+                                                    {t('marketplace.no_items_available')}
                                                 </div>
                                             ) : (
                                                 sellableSlots.map((s) => (
@@ -449,7 +451,7 @@ const MarketPanel = () => {
                                             const max = sellableSlots.find((s) => s.id === sellSlotId)?.quantity ?? 1;
                                             setSellQty(Math.min(Math.max(1, Number(e.target.value)), max));
                                         }}
-                                        placeholder="Qty"
+                                        placeholder={t('common.qty')}
                                         style={{
                                             flex: 1,
                                             padding: '0.35rem',
@@ -472,7 +474,7 @@ const MarketPanel = () => {
                                             }
                                         }}
                                         onBlur={() => setSellPriceInput(String(sellPrice))}
-                                        placeholder="Unit Price"
+                                        placeholder={t('marketplace.unit_price')}
                                         style={{
                                             flex: 1,
                                             padding: '0.35rem',
@@ -486,7 +488,7 @@ const MarketPanel = () => {
                                 </div>
                                 {sellSlotId !== null && (
                                     <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)', textAlign: 'right' }}>
-                                        Total: <span style={{ color: '#fbbf24', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={12} /> {sellQty * sellPrice}</span>
+                                        {t('common.total')}: <span style={{ color: '#fbbf24', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={12} /> {sellQty * sellPrice}</span>
                                     </div>
                                 )}
                                 <motion.button
@@ -505,7 +507,7 @@ const MarketPanel = () => {
                                         cursor: sellSlotId !== null ? 'pointer' : 'not-allowed',
                                     }}
                                 >
-                                    List for Sale
+                                    {t('marketplace.create_listing')}
                                 </motion.button>
                             </motion.div>
                         )}
@@ -514,13 +516,13 @@ const MarketPanel = () => {
                     {/* Listings: Other Players */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>
-                            Other Players Listings
+                            {t('marketplace.other_player_listings')}
                         </div>
                         <input
                             type="text"
                             value={otherSearch}
                             onChange={(e) => setOtherSearch(e.target.value)}
-                            placeholder="Search item/seller..."
+                            placeholder={t('marketplace.search_placeholder')}
                             style={{
                                 width: '100%',
                                 padding: '0.35rem 0.45rem',
@@ -533,7 +535,7 @@ const MarketPanel = () => {
                         />
                         {otherListings.length === 0 ? (
                             <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', padding: '0.35rem 0' }}>
-                                No listings from other players.
+                                {t('marketplace.no_listings')}
                             </p>
                         ) : (
                             otherListings.map((listing) => (
@@ -558,10 +560,10 @@ const MarketPanel = () => {
                                                 {listing.quantity}x {listing.item.name}{formatTierSuffix(listing.equipment_rarity)}
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.35)' }}>
-                                                by {listing.seller.email.split('@')[0]}
+                                                {t('marketplace.seller')}: {listing.seller.email.split('@')[0]}
                                             </div>
                                             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                Unit: {listing.price} • Total: {getTotalPrice(listing.price, listing.quantity)}
+                                                {t('marketplace.unit')}: {listing.price} • {t('common.total')}: {getTotalPrice(listing.price, listing.quantity)}
                                             </div>
                                         </div>
                                     </div>
@@ -597,9 +599,9 @@ const MarketPanel = () => {
                                                     listing.quantity
                                                 );
                                                 askConfirm(
-                                                    'Confirm Purchase',
-                                                    `Buy ${qty}x ${listing.item.name}${formatTierSuffix(listing.equipment_rarity)} for ${qty * listing.price} credits?\n(Unit: ${listing.price})`,
-                                                    'Buy',
+                                                    t('marketplace.confirm_buy_title'),
+                                                    `${t('marketplace.confirm_buy_desc')} ${qty}x ${listing.item.name}${formatTierSuffix(listing.equipment_rarity)} for ${qty * listing.price} ${t('common.credits')}?\n(${t('marketplace.unit')}: ${listing.price})`,
+                                                    t('marketplace.buy'),
                                                     () => buyListing(listing.id, qty)
                                                 );
                                             }}
@@ -625,13 +627,13 @@ const MarketPanel = () => {
                     {/* Listings: Your Items */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.2rem' }}>
                         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>
-                            Your Listings
+                            {t('marketplace.stats.my_listings')}
                         </div>
                         <input
                             type="text"
                             value={ownSearch}
                             onChange={(e) => setOwnSearch(e.target.value)}
-                            placeholder="Search your items..."
+                            placeholder={t('marketplace.search_placeholder')}
                             style={{
                                 width: '100%',
                                 padding: '0.35rem 0.45rem',
@@ -644,7 +646,7 @@ const MarketPanel = () => {
                         />
                         {ownListings.length === 0 ? (
                             <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', padding: '0.35rem 0' }}>
-                                You have no active listings.
+                                {t('marketplace.no_own_listings')}
                             </p>
                         ) : (
                             ownListings.map((listing) => (
@@ -669,10 +671,10 @@ const MarketPanel = () => {
                                                 {listing.quantity}x {listing.item.name}{formatTierSuffix(listing.equipment_rarity)}
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
-                                                Your listing
+                                                {t('marketplace.stats.my_listings')}
                                             </div>
                                             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                Unit: {listing.price} • Total: {getTotalPrice(listing.price, listing.quantity)}
+                                                {t('marketplace.unit')}: {listing.price} • {t('common.total')}: {getTotalPrice(listing.price, listing.quantity)}
                                             </div>
                                         </div>
                                     </div>
@@ -684,15 +686,15 @@ const MarketPanel = () => {
                                         whileTap={{ scale: 0.96 }}
                                         onClick={() =>
                                             askConfirm(
-                                                'Confirm Cancel Listing',
-                                                `Cancel ${listing.quantity}x ${listing.item.name}${formatTierSuffix(listing.equipment_rarity)}?\nItem will return to your inventory only if space is available.`,
-                                                'Cancel Listing',
+                                                t('marketplace.confirm_cancel_title'),
+                                                `${t('marketplace.confirm_cancel_desc')}\n${listing.quantity}x ${listing.item.name}${formatTierSuffix(listing.equipment_rarity)}?`,
+                                                t('marketplace.cancel_listing'),
                                                 () => cancelListing(listing.id)
                                             )
                                         }
                                         style={{
                                             marginLeft: '0.45rem',
-                                            padding: '0.28rem 0.5rem',
+                                            padding: '0.28rem 0.55rem',
                                             borderRadius: '0.35rem',
                                             border: '1px solid rgba(248,113,113,0.35)',
                                             background: 'rgba(248,113,113,0.12)',
@@ -703,7 +705,7 @@ const MarketPanel = () => {
                                             whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </motion.button>
                                 </motion.div>
                             ))
@@ -713,13 +715,13 @@ const MarketPanel = () => {
                     {/* Sales History */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.25rem' }}>
                         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>
-                            Sales History
+                            {t('marketplace.stats.recent_sales')}
                         </div>
                         <input
                             type="text"
                             value={salesSearch}
                             onChange={(e) => setSalesSearch(e.target.value)}
-                            placeholder="Search sold items/buyer..."
+                            placeholder={t('marketplace.search_placeholder')}
                             style={{
                                 width: '100%',
                                 padding: '0.35rem 0.45rem',
@@ -732,7 +734,7 @@ const MarketPanel = () => {
                         />
                         {filteredSalesHistory.length === 0 ? (
                             <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', padding: '0.35rem 0' }}>
-                                No sold history yet.
+                                {t('marketplace.no_sales_history')}
                             </p>
                         ) : (
                             filteredSalesHistory.map((sale) => (
@@ -757,10 +759,10 @@ const MarketPanel = () => {
                                                 {sale.quantity}x {sale.item.name}{formatTierSuffix(sale.equipment_rarity)}
                                             </div>
                                             <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
-                                                Buyer: {sale.buyer_name} • {formatSoldTime(sale.sold_at)}
+                                                {t('marketplace.seller')}: {sale.buyer_name} • {formatSoldTime(sale.sold_at)}
                                             </div>
                                             <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.4)' }}>
-                                                Unit: {sale.price} • Total: {getTotalPrice(sale.price, sale.quantity)}
+                                                {t('marketplace.unit')}: {sale.price} • {t('common.total')}: {getTotalPrice(sale.price, sale.quantity)}
                                             </div>
                                         </div>
                                     </div>
@@ -776,11 +778,11 @@ const MarketPanel = () => {
 
             {/* NPC Shop Tab */}
             {tab === 'shop' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                     {recipeShop.length > 0 && (
                         <>
                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>
-                                Recipe Scrolls (Secondary Job only)
+                                {t('marketplace.recipe_scrolls_desc')}
                             </div>
                             {recipeShop.map((recipe) => (
                                 <motion.div
@@ -802,7 +804,7 @@ const MarketPanel = () => {
                                             <ScrollText size={12} /> {recipe.name}
                                         </div>
                                         <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.45)' }}>
-                                            Unlock to cook in workspace
+                                            {t('marketplace.unlock_to_cook')}
                                         </div>
                                     </div>
                                     <motion.button
@@ -810,9 +812,9 @@ const MarketPanel = () => {
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() =>
                                             askConfirm(
-                                                'Confirm Recipe Unlock',
-                                                `Unlock ${recipe.name} for ${recipe.unlock_price ?? 300} credits?`,
-                                                'Unlock',
+                                                t('marketplace.confirm_unlock_title'),
+                                                `${t('marketplace.confirm_unlock_desc')} ${recipe.name} for ${recipe.unlock_price ?? 300} ${t('common.credits')}?`,
+                                                t('marketplace.unlock'),
                                                 () => buyRecipeUnlock(recipe.id)
                                             )
                                         }
@@ -836,7 +838,7 @@ const MarketPanel = () => {
 
                     {shopItems.length === 0 && (!((user?.secondary_job_level ?? 0) > 0) || recipeShop.length === 0) ? (
                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '1rem 0' }}>
-                            No items available. Unlock an occupation first!
+                            {t('marketplace.no_items_available')}
                         </p>
                     ) : (
                         shopItems.map((item) => (
@@ -872,9 +874,9 @@ const MarketPanel = () => {
                                         const qty = Math.max(1, shopBuyQty[item.id] ?? 1);
                                         const unitPrice = item.buy_price ?? 0;
                                         askConfirm(
-                                            'Confirm NPC Purchase',
-                                            `Buy ${qty}x ${item.name} for ${qty * unitPrice} credits?\n(Unit: ${unitPrice})`,
-                                            'Buy',
+                                            t('marketplace.confirm_buy_npc_title'),
+                                            `${t('marketplace.confirm_buy_npc_desc')} ${qty}x ${item.name} for ${qty * unitPrice} ${t('common.credits')}?\n(${t('marketplace.unit')}: ${unitPrice})`,
+                                            t('marketplace.buy'),
                                             () => buyFromShop(item.id, qty)
                                         );
                                     }}
@@ -936,10 +938,10 @@ const MarketPanel = () => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                             <div>
                                 <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#ddd6fe', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                                    <Gift size={12} /> Equipment Box
+                                    <Gift size={12} /> {t('marketplace.equipment_box')}
                                 </div>
                                 <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.55)' }}>
-                                    1 Box = 1 Random Equipment (can roll other occupation)
+                                    {t('marketplace.equipment_box_desc')}
                                 </div>
                             </div>
                             <motion.button
@@ -947,9 +949,9 @@ const MarketPanel = () => {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() =>
                                     askConfirm(
-                                        'Confirm Open Box',
-                                        `Open 1 Equipment Box for ${equipmentBoxInfo?.box?.price ?? 420} credits?\nYou will receive 1 random equipment item.`,
-                                        'Open Box',
+                                        t('marketplace.confirm_open_box'),
+                                        t('marketplace.open_box_desc', { price: equipmentBoxInfo?.box?.price ?? 420 }),
+                                        t('marketplace.open_box'),
                                         () => {
                                             void openEquipmentBoxWithReveal();
                                         }
@@ -981,7 +983,7 @@ const MarketPanel = () => {
                                 position: 'relative',
                             }}
                         >
-                            <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.6)' }}>Drop Details</span>
+                            <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.6)' }}>{t('marketplace.drop_details')}</span>
                                 <button
                                     onClick={() => setShowOddsModal(true)}
                                     style={{
@@ -1036,10 +1038,10 @@ const MarketPanel = () => {
                             }}
                         >
                             <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ddd6fe', marginBottom: '0.4rem' }}>
-                                Equipment Box Drop Details
+                                {t('marketplace.box_drop_details')}
                             </div>
                             <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.45rem' }}>
-                                Formula: Slot Weight
+                                {t('marketplace.formula_slot_weight')}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem 0.45rem', fontSize: '0.62rem', color: 'rgba(255,255,255,0.82)' }}>
                                 {equipmentBoxInfo?.odds?.map((o) => (
@@ -1048,12 +1050,12 @@ const MarketPanel = () => {
                             </div>
 
                             <div style={{ marginTop: '0.6rem', fontSize: '0.66rem', color: '#c4b5fd', fontWeight: 700 }}>
-                                Rarity Odds
+                                {t('marketplace.rarity_odds')}
                             </div>
                             <div style={{ marginTop: '0.3rem', display: 'grid', gap: '0.2rem', fontSize: '0.62rem' }}>
                                 {(equipmentBoxInfo?.rarityOdds ?? []).map((r) => (
                                     <div key={r.rarity} style={{ color: getEquipmentRarityColor(r.rarity) }}>
-                                        {getEquipmentRarityLabel(r.rarity)}: {r.chancePct}% (Buff x{r.buffMultiplier})
+                                        {t(`common.rarity_labels.${r.rarity.toUpperCase()}`)}: {r.chancePct}% (Buff x{r.buffMultiplier})
                                     </div>
                                 ))}
                             </div>
@@ -1070,7 +1072,7 @@ const MarketPanel = () => {
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    Close
+                                    {t('common.close')}
                                 </button>
                             </div>
                         </motion.div>
@@ -1129,16 +1131,16 @@ const MarketPanel = () => {
                                     >
                                         <Gift style={{ width: '2rem', height: '2rem', color: '#ddd6fe' }} />
                                     </motion.div>
-                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ddd6fe' }}>Opening Equipment Box...</div>
+                                    <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ddd6fe' }}>{t('marketplace.opening_box')}</div>
                                     <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.65)' }}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Dices size={12} /> Please wait... luck is rolling</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}><Dices size={12} /> {t('marketplace.luck_is_rolling')}</span>
                                     </div>
                                 </div>
                             ) : boxOpenResult?.ok && boxOpenResult.rolled?.item ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#c4b5fd', fontSize: '0.8rem', fontWeight: 700 }}>
                                         <Sparkles style={{ width: '0.9rem', height: '0.9rem' }} />
-                                        Box Opened!
+                                        {t('marketplace.box_opened')}
                                     </div>
 
                                     <div
@@ -1176,7 +1178,7 @@ const MarketPanel = () => {
                                                 {boxOpenResult.rolled.item.name}
                                             </div>
                                             <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.62)' }}>
-                                                Price Spent: {boxOpenResult.boxPrice ?? equipmentBoxInfo?.box?.price ?? 420} credits
+                                                {t('marketplace.price_spent')}: {boxOpenResult.boxPrice ?? equipmentBoxInfo?.box?.price ?? 420} {t('common.credits')}
                                             </div>
                                         </div>
                                     </div>
@@ -1193,16 +1195,16 @@ const MarketPanel = () => {
                                             color: 'rgba(255,255,255,0.82)',
                                         }}
                                     >
-                                        <div><b style={{ color: '#ddd6fe' }}>Slot:</b> {boxOpenResult.rolled.slot}</div>
+                                        <div><b style={{ color: '#ddd6fe' }}>{t('inventory.slot')}:</b> {boxOpenResult.rolled.slot}</div>
                                         <div>
-                                            <b style={{ color: '#ddd6fe' }}>Rarity:</b>{' '}
+                                            <b style={{ color: '#ddd6fe' }}>{t('common.rarity')}:</b>{' '}
                                             <span style={{ color: getEquipmentRarityColor(boxOpenResult.rolled.rarity), fontWeight: 700 }}>
-                                                {getEquipmentRarityLabel(boxOpenResult.rolled.rarity)}
+                                                {t(`common.rarity_labels.${boxOpenResult.rolled.rarity.toUpperCase()}`)}
                                             </span>{' '}
                                             <span style={{ color: 'rgba(255,255,255,0.62)' }}>(Buff x{boxOpenResult.rolled.buffMultiplier ?? 1})</span>
                                         </div>
                                         <div style={{ display: 'grid', gap: '0.2rem' }}>
-                                            <b style={{ color: '#ddd6fe' }}>Status:</b>
+                                            <b style={{ color: '#ddd6fe' }}>{t('inventory.effects.status')}:</b>
                                             {formatEquipmentStatus(
                                                 boxOpenResult.rolled.item.effect_key,
                                                 boxOpenResult.rolled.item.effect_value,
@@ -1230,15 +1232,15 @@ const MarketPanel = () => {
                                                 cursor: 'pointer',
                                             }}
                                         >
-                                            Nice!
+                                            {t('marketplace.nice')}
                                         </button>
                                     </div>
                                 </div>
                             ) : (
                                 <div style={{ display: 'grid', gap: '0.6rem' }}>
-                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fca5a5' }}>Open Box Failed</div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fca5a5' }}>{t('marketplace.open_box_failed')}</div>
                                     <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.72)' }}>
-                                        {boxOpenResult?.error ?? 'Failed to open equipment box'}
+                                        {boxOpenResult?.error ?? t('marketplace.open_box_failed')}
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <button
@@ -1253,7 +1255,7 @@ const MarketPanel = () => {
                                                 cursor: 'pointer',
                                             }}
                                         >
-                                            Close
+                                            {t('common.close')}
                                         </button>
                                     </div>
                                 </div>
@@ -1314,7 +1316,7 @@ const MarketPanel = () => {
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button
                                     onClick={runConfirm}

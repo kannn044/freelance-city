@@ -1,22 +1,25 @@
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../stores/authStore';
+import { useTranslation } from 'react-i18next';
 
 interface HungerBarProps {
     hunger: number;
     maxHunger?: number;
 }
 
-function getHungerState(hunger: number, max: number) {
-    const pct = (hunger / max) * 100;
-    if (pct >= 80) return { state: 'Fit', color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)', multiplier: '1.0x' };
-    if (pct >= 40) return { state: 'Normal', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)', multiplier: '1.2x' };
-    if (pct >= 20) return { state: 'Hungry', color: '#fb923c', bg: 'rgba(251, 146, 60, 0.15)', multiplier: '1.5x' };
-    return { state: 'Starving', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', multiplier: '2.5x' };
-}
-
 const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
+    const { t } = useTranslation();
     const user = useAuthStore((s) => s.user);
     const pct = Math.max(0, Math.min(100, (hunger / maxHunger) * 100));
+
+    const getHungerState = (h: number, max: number) => {
+        const p = (h / max) * 100;
+        if (p >= 80) return { state: t('hunger.states.Fit'), color: '#34d399', bg: 'rgba(52, 211, 153, 0.15)', multiplier: '1.0x' };
+        if (p >= 40) return { state: t('hunger.states.Normal'), color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.15)', multiplier: '1.2x' };
+        if (p >= 20) return { state: t('hunger.states.Hungry'), color: '#fb923c', bg: 'rgba(251, 146, 60, 0.15)', multiplier: '1.5x' };
+        return { state: t('hunger.states.Starving'), color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', multiplier: '2.5x' };
+    };
+
     const info = getHungerState(hunger, maxHunger);
     const firstJobLevel = user?.first_job_level ?? 0;
     const secondaryJobLevel = user?.secondary_job_level ?? 0;
@@ -31,10 +34,6 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.6rem',
-                // height: '100%',
-                // minHeight: 0,
-                // overflowY: 'auto',
-                // overflowX: 'hidden',
                 padding: '0.75rem',
                 margin: 0,
                 boxSizing: 'border-box',
@@ -45,7 +44,7 @@ const HungerBar = ({ hunger, maxHunger = 2400 }: HungerBarProps) => {
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
-                    Hunger
+                    {t('hunger.label')}
                 </span>
                 <span
                     style={{
