@@ -926,6 +926,13 @@ async function rescheduleFerrumMiningQueueAfterCancel(userId: number, db: DbClie
         const currentEnd = new Date(order.completes_at).getTime();
         const durationMs = Math.max(1000, currentEnd - currentStart);
 
+        // If this order is already in-progress, preserve its timing entirely.
+        if (currentStart <= now && currentEnd > now) {
+            laneAvailableAt = currentEnd;
+            continue;
+        }
+
+        // Only reschedule queued (not-yet-started) orders to fill the gap.
         const nextStartMs = Math.max(now, laneAvailableAt);
         const nextEndMs = nextStartMs + durationMs;
         laneAvailableAt = nextEndMs;

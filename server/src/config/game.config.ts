@@ -227,10 +227,10 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     sellMinQtyPerListing: 1,
     sellMaxQtyPerListing: 12,
     // Price randomization around reference value.
-    sellUnitPriceMinRatio: 0.9,
-    sellUnitPriceMaxRatio: 1.35,
+    sellUnitPriceMinRatio: 1.2,
+    sellUnitPriceMaxRatio: 2.0,
     // Requested market simulation items.
-    sellItemNames: ["Gas", "Flux", "Oil"],
+    sellItemNames: ["Gas", "Flux", "Oil", "Chicken Salad", "Beef Steak", "Beef Stew", "Chicken Stew"],
     // Prevent bot from feeding market too frequently.
     sellFeedCooldownMs: 90_000,
     // Hard cap to keep ACTIVE bot listings bounded.
