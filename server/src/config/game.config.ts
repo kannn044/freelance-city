@@ -218,9 +218,9 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     // Avoid instant bot buy right after user lists an item.
     minListingAgeMs: 60_000,
     // 65% chance to create simulated player sell listings each tick.
-    sellChancePerTick: 0.65,
-    // At most 2 new bot listings per tick.
-    maxSellListingsPerTick: 2,
+    sellChancePerTick: 1.0,
+    // At most 20 new bot listings per refresh cycle.
+    maxSellListingsPerTick: 20,
     // Cap active simulated sellers per item.
     maxSellersPerItem: 10,
     // Listing quantity range.
@@ -232,7 +232,7 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     // Requested market simulation items.
     sellItemNames: ["Gas", "Flux", "Oil", "Chicken Salad", "Beef Steak", "Beef Stew", "Chicken Stew"],
     // Prevent bot from feeding market too frequently.
-    sellFeedCooldownMs: 90_000,
+    sellFeedCooldownMs: 900_000, // 15 minutes
     // Hard cap to keep ACTIVE bot listings bounded.
     maxActiveBotListingsTotal: 30,
     // Cap number of NPC seller accounts.

@@ -326,56 +326,28 @@ class MarketBotService {
         const botUsers = await this.ensureBotUsers(Math.min(this.config.maxBotUsers, maxBotUsersNeeded));
         if (botUsers.length === 0) return;
 
-        const activeBotListingsTotal = await prisma.marketListing.count({
+        // Purge all active bot listings before creating fresh batch.
+        await prisma.marketListing.deleteMany({
             where: {
                 status: "ACTIVE",
                 seller_id: { in: botUsers.map((u) => u.id) },
             },
         });
 
-        const remainingGlobalSlots = this.config.maxActiveBotListingsTotal - activeBotListingsTotal;
-        if (remainingGlobalSlots <= 0) return;
-
-        const activeBotListingsByTargetItem = await prisma.marketListing.findMany({
-            where: {
-                status: "ACTIVE",
-                item_id: { in: targetItems.map((item) => item.id) },
-                seller_id: { in: botUsers.map((u) => u.id) },
-            },
-            select: {
-                item_id: true,
-                seller_id: true,
-            },
-        });
-
-        const botSellerIdsByItem = new Map<number, Set<number>>();
-        for (const listing of activeBotListingsByTargetItem) {
-            const current = botSellerIdsByItem.get(listing.item_id) ?? new Set<number>();
-            current.add(listing.seller_id);
-            botSellerIdsByItem.set(listing.item_id, current);
-        }
 
         const shuffledItems = [...targetItems].sort(() => Math.random() - 0.5);
         let created = 0;
         for (const item of shuffledItems) {
-            if (created >= this.config.maxSellListingsPerTick || created >= remainingGlobalSlots) break;
+            if (created >= this.config.maxSellListingsPerTick) break;
 
-            const currentSellers = botSellerIdsByItem.get(item.id) ?? new Set<number>();
-            const availableSlots = this.config.maxSellersPerItem - currentSellers.size;
-            if (availableSlots <= 0) continue;
-
-            const candidates = botUsers.filter((u) => !currentSellers.has(u.id));
-            if (candidates.length === 0) continue;
-
+            const candidates = [...botUsers].sort(() => Math.random() - 0.5);
             const listCount = Math.min(
-                availableSlots,
+                this.config.maxSellersPerItem,
                 candidates.length,
                 this.config.maxSellListingsPerTick - created,
-                remainingGlobalSlots - created,
-                this.randomInt(1, Math.max(1, Math.min(availableSlots, 2)))
             );
 
-            const chosenSellers = this.pickRandomDistinct(candidates, listCount);
+            const chosenSellers = candidates.slice(0, listCount);
             for (const seller of chosenSellers) {
                 const minQty = Math.max(1, Math.min(this.config.sellMinQtyPerListing, item.max_stack));
                 const maxQty = Math.max(minQty, Math.min(this.config.sellMaxQtyPerListing, item.max_stack));
@@ -396,12 +368,9 @@ class MarketBotService {
                     },
                 });
 
-                currentSellers.add(seller.id);
                 created += 1;
                 if (created >= this.config.maxSellListingsPerTick) break;
             }
-
-            botSellerIdsByItem.set(item.id, currentSellers);
         }
     }
 
