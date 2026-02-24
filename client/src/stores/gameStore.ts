@@ -617,6 +617,8 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            // Refresh work orders – server reconciles pauses after equip
+            get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to equip item' });
         }
@@ -630,6 +632,8 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            // Refresh work orders – server reconciles pauses after unequip
+            get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to unequip item' });
         }

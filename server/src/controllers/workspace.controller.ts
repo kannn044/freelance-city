@@ -338,7 +338,7 @@ async function getOrderOutput(
     const ferrumCatalog = await ensureFerrumCatalog(db);
     const effects = await getUserEquipmentEffects(userId, db);
 
-    if (order.type === "FARM" && order.item_id === ferrumCatalog.miningPermitId) {
+    if ((order.type === "FARM" || order.type === "MINE") && order.item_id === ferrumCatalog.miningPermitId) {
         const miningConfig = await getFerrumMiningConfig();
         const rows = await db.$queryRaw<Array<{ recipe_id: number | null }>>`
             SELECT recipe_id
@@ -389,7 +389,7 @@ async function getOrderOutput(
         return outputs;
     }
 
-    if (order.type === "FARM") {
+    if (order.type === "FARM" || order.type === "MINE") {
         const seedItem = await db.item.findUnique({ where: { id: order.item_id } });
         if (!seedItem?.yield_item_id) {
             throw new Error("Seed has no yield configured");
@@ -422,7 +422,7 @@ async function getOrderOutput(
         ];
     }
 
-    if (order.type !== "COOK") {
+    if (order.type !== "COOK" && order.type !== "SMELT") {
         throw new Error(`Unsupported work type for output resolution: ${order.type}`);
     }
 
@@ -597,7 +597,7 @@ async function awardOrderExp(
     db: DbClient,
     expConfig: { firstJobWorkExpMultiplier: number; secondaryJobWorkExpMultiplier: number }
 ) {
-    if (orderType !== "FARM" && orderType !== "COOK") {
+    if (orderType !== "FARM" && orderType !== "COOK" && orderType !== "MINE" && orderType !== "SMELT") {
         return { expGained: 0, levelUp: false, newLevel: 0, blacksmithUnlocked: false };
     }
 
@@ -615,7 +615,7 @@ async function awardOrderExp(
     const user = userRows[0];
     if (!user) throw new Error("User not found");
 
-    const occupation = orderType === "FARM" ? "first_job" : "secondary_job";
+    const occupation = (orderType === "FARM" || orderType === "MINE") ? "first_job" : "secondary_job";
     const currentLevel = occupation === "first_job"
         ? Number(user.first_job_level ?? 0)
         : Number(user.secondary_job_level ?? 0);
@@ -828,11 +828,11 @@ async function buildCancelRefundOutputs(
     order: { type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number; recipe_id: number | null },
     db: DbClient,
 ): Promise<OutputReward[]> {
-    if (order.type !== "FARM" && order.type !== "COOK") {
+    if (order.type !== "FARM" && order.type !== "COOK" && order.type !== "MINE" && order.type !== "SMELT") {
         return [];
     }
 
-    if (order.type === "FARM") {
+    if (order.type === "FARM" || order.type === "MINE") {
         const ferrumCatalog = await ensureFerrumCatalog(db);
         if (order.item_id === ferrumCatalog.miningPermitId) {
             return [];
@@ -912,7 +912,7 @@ async function rescheduleFerrumMiningQueueAfterCancel(userId: number, db: DbClie
     const remaining = await db.workOrder.findMany({
         where: {
             user_id: userId,
-            type: "FARM",
+            type: { in: ["FARM", "MINE"] },
             item_id: ferrumCatalog.miningPermitId,
             collected: false,
         },
@@ -1051,7 +1051,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const pendingMiningOrders = await prisma.workOrder.findMany({
                     where: {
                         user_id: req.userId!,
-                        type: "FARM",
+                        type: { in: ["FARM", "MINE"] },
                         item_id: ferrumCatalog.miningPermitId,
                         collected: false,
                     },
@@ -1276,6 +1276,32 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     res.status(403).json({ error: "Ferrum Blacksmith can only smelt ingot recipes or Extract stone" });
                     return;
                 }
+            }
+
+            // Validate workspace equipment requirements (e.g. Hammer for SMELT, Spatula for COOK)
+            const cookWorkType = isFerrum ? "SMELT" : "COOK";
+            const cookWorkspaceRequirement = await validateWorkspaceRequirements({
+                userId: req.userId!,
+                cityKey: cityProfile.city_key,
+                jobSlot: "secondary_job",
+                workType: cookWorkType,
+                workspaceMode: cookWorkType,
+                itemId: recipe.output_item_id,
+                itemName: recipe.output_item?.name,
+                recipeId: Number(recipeId),
+                recipeName: recipe.name,
+            });
+
+            if (!cookWorkspaceRequirement.ok) {
+                res.status(cookWorkspaceRequirement.statusCode).json({
+                    error: cookWorkspaceRequirement.errorMessage,
+                    code: cookWorkspaceRequirement.errorCode,
+                    requirement: {
+                        requiredItemName: cookWorkspaceRequirement.requiredItemName,
+                        mustBeEquipped: cookWorkspaceRequirement.mustBeEquipped,
+                    },
+                });
+                return;
             }
 
             // Check all ingredients in inventory
@@ -1756,9 +1782,9 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
 
             await tx.workOrder.delete({ where: { id: order.id } });
 
-            if (order.type === "COOK") {
+            if (order.type === "COOK" || order.type === "SMELT") {
                 await rescheduleSecondaryJobQueueAfterCancel(req.userId!, tx);
-            } else if (order.type === "FARM") {
+            } else if (order.type === "FARM" || order.type === "MINE") {
                 const ferrumCatalog = await ensureFerrumCatalog(tx);
                 if (order.item_id === ferrumCatalog.miningPermitId) {
                     await rescheduleFerrumMiningQueueAfterCancel(req.userId!, tx);

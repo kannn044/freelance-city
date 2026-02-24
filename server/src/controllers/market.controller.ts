@@ -13,6 +13,10 @@ interface AuthRequest extends Request {
 
 let marketListingRarityColumnEnsured = false;
 
+// Simple response cache for getListings (shared across all clients)
+let listingsCache: { data: any; expiresAt: number } | null = null;
+const LISTINGS_CACHE_TTL_MS = 5000; // 5 seconds
+
 async function ensureMarketListingRarityColumn() {
     if (marketListingRarityColumnEnsured) return;
 
@@ -157,35 +161,115 @@ async function placeItemInInventoryTx(
 
 /**
  * GET /game/market — List all active market listings
+ * Uses a single JOIN query + 5s response cache.
  */
 export const getListings = async (_req: AuthRequest, res: Response): Promise<void> => {
     try {
+        // Return cached response if still fresh
+        const now = Date.now();
+        if (listingsCache && now < listingsCache.expiresAt) {
+            res.json(listingsCache.data);
+            return;
+        }
+
         await ensureMarketListingRarityColumn();
         await ensureCitySchema(prisma);
 
-        const listings = await prisma.marketListing.findMany({
-            where: { status: "ACTIVE" },
-            include: {
-                item: true,
-                seller: { select: { id: true, email: true, role: true } },
+        // Single query with JOINs instead of 3 sequential queries
+        const rows = await prisma.$queryRawUnsafe<Array<{
+            id: number;
+            seller_id: number;
+            item_id: number;
+            quantity: number;
+            price: number;
+            status: string;
+            created_at: Date;
+            equipment_rarity: string | null;
+            // item fields
+            i_id: number;
+            i_name: string;
+            i_type: string;
+            i_equipment_slot: string | null;
+            i_effect_key: string | null;
+            i_effect_value: number | null;
+            i_effect_value2: number | null;
+            i_buy_price: number | null;
+            i_sell_price: number | null;
+            i_kcal: number | null;
+            i_buff_pct: number | null;
+            i_buff_mins: number | null;
+            i_max_stack: number;
+            i_grow_mins: number | null;
+            i_icon: string;
+            i_exp_value: number;
+            // seller fields
+            s_id: number;
+            s_email: string;
+            s_role: string;
+            // city fields
+            city_key: string | null;
+            city_name: string | null;
+        }>>(`
+            SELECT
+                ml.id, ml.seller_id, ml.item_id, ml.quantity, ml.price, ml.status,
+                ml.created_at, ml.equipment_rarity,
+                i.id AS i_id, i.name AS i_name, i.type AS i_type,
+                i.equipment_slot AS i_equipment_slot,
+                i.effect_key AS i_effect_key, i.effect_value AS i_effect_value,
+                i.effect_value2 AS i_effect_value2,
+                i.buy_price AS i_buy_price, i.sell_price AS i_sell_price,
+                i.kcal AS i_kcal, i.buff_pct AS i_buff_pct, i.buff_mins AS i_buff_mins,
+                i.max_stack AS i_max_stack, i.grow_mins AS i_grow_mins,
+                i.icon AS i_icon, i.exp_value AS i_exp_value,
+                u.id AS s_id, u.email AS s_email, u.role AS s_role,
+                u.city_key, cs.display_name AS city_name
+            FROM market_listings ml
+            JOIN items i ON i.id = ml.item_id
+            JOIN users u ON u.id = ml.seller_id
+            LEFT JOIN city_states cs ON BINARY cs.city_key = BINARY u.city_key
+            WHERE ml.status = 'ACTIVE'
+            ORDER BY ml.created_at DESC
+        `);
+
+        const payload = rows.map((r) => ({
+            id: Number(r.id),
+            seller_id: Number(r.seller_id),
+            item_id: Number(r.item_id),
+            quantity: Number(r.quantity),
+            price: Number(r.price),
+            status: r.status,
+            created_at: r.created_at,
+            equipment_rarity: r.equipment_rarity ?? null,
+            item: {
+                id: Number(r.i_id),
+                name: r.i_name,
+                type: r.i_type,
+                equipment_slot: r.i_equipment_slot ?? null,
+                effect_key: r.i_effect_key ?? null,
+                effect_value: r.i_effect_value != null ? Number(r.i_effect_value) : null,
+                effect_value2: r.i_effect_value2 != null ? Number(r.i_effect_value2) : null,
+                buy_price: r.i_buy_price != null ? Number(r.i_buy_price) : null,
+                sell_price: r.i_sell_price != null ? Number(r.i_sell_price) : null,
+                kcal: r.i_kcal != null ? Number(r.i_kcal) : null,
+                buff_pct: r.i_buff_pct != null ? Number(r.i_buff_pct) : null,
+                buff_mins: r.i_buff_mins != null ? Number(r.i_buff_mins) : null,
+                max_stack: Number(r.i_max_stack),
+                grow_mins: r.i_grow_mins != null ? Number(r.i_grow_mins) : null,
+                icon: r.i_icon,
+                exp_value: Number(r.i_exp_value),
             },
-            orderBy: { created_at: "desc" },
-        });
-
-        const rarityById = await getMarketListingRarityMap(listings.map((l) => l.id));
-        const sellerCityById = await getSellerCityMap(listings.map((l) => l.seller_id));
-
-        const payload = listings.map((l) => ({
-            ...l,
-            equipment_rarity: rarityById.get(l.id) ?? null,
             seller: {
-                ...l.seller,
-                city_key: sellerCityById.get(l.seller.id)?.city_key ?? null,
-                city_name: sellerCityById.get(l.seller.id)?.city_name ?? null,
+                id: Number(r.s_id),
+                email: r.s_email,
+                role: r.s_role,
+                city_key: r.city_key ?? null,
+                city_name: r.city_name ?? null,
             },
         }));
 
-        res.json({ listings: payload });
+        const responseData = { listings: payload };
+        listingsCache = { data: responseData, expiresAt: Date.now() + LISTINGS_CACHE_TTL_MS };
+        res.json(responseData);
     } catch (error) {
         console.error("getListings error:", error);
         res.status(500).json({ error: "Failed to fetch listings" });
@@ -301,6 +385,7 @@ export const createListing = async (req: AuthRequest, res: Response): Promise<vo
 
         const message = `Listed ${quantity}x ${slot.item.name} at ${price} credits each (total ${totalValue})`;
 
+        listingsCache = null; // Invalidate cache on mutation
         res.json({
             message,
             listing: {
@@ -479,6 +564,7 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
             ? ` (tax ${taxPreview.totalTax}, net to seller ${taxPreview.sellerReceives})`
             : "";
 
+        listingsCache = null; // Invalidate cache on mutation
         res.json({
             message: `Bought ${requestedQty}x ${listing.item.name} for ${totalCost} credits${taxText}`,
             user: toJobPayload({
@@ -566,6 +652,7 @@ export const cancelListing = async (req: AuthRequest, res: Response): Promise<vo
             orderBy: { slot: "asc" },
         });
 
+        listingsCache = null; // Invalidate cache on mutation
         res.json({
             message: `Cancelled listing and returned ${listing.quantity}x ${listing.item.name}`,
             slots,

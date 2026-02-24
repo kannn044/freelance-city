@@ -171,6 +171,12 @@ export interface FerrumMiningConfig {
         deep: number;
         core: number;
     };
+    /** Effective layer times computed per-user (with hunger, skill, equipment multipliers). */
+    effectiveLayerTimeMins?: {
+        surface: number;
+        deep: number;
+        core: number;
+    };
     dropRates: {
         surface: FerrumMiningDropRates;
         deep: FerrumMiningDropRates;

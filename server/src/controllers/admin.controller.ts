@@ -8,6 +8,10 @@ import {
     updateGamePricing,
     updateGameRuntimeConfig,
 } from "../services/gamePricing.service";
+import { syncHunger } from "../services/hunger.service";
+import { getUserEquipmentEffects } from "../services/equipmentEffects.service";
+import { getHungerTier, getSecondaryJobSkillCookTimeReduction, HUNGER_TIERS } from "../config/game.config";
+import { prisma } from "../lib/prisma";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -18,6 +22,41 @@ function isAdminAuthorized(req: Request): boolean {
     if (!adminSecret) return false;
     const headerKey = String(req.headers["x-admin-key"] ?? "");
     return headerKey.length > 0 && headerKey === adminSecret;
+}
+
+function applyTierReduction(baseHunger: number, tierReduction: number) {
+    const baseTier = getHungerTier(baseHunger);
+    const idx = HUNGER_TIERS.findIndex((t) => t.state === baseTier.state);
+    if (idx < 0 || tierReduction <= 0) return baseTier;
+    const reducedIdx = Math.max(0, idx - Math.floor(tierReduction));
+    return HUNGER_TIERS[reducedIdx];
+}
+
+async function getJobBranchLevels(userId: number, jobSlot: "first_job" | "secondary_job") {
+    const rows = await prisma.$queryRaw<Array<{ branch_slot: number; level: number }>>`
+        SELECT b.branch_slot,
+               COALESCE(usp.level, 0) as level
+        FROM user_job_progress ujp
+        JOIN occupation_skill_branch_catalog b
+          ON b.occupation_key = ujp.occupation_key
+        LEFT JOIN user_skill_progress usp
+          ON usp.user_id = ujp.user_id
+         AND usp.job_slot = ujp.job_slot
+         AND usp.branch_key = b.branch_key
+        WHERE ujp.user_id = ${userId}
+          AND ujp.job_slot = ${jobSlot}
+        ORDER BY b.branch_slot ASC
+    `;
+    if (rows.length <= 0) return { branch1: 0, branch2: 0, branch3: 0 };
+    const bySlot = new Map<number, number>();
+    for (const row of rows) {
+        bySlot.set(Number(row.branch_slot ?? 0), Number(row.level ?? 0));
+    }
+    return {
+        branch1: Number(bySlot.get(1) ?? 0),
+        branch2: Number(bySlot.get(2) ?? 0),
+        branch3: Number(bySlot.get(3) ?? 0),
+    };
 }
 
 /**
@@ -76,13 +115,47 @@ export async function setPricingConfig(req: AuthRequest, res: Response): Promise
 /**
  * GET /game/runtime-config
  * Public (authenticated) runtime config needed by gameplay UI.
+ * Returns effective layer times factoring in the user's hunger, equipment, and skill levels.
  */
-export async function getPublicRuntimeConfig(_req: AuthRequest, res: Response): Promise<void> {
+export async function getPublicRuntimeConfig(req: AuthRequest, res: Response): Promise<void> {
     try {
-        const taskDecay = await getGameTaskDecayConfig();
-        const taskTime = await getGameTaskTimeConfig();
-        const ferrumMining = await getFerrumMiningConfig();
-        res.json({ taskDecay, taskTime, ferrumMining });
+        const [taskDecay, taskTime, ferrumMining] = await Promise.all([
+            getGameTaskDecayConfig(),
+            getGameTaskTimeConfig(),
+            getFerrumMiningConfig(),
+        ]);
+
+        // Compute effective layer times for this user
+        let effectiveLayerTimeMins = { ...ferrumMining.layerTimeMins };
+        const userId = req.userId;
+        if (userId) {
+            try {
+                const user = await syncHunger(userId);
+                const equipmentEffects = await getUserEquipmentEffects(userId);
+                const firstJobBranchLevels = await getJobBranchLevels(userId, "first_job");
+                const minerPrepLevel = Number(firstJobBranchLevels.branch1 ?? 0);
+                const minerTimeReduction = getSecondaryJobSkillCookTimeReduction(minerPrepLevel);
+                const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
+                const multiplier = tier.multiplier * (1 - minerTimeReduction) * taskTime.firstJobTaskTimeMultiplier;
+
+                effectiveLayerTimeMins = {
+                    surface: Math.ceil(ferrumMining.layerTimeMins.surface * multiplier),
+                    deep: Math.ceil(ferrumMining.layerTimeMins.deep * multiplier),
+                    core: Math.ceil(ferrumMining.layerTimeMins.core * multiplier),
+                };
+            } catch (e) {
+                // fallback to base config times
+            }
+        }
+
+        res.json({
+            taskDecay,
+            taskTime,
+            ferrumMining: {
+                ...ferrumMining,
+                effectiveLayerTimeMins,
+            },
+        });
     } catch (error) {
         console.error("getPublicRuntimeConfig error:", error);
         res.status(500).json({ error: "Failed to fetch runtime config" });
