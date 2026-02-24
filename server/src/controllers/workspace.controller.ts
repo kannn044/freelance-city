@@ -20,6 +20,7 @@ import { getFerrumMiningConfig, getGameExpConfig, getGameHarvestRarityConfig, ge
 import { getUserCityProfile } from "../services/city.service";
 import { reconcileWorkspaceOrderPausesForUser, validateWorkspaceRequirements } from "../services/workspaceRules.service";
 import { toJobPayload } from "../lib/userPayload";
+import { syncDurability } from "../services/durability.service";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -1041,10 +1042,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const minerPrepLevel = Number(firstJobBranchLevels.branch1 ?? 0);
                 const minerTimeReduction = getSecondaryJobSkillCookTimeReduction(minerPrepLevel);
 
-                if (user.hunger < ferrumMining.hungerCostPerExpedition) {
-                    res.status(400).json({ error: `Not enough hunger for expedition. Need ${ferrumMining.hungerCostPerExpedition}` });
-                    return;
-                }
+
 
                 const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
                 const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.firstJobTaskTimeMultiplier;
@@ -1066,13 +1064,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const startsAt = new Date(startsAtMs);
                 const completesAt = new Date(startsAtMs + durationMs);
 
-                await prisma.user.update({
-                    where: { id: req.userId! },
-                    data: {
-                        hunger: Math.max(0, user.hunger - ferrumMining.hungerCostPerExpedition),
-                        hunger_updated_at: new Date(),
-                    },
-                });
+
 
                 const order = await prisma.workOrder.create({
                     data: {
@@ -1089,8 +1081,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
                 res.json({
                     message: startsAtMs > nowMs
-                        ? `Queued ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Starts when previous run completes.`
-                        : `Started ${miningLayer.toLowerCase()} expedition. Hunger -${ferrumMining.hungerCostPerExpedition}. Ready in ${Math.ceil(growMins)} min.`,
+                        ? `Queued ${miningLayer.toLowerCase()} expedition. Starts when previous run completes.`
+                        : `Started ${miningLayer.toLowerCase()} expedition. Ready in ${Math.ceil(growMins)} min.`,
                     order,
                 });
                 return;
@@ -1565,6 +1557,10 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
         const orderId = parseInt(req.params.orderId);
+
+        // Sync durability BEFORE task collection to accurately calculate decay
+        await syncDurability(req.userId!);
+
         const result = await collectSingleReadyOrder(req.userId!, orderId);
 
         if (!result.ok) {
@@ -1631,6 +1627,9 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
         await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+
+        // Sync durability BEFORE task collection to accurately calculate decay
+        await syncDurability(req.userId!);
 
         const readyOrders = await prisma.workOrder.findMany({
             where: {
@@ -1721,6 +1720,9 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
         }
 
         const now = Date.now();
+
+        // Sync durability BEFORE cancelling order to accurately calculate decay
+        await syncDurability(req.userId!);
 
         const result = await prisma.$transaction(async (tx) => {
             const order = await tx.workOrder.findFirst({

@@ -97,6 +97,18 @@ export const getEquipmentImageByName = (name?: string | null): string | null => 
     return equipmentImageByName[name] ?? null;
 };
 
+export const getImageByName = (name?: string | null): string | null => {
+    if (!name) return null;
+    return (
+        seedImageByName[name] ??
+        rawImageByName[name] ??
+        ingredientImageByName[name] ??
+        mealImageByName[name] ??
+        equipmentImageByName[name] ??
+        null
+    );
+};
+
 export const getItemImageSrc = (item?: Item | null): string | null => {
     if (!item) return null;
     if (item.type === 'SEED') return seedImageByName[item.name] ?? null;
@@ -104,7 +116,7 @@ export const getItemImageSrc = (item?: Item | null): string | null => {
     if (item.type === 'INGREDIENT') return ingredientImageByName[item.name] ?? null;
     if (item.type === 'MEAL') return mealImageByName[item.name] ?? null;
     if (item.type === 'EQUIPMENT') return equipmentImageByName[item.name] ?? null;
-    return null;
+    return getImageByName(item.name);
 };
 
 export const renderItemIcon = (item?: Item | null, size = 18) => {

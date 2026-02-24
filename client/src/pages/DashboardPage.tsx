@@ -111,6 +111,7 @@ const DashboardPage = () => {
         hunger,
         equipment,
         tickHunger,
+        tickDurability,
         fetchAll,
         fetchWorkOrders,
         actionMessage,
@@ -203,8 +204,11 @@ const DashboardPage = () => {
         };
         init();
 
-        // Game loop (hunger decay)
-        const interval = setInterval(tickHunger, 1000);
+        // Game loop (hunger decay + durability decay)
+        const interval = setInterval(() => {
+            tickHunger();
+            tickDurability();
+        }, 1000);
         return () => clearInterval(interval);
     }, []);
 
@@ -425,14 +429,20 @@ const DashboardPage = () => {
 
     const activeEquipmentBuffs = equipment
         .filter((eq) => !!eq.item_id && !!eq.effect_key)
-        .map((eq) => ({
-            slot: eq.slot,
-            name: eq.item_name ?? eq.slot,
-            rarity: getEquipmentRarityLabel(eq.item_rarity),
-            color: getEquipmentRarityColor(eq.item_rarity),
-            description: formatEquipmentEffect(eq),
-        }))
-        .filter((row) => !!row.description);
+        .map((eq) => {
+            const dur = Number(eq.durability ?? 100);
+            const isBroken = dur <= 0;
+            return {
+                slot: eq.slot,
+                name: eq.item_name ?? eq.slot,
+                rarity: getEquipmentRarityLabel(eq.item_rarity),
+                color: getEquipmentRarityColor(eq.item_rarity),
+                description: isBroken ? null : formatEquipmentEffect(eq),
+                durability: dur,
+                isBroken,
+            };
+        })
+        .filter((row) => !!row.description || row.isBroken);
 
     const cityTier = Math.max(1, Math.min(10, Number(user.city?.tier ?? 1)));
     const cityTreasury = Math.max(0, Number(user.city?.treasury ?? 0));
@@ -748,259 +758,259 @@ const DashboardPage = () => {
                             alignItems: 'stretch',
                         }}
                     >
-                <motion.section
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.45, delay: 0.06 }}
-                    className="glass-card"
-                    style={{
-                        padding: '0.85rem 0.95rem',
-                        border: '1px solid rgba(56, 189, 248, 0.28)',
-                        background: 'linear-gradient(135deg, rgba(30,41,59,0.7), rgba(14,116,144,0.12))',
-                        overflow: 'hidden',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.8rem', flexWrap: 'wrap' }}>
-                        <div>
-                            <h2
-                                style={{
-                                    fontSize: '0.98rem',
-                                    fontWeight: 700,
-                                    color: '#e2e8f0',
-                                    marginBottom: '0.35rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.45rem',
-                                }}
-                            >
-                                <img src={iconCityStatusPng} alt="City Status" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.city_status')}
-                            </h2>
-                            <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.78)' }}>
-                                {t('dashboard.current_city')}: <strong style={{ color: '#bfdbfe' }}>{user.city?.name ?? user.city_key ?? t('common.unknown')}</strong>
-                                {' '}• {t('dashboard.tier')} {cityTier}
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
-                                {t('dashboard.taxes.domestic')}: <span style={{ color: '#fde68a', fontWeight: 700 }}>{user.city?.taxes?.domesticPct ?? 0}%</span>
-                            </div>
-                            <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
-                                {t('dashboard.taxes.export')}: <span style={{ color: '#fca5a5', fontWeight: 700 }}>{user.city?.taxes?.exportPct ?? 0}%</span>
-                            </div>
-                            <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
-                                {t('dashboard.taxes.import')}: <span style={{ color: '#86efac', fontWeight: 700 }}>{user.city?.taxes?.importPct ?? 0}%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div
-                        style={{
-                            marginTop: '0.7rem',
-                            borderRadius: '0.7rem',
-                            border: '1px solid rgba(148,163,184,0.2)',
-                            background: 'rgba(2,6,23,0.35)',
-                            padding: '0.65rem 0.72rem',
-                        }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)' }}>
-                                {t('dashboard.mayor')}: <span style={{ color: '#fcd34d', fontWeight: 700 }}>{mayorCandidate?.email?.split('@')[0] ?? t('common.none')}</span>
-                            </div>
-                            <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.62)' }}>
-                                {t('dashboard.election_ends')}: {electionEndText}
-                            </div>
-                        </div>
-
-                        <div style={{ marginTop: '0.55rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                            {(governance?.candidates ?? []).slice(0, 6).map((candidate) => {
-                                const isSelected = selectedCandidateId === candidate.user_id;
-                                const isMayor = candidate.is_mayor;
-                                return (
-                                    <button
-                                        key={candidate.user_id}
-                                        type="button"
-                                        onClick={() => setSelectedCandidateId(candidate.user_id)}
+                        <motion.section
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.45, delay: 0.06 }}
+                            className="glass-card"
+                            style={{
+                                padding: '0.85rem 0.95rem',
+                                border: '1px solid rgba(56, 189, 248, 0.28)',
+                                background: 'linear-gradient(135deg, rgba(30,41,59,0.7), rgba(14,116,144,0.12))',
+                                overflow: 'hidden',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.8rem', flexWrap: 'wrap' }}>
+                                <div>
+                                    <h2
                                         style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            borderRadius: '0.55rem',
-                                            border: isSelected
-                                                ? '1px solid rgba(56,189,248,0.7)'
-                                                : '1px solid rgba(148,163,184,0.24)',
-                                            background: isSelected
-                                                ? 'rgba(56,189,248,0.12)'
-                                                : 'rgba(15,23,42,0.45)',
+                                            fontSize: '0.98rem',
+                                            fontWeight: 700,
                                             color: '#e2e8f0',
-                                            fontSize: '0.69rem',
-                                            padding: '0.38rem 0.5rem',
-                                            cursor: 'pointer',
+                                            marginBottom: '0.35rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.45rem',
                                         }}
                                     >
-                                        <span>
-                                            {candidate.email.split('@')[0]} {isMayor ? '👑' : ''}
-                                        </span>
-                                        <span style={{ color: '#93c5fd', fontWeight: 700 }}>{t('dashboard.votes_count', { count: candidate.votes })}</span>
-                                    </button>
-                                );
-                            })}
-                            {(governance?.candidates?.length ?? 0) === 0 && (
-                                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
-                                    {t('dashboard.no_candidates')}
+                                        <img src={iconCityStatusPng} alt="City Status" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.city_status')}
+                                    </h2>
+                                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.78)' }}>
+                                        {t('dashboard.current_city')}: <strong style={{ color: '#bfdbfe' }}>{user.city?.name ?? user.city_key ?? t('common.unknown')}</strong>
+                                        {' '}• {t('dashboard.tier')} {cityTier}
+                                    </div>
                                 </div>
-                            )}
-                        </div>
 
-                        <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button
-                                type="button"
-                                disabled={isVoting || !selectedCandidateId}
-                                onClick={submitVoteMayor}
+                                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                        {t('dashboard.taxes.domestic')}: <span style={{ color: '#fde68a', fontWeight: 700 }}>{user.city?.taxes?.domesticPct ?? 0}%</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                        {t('dashboard.taxes.export')}: <span style={{ color: '#fca5a5', fontWeight: 700 }}>{user.city?.taxes?.exportPct ?? 0}%</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                        {t('dashboard.taxes.import')}: <span style={{ color: '#86efac', fontWeight: 700 }}>{user.city?.taxes?.importPct ?? 0}%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
                                 style={{
-                                    borderRadius: '0.55rem',
-                                    border: '1px solid rgba(56,189,248,0.4)',
-                                    background: 'rgba(56,189,248,0.12)',
-                                    color: '#bae6fd',
-                                    fontSize: '0.68rem',
-                                    fontWeight: 700,
-                                    padding: '0.35rem 0.65rem',
-                                    cursor: isVoting || !selectedCandidateId ? 'not-allowed' : 'pointer',
-                                    opacity: isVoting || !selectedCandidateId ? 0.6 : 1,
+                                    marginTop: '0.7rem',
+                                    borderRadius: '0.7rem',
+                                    border: '1px solid rgba(148,163,184,0.2)',
+                                    background: 'rgba(2,6,23,0.35)',
+                                    padding: '0.65rem 0.72rem',
                                 }}
                             >
-                                {isVoting ? t('dashboard.submitting') : t('dashboard.vote_mayor')}
-                            </button>
-                        </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.85)' }}>
+                                        {t('dashboard.mayor')}: <span style={{ color: '#fcd34d', fontWeight: 700 }}>{mayorCandidate?.email?.split('@')[0] ?? t('common.none')}</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.62)' }}>
+                                        {t('dashboard.election_ends')}: {electionEndText}
+                                    </div>
+                                </div>
 
-                        {governance?.canSetTaxes && (
-                            <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid rgba(148,163,184,0.2)' }}>
-                                <div style={{ fontSize: '0.68rem', color: '#fcd34d', fontWeight: 700, marginBottom: '0.42rem' }}>
-                                    {t('dashboard.mayor_tax_controls')}
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.4rem' }}>
-                                    {([
-                                        ['domesticPct', t('dashboard.taxes.domestic')],
-                                        ['exportPct', t('dashboard.taxes.export')],
-                                        ['importPct', t('dashboard.taxes.import')],
-                                    ] as const).map(([key, label]) => (
-                                        <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                            <span style={{ fontSize: '0.63rem', color: '#cbd5e1' }}>{label}</span>
-                                            <input
-                                                type="number"
-                                                min={0}
-                                                max={12}
-                                                step={0.5}
-                                                value={taxDraft[key]}
-                                                onChange={(event) => {
-                                                    const nextValue = Number(event.target.value);
-                                                    setTaxDraft((prev) => ({ ...prev, [key]: Number.isFinite(nextValue) ? nextValue : 0 }));
-                                                }}
+                                <div style={{ marginTop: '0.55rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                    {(governance?.candidates ?? []).slice(0, 6).map((candidate) => {
+                                        const isSelected = selectedCandidateId === candidate.user_id;
+                                        const isMayor = candidate.is_mayor;
+                                        return (
+                                            <button
+                                                key={candidate.user_id}
+                                                type="button"
+                                                onClick={() => setSelectedCandidateId(candidate.user_id)}
                                                 style={{
-                                                    width: '100%',
-                                                    borderRadius: '0.4rem',
-                                                    border: '1px solid rgba(148,163,184,0.35)',
-                                                    background: 'rgba(15,23,42,0.75)',
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    borderRadius: '0.55rem',
+                                                    border: isSelected
+                                                        ? '1px solid rgba(56,189,248,0.7)'
+                                                        : '1px solid rgba(148,163,184,0.24)',
+                                                    background: isSelected
+                                                        ? 'rgba(56,189,248,0.12)'
+                                                        : 'rgba(15,23,42,0.45)',
                                                     color: '#e2e8f0',
-                                                    padding: '0.3rem 0.4rem',
-                                                    fontSize: '0.7rem',
+                                                    fontSize: '0.69rem',
+                                                    padding: '0.38rem 0.5rem',
+                                                    cursor: 'pointer',
                                                 }}
-                                            />
-                                        </label>
-                                    ))}
+                                            >
+                                                <span>
+                                                    {candidate.email.split('@')[0]} {isMayor ? '👑' : ''}
+                                                </span>
+                                                <span style={{ color: '#93c5fd', fontWeight: 700 }}>{t('dashboard.votes_count', { count: candidate.votes })}</span>
+                                            </button>
+                                        );
+                                    })}
+                                    {(governance?.candidates?.length ?? 0) === 0 && (
+                                        <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
+                                            {t('dashboard.no_candidates')}
+                                        </div>
+                                    )}
                                 </div>
+
                                 <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                                     <button
                                         type="button"
-                                        disabled={isSavingTaxes}
-                                        onClick={saveCityTaxes}
+                                        disabled={isVoting || !selectedCandidateId}
+                                        onClick={submitVoteMayor}
                                         style={{
                                             borderRadius: '0.55rem',
-                                            border: '1px solid rgba(251,191,36,0.45)',
-                                            background: 'rgba(251,191,36,0.14)',
-                                            color: '#fde68a',
+                                            border: '1px solid rgba(56,189,248,0.4)',
+                                            background: 'rgba(56,189,248,0.12)',
+                                            color: '#bae6fd',
                                             fontSize: '0.68rem',
                                             fontWeight: 700,
                                             padding: '0.35rem 0.65rem',
-                                            cursor: isSavingTaxes ? 'not-allowed' : 'pointer',
-                                            opacity: isSavingTaxes ? 0.65 : 1,
+                                            cursor: isVoting || !selectedCandidateId ? 'not-allowed' : 'pointer',
+                                            opacity: isVoting || !selectedCandidateId ? 0.6 : 1,
                                         }}
                                     >
-                                        {isSavingTaxes ? t('common.saving') : t('dashboard.save_taxes')}
+                                        {isVoting ? t('dashboard.submitting') : t('dashboard.vote_mayor')}
                                     </button>
                                 </div>
-                            </div>
-                        )}
-                    </div>
 
-                    <div style={{ marginTop: '0.85rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.38rem', gap: '0.75rem', flexWrap: 'wrap' }}>
-                            <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.8)' }}>
-                                {t('dashboard.treasury_progress')}
+                                {governance?.canSetTaxes && (
+                                    <div style={{ marginTop: '0.65rem', paddingTop: '0.65rem', borderTop: '1px solid rgba(148,163,184,0.2)' }}>
+                                        <div style={{ fontSize: '0.68rem', color: '#fcd34d', fontWeight: 700, marginBottom: '0.42rem' }}>
+                                            {t('dashboard.mayor_tax_controls')}
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.4rem' }}>
+                                            {([
+                                                ['domesticPct', t('dashboard.taxes.domestic')],
+                                                ['exportPct', t('dashboard.taxes.export')],
+                                                ['importPct', t('dashboard.taxes.import')],
+                                            ] as const).map(([key, label]) => (
+                                                <label key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                                    <span style={{ fontSize: '0.63rem', color: '#cbd5e1' }}>{label}</span>
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        max={12}
+                                                        step={0.5}
+                                                        value={taxDraft[key]}
+                                                        onChange={(event) => {
+                                                            const nextValue = Number(event.target.value);
+                                                            setTaxDraft((prev) => ({ ...prev, [key]: Number.isFinite(nextValue) ? nextValue : 0 }));
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            borderRadius: '0.4rem',
+                                                            border: '1px solid rgba(148,163,184,0.35)',
+                                                            background: 'rgba(15,23,42,0.75)',
+                                                            color: '#e2e8f0',
+                                                            padding: '0.3rem 0.4rem',
+                                                            fontSize: '0.7rem',
+                                                        }}
+                                                    />
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <div style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                            <button
+                                                type="button"
+                                                disabled={isSavingTaxes}
+                                                onClick={saveCityTaxes}
+                                                style={{
+                                                    borderRadius: '0.55rem',
+                                                    border: '1px solid rgba(251,191,36,0.45)',
+                                                    background: 'rgba(251,191,36,0.14)',
+                                                    color: '#fde68a',
+                                                    fontSize: '0.68rem',
+                                                    fontWeight: 700,
+                                                    padding: '0.35rem 0.65rem',
+                                                    cursor: isSavingTaxes ? 'not-allowed' : 'pointer',
+                                                    opacity: isSavingTaxes ? 0.65 : 1,
+                                                }}
+                                            >
+                                                {isSavingTaxes ? t('common.saving') : t('dashboard.save_taxes')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontFamily: 'monospace' }}>
-                                {nextTierTarget !== null
-                                    ? `${cityTreasury.toLocaleString()} / ${nextTierTarget.toLocaleString()}`
-                                    : `${cityTreasury.toLocaleString()} / ${t('common.max')}`}
-                            </div>
-                        </div>
 
-                        <div
+                            <div style={{ marginTop: '0.85rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.38rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                    <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.8)' }}>
+                                        {t('dashboard.treasury_progress')}
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontFamily: 'monospace' }}>
+                                        {nextTierTarget !== null
+                                            ? `${cityTreasury.toLocaleString()} / ${nextTierTarget.toLocaleString()}`
+                                            : `${cityTreasury.toLocaleString()} / ${t('common.max')}`}
+                                    </div>
+                                </div>
+
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        height: '0.56rem',
+                                        borderRadius: '9999px',
+                                        background: 'rgba(148,163,184,0.2)',
+                                        overflow: 'hidden',
+                                        border: '1px solid rgba(148,163,184,0.28)',
+                                    }}
+                                >
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${cityProgressPct}%` }}
+                                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                                        style={{
+                                            height: '100%',
+                                            background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
+                                        }}
+                                    />
+                                </div>
+
+                                <div style={{ marginTop: '0.42rem', fontSize: '0.72rem', color: 'rgba(255,255,255,0.72)' }}>
+                                    {nextTierTarget !== null
+                                        ? t('dashboard.remaining_for_next_tier', { credits: remainingToNextTier.toLocaleString(), tier: cityTier + 1 })
+                                        : t('dashboard.max_tier_reached')}
+                                </div>
+                            </div>
+                        </motion.section>
+
+                        <motion.section
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.45 }}
+                            className="glass-card"
                             style={{
-                                width: '100%',
-                                height: '0.56rem',
-                                borderRadius: '9999px',
-                                background: 'rgba(148,163,184,0.2)',
+                                padding: '0.85rem 0.95rem',
+                                border: '1px solid rgba(99, 102, 241, 0.15)',
+                                background: 'rgba(99, 102, 241, 0.04)',
                                 overflow: 'hidden',
-                                border: '1px solid rgba(148,163,184,0.28)',
                             }}
                         >
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${cityProgressPct}%` }}
-                                transition={{ duration: 0.8, ease: 'easeOut' }}
+                            <h2
                                 style={{
-                                    height: '100%',
-                                    background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
+                                    fontSize: '1rem',
+                                    fontWeight: 700,
+                                    color: '#e2e8f0',
+                                    marginBottom: '0.85rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
                                 }}
-                            />
-                        </div>
-
-                        <div style={{ marginTop: '0.42rem', fontSize: '0.72rem', color: 'rgba(255,255,255,0.72)' }}>
-                            {nextTierTarget !== null
-                                ? t('dashboard.remaining_for_next_tier', { credits: remainingToNextTier.toLocaleString(), tier: cityTier + 1 })
-                                : t('dashboard.max_tier_reached')}
-                        </div>
-                    </div>
-                </motion.section>
-
-                    <motion.section
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.45 }}
-                        className="glass-card"
-                        style={{
-                            padding: '0.85rem 0.95rem',
-                            border: '1px solid rgba(99, 102, 241, 0.15)',
-                            background: 'rgba(99, 102, 241, 0.04)',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <h2
-                            style={{
-                                fontSize: '1rem',
-                                fontWeight: 700,
-                                color: '#e2e8f0',
-                                marginBottom: '0.85rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                            }}
-                        >
-                            <img src={iconActiveOrdersPng} alt="Active Orders" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.active_orders')}
-                        </h2>
-                        <ActiveOrdersGrid />
-                    </motion.section>
+                            >
+                                <img src={iconActiveOrdersPng} alt="Active Orders" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.active_orders')}
+                            </h2>
+                            <ActiveOrdersGrid />
+                        </motion.section>
                     </div>
 
 
@@ -1179,12 +1189,47 @@ const DashboardPage = () => {
                                                 {t('dashboard.equipment_buffs')}
                                             </div>
                                             {activeEquipmentBuffs.length > 0 ? (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                                    {activeEquipmentBuffs.map((row) => (
-                                                        <div key={`${row.slot}-${row.name}`} style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.78)' }}>
-                                                            • <span style={{ color: row.color, fontWeight: 700 }}>{row.name} ({row.rarity})</span>: {row.description}
-                                                        </div>
-                                                    ))}
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                                    {activeEquipmentBuffs.map((row) => {
+                                                        const durPct = Math.max(0, Math.min(100, row.durability));
+                                                        const barColor = row.isBroken
+                                                            ? '#ef4444'
+                                                            : durPct > 60
+                                                                ? '#34d399'
+                                                                : durPct > 30
+                                                                    ? '#fbbf24'
+                                                                    : '#ef4444';
+                                                        return (
+                                                            <div key={`${row.slot}-${row.name}`} style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.78)' }}>
+                                                                • <span style={{ color: row.color, fontWeight: 700 }}>{row.name} ({row.rarity})</span>: {row.isBroken ? <span style={{ color: '#ef4444', fontWeight: 700 }}>⚠ Broken</span> : row.description}
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.18rem' }}>
+                                                                    <div
+                                                                        style={{
+                                                                            flex: 1,
+                                                                            height: '0.32rem',
+                                                                            borderRadius: '9999px',
+                                                                            background: 'rgba(148,163,184,0.2)',
+                                                                            overflow: 'hidden',
+                                                                            border: '1px solid rgba(148,163,184,0.15)',
+                                                                        }}
+                                                                    >
+                                                                        <div
+                                                                            style={{
+                                                                                width: `${durPct}%`,
+                                                                                height: '100%',
+                                                                                background: barColor,
+                                                                                borderRadius: '9999px',
+                                                                                transition: 'width 0.5s ease-out',
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    <span style={{ fontSize: '0.56rem', color: barColor, fontWeight: 700, minWidth: '2.5rem', textAlign: 'right' }}>
+                                                                        {Math.round(durPct)}/100
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             ) : (
                                                 <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.45)' }}>

@@ -242,7 +242,7 @@ const WorkspacePanel = () => {
                                         <span>{layer.label}</span>
                                         <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)' }}>{layer.note}</span>
                                         <span style={{ fontSize: '0.62rem', color: '#67e8f9' }}>
-                                            {t('workspace.mine_time_cost', { mins: layer.mins, hunger: ferrumMiningConfig.hungerCostPerExpedition })}
+                                            {t('workspace.mine_time_cost', { mins: layer.mins })}
                                         </span>
                                     </motion.button>
                                 ))}
@@ -385,142 +385,142 @@ const WorkspacePanel = () => {
                                     gap: '0.55rem',
                                 }}
                             >
-                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
-                                {isSecondarySmeltMode ? t('workspace.choose_ingredients_smelt', { name: selectedRecipe.name }) : t('workspace.choose_ingredients_cook', { name: selectedRecipe.name })}
-                            </div>
-                            <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.55)' }}>
-                                {t('workspace.rarity_control_desc')}
-                            </div>
-
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '0.55rem',
-                                    overflowY: 'auto',
-                                    minHeight: 0,
-                                    flex: 1,
-                                    paddingRight: '0.1rem',
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        border: '1px solid rgba(255,255,255,0.12)',
-                                        borderRadius: '0.55rem',
-                                        background: 'rgba(255,255,255,0.03)',
-                                        padding: '0.5rem',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.3rem',
-                                    }}
-                                >
-                                    <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
-                                        {t('workspace.predicted_outcomes')}
-                                    </div>
-                                    <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.55)' }}>
-                                        {t('workspace.base_pair', { label: predictedPairLabel })}
-                                    </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                                        {predictedOutcomes.map((o) => (
-                                            <div
-                                                key={`predict-${o.rarity}`}
-                                                style={{
-                                                    borderRadius: '0.35rem',
-                                                    border: `1px solid ${getEquipmentRarityColor(o.rarity)}`,
-                                                    color: getEquipmentRarityColor(o.rarity),
-                                                    padding: '0.18rem 0.38rem',
-                                                    fontSize: '0.6rem',
-                                                    fontWeight: 700,
-                                                }}
-                                            >
-                                                {t(`common.rarity_labels.${o.rarity.toUpperCase()}`)} {o.chancePct.toFixed(1)}%
-                                            </div>
-                                        ))}
-                                    </div>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'rgba(255,255,255,0.92)' }}>
+                                    {isSecondarySmeltMode ? t('workspace.choose_ingredients_smelt', { name: selectedRecipe.name }) : t('workspace.choose_ingredients_cook', { name: selectedRecipe.name })}
+                                </div>
+                                <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.55)' }}>
+                                    {t('workspace.rarity_control_desc')}
                                 </div>
 
-                                {selectedRecipe.ingredients.map((ingredient) => {
-                                    const candidates = inventory.filter((s) => s.item_id === ingredient.item_id && s.quantity > 0);
-                                    const selectedQty = getSelectedQtyForItem(ingredient.item_id);
-                                    const done = selectedQty === ingredient.quantity;
-
-                                    return (
-                                        <div
-                                            key={`ingredient-${ingredient.item_id}`}
-                                            style={{
-                                                border: '1px solid rgba(255,255,255,0.12)',
-                                                borderRadius: '0.55rem',
-                                                background: 'rgba(255,255,255,0.03)',
-                                                padding: '0.5rem',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '0.4rem',
-                                            }}
-                                        >
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)' }}>
-                                                    {renderItemIcon(ingredient.item, 14)}
-                                                    {ingredient.item.name}
-                                                </div>
-                                                <div style={{ fontSize: '0.62rem', color: done ? '#34d399' : 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
-                                                    {selectedQty}/{ingredient.quantity}
-                                                </div>
-                                            </div>
-
-                                            {candidates.length === 0 ? (
-                                                <div style={{ fontSize: '0.62rem', color: '#fda4af' }}>{t('workspace.no_ingredient_in_inv')}</div>
-                                            ) : (
-                                                candidates.map((slot) => {
-                                                    const current = selectedQtyBySlot[slot.id] ?? 0;
-                                                    const rarity = slot.equipment_rarity;
-                                                    return (
-                                                        <div
-                                                            key={`slot-pick-${slot.id}`}
-                                                            style={{
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'space-between',
-                                                                gap: '0.45rem',
-                                                                padding: '0.35rem 0.45rem',
-                                                                borderRadius: '0.42rem',
-                                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                                background: 'rgba(2,6,23,0.48)',
-                                                            }}
-                                                        >
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <span style={{ fontSize: '0.64rem', color: rarity ? getEquipmentRarityColor(rarity) : 'rgba(255,255,255,0.85)' }}>
-                                                                    Slot #{slot.slot + 1} {rarity ? `• ${t(`common.rarity_labels.${rarity.toUpperCase()}`)}` : `• ${t('workspace.normal')}`}
-                                                                </span>
-                                                                <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.5)' }}>{t('workspace.in_stock', { qty: slot.quantity })}</span>
-                                                            </div>
-
-                                                            <input
-                                                                type="number"
-                                                                min={0}
-                                                                max={slot.quantity}
-                                                                value={current}
-                                                                onChange={(e) => {
-                                                                    const next = Math.min(slot.quantity, Math.max(0, Math.floor(Number(e.target.value) || 0)));
-                                                                    setSelectedQtyBySlot((prev) => ({ ...prev, [slot.id]: next }));
-                                                                }}
-                                                                style={{
-                                                                    width: '4rem',
-                                                                    padding: '0.22rem 0.3rem',
-                                                                    borderRadius: '0.35rem',
-                                                                    border: '1px solid rgba(255,255,255,0.14)',
-                                                                    background: 'rgba(15,23,42,0.45)',
-                                                                    color: 'white',
-                                                                    fontSize: '0.62rem',
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '0.55rem',
+                                        overflowY: 'auto',
+                                        minHeight: 0,
+                                        flex: 1,
+                                        paddingRight: '0.1rem',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            border: '1px solid rgba(255,255,255,0.12)',
+                                            borderRadius: '0.55rem',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            padding: '0.5rem',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '0.3rem',
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '0.66rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>
+                                            {t('workspace.predicted_outcomes')}
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                        <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.55)' }}>
+                                            {t('workspace.base_pair', { label: predictedPairLabel })}
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                            {predictedOutcomes.map((o) => (
+                                                <div
+                                                    key={`predict-${o.rarity}`}
+                                                    style={{
+                                                        borderRadius: '0.35rem',
+                                                        border: `1px solid ${getEquipmentRarityColor(o.rarity)}`,
+                                                        color: getEquipmentRarityColor(o.rarity),
+                                                        padding: '0.18rem 0.38rem',
+                                                        fontSize: '0.6rem',
+                                                        fontWeight: 700,
+                                                    }}
+                                                >
+                                                    {t(`common.rarity_labels.${o.rarity.toUpperCase()}`)} {o.chancePct.toFixed(1)}%
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {selectedRecipe.ingredients.map((ingredient) => {
+                                        const candidates = inventory.filter((s) => s.item_id === ingredient.item_id && s.quantity > 0);
+                                        const selectedQty = getSelectedQtyForItem(ingredient.item_id);
+                                        const done = selectedQty === ingredient.quantity;
+
+                                        return (
+                                            <div
+                                                key={`ingredient-${ingredient.item_id}`}
+                                                style={{
+                                                    border: '1px solid rgba(255,255,255,0.12)',
+                                                    borderRadius: '0.55rem',
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    padding: '0.5rem',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '0.4rem',
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', color: 'rgba(255,255,255,0.9)' }}>
+                                                        {renderItemIcon(ingredient.item, 14)}
+                                                        {ingredient.item.name}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.62rem', color: done ? '#34d399' : 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
+                                                        {selectedQty}/{ingredient.quantity}
+                                                    </div>
+                                                </div>
+
+                                                {candidates.length === 0 ? (
+                                                    <div style={{ fontSize: '0.62rem', color: '#fda4af' }}>{t('workspace.no_ingredient_in_inv')}</div>
+                                                ) : (
+                                                    candidates.map((slot) => {
+                                                        const current = selectedQtyBySlot[slot.id] ?? 0;
+                                                        const rarity = slot.equipment_rarity;
+                                                        return (
+                                                            <div
+                                                                key={`slot-pick-${slot.id}`}
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'space-between',
+                                                                    gap: '0.45rem',
+                                                                    padding: '0.35rem 0.45rem',
+                                                                    borderRadius: '0.42rem',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    background: 'rgba(2,6,23,0.48)',
+                                                                }}
+                                                            >
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <span style={{ fontSize: '0.64rem', color: rarity ? getEquipmentRarityColor(rarity) : 'rgba(255,255,255,0.85)' }}>
+                                                                        Slot #{slot.slot + 1} {rarity ? `• ${t(`common.rarity_labels.${rarity.toUpperCase()}`)}` : `• ${t('workspace.normal')}`}
+                                                                    </span>
+                                                                    <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.5)' }}>{t('workspace.in_stock', { qty: slot.quantity })}</span>
+                                                                </div>
+
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    max={slot.quantity}
+                                                                    value={current}
+                                                                    onChange={(e) => {
+                                                                        const next = Math.min(slot.quantity, Math.max(0, Math.floor(Number(e.target.value) || 0)));
+                                                                        setSelectedQtyBySlot((prev) => ({ ...prev, [slot.id]: next }));
+                                                                    }}
+                                                                    style={{
+                                                                        width: '4rem',
+                                                                        padding: '0.22rem 0.3rem',
+                                                                        borderRadius: '0.35rem',
+                                                                        border: '1px solid rgba(255,255,255,0.14)',
+                                                                        background: 'rgba(15,23,42,0.45)',
+                                                                        color: 'white',
+                                                                        fontSize: '0.62rem',
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
 
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.45rem', marginTop: '0.2rem', flexShrink: 0 }}>
                                     <button

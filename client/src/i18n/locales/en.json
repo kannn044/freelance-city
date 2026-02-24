@@ -16,7 +16,6 @@
     "none": "None",
     "credits": "credits",
     "unit": "Unit",
-    
     "total": "Total",
     "quantity": "Quantity",
     "qty": "Qty",
@@ -76,6 +75,7 @@
     "satiety_buff_desc": "Satiety buff: -{{value}}% hunger decay",
     "expires_in": "Expires in",
     "inventory": "Inventory",
+    "durability": "Durability",
     "workspace": "Workspace",
     "skill_tree": "Skill Tree",
     "available_points": "Available Points",

@@ -5,9 +5,12 @@ import {
     FIRST_JOB_WORK_EXP_MULTIPLIER,
     HARVEST_ITEM_RARITY_DROP_RATES,
     HUNGER_TASK_DECAY_PER_SEC,
+    DURABILITY_DECAY_PER_SEC,
     SECONDARY_JOB_MARKET_EXP_MULTIPLIER,
     SECONDARY_JOB_WORK_EXP_MULTIPLIER,
+    DEFAULT_FERRUM_MINING_CONFIG,
     type EquipmentRarity,
+    type FerrumMiningConfig,
 } from "../config/game.config";
 
 export interface GamePricingConfig {
@@ -18,6 +21,13 @@ export interface GamePricingConfig {
 export interface GameTaskDecayConfig {
     farmPerPlot: number;
     cookPerMenu: number;
+}
+
+export interface GameDurabilityDecayConfig {
+    farm: number;
+    cook: number;
+    mine: number;
+    smelt: number;
 }
 
 export interface GameTaskTimeConfig {
@@ -54,42 +64,10 @@ export interface GameRuntimeConfig {
     exp: GameExpConfig;
     rarity: GameRarityConfig;
     ferrumMining: FerrumMiningConfig;
+    durabilityDecay: GameDurabilityDecayConfig;
 }
 
-export interface FerrumMiningConfig {
-    hungerCostPerExpedition: number;
-    layerTimeMins: {
-        surface: number;
-        deep: number;
-        core: number;
-    };
-    dropRates: {
-        surface: {
-            ironOre: number;
-            copperOre: number;
-            steelOre: number;
-            stone: number;
-            coal: number;
-            gem: number;
-        };
-        deep: {
-            ironOre: number;
-            copperOre: number;
-            steelOre: number;
-            stone: number;
-            coal: number;
-            gem: number;
-        };
-        core: {
-            ironOre: number;
-            copperOre: number;
-            steelOre: number;
-            stone: number;
-            coal: number;
-            gem: number;
-        };
-    };
-}
+export type { FerrumMiningConfig };
 
 const DEFAULT_PRICING: GamePricingConfig = {
     npcShopMultiplier: 1,
@@ -99,6 +77,13 @@ const DEFAULT_PRICING: GamePricingConfig = {
 const DEFAULT_TASK_DECAY: GameTaskDecayConfig = {
     farmPerPlot: HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT,
     cookPerMenu: HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
+};
+
+const DEFAULT_DURABILITY_DECAY: GameDurabilityDecayConfig = {
+    farm: DURABILITY_DECAY_PER_SEC.FARM,
+    cook: DURABILITY_DECAY_PER_SEC.COOK,
+    mine: DURABILITY_DECAY_PER_SEC.MINE,
+    smelt: DURABILITY_DECAY_PER_SEC.SMELT,
 };
 
 const DEFAULT_TASK_TIME: GameTaskTimeConfig = {
@@ -123,20 +108,6 @@ const DEFAULT_EXP: GameExpConfig = {
 const DEFAULT_RARITY: GameRarityConfig = {
     harvestDropRates: { ...HARVEST_ITEM_RARITY_DROP_RATES },
     equipmentDropRates: { ...EQUIPMENT_RARITY_DROP_RATES },
-};
-
-const DEFAULT_FERRUM_MINING: FerrumMiningConfig = {
-    hungerCostPerExpedition: 200,
-    layerTimeMins: {
-        surface: 6,
-        deep: 11,
-        core: 16,
-    },
-    dropRates: {
-        surface: { ironOre: 0.65, copperOre: 0.3, steelOre: 0.0, stone: 0.7, coal: 0.45, gem: 0.02 },
-        deep: { ironOre: 0.45, copperOre: 0.45, steelOre: 0.18, stone: 0.55, coal: 0.6, gem: 0.05 },
-        core: { ironOre: 0.3, copperOre: 0.35, steelOre: 0.35, stone: 0.45, coal: 0.7, gem: 0.09 },
-    },
 };
 
 let tableEnsured = false;
@@ -175,6 +146,31 @@ function parseTaskDecay(rows: Array<{ setting_key: string; setting_value: string
     }
 
     return { farmPerPlot, cookPerMenu };
+}
+
+function parseDurabilityDecay(rows: Array<{ setting_key: string; setting_value: string }>): GameDurabilityDecayConfig {
+    const out: GameDurabilityDecayConfig = { ...DEFAULT_DURABILITY_DECAY };
+
+    for (const row of rows) {
+        if (row.setting_key === "durability_decay_farm") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.farm = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_cook") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.cook = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_mine") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.mine = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_smelt") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.smelt = clamp(n, 0, 1);
+        }
+    }
+
+    return out;
 }
 
 function parseTaskTime(rows: Array<{ setting_key: string; setting_value: string }>): GameTaskTimeConfig {
@@ -264,7 +260,7 @@ function parseEquipmentRarity(rows: Array<{ setting_key: string; setting_value: 
 }
 
 function parseFerrumMining(rows: Array<{ setting_key: string; setting_value: string }>): FerrumMiningConfig {
-    const out: FerrumMiningConfig = JSON.parse(JSON.stringify(DEFAULT_FERRUM_MINING));
+    const out: FerrumMiningConfig = JSON.parse(JSON.stringify(DEFAULT_FERRUM_MINING_CONFIG));
 
     const get = (key: string) => rows.find((r) => r.setting_key === key)?.setting_value;
     const num = (key: string, min: number, max: number, fallback: number) => {
@@ -273,7 +269,6 @@ function parseFerrumMining(rows: Array<{ setting_key: string; setting_value: str
         return clamp(v, min, max);
     };
 
-    out.hungerCostPerExpedition = Math.floor(num("ferrum_mining_hunger_cost", 0, 5000, out.hungerCostPerExpedition));
     out.layerTimeMins.surface = num("ferrum_mining_time_surface", 1, 240, out.layerTimeMins.surface);
     out.layerTimeMins.deep = num("ferrum_mining_time_deep", 1, 240, out.layerTimeMins.deep);
     out.layerTimeMins.core = num("ferrum_mining_time_core", 1, 240, out.layerTimeMins.core);
@@ -374,7 +369,6 @@ export async function getGameRuntimeConfig(): Promise<GameRuntimeConfig> {
             'equipment_rarity_rare',
             'equipment_rarity_epic',
             'equipment_rarity_legendary',
-            'ferrum_mining_hunger_cost',
             'ferrum_mining_time_surface',
             'ferrum_mining_time_deep',
             'ferrum_mining_time_core',
@@ -395,7 +389,11 @@ export async function getGameRuntimeConfig(): Promise<GameRuntimeConfig> {
             'ferrum_drop_core_steel',
             'ferrum_drop_core_stone',
             'ferrum_drop_core_coal',
-            'ferrum_drop_core_gem'
+            'ferrum_drop_core_gem',
+            'durability_decay_farm',
+            'durability_decay_cook',
+            'durability_decay_mine',
+            'durability_decay_smelt'
         )
     `;
 
@@ -426,7 +424,23 @@ export async function getGameRuntimeConfig(): Promise<GameRuntimeConfig> {
             equipmentDropRates: parseEquipmentRarity(rows),
         },
         ferrumMining: parseFerrumMining(rows),
+        durabilityDecay: parseDurabilityDecay(rows),
     };
+}
+
+export async function getGameDurabilityDecayConfig(): Promise<GameDurabilityDecayConfig> {
+    await ensureGameSettingsTable();
+    const rows = await prisma.$queryRaw<Array<{ setting_key: string; setting_value: string }>>`
+        SELECT setting_key, setting_value
+        FROM game_settings
+        WHERE setting_key IN (
+            'durability_decay_farm',
+            'durability_decay_cook',
+            'durability_decay_mine',
+            'durability_decay_smelt'
+        )
+    `;
+    return parseDurabilityDecay(rows);
 }
 
 export async function getFerrumMiningConfig(): Promise<FerrumMiningConfig> {
@@ -435,7 +449,6 @@ export async function getFerrumMiningConfig(): Promise<FerrumMiningConfig> {
         SELECT setting_key, setting_value
         FROM game_settings
         WHERE setting_key IN (
-            'ferrum_mining_hunger_cost',
             'ferrum_mining_time_surface',
             'ferrum_mining_time_deep',
             'ferrum_mining_time_core',
@@ -569,7 +582,6 @@ export async function updateGameRuntimeConfig(input: {
     equipmentRareRate?: number;
     equipmentEpicRate?: number;
     equipmentLegendaryRate?: number;
-    ferrumMiningHungerCost?: number;
     ferrumMiningTimeSurface?: number;
     ferrumMiningTimeDeep?: number;
     ferrumMiningTimeCore?: number;
@@ -591,6 +603,10 @@ export async function updateGameRuntimeConfig(input: {
     ferrumDropCoreStone?: number;
     ferrumDropCoreCoal?: number;
     ferrumDropCoreGem?: number;
+    durabilityDecayFarm?: number;
+    durabilityDecayCook?: number;
+    durabilityDecayMine?: number;
+    durabilityDecaySmelt?: number;
 }) {
     await ensureGameSettingsTable();
 
@@ -698,7 +714,6 @@ export async function updateGameRuntimeConfig(input: {
         await upsertSetting("equipment_rarity_legendary", String(v));
     }
 
-    if (input.ferrumMiningHungerCost != null) await upsertSetting("ferrum_mining_hunger_cost", String(clamp(Math.floor(Number(input.ferrumMiningHungerCost)), 0, 5000)));
     if (input.ferrumMiningTimeSurface != null) await upsertSetting("ferrum_mining_time_surface", String(clamp(Number(input.ferrumMiningTimeSurface), 1, 240)));
     if (input.ferrumMiningTimeDeep != null) await upsertSetting("ferrum_mining_time_deep", String(clamp(Number(input.ferrumMiningTimeDeep), 1, 240)));
     if (input.ferrumMiningTimeCore != null) await upsertSetting("ferrum_mining_time_core", String(clamp(Number(input.ferrumMiningTimeCore), 1, 240)));
@@ -723,6 +738,11 @@ export async function updateGameRuntimeConfig(input: {
     if (input.ferrumDropCoreStone != null) await upsertSetting("ferrum_drop_core_stone", String(clamp(Number(input.ferrumDropCoreStone), 0, 1)));
     if (input.ferrumDropCoreCoal != null) await upsertSetting("ferrum_drop_core_coal", String(clamp(Number(input.ferrumDropCoreCoal), 0, 1)));
     if (input.ferrumDropCoreGem != null) await upsertSetting("ferrum_drop_core_gem", String(clamp(Number(input.ferrumDropCoreGem), 0, 1)));
+
+    if (input.durabilityDecayFarm != null) await upsertSetting("durability_decay_farm", String(clamp(Number(input.durabilityDecayFarm), 0, 1)));
+    if (input.durabilityDecayCook != null) await upsertSetting("durability_decay_cook", String(clamp(Number(input.durabilityDecayCook), 0, 1)));
+    if (input.durabilityDecayMine != null) await upsertSetting("durability_decay_mine", String(clamp(Number(input.durabilityDecayMine), 0, 1)));
+    if (input.durabilityDecaySmelt != null) await upsertSetting("durability_decay_smelt", String(clamp(Number(input.durabilityDecaySmelt), 0, 1)));
 
     return getGameRuntimeConfig();
 }

@@ -1,4 +1,30 @@
-// ─── Game Constants ──────────────────────────────────────
+// ─── Re-export shared constants (single source of truth) ─────
+export {
+    MAX_LEVEL,
+    UNLOCK_SECONDARY_JOB_LEVEL,
+    UNLOCK_SECOND_OCCUPATION_LEVEL,
+    INVENTORY_SLOTS,
+    MAX_DURABILITY,
+    HUNGER_TASK_DECAY_PER_SEC,
+    DEFAULT_HUNGER_TASK_DECAY_PER_SEC,
+    DURABILITY_DECAY_PER_SEC,
+    DEFAULT_DURABILITY_DECAY_PER_SEC,
+    LEVEL_THRESHOLDS,
+    getLevelFromExp,
+    getExpForNextLevel,
+    getExpProgress,
+    DEFAULT_FERRUM_MINING_CONFIG,
+} from '../../../shared/gameConfig';
+
+export type {
+    HungerTaskDecayConfig,
+    DurabilityDecayConfig,
+    ExpProgress,
+    FerrumMiningDropRates,
+    FerrumMiningConfig,
+} from '../../../shared/gameConfig';
+
+// ─── Server-only Game Constants ──────────────────────────
 
 /**
  * Real-time minutes that represent 1 in-game day.
@@ -18,16 +44,9 @@ export const MAX_HUNGER = 2400;
  */
 export const HUNGER_DECAY_PER_MIN = MAX_HUNGER / GAME_DAY_MINUTES; // ~13.33 Kcal/min
 
-/**
- * Task-driven hunger decay (kcal/sec).
- * Separate tuning for each task type so balance can be adjusted independently.
- */
-export const HUNGER_TASK_DECAY_PER_SEC = {
-    /** FARM: decay per active plot (1 plot = up to 9 same-seed farm tasks) */
-    FARM_PER_PLOT: 0.01,
-    /** COOK: decay per active cooking menu */
-    COOK_PER_MENU: 0.25,
-} as const;
+// ─── Equipment Rarity ───────────────────────────────────
+
+export type EquipmentRarity = "NORMAL" | "RARE" | "EPIC" | "LEGENDARY";
 
 /**
  * Harvest material rarity drop weights.
@@ -39,15 +58,6 @@ export const HARVEST_ITEM_RARITY_DROP_RATES: Record<EquipmentRarity, number> = {
     EPIC: 1.9,
     LEGENDARY: 0.1,
 };
-
-/**
- * Initial total inventory slots for each user.
- */
-export const INVENTORY_SLOTS = 16;
-
-// ─── Equipment Rarity ───────────────────────────────────
-
-export type EquipmentRarity = "NORMAL" | "RARE" | "EPIC" | "LEGENDARY";
 
 /**
  * Drop rates for equipment box rarity.
@@ -205,8 +215,8 @@ export interface MarketBotTuningConfig {
 export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     // Turn bot economy simulation on/off.
     enabled: true,
-    // Run approximately every 30 seconds.
-    tickMs: 30_000,
+    // Run approximately every 15 seconds.
+    tickMs: 15_000,
     // 30% chance to execute buy behavior each tick.
     buyChancePerTick: 0.3,
     // At most 2 listings handled per tick.
@@ -219,24 +229,31 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     minListingAgeMs: 60_000,
     // 65% chance to create simulated player sell listings each tick.
     sellChancePerTick: 1.0,
-    // At most 20 new bot listings per refresh cycle.
-    maxSellListingsPerTick: 20,
+    // At most 60 new bot listings per refresh cycle.
+    maxSellListingsPerTick: 200,
     // Cap active simulated sellers per item.
     maxSellersPerItem: 10,
     // Listing quantity range.
     sellMinQtyPerListing: 1,
     sellMaxQtyPerListing: 12,
     // Price randomization around reference value.
-    sellUnitPriceMinRatio: 1.2,
+    sellUnitPriceMinRatio: 1.5,
     sellUnitPriceMaxRatio: 2.0,
-    // Requested market simulation items.
-    sellItemNames: ["Gas", "Flux", "Oil", "Chicken Salad", "Beef Steak", "Beef Stew", "Chicken Stew"],
+    // Requested market simulation items (RAW, INGREDIENT, MEAL).
+    sellItemNames: [
+        // RAW
+        "Chicken Meat", "Beef Meat", "Vegetable", "Iron Ore", "Copper Ore", "Steel Ore", "Stone", "Gem", "Gas",
+        // INGREDIENT
+        "Salt", "Coal", "Flux", "Oil", "Iron Ingot", "Copper Ingot", "Steel Ingot",
+        // MEAL
+        "Chicken Salad", "Beef Steak", "Beef Stew", "Chicken Stew"
+    ],
     // Prevent bot from feeding market too frequently.
     sellFeedCooldownMs: 900_000, // 15 minutes
     // Hard cap to keep ACTIVE bot listings bounded.
-    maxActiveBotListingsTotal: 30,
+    maxActiveBotListingsTotal: 300,
     // Cap number of NPC seller accounts.
-    maxBotUsers: 30,
+    maxBotUsers: 200,
 };
 
 // ─── First-job Skill Tree ──────────────────────────────
@@ -463,42 +480,3 @@ export function getHungerTier(hunger: number): HungerTier {
     );
 }
 
-// ─── Occupation Leveling ─────────────────────────────────
-
-/** Current hard cap for occupation levels. */
-export const MAX_LEVEL = 50;
-
-/**
- * Minimum level in first job required to unlock secondary job.
- */
-export const UNLOCK_SECONDARY_JOB_LEVEL = 5;
-export const UNLOCK_SECOND_OCCUPATION_LEVEL = UNLOCK_SECONDARY_JOB_LEVEL;
-
-/**
- * Total EXP required to reach each level (index = level).
- * Formula: level^2 × 100  (quadratic growth)
- *   Level  1 →       0 EXP
- *   Level  2 →     400 EXP
- *   Level  5 →   2,500 EXP
- *   Level 10 →  10,000 EXP  — unlock second occupation
- *   Level 25 →  62,500 EXP
- *   Level 50 → 250,000 EXP
- */
-export const LEVEL_THRESHOLDS: number[] = Array.from(
-    { length: MAX_LEVEL + 1 },
-    (_, i) => (i <= 1 ? 0 : i * i * 100)
-);
-
-export function getLevelFromExp(exp: number): number {
-    // Scan backward for fastest lookup of highest unlocked level.
-    for (let i = LEVEL_THRESHOLDS.length - 1; i >= 1; i--) {
-        if (exp >= LEVEL_THRESHOLDS[i]) return i;
-    }
-    return 1;
-}
-
-export function getExpForNextLevel(level: number): number | null {
-    // Return null when already at max level.
-    if (level >= MAX_LEVEL) return null; // max level
-    return LEVEL_THRESHOLDS[level + 1];
-}

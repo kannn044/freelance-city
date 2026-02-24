@@ -11,6 +11,8 @@ import { getEffectiveMaxStack, getUserEquipmentEffects } from "../services/equip
 import { getUserCityProfile } from "../services/city.service";
 import { reconcileWorkspaceOrderPausesForUser } from "../services/workspaceRules.service";
 import { toJobPayload } from "../lib/userPayload";
+import { syncDurability, ensureDurabilityColumns } from "../services/durability.service";
+import { MAX_DURABILITY } from "../config/game.config";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -23,8 +25,8 @@ const EQUIPMENT_SLOTS = ["HEAD", "UPPER_BODY", "LOWER_BODY", "ARM", "GLOVE", "SH
 async function ensureEquipmentRows(userId: number) {
     for (const slot of EQUIPMENT_SLOTS) {
         await prisma.$executeRaw`
-            INSERT INTO user_equipments (user_id, slot, item_id, item_rarity, updated_at)
-            VALUES (${userId}, ${slot}, NULL, NULL, NOW())
+            INSERT INTO user_equipments (user_id, slot, item_id, item_rarity, updated_at, durability_updated_at)
+            VALUES (${userId}, ${slot}, NULL, NULL, ${new Date()}, ${new Date()})
             ON DUPLICATE KEY UPDATE updated_at = updated_at
         `;
     }
@@ -32,10 +34,13 @@ async function ensureEquipmentRows(userId: number) {
 
 async function getEquipmentState(userId: number) {
     await ensureEquipmentRows(userId);
+    await ensureDurabilityColumns();
     return prisma.$queryRaw<Array<{
         slot: string;
         item_id: number | null;
         item_rarity: EquipmentRarity | null;
+        durability: number;
+        durability_updated_at: Date;
         item_name: string | null;
         item_icon: string | null;
         effect_key: string | null;
@@ -45,6 +50,8 @@ async function getEquipmentState(userId: number) {
         SELECT ue.slot,
                ue.item_id,
              ue.item_rarity,
+               ue.durability,
+               ue.durability_updated_at,
                i.name as item_name,
                i.icon as item_icon,
                i.effect_key as effect_key,
@@ -65,6 +72,7 @@ async function addItemToInventory(
     qty: number,
     db: DbClient = prisma,
     equipmentRarity: EquipmentRarity | null = null,
+    equipmentDurability: number | null = null,
 ): Promise<boolean> {
     const item = await db.item.findUnique({ where: { id: itemId } });
     if (!item) return false;
@@ -78,7 +86,8 @@ async function addItemToInventory(
     for (const slot of slots) {
         if (remaining <= 0) break;
         const sameRarity = item.type !== "EQUIPMENT" || (slot as any).equipment_rarity === (equipmentRarity ?? "NORMAL");
-        if (slot.item_id !== itemId || slot.quantity >= item.max_stack || !sameRarity) continue;
+        const sameDurability = item.type !== "EQUIPMENT" || (slot as any).equipment_durability === equipmentDurability;
+        if (slot.item_id !== itemId || slot.quantity >= item.max_stack || !sameRarity || !sameDurability) continue;
 
         const add = Math.min(item.max_stack - slot.quantity, remaining);
         remaining -= add;
@@ -101,13 +110,15 @@ async function addItemToInventory(
         if (item.type === "EQUIPMENT") {
             await db.$executeRaw`
                 UPDATE inventory_slots
-                SET equipment_rarity = ${equipmentRarity ?? "NORMAL"}
+                SET equipment_rarity = ${equipmentRarity ?? "NORMAL"},
+                    equipment_durability = ${equipmentDurability}
                 WHERE id = ${slot.id}
             `;
         } else {
             await db.$executeRaw`
                 UPDATE inventory_slots
-                SET equipment_rarity = NULL
+                SET equipment_rarity = NULL,
+                    equipment_durability = NULL
                 WHERE id = ${slot.id}
             `;
         }
@@ -145,10 +156,13 @@ export const getInventory = async (req: AuthRequest, res: Response): Promise<voi
                 orderBy: { slot: "asc" },
             });
             const equipment = await getEquipmentState(req.userId!);
-            res.json({ slots, equipment });
+            await syncDurability(req.userId!);
+            const equipmentSynced = await getEquipmentState(req.userId!);
+            res.json({ slots, equipment: equipmentSynced });
             return;
         }
 
+        await syncDurability(req.userId!);
         const equipment = await getEquipmentState(req.userId!);
         res.json({ slots: existing, equipment });
     } catch (error) {
@@ -163,6 +177,7 @@ export const getInventory = async (req: AuthRequest, res: Response): Promise<voi
  */
 export const organizeInventory = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncDurability(req.userId!);
         const mode = String(req.body?.mode ?? "combine") as InventoryOrganizeMode;
         if (mode !== "combine" && mode !== "sort-az") {
             res.status(400).json({ error: "Invalid organize mode" });
@@ -175,6 +190,7 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
             item_id: number | null;
             quantity: number;
             equipment_rarity: EquipmentRarity | null;
+            equipment_durability: number | null;
             item_name: string | null;
             item_type: string | null;
             item_max_stack: number | null;
@@ -186,6 +202,7 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
                    s.item_id,
                    s.quantity,
                    s.equipment_rarity,
+                   s.equipment_durability,
                    i.name AS item_name,
                    i.type AS item_type,
                    i.max_stack AS item_max_stack
@@ -212,6 +229,7 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
         type Bucket = {
             itemId: number;
             rarity: EquipmentRarity | null;
+            durability: number | null;
             itemName: string;
             itemType: string;
             maxStack: number;
@@ -223,7 +241,8 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
         for (const row of rows) {
             if (!row.item_id || row.quantity <= 0 || !row.item_name || !row.item_max_stack || !row.item_type) continue;
             const rarityKey = row.equipment_rarity ?? "";
-            const key = `${row.item_id}:${rarityKey}`;
+            const durabilityKey = row.equipment_durability ?? "";
+            const key = `${row.item_id}:${rarityKey}:${durabilityKey}`;
             const existing = bucketMap.get(key);
             if (existing) {
                 existing.totalQty += row.quantity;
@@ -233,6 +252,7 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
             bucketMap.set(key, {
                 itemId: row.item_id,
                 rarity: row.equipment_rarity,
+                durability: row.equipment_durability,
                 itemName: row.item_name,
                 itemType: row.item_type,
                 maxStack: effectiveMaxStack,
@@ -256,12 +276,12 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
             buckets = buckets.sort((a, b) => a.firstSlot - b.firstSlot);
         }
 
-        const normalized: Array<{ itemId: number; quantity: number; rarity: EquipmentRarity | null }> = [];
+        const normalized: Array<{ itemId: number; quantity: number; rarity: EquipmentRarity | null; durability: number | null }> = [];
         for (const b of buckets) {
             let remain = b.totalQty;
             while (remain > 0) {
                 const put = Math.min(remain, Math.max(1, b.maxStack));
-                normalized.push({ itemId: b.itemId, quantity: put, rarity: b.rarity });
+                normalized.push({ itemId: b.itemId, quantity: put, rarity: b.rarity, durability: b.durability });
                 remain -= put;
             }
         }
@@ -279,7 +299,8 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
                         UPDATE inventory_slots
                         SET item_id = ${target.itemId},
                             quantity = ${target.quantity},
-                            equipment_rarity = ${target.rarity}
+                            equipment_rarity = ${target.rarity},
+                            equipment_durability = ${target.durability}
                         WHERE id = ${rows[i].id}
                     `;
                 } else {
@@ -287,7 +308,8 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
                         UPDATE inventory_slots
                         SET item_id = NULL,
                             quantity = 0,
-                            equipment_rarity = NULL
+                            equipment_rarity = NULL,
+                            equipment_durability = NULL
                         WHERE id = ${rows[i].id}
                     `;
                 }
@@ -322,6 +344,7 @@ export const organizeInventory = async (req: AuthRequest, res: Response): Promis
  */
 export const discardItem = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncDurability(req.userId!);
         const slotId = Number(req.body?.slotId);
         const quantityRaw = req.body?.quantity;
 
@@ -366,7 +389,7 @@ export const discardItem = async (req: AuthRequest, res: Response): Promise<void
             });
             await prisma.$executeRaw`
                 UPDATE inventory_slots
-                SET equipment_rarity = NULL
+                SET equipment_rarity = NULL, equipment_durability = NULL
                 WHERE id = ${slot.id}
             `;
         }
@@ -399,6 +422,7 @@ export const discardItem = async (req: AuthRequest, res: Response): Promise<void
  */
 export const equipItem = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncDurability(req.userId!);
         const { slotId } = req.body as { slotId?: number };
         if (!slotId) {
             res.status(400).json({ error: "slotId is required" });
@@ -425,8 +449,8 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
 
         await prisma.$transaction(async (tx) => {
             await tx.$executeRaw`
-                INSERT INTO user_equipments (user_id, slot, item_id, updated_at)
-                VALUES (${req.userId!}, ${equipSlot}, NULL, NOW())
+                INSERT INTO user_equipments (user_id, slot, item_id, updated_at, durability_updated_at)
+                VALUES (${req.userId!}, ${equipSlot}, NULL, ${new Date()}, ${new Date()})
                 ON DUPLICATE KEY UPDATE updated_at = updated_at
             `;
 
@@ -438,21 +462,23 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
             `;
 
             const currentItemId = current[0]?.item_id ?? null;
-            const currentRow = await tx.$queryRaw<Array<{ item_rarity: EquipmentRarity | null }>>`
-                SELECT item_rarity
+            const currentRow = await tx.$queryRaw<Array<{ item_rarity: EquipmentRarity | null; durability: number }>>`
+                SELECT item_rarity, durability
                 FROM user_equipments
                 WHERE user_id = ${req.userId!} AND slot = ${equipSlot}
                 LIMIT 1
             `;
             const currentRarity = currentRow[0]?.item_rarity ?? "NORMAL";
+            const currentDurability = currentRow[0]?.durability ?? MAX_DURABILITY;
 
-            const invRarityRow = await tx.$queryRaw<Array<{ equipment_rarity: EquipmentRarity | null }>>`
-                SELECT equipment_rarity
+            const invRarityRow = await tx.$queryRaw<Array<{ equipment_rarity: EquipmentRarity | null; equipment_durability: number | null }>>`
+                SELECT equipment_rarity, equipment_durability
                 FROM inventory_slots
                 WHERE id = ${invSlot.id}
                 LIMIT 1
             `;
             const equippedRarity = invRarityRow[0]?.equipment_rarity ?? "NORMAL";
+            const equippedDurability = invRarityRow[0]?.equipment_durability ?? MAX_DURABILITY;
 
             if (invSlot.quantity > 1) {
                 await tx.inventorySlot.update({
@@ -466,13 +492,13 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
                 });
                 await tx.$executeRaw`
                     UPDATE inventory_slots
-                    SET equipment_rarity = NULL
+                    SET equipment_rarity = NULL, equipment_durability = NULL
                     WHERE id = ${invSlot.id}
                 `;
             }
 
             if (currentItemId) {
-                const movedBack = await addItemToInventory(req.userId!, Number(currentItemId), 1, tx, currentRarity);
+                const movedBack = await addItemToInventory(req.userId!, Number(currentItemId), 1, tx, currentRarity, currentDurability);
                 if (!movedBack) {
                     throw new Error("Inventory full. Unequip failed");
                 }
@@ -480,7 +506,7 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
 
             await tx.$executeRaw`
                 UPDATE user_equipments
-                SET item_id = ${equippedItem.id}, item_rarity = ${equippedRarity}, updated_at = NOW()
+                SET item_id = ${equippedItem.id}, item_rarity = ${equippedRarity}, durability = ${equippedDurability}, durability_updated_at = ${new Date()}, updated_at = ${new Date()}
                 WHERE user_id = ${req.userId!} AND slot = ${equipSlot}
             `;
         });
@@ -513,6 +539,7 @@ export const equipItem = async (req: AuthRequest, res: Response): Promise<void> 
  */
 export const unequipItem = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        await syncDurability(req.userId!);
         const { slot } = req.body as { slot?: string };
         if (!slot || !EQUIPMENT_SLOTS.includes(slot as any)) {
             res.status(400).json({ error: "Invalid equipment slot" });
@@ -520,8 +547,8 @@ export const unequipItem = async (req: AuthRequest, res: Response): Promise<void
         }
 
         await ensureEquipmentRows(req.userId!);
-        const row = await prisma.$queryRaw<Array<{ item_id: number | null; item_rarity: EquipmentRarity | null }>>`
-            SELECT item_id, item_rarity
+        const row = await prisma.$queryRaw<Array<{ item_id: number | null; item_rarity: EquipmentRarity | null; durability: number }>>`
+            SELECT item_id, item_rarity, durability
             FROM user_equipments
             WHERE user_id = ${req.userId!} AND slot = ${slot}
             LIMIT 1
@@ -529,12 +556,13 @@ export const unequipItem = async (req: AuthRequest, res: Response): Promise<void
 
         const itemId = row[0]?.item_id ?? null;
         const itemRarity = row[0]?.item_rarity ?? "NORMAL";
+        const itemDurability = row[0]?.durability ?? MAX_DURABILITY;
         if (!itemId) {
             res.status(400).json({ error: "No item equipped in this slot" });
             return;
         }
 
-        const moved = await addItemToInventory(req.userId!, Number(itemId), 1, prisma, itemRarity);
+        const moved = await addItemToInventory(req.userId!, Number(itemId), 1, prisma, itemRarity, itemDurability);
         if (!moved) {
             res.status(400).json({ error: "Inventory full" });
             return;
@@ -542,7 +570,7 @@ export const unequipItem = async (req: AuthRequest, res: Response): Promise<void
 
         await prisma.$executeRaw`
             UPDATE user_equipments
-            SET item_id = NULL, item_rarity = NULL, updated_at = NOW()
+            SET item_id = NULL, item_rarity = NULL, updated_at = ${new Date()}
             WHERE user_id = ${req.userId!} AND slot = ${slot}
         `;
 
@@ -619,7 +647,7 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
             });
             await prisma.$executeRaw`
                 UPDATE inventory_slots
-                SET equipment_rarity = NULL
+                SET equipment_rarity = NULL, equipment_durability = NULL
                 WHERE id = ${slotId}
             `;
         }
@@ -647,5 +675,264 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
     } catch (error) {
         console.error("eatItem error:", error);
         res.status(500).json({ error: "Failed to eat item" });
+    }
+};
+
+// ─── Repair ──────────────────────────────────────────────
+
+interface RepairIngredientRow {
+    item_id: number;
+    item_name: string;
+    item_icon: string;
+    recipe_qty: number;
+}
+
+/**
+ * GET /game/equipment/repair-cost?slot=HEAD
+ * Returns the material cost to fully repair the equipped item in the given slot.
+ */
+export const getRepairCost = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const slot = String(req.query.slot ?? "").toUpperCase();
+        const slotIdRaw = req.query.slotId;
+        const slotId = slotIdRaw ? Number(slotIdRaw) : undefined;
+
+        if (!slotId && !["HEAD", "UPPER_BODY", "LOWER_BODY", "ARM", "GLOVE", "SHOE"].includes(slot)) {
+            res.status(400).json({ error: "Invalid slot or slotId" });
+            return;
+        }
+
+        await ensureDurabilityColumns();
+        await syncDurability(req.userId!);
+
+        let itemId: number | null = null;
+        let durability: number = MAX_DURABILITY;
+
+        if (slotId) {
+            const invSlot = await prisma.inventorySlot.findFirst({
+                where: { id: slotId, user_id: req.userId! },
+            });
+            if (!invSlot || !invSlot.item_id) {
+                res.status(400).json({ error: "No item in this inventory slot" });
+                return;
+            }
+            itemId = invSlot.item_id;
+            durability = Number((invSlot as any).equipment_durability ?? MAX_DURABILITY);
+        } else {
+            // Get equipped item + durability
+            const eqRows = await prisma.$queryRaw<Array<{ item_id: number | null; durability: number }>>`
+                SELECT item_id, durability
+                FROM user_equipments
+                WHERE user_id = ${req.userId!} AND slot = ${slot}
+                LIMIT 1
+            `;
+            const eq = eqRows[0];
+            if (!eq?.item_id) {
+                res.status(400).json({ error: "No item equipped in this slot" });
+                return;
+            }
+            itemId = eq.item_id;
+            durability = Number(eq.durability);
+        }
+
+        if (durability >= MAX_DURABILITY) {
+            res.json({ ingredients: [], missingPct: 0, durability, maxDurability: MAX_DURABILITY });
+            return;
+        }
+
+        // Find crafting recipe for this item
+        const recipe = await prisma.recipe.findFirst({
+            where: { output_item_id: itemId },
+            include: {
+                ingredients: {
+                    include: { item: true },
+                },
+            },
+        });
+
+        if (!recipe) {
+            res.status(400).json({ error: "No crafting recipe found for this equipment" });
+            return;
+        }
+
+        const missingPct = (MAX_DURABILITY - durability) / MAX_DURABILITY;
+
+        const ingredients = recipe.ingredients.map((ing) => ({
+            item_id: ing.item_id,
+            item_name: ing.item.name,
+            item_icon: ing.item.icon,
+            recipe_qty: ing.quantity,
+            repair_qty: Math.ceil(ing.quantity * missingPct),
+        }));
+
+        res.json({
+            ingredients,
+            missingPct: Math.round(missingPct * 100),
+            durability: Math.round(durability),
+            maxDurability: MAX_DURABILITY,
+        });
+    } catch (error) {
+        console.error("getRepairCost error:", error);
+        res.status(500).json({ error: "Failed to get repair cost" });
+    }
+};
+
+/**
+ * POST /game/equipment/repair  body: { slot: "HEAD" }
+ * Deduct repair materials from inventory and restore durability to 100.
+ */
+export const repairEquipment = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const slot = String(req.body.slot ?? "").toUpperCase();
+        const slotIdRaw = req.body.slotId;
+        const slotId = slotIdRaw ? Number(slotIdRaw) : undefined;
+
+        if (!slotId && !["HEAD", "UPPER_BODY", "LOWER_BODY", "ARM", "GLOVE", "SHOE"].includes(slot)) {
+            res.status(400).json({ error: "Invalid slot or slotId" });
+            return;
+        }
+
+        await ensureDurabilityColumns();
+        await syncDurability(req.userId!);
+
+        let itemId: number | null = null;
+        let durability: number = MAX_DURABILITY;
+        let eqIdToUpdate: number | null = null;
+
+        if (slotId) {
+            const invSlot = await prisma.inventorySlot.findFirst({
+                where: { id: slotId, user_id: req.userId! },
+            });
+            if (!invSlot || !invSlot.item_id) {
+                res.status(400).json({ error: "No item in this inventory slot" });
+                return;
+            }
+            itemId = invSlot.item_id;
+            durability = Number((invSlot as any).equipment_durability ?? MAX_DURABILITY);
+        } else {
+            // Get equipped item + durability
+            const eqRows = await prisma.$queryRaw<Array<{ id: number; item_id: number | null; durability: number }>>`
+                SELECT id, item_id, durability
+                FROM user_equipments
+                WHERE user_id = ${req.userId!} AND slot = ${slot}
+                LIMIT 1
+            `;
+            const eq = eqRows[0];
+            if (!eq?.item_id) {
+                res.status(400).json({ error: "No item equipped in this slot" });
+                return;
+            }
+            itemId = eq.item_id;
+            durability = Number(eq.durability);
+            eqIdToUpdate = eq.id;
+        }
+
+        if (durability >= MAX_DURABILITY) {
+            res.status(400).json({ error: "Equipment is already at full durability" });
+            return;
+        }
+
+        // Find crafting recipe
+        const recipe = await prisma.recipe.findFirst({
+            where: { output_item_id: itemId },
+            include: {
+                ingredients: {
+                    include: { item: true },
+                },
+            },
+        });
+
+        if (!recipe) {
+            res.status(400).json({ error: "No crafting recipe found for this equipment" });
+            return;
+        }
+
+        const missingPct = (MAX_DURABILITY - durability) / MAX_DURABILITY;
+
+        // Calculate required materials
+        const repairCosts = recipe.ingredients.map((ing) => ({
+            item_id: ing.item_id,
+            item_name: ing.item.name,
+            repair_qty: Math.ceil(ing.quantity * missingPct),
+        }));
+
+        // Transaction: verify materials + deduct + repair
+        await prisma.$transaction(async (tx) => {
+            const userSlots = await tx.inventorySlot.findMany({
+                where: { user_id: req.userId! },
+                include: { item: true },
+            });
+
+            // Check if user has enough materials
+            for (const cost of repairCosts) {
+                const available = userSlots
+                    .filter((s) => s.item_id === cost.item_id)
+                    .reduce((sum, s) => sum + s.quantity, 0);
+                if (available < cost.repair_qty) {
+                    throw new Error(`Not enough ${cost.item_name}. Need ${cost.repair_qty}, have ${available}.`);
+                }
+            }
+
+            // Deduct materials
+            for (const cost of repairCosts) {
+                let remaining = cost.repair_qty;
+                const matchingSlots = userSlots
+                    .filter((s) => s.item_id === cost.item_id && s.quantity > 0)
+                    .sort((a, b) => a.quantity - b.quantity); // deduct from smallest stacks first
+
+                for (const slot of matchingSlots) {
+                    if (remaining <= 0) break;
+                    const deduct = Math.min(remaining, slot.quantity);
+                    remaining -= deduct;
+                    slot.quantity -= deduct;
+
+                    if (slot.quantity <= 0) {
+                        await tx.inventorySlot.update({
+                            where: { id: slot.id },
+                            data: { item_id: null, quantity: 0, equipment_rarity: null },
+                        });
+                    } else {
+                        await tx.inventorySlot.update({
+                            where: { id: slot.id },
+                            data: { quantity: slot.quantity },
+                        });
+                    }
+                }
+            }
+
+            // Restore durability
+            if (slotId) {
+                await tx.$executeRaw`
+                    UPDATE inventory_slots
+                    SET equipment_durability = ${MAX_DURABILITY}
+                    WHERE id = ${slotId}
+                `;
+            } else if (eqIdToUpdate) {
+                await tx.$executeRaw`
+                    UPDATE user_equipments
+                    SET durability = ${MAX_DURABILITY}, durability_updated_at = NOW()
+                    WHERE id = ${eqIdToUpdate}
+                `;
+            }
+        });
+
+        // Return updated state
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+
+        const equipment = await getEquipmentState(req.userId!);
+
+        res.json({
+            message: "Equipment repaired to full durability!",
+            slots,
+            equipment,
+        });
+    } catch (error: any) {
+        console.error("repairEquipment error:", error);
+        const msg = error?.message ?? "Failed to repair equipment";
+        res.status(400).json({ error: msg });
     }
 };

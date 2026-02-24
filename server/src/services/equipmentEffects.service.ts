@@ -37,8 +37,8 @@ const EMPTY: EquipmentEffectSummary = {
 const clamp = (v: number, min = 0, max = 0.95) => Math.max(min, Math.min(max, v));
 
 export async function getUserEquipmentEffects(userId: number, db: DbClient = prisma): Promise<EquipmentEffectSummary> {
-    const rows = await db.$queryRaw<Array<{ effect_key: string | null; effect_value: number | null; effect_value2: number | null; item_rarity: EquipmentRarity | null }>>`
-        SELECT i.effect_key, i.effect_value, i.effect_value2, ue.item_rarity
+    const rows = await db.$queryRaw<Array<{ effect_key: string | null; effect_value: number | null; effect_value2: number | null; item_rarity: EquipmentRarity | null; durability: number | null }>>`
+        SELECT i.effect_key, i.effect_value, i.effect_value2, ue.item_rarity, ue.durability
         FROM user_equipments ue
         JOIN items i ON i.id = ue.item_id
         WHERE ue.user_id = ${userId}
@@ -49,6 +49,9 @@ export async function getUserEquipmentEffects(userId: number, db: DbClient = pri
     const effects = { ...EMPTY };
 
     for (const row of rows) {
+        // Skip broken equipment (durability depleted)
+        if (Number(row.durability ?? 0) <= 0) continue;
+
         const key = row.effect_key ?? "";
         const multiplier = getEquipmentRarityBuffMultiplier((row.item_rarity ?? "NORMAL") as EquipmentRarity);
         const v = Number(row.effect_value ?? 0) * multiplier;

@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '../stores/gameStore';
-import type { InventorySlot } from '../stores/gameStore';
+import type { InventorySlot, RepairCostResult } from '../stores/gameStore';
 import { UtensilsCrossed, Package, ArrowDownAZ, Rows3, Trash2 } from 'lucide-react';
 import { getEquipmentImageByName, renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 import { INVENTORY_SLOTS } from '../lib/gameConstants';
 import { useTranslation } from 'react-i18next';
+import { useShallow } from 'zustand/react/shallow';
+import RepairEquipmentModal from './RepairEquipmentModal';
 
 const InventoryGrid = () => {
     const { t } = useTranslation();
@@ -19,11 +21,41 @@ const InventoryGrid = () => {
         { key: 'SHOE', label: t('inventory.equip_slots.SHOE') },
     ] as const;
 
-    const { inventory, equipment, eatItem, equipItem, unequipItem, organizeInventory, discardItem } = useGameStore();
+    const {
+        inventory,
+        equipment,
+        eatItem,
+        equipItem,
+        unequipItem,
+        organizeInventory,
+        discardItem,
+        fetchRepairCost,
+        repairEquipment
+    } = useGameStore(useShallow((state) => ({
+        inventory: state.inventory,
+        equipment: state.equipment,
+        eatItem: state.eatItem,
+        equipItem: state.equipItem,
+        unequipItem: state.unequipItem,
+        organizeInventory: state.organizeInventory,
+        discardItem: state.discardItem,
+        fetchRepairCost: state.fetchRepairCost,
+        repairEquipment: state.repairEquipment,
+    })));
     const occupiedSlots = inventory.filter((s) => s.item && s.quantity > 0).length;
     const [hoveredSlot, setHoveredSlot] = useState<InventorySlot | null>(null);
     const [draggingSlotId, setDraggingSlotId] = useState<number | null>(null);
     const [isBinHovered, setIsBinHovered] = useState(false);
+    const [hoveredEquipSlot, setHoveredEquipSlot] = useState<string | null>(null);
+    const [repairModal, setRepairModal] = useState<{
+        open: boolean;
+        slot: string | number;
+        itemName: string;
+        itemIcon?: string | null;
+        loading: boolean;
+        repairing: boolean;
+        cost: RepairCostResult | null;
+    }>({ open: false, slot: '', itemName: '', loading: false, repairing: false, cost: null });
     const [confirmState, setConfirmState] = useState<{
         open: boolean;
         title: string;
@@ -38,6 +70,31 @@ const InventoryGrid = () => {
         onConfirm: null,
     });
 
+    const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const equipHoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleHoverSlotEnter = (slot: InventorySlot | null) => {
+        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        if (slot) setHoveredSlot(slot);
+    };
+
+    const handleHoverSlotLeave = () => {
+        hoverTimeoutRef.current = setTimeout(() => {
+            setHoveredSlot(null);
+        }, 300);
+    };
+
+    const handleEquipSlotEnter = (key: string) => {
+        if (equipHoverTimeoutRef.current) clearTimeout(equipHoverTimeoutRef.current);
+        setHoveredEquipSlot(key);
+    };
+
+    const handleEquipSlotLeave = () => {
+        equipHoverTimeoutRef.current = setTimeout(() => {
+            setHoveredEquipSlot(null);
+        }, 300);
+    };
+
     const askConfirm = (title: string, description: string, confirmLabel: string, onConfirm: () => void) => {
         setConfirmState({ open: true, title, description, confirmLabel, onConfirm });
     };
@@ -46,6 +103,18 @@ const InventoryGrid = () => {
         const fn = confirmState.onConfirm;
         setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }));
         fn?.();
+    };
+
+    const openRepairModal = async (slotKey: string | number, itemName: string, itemIcon?: string | null) => {
+        setRepairModal({ open: true, slot: slotKey, itemName, itemIcon, loading: true, repairing: false, cost: null });
+        const cost = await fetchRepairCost(slotKey);
+        setRepairModal((prev) => ({ ...prev, loading: false, cost }));
+    };
+
+    const doRepair = async () => {
+        setRepairModal((prev) => ({ ...prev, repairing: true }));
+        await repairEquipment(repairModal.slot);
+        setRepairModal({ open: false, slot: '', itemName: '', loading: false, repairing: false, cost: null });
     };
 
     const hasTierRarity = (slot: InventorySlot | null | undefined) => {
@@ -152,79 +221,172 @@ const InventoryGrid = () => {
                     style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '0.4rem',
+                        gap: '0.5rem',
                     }}
                 >
-                    {equipmentSlots.map((slot) => (
-                        <button
-                            key={slot.key}
-                            onClick={() => unequipItem(slot.key)}
-                            style={{
-                                borderRadius: '0.5rem',
-                                border: '1px dashed rgba(255,255,255,0.14)',
-                                background: 'rgba(255,255,255,0.02)',
-                                minHeight: '3.4rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.15rem',
-                                padding: '0.25rem',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            {(() => {
-                                const eq = equipment.find((e) => e.slot === slot.key);
-                                const imgSrc = getEquipmentImageByName(eq?.item_name);
-                                if (imgSrc) {
-                                    return (
-                                        <img
-                                            src={imgSrc}
-                                            alt={eq?.item_name ?? slot.label}
-                                            width={16}
-                                            height={16}
-                                            style={{ width: '1rem', height: '1rem', objectFit: 'contain' }}
-                                        />
-                                    );
-                                }
-
-                                if (eq?.item_icon) {
-                                    return <span style={{ fontSize: '1rem', lineHeight: 1 }}>{eq.item_icon}</span>;
-                                }
-
-                                return (
-                                    <span
-                                        aria-hidden="true"
-                                        style={{
-                                            width: '1rem',
-                                            height: '1rem',
-                                            borderRadius: '999px',
-                                            border: '1px dashed rgba(255,255,255,0.22)',
-                                            display: 'inline-block',
-                                        }}
-                                    />
-                                );
-                            })()}
-                            <span
-                                style={{
-                                    fontSize: '0.58rem',
-                                    color: (() => {
-                                        const eq = equipment.find((e) => e.slot === slot.key);
-                                        return eq?.item_id ? getEquipmentRarityColor(eq.item_rarity) : 'rgba(255,255,255,0.6)';
-                                    })(),
-                                    textAlign: 'center',
-                                    lineHeight: 1.15,
-                                }}
+                    {equipmentSlots.map((slot) => {
+                        const eq = equipment.find((e) => e.slot === slot.key);
+                        const dur = Number(eq?.durability ?? 100);
+                        const durPct = Math.max(0, Math.min(100, dur));
+                        const barColor = dur <= 0 ? '#ef4444' : durPct > 60 ? '#34d399' : durPct > 30 ? '#fbbf24' : '#ef4444';
+                        const isHovered = hoveredEquipSlot === slot.key;
+                        return (
+                            <div
+                                key={slot.key}
+                                style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', position: 'relative' }}
+                                onMouseEnter={() => handleEquipSlotEnter(slot.key)}
+                                onMouseLeave={handleEquipSlotLeave}
                             >
-                                {(() => {
-                                    const eq = equipment.find((e) => e.slot === slot.key);
-                                    if (!eq?.item_name) return slot.label;
-                                    const rarity = t(`common.rarity_labels.${(eq.item_rarity ?? 'NORMAL').toUpperCase()}`);
-                                    return `${eq.item_name} (${rarity})`;
-                                })()}
-                            </span>
-                        </button>
-                    ))}
+                                <button
+                                    onClick={() => unequipItem(slot.key)}
+                                    style={{
+                                        borderRadius: '0.5rem',
+                                        border: '1px dashed rgba(255,255,255,0.14)',
+                                        background: 'rgba(255,255,255,0.02)',
+                                        minHeight: '3.4rem',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.15rem',
+                                        padding: '0.25rem',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {(() => {
+                                        const imgSrc = getEquipmentImageByName(eq?.item_name);
+                                        if (imgSrc) {
+                                            return (
+                                                <img
+                                                    src={imgSrc}
+                                                    alt={eq?.item_name ?? slot.label}
+                                                    width={16}
+                                                    height={16}
+                                                    style={{ width: '1rem', height: '1rem', objectFit: 'contain' }}
+                                                />
+                                            );
+                                        }
+
+                                        if (eq?.item_icon) {
+                                            return <span style={{ fontSize: '1rem', lineHeight: 1 }}>{eq.item_icon}</span>;
+                                        }
+
+                                        return (
+                                            <span
+                                                aria-hidden="true"
+                                                style={{
+                                                    width: '1rem',
+                                                    height: '1rem',
+                                                    borderRadius: '999px',
+                                                    border: '1px dashed rgba(255,255,255,0.22)',
+                                                    display: 'inline-block',
+                                                }}
+                                            />
+                                        );
+                                    })()}
+                                    <span
+                                        style={{
+                                            fontSize: '0.58rem',
+                                            color: eq?.item_id ? getEquipmentRarityColor(eq.item_rarity) : 'rgba(255,255,255,0.6)',
+                                            textAlign: 'center',
+                                            lineHeight: 1.15,
+                                        }}
+                                    >
+                                        {(() => {
+                                            if (!eq?.item_name) return slot.label;
+                                            const rarity = t(`common.rarity_labels.${(eq.item_rarity ?? 'NORMAL').toUpperCase()}`);
+                                            return `${eq.item_name} (${rarity})`;
+                                        })()}
+                                    </span>
+                                </button>
+                                {/* Durability tooltip on hover */}
+                                {eq?.item_id && isHovered && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: '100%',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            marginBottom: '0.3rem',
+                                            minWidth: '10rem',
+                                            padding: '0.4rem 0.5rem',
+                                            borderRadius: '0.4rem',
+                                            background: 'rgba(15,23,42,0.96)',
+                                            border: `1px solid ${barColor}33`,
+                                            boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
+                                            zIndex: 30,
+                                            pointerEvents: 'auto',
+                                        }}
+                                        onMouseEnter={() => handleEquipSlotEnter(slot.key)}
+                                        onMouseLeave={handleEquipSlotLeave}
+                                    >
+                                        {/* Invisible bridge to prevent mouse leave */}
+                                        <div style={{ position: 'absolute', bottom: '-0.4rem', left: 0, right: 0, height: '0.4rem', background: 'transparent' }} />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.25rem' }}>
+                                            <div
+                                                style={{
+                                                    flex: 1,
+                                                    height: '0.35rem',
+                                                    borderRadius: '9999px',
+                                                    background: 'rgba(148,163,184,0.2)',
+                                                    overflow: 'hidden',
+                                                    border: '1px solid rgba(148,163,184,0.15)',
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: `${durPct}%`,
+                                                        height: '100%',
+                                                        background: barColor,
+                                                        borderRadius: '9999px',
+                                                        transition: 'width 0.4s ease-out',
+                                                    }}
+                                                />
+                                            </div>
+                                            <span style={{ fontSize: '0.55rem', color: barColor, fontWeight: 700, minWidth: '2.2rem', textAlign: 'right' }}>
+                                                {Math.round(durPct)}/100
+                                            </span>
+                                        </div>
+                                        {dur < 100 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openRepairModal(slot.key, eq.item_name ?? slot.label, eq.item_icon);
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    fontSize: '0.5rem',
+                                                    color: '#fbbf24',
+                                                    background: 'rgba(251,191,36,0.12)',
+                                                    border: '1px solid rgba(251,191,36,0.3)',
+                                                    borderRadius: '0.25rem',
+                                                    padding: '0.15rem 0.3rem',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 700,
+                                                }}
+                                            >
+                                                🔧 {t('inventory.repair', 'Repair')}
+                                            </button>
+                                        )}
+                                        {/* Tooltip arrow */}
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: '-4px',
+                                                left: '50%',
+                                                transform: 'translateX(-50%) rotate(45deg)',
+                                                width: '8px',
+                                                height: '8px',
+                                                background: 'rgba(15,23,42,0.96)',
+                                                borderRight: `1px solid ${barColor}33`,
+                                                borderBottom: `1px solid ${barColor}33`,
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -329,7 +491,7 @@ const InventoryGrid = () => {
                     <Trash2 style={{ width: '0.9rem', height: '0.9rem' }} />
                 </motion.div>
             </div>
-                    
+
             <div
                 style={{
                     display: 'grid',
@@ -351,8 +513,8 @@ const InventoryGrid = () => {
                         <motion.div
                             key={i}
                             onClick={() => slot && handleSlotClick(slot)}
-                            onMouseEnter={() => setHoveredSlot(slot && slot.item ? slot : null)}
-                            onMouseLeave={() => setHoveredSlot(null)}
+                            onMouseEnter={() => handleHoverSlotEnter(slot && slot.item ? slot : null)}
+                            onMouseLeave={handleHoverSlotLeave}
                             draggable={!!hasItem}
                             onDragStartCapture={(e) => {
                                 if (!slot?.item) return;
@@ -383,7 +545,6 @@ const InventoryGrid = () => {
                                 cursor: hasItem ? 'grab' : 'default',
                                 transition: 'all 0.2s',
                                 padding: '0.22rem',
-                                overflow: 'hidden',
                                 opacity: draggingSlotId === slot?.id ? 0.5 : 1,
                                 boxShadow: hasItem ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
                             }}
@@ -463,6 +624,157 @@ const InventoryGrid = () => {
                                             {t('inventory.equip').toUpperCase()}
                                         </div>
                                     )}
+                                    {/* Item Tooltip on hover */}
+                                    {hoveredSlot?.id === slot?.id && hasItem && (
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: '100%',
+                                                left: (i % 4) === 0 ? '0' : (i % 4) === 3 ? 'auto' : '50%',
+                                                right: (i % 4) === 3 ? '0' : 'auto',
+                                                transform: (i % 4) === 0 ? 'none' : (i % 4) === 3 ? 'none' : 'translateX(-50%)',
+                                                marginBottom: '0.3rem',
+                                                minWidth: '12rem',
+                                                padding: '0.5rem',
+                                                borderRadius: '0.5rem',
+                                                background: 'rgba(15,23,42,0.96)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                                                zIndex: 100,
+                                                pointerEvents: 'auto',
+                                                textAlign: 'left',
+                                            }}
+                                            onMouseEnter={() => handleHoverSlotEnter(slot)}
+                                            onMouseLeave={handleHoverSlotLeave}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div style={{ position: 'absolute', bottom: '-0.4rem', left: 0, right: 0, height: '0.4rem', background: 'transparent' }} />
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.3rem' }}>
+                                                {renderItemIcon(hasItem, 16)}
+                                                <span
+                                                    style={{
+                                                        fontSize: '0.72rem',
+                                                        fontWeight: 700,
+                                                        color:
+                                                            slot.equipment_rarity
+                                                                ? getEquipmentRarityColor(slot.equipment_rarity)
+                                                                : 'rgba(255,255,255,0.9)',
+                                                    }}
+                                                >
+                                                    {slot.equipment_rarity
+                                                        ? `${hasItem.name} (${t(`common.rarity_labels.${slot.equipment_rarity.toUpperCase()}`)})`
+                                                        : hasItem.name}
+                                                </span>
+                                            </div>
+                                            <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.45, marginBottom: hasItem.type === 'EQUIPMENT' ? '0.4rem' : '0' }}>
+                                                {t('common.type')}: {hasItem.type} • {t('common.qty')}: {slot.quantity}
+                                                <br />
+                                                {t('marketplace.buy')}: {hasItem.buy_price ?? '-'} • Sell: {hasItem.sell_price ?? '-'}
+                                                {hasItem.kcal ? (
+                                                    <>
+                                                        <br />
+                                                        {t('inventory.kcal')}: +{hasItem.kcal}
+                                                        {hasItem.buff_pct
+                                                            ? ` • ${t('inventory.buff')}: ${Math.round(hasItem.buff_pct * 100)}% for ${hasItem.buff_mins ?? 0}m`
+                                                            : ''}
+                                                    </>
+                                                ) : null}
+                                                {hasItem.type === 'EQUIPMENT' ? (
+                                                    <>
+                                                        <br />
+                                                        {t('inventory.slot')}: {hasItem.equipment_slot ?? '-'}
+                                                        <br />
+                                                        {t('common.rarity')}: {t(`common.rarity_labels.${(slot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}
+                                                        {formatEquipmentEffect(slot) ? (
+                                                            <>
+                                                                <br />
+                                                                {t('inventory.effect')}: {formatEquipmentEffect(slot)}
+                                                            </>
+                                                        ) : null}
+                                                    </>
+                                                ) : slot.equipment_rarity ? (
+                                                    <>
+                                                        <br />
+                                                        {t('dashboard.tier')}: {t(`common.rarity_labels.${(slot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}
+                                                    </>
+                                                ) : null}
+                                            </div>
+
+                                            {hasItem.type === 'EQUIPMENT' && (() => {
+                                                const dur = Number(slot.equipment_durability ?? 100);
+                                                const durPct = Math.max(0, Math.min(100, dur));
+                                                const barColor = dur <= 0 ? '#ef4444' : durPct > 60 ? '#34d399' : durPct > 30 ? '#fbbf24' : '#ef4444';
+
+                                                return (
+                                                    <>
+                                                        <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)', margin: '0.3rem 0' }} />
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.25rem' }}>
+                                                            <div
+                                                                style={{
+                                                                    flex: 1,
+                                                                    height: '0.35rem',
+                                                                    borderRadius: '9999px',
+                                                                    background: 'rgba(148,163,184,0.2)',
+                                                                    overflow: 'hidden',
+                                                                    border: '1px solid rgba(148,163,184,0.15)',
+                                                                }}
+                                                            >
+                                                                <div
+                                                                    style={{
+                                                                        width: `${durPct}%`,
+                                                                        height: '100%',
+                                                                        background: barColor,
+                                                                        borderRadius: '9999px',
+                                                                        transition: 'width 0.4s ease-out',
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <span style={{ fontSize: '0.55rem', color: barColor, fontWeight: 700, minWidth: '2.2rem', textAlign: 'right' }}>
+                                                                {Math.round(durPct)}/100
+                                                            </span>
+                                                        </div>
+                                                        {dur < 100 && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openRepairModal(slot!.id, hasItem.name, hasItem.icon);
+                                                                }}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    fontSize: '0.5rem',
+                                                                    color: '#fbbf24',
+                                                                    background: 'rgba(251,191,36,0.12)',
+                                                                    border: '1px solid rgba(251,191,36,0.3)',
+                                                                    borderRadius: '0.25rem',
+                                                                    padding: '0.15rem 0.3rem',
+                                                                    cursor: 'pointer',
+                                                                    fontWeight: 700,
+                                                                }}
+                                                            >
+                                                                🔧 {t('inventory.repair', 'Repair')}
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
+
+                                            {/* Tooltip arrow */}
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    bottom: '-4px',
+                                                    left: (i % 4) === 0 ? '15%' : (i % 4) === 3 ? '85%' : '50%',
+                                                    transform: 'translateX(-50%) rotate(45deg)',
+                                                    width: '8px',
+                                                    height: '8px',
+                                                    background: 'rgba(15,23,42,0.96)',
+                                                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <Package
@@ -478,75 +790,7 @@ const InventoryGrid = () => {
                 })}
             </div>
 
-            <div
-                style={{
-                    marginTop: '0.65rem',
-                    borderRadius: '0.5rem',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.02)',
-                    padding: '0.5rem',
-                    minHeight: '4.8rem',
-                }}
-            >
-                {hoveredSlot?.item ? (
-                    <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.2rem' }}>
-                            {renderItemIcon(hoveredSlot.item, 16)}
-                            <span
-                                style={{
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                    color:
-                                        hoveredSlot.equipment_rarity
-                                            ? getEquipmentRarityColor(hoveredSlot.equipment_rarity)
-                                            : 'rgba(255,255,255,0.9)',
-                                }}
-                            >
-                                {hoveredSlot.equipment_rarity
-                                    ? `${hoveredSlot.item.name} (${t(`common.rarity_labels.${hoveredSlot.equipment_rarity.toUpperCase()}`)})`
-                                    : hoveredSlot.item.name}
-                            </span>
-                        </div>
-                        <div style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.45 }}>
-                            {t('common.type')}: {hoveredSlot.item.type} • {t('common.qty')}: {hoveredSlot.quantity}
-                            <br />
-                            {t('marketplace.buy')}: {hoveredSlot.item.buy_price ?? '-'} • Sell: {hoveredSlot.item.sell_price ?? '-'}
-                            {hoveredSlot.item.kcal ? (
-                                <>
-                                    <br />
-                                    {t('inventory.kcal')}: +{hoveredSlot.item.kcal}
-                                    {hoveredSlot.item.buff_pct
-                                        ? ` • ${t('inventory.buff')}: ${Math.round(hoveredSlot.item.buff_pct * 100)}% for ${hoveredSlot.item.buff_mins ?? 0}m`
-                                        : ''}
-                                </>
-                            ) : null}
-                            {hoveredSlot.item.type === 'EQUIPMENT' ? (
-                                <>
-                                    <br />
-                                    {t('inventory.slot')}: {hoveredSlot.item.equipment_slot ?? '-'}
-                                    <br />
-                                    {t('common.rarity')}: {t(`common.rarity_labels.${(hoveredSlot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}
-                                    {formatEquipmentEffect(hoveredSlot) ? (
-                                        <>
-                                            <br />
-                                            {t('inventory.effect')}: {formatEquipmentEffect(hoveredSlot)}
-                                        </>
-                                    ) : null}
-                                </>
-                            ) : hoveredSlot.equipment_rarity ? (
-                                <>
-                                    <br />
-                                    {t('dashboard.tier')}: {t(`common.rarity_labels.${(hoveredSlot.equipment_rarity ?? 'NORMAL').toUpperCase()}`)}
-                                </>
-                            ) : null}
-                        </div>
-                    </>
-                ) : (
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.45)' }}>
-                        {t('inventory.hover_details')}
-                    </div>
-                )}
-            </div>
+
 
             <AnimatePresence>
                 {confirmState.open && (
@@ -621,6 +865,20 @@ const InventoryGrid = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* ─── Repair Modal ─── */}
+            <RepairEquipmentModal
+                open={repairModal.open}
+                slot={repairModal.slot}
+                itemName={repairModal.itemName}
+                itemIcon={repairModal.itemIcon}
+                loading={repairModal.loading}
+                repairing={repairModal.repairing}
+                cost={repairModal.cost}
+                inventory={inventory}
+                onClose={() => setRepairModal((prev) => ({ ...prev, open: false }))}
+                onRepair={doRepair}
+            />
         </>
     );
 };

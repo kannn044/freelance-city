@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { getInventory, eatItem, equipItem, unequipItem, organizeInventory, discardItem } from "../controllers/inventory.controller";
+import { getInventory, eatItem, equipItem, unequipItem, organizeInventory, discardItem, getRepairCost, repairEquipment } from "../controllers/inventory.controller";
 import { getWorkOrders, startWork, collectWork, collectReadyWork, cancelWork } from "../controllers/workspace.controller";
 import {
 	getListings,
@@ -52,6 +52,8 @@ router.post("/inventory/discard", discardItem);
 router.post("/eat/:slotId", eatItem);
 router.post("/equipment/equip", equipItem);
 router.post("/equipment/unequip", unequipItem);
+router.get("/equipment/repair-cost", getRepairCost);
+router.post("/equipment/repair", repairEquipment);
 
 // ─── Workspace ───────────────────────────────────────
 router.get("/workspace", getWorkOrders);

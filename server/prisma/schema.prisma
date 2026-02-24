@@ -187,6 +187,7 @@ model InventorySlot {
   item_id  Int?
   quantity Int @default(0)
   equipment_rarity EquipmentRarity?
+  equipment_durability Float?
 
   user User  @relation(fields: [user_id], references: [id])
   item Item? @relation(fields: [item_id], references: [id])
@@ -201,6 +202,8 @@ model UserEquipment {
   slot       EquipmentSlot
   item_id    Int?
   item_rarity EquipmentRarity?
+  durability  Float        @default(100)
+  durability_updated_at DateTime @default(now())
   updated_at DateTime      @updatedAt
 
   user User  @relation(fields: [user_id], references: [id])

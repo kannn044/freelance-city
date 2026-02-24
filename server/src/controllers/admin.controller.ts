@@ -134,7 +134,6 @@ export async function getRuntimeConfig(req: AuthRequest, res: Response): Promise
  *   equipmentRareRate?: number,
  *   equipmentEpicRate?: number,
  *   equipmentLegendaryRate?: number,
- *   ferrumMiningHungerCost?: number,
  *   ferrumMiningTimeSurface?: number,
  *   ferrumMiningTimeDeep?: number,
  *   ferrumMiningTimeCore?: number
@@ -173,7 +172,6 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             || payload.equipmentRareRate != null
             || payload.equipmentEpicRate != null
             || payload.equipmentLegendaryRate != null
-            || payload.ferrumMiningHungerCost != null
             || payload.ferrumMiningTimeSurface != null
             || payload.ferrumMiningTimeDeep != null
             || payload.ferrumMiningTimeCore != null
@@ -226,7 +224,6 @@ export async function setRuntimeConfig(req: AuthRequest, res: Response): Promise
             equipmentRareRate: payload.equipmentRareRate != null ? Number(payload.equipmentRareRate) : undefined,
             equipmentEpicRate: payload.equipmentEpicRate != null ? Number(payload.equipmentEpicRate) : undefined,
             equipmentLegendaryRate: payload.equipmentLegendaryRate != null ? Number(payload.equipmentLegendaryRate) : undefined,
-            ferrumMiningHungerCost: payload.ferrumMiningHungerCost != null ? Number(payload.ferrumMiningHungerCost) : undefined,
             ferrumMiningTimeSurface: payload.ferrumMiningTimeSurface != null ? Number(payload.ferrumMiningTimeSurface) : undefined,
             ferrumMiningTimeDeep: payload.ferrumMiningTimeDeep != null ? Number(payload.ferrumMiningTimeDeep) : undefined,
             ferrumMiningTimeCore: payload.ferrumMiningTimeCore != null ? Number(payload.ferrumMiningTimeCore) : undefined,

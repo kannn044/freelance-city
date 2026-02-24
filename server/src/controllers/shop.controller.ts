@@ -795,7 +795,7 @@ export const buyRecipeUnlock = async (req: AuthRequest, res: Response): Promise<
             }),
             prisma.$executeRaw`
                 INSERT INTO user_recipe_unlocks (user_id, recipe_id, unlocked_at)
-                VALUES (${req.userId!}, ${recipeId}, NOW())
+                VALUES (${req.userId!}, ${recipeId}, ${new Date()})
             `,
         ]);
 

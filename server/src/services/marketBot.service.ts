@@ -378,10 +378,37 @@ class MarketBotService {
         const desired = this.normalizeInt(minCount, 1, 500);
         const existing = await prisma.user.findMany({
             where: { email: { endsWith: `@${BOT_EMAIL_DOMAIN}` } },
-            select: { id: true, email: true },
+            select: { id: true, email: true, city_key: true },
             take: desired,
             orderBy: { id: "asc" },
         });
+
+        // Ensure we have some city keys available to assign to bots
+        let availableCities = ["AGRARIA", "FERRUM"];
+        try {
+            const citiesDB = await prisma.cityState.findMany({ select: { city_key: true } });
+            if (citiesDB.length > 0) {
+                availableCities = citiesDB.map(c => c.city_key);
+            }
+        } catch (error) {
+            console.error("Failed to fetch cities for bots, fallback to defaults", error);
+        }
+
+        // Fix existing bots that lack a city_key (from previous versions if any)
+        const botsMissingCity = existing.filter(u => !u.city_key);
+        if (botsMissingCity.length > 0) {
+            for (const bot of botsMissingCity) {
+                const randomCity = availableCities[this.randomInt(0, availableCities.length - 1)];
+                try {
+                    await prisma.user.update({
+                        where: { id: bot.id },
+                        data: { city_key: randomCity }
+                    });
+                } catch (e) {
+                    console.error("Failed assigning city to existing bot:", e);
+                }
+            }
+        }
 
         if (existing.length >= desired) {
             return existing;
@@ -398,11 +425,14 @@ class MarketBotService {
             const emailLower = profile.email.toLowerCase();
             if (existingEmails.has(emailLower)) continue;
 
+            const randomCity = availableCities[this.randomInt(0, availableCities.length - 1)];
+
             try {
                 await prisma.user.create({
                     data: {
                         email: profile.email,
                         password_hash: BOT_PASSWORD_HASH,
+                        city_key: randomCity,
                     },
                 });
                 existingEmails.add(emailLower);
