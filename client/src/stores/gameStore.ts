@@ -67,7 +67,7 @@ export interface EquipmentSlotState {
 
 export interface WorkOrder {
     id: number;
-    type: 'FARM' | 'COOK';
+    type: 'FARM' | 'COOK' | 'MINE' | 'SMELT';
     item_id: number;
     recipe_id: number | null;
     quantity: number;
@@ -754,14 +754,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
         for (const order of activeOrders) {
-            if (order.type === 'FARM') {
+            if (order.type === 'FARM' || order.type === 'MINE') {
                 const isMiningPermit = String(order.item?.name ?? '') === 'Ferrum Mining Permit';
                 const isDeepOrCore = order.recipe_id === 2 || order.recipe_id === 3;
                 const burnMultiplier = isMiningPermit && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
                 const key = `${order.item_id}:${order.recipe_id ?? 0}:${burnMultiplier}`;
                 const prev = farmBySeed.get(key) ?? { count: 0, burnMultiplier };
                 farmBySeed.set(key, { count: prev.count + 1, burnMultiplier });
-            } else if (order.type === 'COOK') {
+            } else if (order.type === 'COOK' || order.type === 'SMELT') {
                 activeCookMenus += 1;
             }
         }

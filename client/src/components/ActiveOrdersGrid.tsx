@@ -47,7 +47,7 @@ function formatTimeLeft(completesAt: string, t: any, nowMs: number = Date.now())
 }
 
 function isQueuedSecondaryJobOrder(order: WorkOrder, nowMs: number = Date.now()): boolean {
-    if (order.type !== 'COOK') return false;
+    if (order.type !== 'COOK' && order.type !== 'SMELT') return false;
     return nowMs < new Date(order.started_at).getTime();
 }
 
@@ -107,11 +107,11 @@ const ActiveOrdersGrid = () => {
     const effectiveNowMs = pausedNowRef.current ?? Date.now();
 
     const firstJobOrders = workOrders
-        .filter((o) => o.type === 'FARM')
+        .filter((o) => o.type === 'FARM' || o.type === 'MINE')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
     const secondaryJobOrders = workOrders
-        .filter((o) => o.type === 'COOK')
+        .filter((o) => o.type === 'COOK' || o.type === 'SMELT')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
     const miningOrders = firstJobOrders.filter((o) => o.item?.name === firstJobSpecialTaskItemName);
@@ -163,9 +163,9 @@ const ActiveOrdersGrid = () => {
                 ? t('active_orders.queued')
                 : pausedByRequirement
                     ? t('active_orders.paused_gear')
-                : pausedByKcal
-                    ? t('active_orders.paused_kcal')
-                    : formatTimeLeft(order.completes_at, t, orderNow);
+                    : pausedByKcal
+                        ? t('active_orders.paused_kcal')
+                        : formatTimeLeft(order.completes_at, t, orderNow);
 
         const color = accent === 'first_job' ? '#34d399' : '#fb923c';
         const border = accent === 'first_job'
@@ -474,7 +474,188 @@ const ActiveOrdersGrid = () => {
         return (
             <>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <motion.button
+                            whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
+                            whileTap={{ scale: readyCount > 0 ? 0.98 : 1 }}
+                            onClick={() => collectReadyWork()}
+                            disabled={readyCount === 0}
+                            style={{
+                                padding: '0.4rem 0.7rem',
+                                borderRadius: '0.45rem',
+                                border: '1px solid rgba(52,211,153,0.35)',
+                                background: readyCount > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
+                                color: readyCount > 0 ? '#34d399' : 'rgba(255,255,255,0.45)',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
+                            }}
+                        >
+                            {t('active_orders.collect_all_ready', { count: readyCount })}
+                        </motion.button>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: showSecondaryJobColumn ? 'repeat(2, minmax(280px, 1fr))' : '1fr', gap: '0.9rem' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                border: '1px solid rgba(56,189,248,0.22)',
+                                borderRadius: '0.8rem',
+                                background: 'linear-gradient(180deg, rgba(2,6,23,0.62), rgba(15,23,42,0.55))',
+                                height: ORDERS_COLUMN_HEIGHT,
+                                minHeight: ORDERS_COLUMN_HEIGHT,
+                                overflow: 'hidden',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(56,189,248,0.22)', color: '#67e8f9', fontSize: '0.8rem', fontWeight: 700 }}>
+                                <Pickaxe style={{ width: '0.9rem', height: '0.9rem' }} /> {t('active_orders.expeditions', { label: firstJobLabel })}
+                            </div>
+                            <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
+                                {miningOrders.length === 0 ? (
+                                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
+                                        {t('active_orders.no_mining_expeditions')}
+                                    </p>
+                                ) : (
+                                    miningOrders.map((order) => {
+                                        const meta = layerMeta(order.recipe_id);
+                                        const orderNow = getOrderNowMs(order, effectiveNowMs);
+                                        const progress = getProgress(order, orderNow);
+                                        const ready = progress >= 100;
+                                        const queued = orderNow < new Date(order.started_at).getTime();
+                                        const pausedByRequirement = Boolean(order.paused_at) && !ready;
+                                        const pausedByKcal = hunger <= 0 && !ready;
+                                        const timeLabel = ready
+                                            ? t('active_orders.ore_ready')
+                                            : queued
+                                                ? t('active_orders.queued')
+                                                : pausedByRequirement
+                                                    ? t('active_orders.paused_gear')
+                                                    : pausedByKcal
+                                                        ? t('active_orders.paused_kcal')
+                                                        : formatTimeLeft(order.completes_at, t, orderNow);
+                                        return (
+                                            <motion.div
+                                                key={`mine-${order.id}`}
+                                                layout
+                                                initial={{ opacity: 0, y: 8 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                style={{
+                                                    border: `1px solid ${meta.color}55`,
+                                                    background: 'rgba(15,23,42,0.58)',
+                                                    borderRadius: '0.72rem',
+                                                    padding: '0.65rem',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '0.42rem',
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                        <Pickaxe style={{ width: '0.78rem', height: '0.78rem', color: meta.color }} />
+                                                        <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#e2e8f0' }}>{meta.label}</span>
+                                                    </div>
+                                                    <span style={{ fontSize: '0.62rem', color: ready ? '#34d399' : queued ? '#facc15' : pausedByRequirement || pausedByKcal ? '#f87171' : meta.color, fontWeight: 700 }}>{timeLabel}</span>
+                                                </div>
+
+                                                <div style={{ height: '0.26rem', borderRadius: '0.26rem', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                                                    <div style={{ height: '100%', width: `${progress}%`, borderRadius: '0.26rem', background: ready ? 'linear-gradient(90deg,#34d399,#10b981)' : `linear-gradient(90deg, ${meta.color}, #f8fafc)`, transition: 'width 1s linear' }} />
+                                                </div>
+
+                                                {meta.risk && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.62rem', color: '#fca5a5' }}>
+                                                        <ShieldAlert style={{ width: '0.72rem', height: '0.72rem' }} />
+                                                        {t('active_orders.safety_helmet_alert')}
+                                                    </div>
+                                                )}
+
+                                                <div style={{ display: 'flex', gap: '0.45rem' }}>
+                                                    {ready ? (
+                                                        <button
+                                                            onClick={() => collectWork(order.id)}
+                                                            style={{
+                                                                padding: '0.3rem 0.6rem',
+                                                                borderRadius: '0.45rem',
+                                                                border: 'none',
+                                                                background: 'linear-gradient(135deg,#34d399,#10b981)',
+                                                                color: 'white',
+                                                                fontSize: '0.66rem',
+                                                                fontWeight: 700,
+                                                                cursor: 'pointer',
+                                                            }}
+                                                        >
+                                                            {t('active_orders.collect_ore')}
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => {
+                                                                setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc_mine', { label: meta.label }) });
+                                                            }}
+                                                            style={{
+                                                                padding: '0.3rem 0.6rem',
+                                                                borderRadius: '0.45rem',
+                                                                border: '1px solid rgba(248,113,113,0.45)',
+                                                                background: 'rgba(248,113,113,0.14)',
+                                                                color: '#fecaca',
+                                                                fontSize: '0.66rem',
+                                                                fontWeight: 700,
+                                                                cursor: 'pointer',
+                                                            }}
+                                                        >
+                                                            {t('active_orders.abort_expedition')}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+
+                        {showSecondaryJobColumn && (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    border: '1px solid rgba(251,146,60,0.22)',
+                                    borderRadius: '0.8rem',
+                                    background: 'linear-gradient(180deg, rgba(30,41,59,0.55), rgba(15,23,42,0.5))',
+                                    height: ORDERS_COLUMN_HEIGHT,
+                                    minHeight: ORDERS_COLUMN_HEIGHT,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(251,146,60,0.22)', color: '#fb923c', fontSize: '0.8rem', fontWeight: 700 }}>
+                                    <Hammer style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobWorkspaceMode === 'SMELT' ? t('active_orders.secondary_queue', { label: secondaryJobLabel }) : t('active_orders.orders_label', { label: secondaryJobLabel })}
+                                </div>
+                                <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.62rem', color: 'rgba(251,191,36,0.9)' }}>
+                                        <Flame style={{ width: '0.72rem', height: '0.72rem' }} /> {t('active_orders.fuel_sensitive')}
+                                    </div>
+                                    <AnimatePresence>
+                                        {secondaryJobOrders.length === 0 ? (
+                                            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
+                                                {t('active_orders.no_secondary_orders', { defaultValue: `No active ${secondaryJobWorkspaceMode === 'SMELT' ? t('active_orders.smelting') : 'orders'}` })}
+                                            </p>
+                                        ) : (
+                                            secondaryJobOrders.map((order) => renderOrderCard(order, 'secondary_job'))
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {renderCancelConfirmModal()}
+            </>
+        );
+    }
+
+    return (
+        <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <motion.button
                         whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
                         whileTap={{ scale: readyCount > 0 ? 0.98 : 1 }}
@@ -495,148 +676,154 @@ const ActiveOrdersGrid = () => {
                     </motion.button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: showSecondaryJobColumn ? 'repeat(2, minmax(280px, 1fr))' : '1fr', gap: '0.9rem' }}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            border: '1px solid rgba(56,189,248,0.22)',
-                            borderRadius: '0.8rem',
-                            background: 'linear-gradient(180deg, rgba(2,6,23,0.62), rgba(15,23,42,0.55))',
-                            height: ORDERS_COLUMN_HEIGHT,
-                            minHeight: ORDERS_COLUMN_HEIGHT,
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(56,189,248,0.22)', color: '#67e8f9', fontSize: '0.8rem', fontWeight: 700 }}>
-                            <Pickaxe style={{ width: '0.9rem', height: '0.9rem' }} /> {t('active_orders.expeditions', { label: firstJobLabel })}
-                        </div>
-                        <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
-                            {miningOrders.length === 0 ? (
-                                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                    {t('active_orders.no_mining_expeditions')}
-                                </p>
-                            ) : (
-                                miningOrders.map((order) => {
-                                    const meta = layerMeta(order.recipe_id);
-                                    const orderNow = getOrderNowMs(order, effectiveNowMs);
-                                    const progress = getProgress(order, orderNow);
-                                    const ready = progress >= 100;
-                                    const queued = orderNow < new Date(order.started_at).getTime();
-                                    const pausedByRequirement = Boolean(order.paused_at) && !ready;
-                                    const pausedByKcal = hunger <= 0 && !ready;
-                                    const timeLabel = ready
-                                        ? t('active_orders.ore_ready')
-                                        : queued
-                                            ? t('active_orders.queued')
-                                            : pausedByRequirement
-                                                ? t('active_orders.paused_gear')
-                                            : pausedByKcal
-                                                ? t('active_orders.paused_kcal')
-                                                : formatTimeLeft(order.completes_at, t, orderNow);
-                                    return (
-                                        <motion.div
-                                            key={`mine-${order.id}`}
-                                            layout
-                                            initial={{ opacity: 0, y: 8 }}
-                                            animate={{ opacity: 1, y: 0 }}
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns:
+                            showFirstJobColumn && showSecondaryJobColumn
+                                ? 'repeat(2, minmax(260px, 1fr))'
+                                : 'minmax(260px, 1fr)',
+                        gap: '0.9rem',
+                    }}
+                >
+                    {showFirstJobColumn && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                border: '1px solid rgba(52, 211, 153, 0.2)',
+                                borderRadius: '0.8rem',
+                                background: 'rgba(52, 211, 153, 0.02)',
+                                height: ORDERS_COLUMN_HEIGHT,
+                                minHeight: ORDERS_COLUMN_HEIGHT,
+                                overflow: 'hidden',
+                            }}
+                        >
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                padding: '0.65rem 0.8rem',
+                                borderBottom: '1px solid rgba(52, 211, 153, 0.18)',
+                                color: '#34d399',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                            }}>
+                                <Sprout style={{ width: '0.9rem', height: '0.9rem' }} /> {t('active_orders.orders_label', { label: firstJobLabel })}
+                            </div>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    padding: '0.65rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.45rem',
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
+                                }}
+                            >
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {firstJobPlotsByType.map((seedType, seedTypeIndex) => (
+                                        <div
+                                            key={`seed-type-${seedType.itemName}`}
                                             style={{
-                                                border: `1px solid ${meta.color}55`,
-                                                background: 'rgba(15,23,42,0.58)',
-                                                borderRadius: '0.72rem',
-                                                padding: '0.65rem',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                gap: '0.42rem',
+                                                gap: '0.35rem',
+                                                border: `1px solid ${seedType.border}`,
+                                                background: `linear-gradient(180deg, ${seedType.bg}, rgba(15,23,42,0.08))`,
+                                                borderRadius: '0.75rem',
+                                                padding: '0.45rem',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                    <Pickaxe style={{ width: '0.78rem', height: '0.78rem', color: meta.color }} />
-                                                    <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#e2e8f0' }}>{meta.label}</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.45rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                    <span style={{ fontSize: '0.82rem' }}>{seedType.icon}</span>
+                                                    <span style={{ fontSize: '0.66rem', fontWeight: 800, color: seedType.accent }}>
+                                                        {seedType.label}
+                                                    </span>
                                                 </div>
-                                                <span style={{ fontSize: '0.62rem', color: ready ? '#34d399' : queued ? '#facc15' : pausedByRequirement || pausedByKcal ? '#f87171' : meta.color, fontWeight: 700 }}>{timeLabel}</span>
+                                                <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.68)' }}>
+                                                    {t('active_orders.plot_status', { filled: seedType.filled })}
+                                                    {seedType.overflowOrders > 0 ? t('active_orders.plot_queued', { count: seedType.overflowOrders }) : ''}
+                                                </span>
                                             </div>
 
-                                            <div style={{ height: '0.26rem', borderRadius: '0.26rem', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                                                <div style={{ height: '100%', width: `${progress}%`, borderRadius: '0.26rem', background: ready ? 'linear-gradient(90deg,#34d399,#10b981)' : `linear-gradient(90deg, ${meta.color}, #f8fafc)`, transition: 'width 1s linear' }} />
-                                            </div>
-
-                                            {meta.risk && (
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.62rem', color: '#fca5a5' }}>
-                                                    <ShieldAlert style={{ width: '0.72rem', height: '0.72rem' }} />
-                                                    {t('active_orders.safety_helmet_alert')}
-                                                </div>
-                                            )}
-
-                                            <div style={{ display: 'flex', gap: '0.45rem' }}>
-                                                {ready ? (
-                                                    <button
-                                                        onClick={() => collectWork(order.id)}
-                                                        style={{
-                                                            padding: '0.3rem 0.6rem',
-                                                            borderRadius: '0.45rem',
-                                                            border: 'none',
-                                                            background: 'linear-gradient(135deg,#34d399,#10b981)',
-                                                            color: 'white',
-                                                            fontSize: '0.66rem',
-                                                            fontWeight: 700,
-                                                            cursor: 'pointer',
-                                                        }}
-                                                    >
-                                                        {t('active_orders.collect_ore')}
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => {
-                                                            setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc_mine', { label: meta.label }) });
-                                                        }}
-                                                        style={{
-                                                            padding: '0.3rem 0.6rem',
-                                                            borderRadius: '0.45rem',
-                                                            border: '1px solid rgba(248,113,113,0.45)',
-                                                            background: 'rgba(248,113,113,0.14)',
-                                                            color: '#fecaca',
-                                                            fontSize: '0.66rem',
-                                                            fontWeight: 700,
-                                                            cursor: 'pointer',
-                                                        }}
-                                                    >
-                                                        {t('active_orders.abort_expedition')}
-                                                    </button>
+                                            <div
+                                                style={{
+                                                    width: `${FIRST_JOB_PLOT_SIZE}px`,
+                                                    height: `${FIRST_JOB_PLOT_SIZE}px`,
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                                                    gridTemplateRows: 'repeat(3, minmax(0, 1fr))',
+                                                    gap: '0.24rem',
+                                                    boxSizing: 'border-box',
+                                                    borderRadius: '0.55rem',
+                                                    alignSelf: 'center',
+                                                }}
+                                            >
+                                                {seedType.slots.map((order, i) =>
+                                                    renderFirstJobPlotCell(order, seedTypeIndex * 100 + i, {
+                                                        accent: seedType.accent,
+                                                        border: seedType.border,
+                                                        bg: seedType.bg,
+                                                    })
                                                 )}
                                             </div>
-                                        </motion.div>
-                                    );
-                                })
-                            )}
+
+                                            <div style={{ fontSize: '0.56rem', color: seedType.full ? seedType.accent : 'rgba(255,255,255,0.62)', textAlign: 'center' }}>
+                                                {seedType.full ? t('active_orders.plot_full') : t('active_orders.plot_growing')}
+                                                {seedType.soonestReadyLabel ? t('active_orders.plot_next_ready', { time: seedType.soonestReadyLabel }) : t('active_orders.plot_waiting')}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {showSecondaryJobColumn && (
                         <div
                             style={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                border: '1px solid rgba(251,146,60,0.22)',
+                                border: '1px solid rgba(251, 146, 60, 0.2)',
                                 borderRadius: '0.8rem',
-                                background: 'linear-gradient(180deg, rgba(30,41,59,0.55), rgba(15,23,42,0.5))',
+                                background: 'rgba(251, 146, 60, 0.02)',
                                 height: ORDERS_COLUMN_HEIGHT,
                                 minHeight: ORDERS_COLUMN_HEIGHT,
                                 overflow: 'hidden',
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(251,146,60,0.22)', color: '#fb923c', fontSize: '0.8rem', fontWeight: 700 }}>
-                                <Hammer style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobWorkspaceMode === 'SMELT' ? t('active_orders.secondary_queue', { label: secondaryJobLabel }) : t('active_orders.orders_label', { label: secondaryJobLabel })}
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                padding: '0.65rem 0.8rem',
+                                borderBottom: '1px solid rgba(251, 146, 60, 0.18)',
+                                color: '#fb923c',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                            }}>
+                                <UtensilsCrossed style={{ width: '0.9rem', height: '0.9rem' }} /> {t('active_orders.orders_label', { label: secondaryJobLabel })}
                             </div>
-                            <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.62rem', color: 'rgba(251,191,36,0.9)' }}>
-                                    <Flame style={{ width: '0.72rem', height: '0.72rem' }} /> {t('active_orders.fuel_sensitive')}
-                                </div>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    padding: '0.65rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.55rem',
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
+                                }}
+                            >
                                 <AnimatePresence>
                                     {secondaryJobOrders.length === 0 ? (
                                         <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                            {t('active_orders.no_secondary_orders', { defaultValue: `No active ${secondaryJobWorkspaceMode === 'SMELT' ? t('active_orders.smelting') : 'orders'}` })}
+                                            {t('active_orders.no_secondary_orders')}
                                         </p>
                                     ) : (
                                         secondaryJobOrders.map((order) => renderOrderCard(order, 'secondary_job'))
@@ -645,210 +832,23 @@ const ActiveOrdersGrid = () => {
                             </div>
                         </div>
                     )}
-                </div>
-                </div>
-                {renderCancelConfirmModal()}
-            </>
-        );
-    }
 
-    return (
-        <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <motion.button
-                    whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
-                    whileTap={{ scale: readyCount > 0 ? 0.98 : 1 }}
-                    onClick={() => collectReadyWork()}
-                    disabled={readyCount === 0}
-                    style={{
-                        padding: '0.4rem 0.7rem',
-                        borderRadius: '0.45rem',
-                        border: '1px solid rgba(52,211,153,0.35)',
-                        background: readyCount > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
-                        color: readyCount > 0 ? '#34d399' : 'rgba(255,255,255,0.45)',
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
-                    }}
-                >
-                    {t('active_orders.collect_all_ready', { count: readyCount })}
-                </motion.button>
-            </div>
-
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns:
-                        showFirstJobColumn && showSecondaryJobColumn
-                            ? 'repeat(2, minmax(260px, 1fr))'
-                            : 'minmax(260px, 1fr)',
-                    gap: '0.9rem',
-                }}
-            >
-                {showFirstJobColumn && (
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            border: '1px solid rgba(52, 211, 153, 0.2)',
-                            borderRadius: '0.8rem',
-                            background: 'rgba(52, 211, 153, 0.02)',
-                            height: ORDERS_COLUMN_HEIGHT,
-                            minHeight: ORDERS_COLUMN_HEIGHT,
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            padding: '0.65rem 0.8rem',
-                            borderBottom: '1px solid rgba(52, 211, 153, 0.18)',
-                            color: '#34d399',
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
-                        }}>
-                            <Sprout style={{ width: '0.9rem', height: '0.9rem' }} /> {t('active_orders.orders_label', { label: firstJobLabel })}
-                        </div>
+                    {!showFirstJobColumn && !showSecondaryJobColumn && (
                         <div
                             style={{
-                                flex: 1,
-                                minHeight: 0,
-                                padding: '0.65rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.45rem',
-                                overflowY: 'auto',
-                                overflowX: 'hidden',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '0.8rem',
+                                background: 'rgba(255,255,255,0.02)',
+                                padding: '1rem',
+                                fontSize: '0.75rem',
+                                color: 'rgba(255,255,255,0.5)',
+                                textAlign: 'center',
                             }}
                         >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                {firstJobPlotsByType.map((seedType, seedTypeIndex) => (
-                                    <div
-                                        key={`seed-type-${seedType.itemName}`}
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '0.35rem',
-                                            border: `1px solid ${seedType.border}`,
-                                            background: `linear-gradient(180deg, ${seedType.bg}, rgba(15,23,42,0.08))`,
-                                            borderRadius: '0.75rem',
-                                            padding: '0.45rem',
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.45rem' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                                                <span style={{ fontSize: '0.82rem' }}>{seedType.icon}</span>
-                                                <span style={{ fontSize: '0.66rem', fontWeight: 800, color: seedType.accent }}>
-                                                    {seedType.label}
-                                                </span>
-                                            </div>
-                                            <span style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.68)' }}>
-                                                {t('active_orders.plot_status', { filled: seedType.filled })}
-                                                {seedType.overflowOrders > 0 ? t('active_orders.plot_queued', { count: seedType.overflowOrders }) : ''}
-                                            </span>
-                                        </div>
-
-                                        <div
-                                            style={{
-                                                width: `${FIRST_JOB_PLOT_SIZE}px`,
-                                                height: `${FIRST_JOB_PLOT_SIZE}px`,
-                                                display: 'grid',
-                                                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                                                gridTemplateRows: 'repeat(3, minmax(0, 1fr))',
-                                                gap: '0.24rem',
-                                                boxSizing: 'border-box',
-                                                borderRadius: '0.55rem',
-                                                alignSelf: 'center',
-                                            }}
-                                        >
-                                            {seedType.slots.map((order, i) =>
-                                                renderFirstJobPlotCell(order, seedTypeIndex * 100 + i, {
-                                                    accent: seedType.accent,
-                                                    border: seedType.border,
-                                                    bg: seedType.bg,
-                                                })
-                                            )}
-                                        </div>
-
-                                        <div style={{ fontSize: '0.56rem', color: seedType.full ? seedType.accent : 'rgba(255,255,255,0.62)', textAlign: 'center' }}>
-                                            {seedType.full ? t('active_orders.plot_full') : t('active_orders.plot_growing')}
-                                            {seedType.soonestReadyLabel ? t('active_orders.plot_next_ready', { time: seedType.soonestReadyLabel }) : t('active_orders.plot_waiting')}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            {t('active_orders.no_occupation')}
                         </div>
-                    </div>
-                )}
-
-                {showSecondaryJobColumn && (
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            border: '1px solid rgba(251, 146, 60, 0.2)',
-                            borderRadius: '0.8rem',
-                            background: 'rgba(251, 146, 60, 0.02)',
-                            height: ORDERS_COLUMN_HEIGHT,
-                            minHeight: ORDERS_COLUMN_HEIGHT,
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.4rem',
-                            padding: '0.65rem 0.8rem',
-                            borderBottom: '1px solid rgba(251, 146, 60, 0.18)',
-                            color: '#fb923c',
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
-                        }}>
-                            <UtensilsCrossed style={{ width: '0.9rem', height: '0.9rem' }} /> {t('active_orders.orders_label', { label: secondaryJobLabel })}
-                        </div>
-                        <div
-                            style={{
-                                flex: 1,
-                                minHeight: 0,
-                                padding: '0.65rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.55rem',
-                                overflowY: 'auto',
-                                overflowX: 'hidden',
-                            }}
-                        >
-                            <AnimatePresence>
-                                {secondaryJobOrders.length === 0 ? (
-                                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', padding: '0.8rem 0' }}>
-                                        {t('active_orders.no_secondary_orders')}
-                                    </p>
-                                ) : (
-                                    secondaryJobOrders.map((order) => renderOrderCard(order, 'secondary_job'))
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    </div>
-                )}
-
-                {!showFirstJobColumn && !showSecondaryJobColumn && (
-                    <div
-                        style={{
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '0.8rem',
-                            background: 'rgba(255,255,255,0.02)',
-                            padding: '1rem',
-                            fontSize: '0.75rem',
-                            color: 'rgba(255,255,255,0.5)',
-                            textAlign: 'center',
-                        }}
-                    >
-                        {t('active_orders.no_occupation')}
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
             </div>
             {renderCancelConfirmModal()}
         </>

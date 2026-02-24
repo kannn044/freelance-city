@@ -39,6 +39,10 @@ import wristSupportPng from '../assets/items/equipment/chef/wrist_support.png';
 import latexGlovesPng from '../assets/items/equipment/chef/latex_gloves.png';
 import antiSlipShoesPng from '../assets/items/equipment/chef/anti_slip_shoes.png';
 
+// Fallback images for new equipment
+import hammerPng from '../assets/items/equipment/blacksmith/hammer.png';
+import spatulaPng from '../assets/items/equipment/chef/spatula.png';
+
 const seedImageByName: Record<string, string> = {
     'Chicken Egg': chickenEggPng,
     'Beef Calf': beefCalfPng,
@@ -90,6 +94,8 @@ const equipmentImageByName: Record<string, string> = {
     'Wrist Support': wristSupportPng,
     'Latex Gloves': latexGlovesPng,
     'Anti-Slip Shoes': antiSlipShoesPng,
+    Hammer: hammerPng,
+    Spatula: spatulaPng,
 };
 
 export const getEquipmentImageByName = (name?: string | null): string | null => {

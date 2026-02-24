@@ -869,7 +869,7 @@ async function rescheduleSecondaryJobQueueAfterCancel(userId: number, db: DbClie
     const remaining = await db.workOrder.findMany({
         where: {
             user_id: userId,
-            type: "COOK",
+            type: { in: ["COOK", "SMELT"] },
             collected: false,
         },
         orderBy: [{ started_at: "asc" }, { id: "asc" }],
@@ -1069,7 +1069,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const order = await prisma.workOrder.create({
                     data: {
                         user_id: req.userId!,
-                        type: "FARM",
+                        type: "MINE",
                         item_id: ferrumCatalog.miningPermitId,
                         quantity: 1,
                         recipe_id: LAYER_CODE[miningLayer],
@@ -1467,7 +1467,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const pendingCooks = await prisma.workOrder.findMany({
                 where: {
                     user_id: req.userId!,
-                    type: "COOK",
+                    type: { in: ["COOK", "SMELT"] },
                     collected: false,
                 },
                 orderBy: [{ started_at: "asc" }, { id: "asc" }],
@@ -1497,10 +1497,12 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const startsAt = new Date(startMs);
             const completesAt = new Date(startMs + durationMs);
 
+            const workType = isFerrum ? "SMELT" : "COOK";
+
             const order = await prisma.workOrder.create({
                 data: {
                     user_id: req.userId!,
-                    type: "COOK",
+                    type: workType,
                     item_id: recipe.output_item_id,
                     recipe_id: Number(recipeId),
                     quantity: recipe.output_qty,

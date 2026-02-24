@@ -228,16 +228,13 @@ function resolveOrderRequirementContext(
     cityKey: string,
     row: ActiveOrderRow,
 ): { jobSlot: JobSlot; workType: WorkType; workspaceMode: string | null } {
-    const upperCity = normalizeUpper(cityKey);
-
+    if (row.type === "SMELT") {
+        return { jobSlot: "secondary_job", workType: "SMELT", workspaceMode: "SMELT" };
+    }
     if (row.type === "COOK") {
-        if (upperCity === "FERRUM") {
-            return { jobSlot: "secondary_job", workType: "SMELT", workspaceMode: "SMELT" };
-        }
         return { jobSlot: "secondary_job", workType: "COOK", workspaceMode: "COOK" };
     }
-
-    if (upperCity === "FERRUM" && normalizeUpper(row.item_name) === normalizeUpper(MINING_PERMIT_NAME)) {
+    if (row.type === "MINE") {
         return { jobSlot: "first_job", workType: "MINE", workspaceMode: "MINE" };
     }
 

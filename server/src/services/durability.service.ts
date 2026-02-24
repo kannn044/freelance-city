@@ -142,12 +142,7 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
             const dbType = String(order.type).toUpperCase();
             const itemName = String(order.item_name ?? "").toLowerCase();
 
-            let orderType = dbType;
-            if (dbType === "FARM" && itemName === "ferrum mining permit") {
-                orderType = "MINE";
-            } else if (dbType === "COOK" && (itemName.includes("ingot") || itemName === "stone")) {
-                orderType = "SMELT";
-            }
+            const orderType = dbType;
 
             let rate = 0;
             if (orderType === "FARM") rate = decayConfig.farm;
