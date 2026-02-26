@@ -67,7 +67,7 @@ export interface EquipmentSlotState {
 
 export interface WorkOrder {
     id: number;
-    type: 'FARM' | 'COOK' | 'MINE' | 'SMELT';
+    type: 'FARM' | 'COOK' | 'MINE' | 'SMELT' | 'EXTRACT' | 'REFINE' | 'GATHER' | 'SEW' | 'FORAGE' | 'BREW';
     item_id: number;
     recipe_id: number | null;
     quantity: number;
@@ -758,14 +758,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
         for (const order of activeOrders) {
-            if (order.type === 'FARM' || order.type === 'MINE') {
+            const isFirstJob = ['FARM', 'MINE', 'EXTRACT', 'GATHER', 'FORAGE'].includes(order.type);
+            const isSecondaryJob = ['COOK', 'SMELT', 'REFINE', 'SEW', 'BREW'].includes(order.type);
+
+            if (isFirstJob) {
                 const isMiningPermit = String(order.item?.name ?? '') === 'Ferrum Mining Permit';
                 const isDeepOrCore = order.recipe_id === 2 || order.recipe_id === 3;
                 const burnMultiplier = isMiningPermit && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
                 const key = `${order.item_id}:${order.recipe_id ?? 0}:${burnMultiplier}`;
                 const prev = farmBySeed.get(key) ?? { count: 0, burnMultiplier };
                 farmBySeed.set(key, { count: prev.count + 1, burnMultiplier });
-            } else if (order.type === 'COOK' || order.type === 'SMELT') {
+            } else if (isSecondaryJob) {
                 activeCookMenus += 1;
             }
         }
@@ -842,8 +845,8 @@ export const useGameStore = create<GameState>((set, get) => ({
                 const overlapSec = (overlapEnd - overlapStart) / 1000;
                 const orderType = order.type.toUpperCase();
                 let rate = 0;
-                if (orderType === 'FARM') rate = durabilityDecay.farm;
-                else if (orderType === 'COOK') rate = durabilityDecay.cook;
+                if (['FARM', 'EXTRACT', 'GATHER', 'FORAGE'].includes(orderType)) rate = durabilityDecay.farm;
+                else if (['COOK', 'REFINE', 'SEW', 'BREW'].includes(orderType)) rate = durabilityDecay.cook;
                 else if (orderType === 'MINE') rate = durabilityDecay.mine;
                 else if (orderType === 'SMELT') rate = durabilityDecay.smelt;
                 totalDecay += overlapSec * rate;

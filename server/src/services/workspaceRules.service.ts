@@ -5,7 +5,7 @@ type DbClient = Prisma.TransactionClient | typeof prisma;
 const MINING_PERMIT_NAME = "Ferrum Mining Permit";
 
 type JobSlot = "first_job" | "secondary_job";
-type WorkType = "FARM" | "COOK" | "MINE" | "SMELT";
+type WorkType = "FARM" | "COOK" | "MINE" | "SMELT" | "EXTRACT" | "REFINE" | "GATHER" | "SEW" | "FORAGE" | "BREW";
 
 type WorkspaceRuleRow = {
     id: number;
@@ -214,7 +214,7 @@ export async function validateWorkspaceRequirements(
 
 type ActiveOrderRow = {
     id: number;
-    type: "FARM" | "COOK" | "MINE" | "SMELT";
+    type: WorkType;
     item_id: number;
     recipe_id: number | null;
     started_at: Date;
@@ -228,17 +228,11 @@ function resolveOrderRequirementContext(
     cityKey: string,
     row: ActiveOrderRow,
 ): { jobSlot: JobSlot; workType: WorkType; workspaceMode: string | null } {
-    if (row.type === "SMELT") {
-        return { jobSlot: "secondary_job", workType: "SMELT", workspaceMode: "SMELT" };
+    const SECONDARY_TYPES = new Set<WorkType>(["SMELT", "COOK", "REFINE", "SEW", "BREW"]);
+    if (SECONDARY_TYPES.has(row.type)) {
+        return { jobSlot: "secondary_job", workType: row.type, workspaceMode: row.type };
     }
-    if (row.type === "COOK") {
-        return { jobSlot: "secondary_job", workType: "COOK", workspaceMode: "COOK" };
-    }
-    if (row.type === "MINE") {
-        return { jobSlot: "first_job", workType: "MINE", workspaceMode: "MINE" };
-    }
-
-    return { jobSlot: "first_job", workType: "FARM", workspaceMode: "FARM" };
+    return { jobSlot: "first_job", workType: row.type, workspaceMode: row.type };
 }
 
 export async function reconcileWorkspaceOrderPausesForUser(

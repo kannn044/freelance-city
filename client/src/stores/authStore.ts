@@ -31,8 +31,8 @@ interface User {
             secondary_job: string;
         };
         workspace_modes?: {
-            first_job: 'FARM' | 'MINE';
-            secondary_job: 'COOK' | 'SMELT';
+            first_job: 'FARM' | 'MINE' | 'EXTRACT' | 'GATHER' | 'FORAGE';
+            secondary_job: 'COOK' | 'SMELT' | 'REFINE' | 'SEW' | 'BREW';
         };
         first_job_special_task_item_name?: string | null;
         tier: number;
@@ -121,8 +121,8 @@ interface CityOption {
         secondary_job: string;
     };
     workspace_modes?: {
-        first_job: 'FARM' | 'MINE';
-        secondary_job: 'COOK' | 'SMELT';
+        first_job: 'FARM' | 'MINE' | 'EXTRACT' | 'GATHER' | 'FORAGE';
+        secondary_job: 'COOK' | 'SMELT' | 'REFINE' | 'SEW' | 'BREW';
     };
     first_job_special_task_item_name?: string | null;
     tier: number;

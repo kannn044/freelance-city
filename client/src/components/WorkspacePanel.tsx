@@ -3,8 +3,10 @@ import { useAuthStore } from '../stores/authStore';
 import { useTranslation } from 'react-i18next';
 import ProviderWorkspace from './workspaces/ProviderWorkspace';
 import MinerWorkspace from './workspaces/MinerWorkspace';
+import TechnicianWorkspace from './workspaces/TechnicianWorkspace';
 import ChefWorkspace from './workspaces/ChefWorkspace';
 import BlacksmithWorkspace from './workspaces/BlacksmithWorkspace';
+import EngineerWorkspace from './workspaces/EngineerWorkspace';
 
 const WorkspacePanel = () => {
     const { t } = useTranslation();
@@ -54,11 +56,15 @@ const WorkspacePanel = () => {
                 )}
 
                 {doFirstJob && (
-                    firstJobWorkspaceMode === 'MINE' ? <MinerWorkspace /> : <ProviderWorkspace />
+                    firstJobWorkspaceMode === 'MINE' ? <MinerWorkspace /> :
+                        firstJobWorkspaceMode === 'EXTRACT' ? <TechnicianWorkspace /> :
+                            <ProviderWorkspace />
                 )}
 
                 {doSecondJob && (
-                    secondaryJobWorkspaceMode === 'SMELT' ? <BlacksmithWorkspace /> : <ChefWorkspace />
+                    secondaryJobWorkspaceMode === 'SMELT' ? <BlacksmithWorkspace /> :
+                        secondaryJobWorkspaceMode === 'REFINE' ? <EngineerWorkspace /> :
+                            <ChefWorkspace />
                 )}
             </motion.div>
         </div>

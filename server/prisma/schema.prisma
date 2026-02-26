@@ -27,6 +27,12 @@ enum WorkType {
   COOK
   MINE
   SMELT
+  EXTRACT
+  REFINE
+  GATHER
+  SEW
+  FORAGE
+  BREW
 }
 
 enum ListingStatus {

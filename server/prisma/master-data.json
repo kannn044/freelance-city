@@ -393,6 +393,269 @@
       "max_stack": 10,
       "exp_value": 3.0,
       "icon": "chicken_stew"
+    },
+    {
+      "name": "Voltara Drill Permit",
+      "type": "SEED",
+      "buy_price": null,
+      "sell_price": null,
+      "max_stack": 1,
+      "grow_mins": 1,
+      "exp_value": 0,
+      "icon": "drill_permit"
+    },
+    {
+      "name": "Crude Oil Barrel",
+      "type": "SEED",
+      "buy_price": 55,
+      "max_stack": 30,
+      "grow_mins": 10,
+      "exp_value": 0.5,
+      "icon": "crude_oil_barrel"
+    },
+    {
+      "name": "Natural Gas Canister",
+      "type": "SEED",
+      "buy_price": 40,
+      "max_stack": 30,
+      "grow_mins": 8,
+      "exp_value": 0.3,
+      "icon": "natural_gas_canister"
+    },
+    {
+      "name": "Crystal Geode",
+      "type": "SEED",
+      "buy_price": 100,
+      "max_stack": 30,
+      "grow_mins": 16,
+      "exp_value": 0.8,
+      "icon": "crystal_geode"
+    },
+    {
+      "name": "Crude Oil",
+      "type": "RAW",
+      "sell_price": 60,
+      "max_stack": 20,
+      "exp_value": 1.0,
+      "icon": "crude_oil"
+    },
+    {
+      "name": "Raw Gas",
+      "type": "RAW",
+      "sell_price": 40,
+      "max_stack": 20,
+      "exp_value": 0.5,
+      "icon": "raw_gas"
+    },
+    {
+      "name": "Power Crystal",
+      "type": "RAW",
+      "sell_price": 120,
+      "max_stack": 10,
+      "exp_value": 1.5,
+      "icon": "power_crystal"
+    },
+    {
+      "name": "Scrap Metal",
+      "type": "RAW",
+      "sell_price": 15,
+      "max_stack": 30,
+      "exp_value": 0.3,
+      "icon": "scrap_metal"
+    },
+    {
+      "name": "Fuel Cell",
+      "type": "INGREDIENT",
+      "sell_price": 250,
+      "max_stack": 20,
+      "exp_value": 2.0,
+      "icon": "fuel_cell"
+    },
+    {
+      "name": "Coolant",
+      "type": "INGREDIENT",
+      "buy_price": 50,
+      "max_stack": 30,
+      "sell_price": 35,
+      "exp_value": 0.3,
+      "icon": "coolant"
+    },
+    {
+      "name": "Wrench",
+      "type": "EQUIPMENT",
+      "buy_price": 550,
+      "sell_price": 200,
+      "max_stack": 1,
+      "exp_value": 0,
+      "icon": "wrench",
+      "equipment_slot": "ARM"
+    },
+    {
+      "name": "Soldering Iron",
+      "type": "EQUIPMENT",
+      "buy_price": 550,
+      "sell_price": 200,
+      "max_stack": 1,
+      "exp_value": 0,
+      "icon": "soldering_iron",
+      "equipment_slot": "ARM"
+    },
+    {
+      "name": "Herb Seed",
+      "type": "SEED",
+      "buy_price": 35,
+      "max_stack": 30,
+      "grow_mins": 8,
+      "exp_value": 0.3,
+      "icon": "herb_seed"
+    },
+    {
+      "name": "Mushroom Spore",
+      "type": "SEED",
+      "buy_price": 60,
+      "max_stack": 30,
+      "grow_mins": 12,
+      "exp_value": 0.5,
+      "icon": "mushroom_spore"
+    },
+    {
+      "name": "Mineral Sample",
+      "type": "SEED",
+      "buy_price": 85,
+      "max_stack": 30,
+      "grow_mins": 15,
+      "exp_value": 0.8,
+      "icon": "mineral_sample"
+    },
+    {
+      "name": "Medicinal Herb",
+      "type": "RAW",
+      "sell_price": 30,
+      "max_stack": 20,
+      "exp_value": 0.5,
+      "icon": "medicinal_herb"
+    },
+    {
+      "name": "Luminous Mushroom",
+      "type": "RAW",
+      "sell_price": 65,
+      "max_stack": 20,
+      "exp_value": 1.0,
+      "icon": "luminous_mushroom"
+    },
+    {
+      "name": "Chemical Ore",
+      "type": "RAW",
+      "sell_price": 100,
+      "max_stack": 15,
+      "exp_value": 1.5,
+      "icon": "chemical_ore"
+    },
+    {
+      "name": "Pollen",
+      "type": "RAW",
+      "sell_price": 10,
+      "max_stack": 30,
+      "exp_value": 0.3,
+      "icon": "pollen"
+    },
+    {
+      "name": "Fertilizer",
+      "type": "INGREDIENT",
+      "sell_price": 140,
+      "max_stack": 20,
+      "exp_value": 1.5,
+      "icon": "fertilizer"
+    },
+    {
+      "name": "Catalyst",
+      "type": "INGREDIENT",
+      "sell_price": 200,
+      "max_stack": 15,
+      "exp_value": 2.0,
+      "icon": "catalyst"
+    },
+    {
+      "name": "Distilled Water",
+      "type": "INGREDIENT",
+      "buy_price": 35,
+      "max_stack": 30,
+      "sell_price": 20,
+      "exp_value": 0.2,
+      "icon": "distilled_water"
+    },
+    {
+      "name": "Sulfur",
+      "type": "INGREDIENT",
+      "buy_price": 50,
+      "max_stack": 30,
+      "sell_price": 30,
+      "exp_value": 0.3,
+      "icon": "sulfur"
+    },
+    {
+      "name": "Healing Potion",
+      "type": "MEAL",
+      "sell_price": 350,
+      "kcal": 400,
+      "buff_pct": 0,
+      "buff_mins": 0,
+      "max_stack": 10,
+      "exp_value": 2.5,
+      "icon": "healing_potion"
+    },
+    {
+      "name": "Growth Elixir",
+      "type": "MEAL",
+      "sell_price": 280,
+      "kcal": 100,
+      "buff_pct": 0.15,
+      "buff_mins": 40,
+      "max_stack": 10,
+      "exp_value": 3.0,
+      "icon": "growth_elixir"
+    },
+    {
+      "name": "Smelter's Tonic",
+      "type": "MEAL",
+      "sell_price": 280,
+      "kcal": 100,
+      "buff_pct": 0.15,
+      "buff_mins": 40,
+      "max_stack": 10,
+      "exp_value": 3.0,
+      "icon": "smelters_tonic"
+    },
+    {
+      "name": "Mana Elixir",
+      "type": "MEAL",
+      "sell_price": 400,
+      "kcal": 100,
+      "buff_pct": 0.20,
+      "buff_mins": 30,
+      "max_stack": 10,
+      "exp_value": 4.0,
+      "icon": "mana_elixir"
+    },
+    {
+      "name": "Sickle",
+      "type": "EQUIPMENT",
+      "buy_price": 500,
+      "sell_price": 180,
+      "max_stack": 1,
+      "exp_value": 0,
+      "icon": "sickle",
+      "equipment_slot": "ARM"
+    },
+    {
+      "name": "Mortar & Pestle",
+      "type": "EQUIPMENT",
+      "buy_price": 500,
+      "sell_price": 180,
+      "max_stack": 1,
+      "exp_value": 0,
+      "icon": "mortar_pestle",
+      "equipment_slot": "ARM"
     }
   ],
   "yieldLinks": [
@@ -410,6 +673,36 @@
       "seedItemName": "Vegetable Seed",
       "yieldItemName": "Vegetable",
       "yield_qty": 2
+    },
+    {
+      "seedItemName": "Crude Oil Barrel",
+      "yieldItemName": "Crude Oil",
+      "yield_qty": 1
+    },
+    {
+      "seedItemName": "Natural Gas Canister",
+      "yieldItemName": "Raw Gas",
+      "yield_qty": 2
+    },
+    {
+      "seedItemName": "Crystal Geode",
+      "yieldItemName": "Power Crystal",
+      "yield_qty": 1
+    },
+    {
+      "seedItemName": "Herb Seed",
+      "yieldItemName": "Medicinal Herb",
+      "yield_qty": 2
+    },
+    {
+      "seedItemName": "Mushroom Spore",
+      "yieldItemName": "Luminous Mushroom",
+      "yield_qty": 1
+    },
+    {
+      "seedItemName": "Mineral Sample",
+      "yieldItemName": "Chemical Ore",
+      "yield_qty": 1
     }
   ],
   "recipes": [
@@ -684,6 +977,300 @@
           "quantity": 3
         }
       ]
+    },
+    {
+      "name": "Gas Distillation",
+      "outputItemName": "Gas",
+      "output_qty": 1,
+      "cook_mins": 7,
+      "unlock_price": 400,
+      "ingredients": [
+        {
+          "itemName": "Raw Gas",
+          "quantity": 3
+        },
+        {
+          "itemName": "Coolant",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Oil Refining",
+      "outputItemName": "Oil",
+      "output_qty": 1,
+      "cook_mins": 8,
+      "unlock_price": 450,
+      "ingredients": [
+        {
+          "itemName": "Crude Oil",
+          "quantity": 2
+        },
+        {
+          "itemName": "Coal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Coolant",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Fuel Cell Assembly",
+      "outputItemName": "Fuel Cell",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 600,
+      "ingredients": [
+        {
+          "itemName": "Power Crystal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Crude Oil",
+          "quantity": 2
+        },
+        {
+          "itemName": "Coolant",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Wrench Crafting",
+      "outputItemName": "Wrench",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 500,
+      "ingredients": [
+        {
+          "itemName": "Iron Ingot",
+          "quantity": 2
+        },
+        {
+          "itemName": "Coal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Steel Ore",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "Soldering Iron Crafting",
+      "outputItemName": "Soldering Iron",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 500,
+      "ingredients": [
+        {
+          "itemName": "Iron Ingot",
+          "quantity": 3
+        },
+        {
+          "itemName": "Coal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Steel Ore",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "Sickle Crafting",
+      "outputItemName": "Sickle",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 500,
+      "ingredients": [
+        {
+          "itemName": "Iron Ingot",
+          "quantity": 2
+        },
+        {
+          "itemName": "Coal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Steel Ore",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "Mortar Crafting",
+      "outputItemName": "Mortar & Pestle",
+      "output_qty": 1,
+      "cook_mins": 12,
+      "unlock_price": 500,
+      "ingredients": [
+        {
+          "itemName": "Iron Ingot",
+          "quantity": 3
+        },
+        {
+          "itemName": "Coal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Steel Ore",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "Flux Synthesis",
+      "outputItemName": "Flux",
+      "output_qty": 1,
+      "cook_mins": 7,
+      "unlock_price": 400,
+      "ingredients": [
+        {
+          "itemName": "Chemical Ore",
+          "quantity": 1
+        },
+        {
+          "itemName": "Pollen",
+          "quantity": 2
+        },
+        {
+          "itemName": "Distilled Water",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Fertilizer Brew",
+      "outputItemName": "Fertilizer",
+      "output_qty": 1,
+      "cook_mins": 6,
+      "unlock_price": 350,
+      "ingredients": [
+        {
+          "itemName": "Medicinal Herb",
+          "quantity": 3
+        },
+        {
+          "itemName": "Pollen",
+          "quantity": 2
+        },
+        {
+          "itemName": "Distilled Water",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Catalyst Synthesis",
+      "outputItemName": "Catalyst",
+      "output_qty": 1,
+      "cook_mins": 10,
+      "unlock_price": 550,
+      "ingredients": [
+        {
+          "itemName": "Luminous Mushroom",
+          "quantity": 2
+        },
+        {
+          "itemName": "Coal",
+          "quantity": 1
+        },
+        {
+          "itemName": "Sulfur",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Healing Potion Brew",
+      "outputItemName": "Healing Potion",
+      "output_qty": 1,
+      "cook_mins": 7,
+      "unlock_price": 400,
+      "ingredients": [
+        {
+          "itemName": "Medicinal Herb",
+          "quantity": 3
+        },
+        {
+          "itemName": "Distilled Water",
+          "quantity": 2
+        },
+        {
+          "itemName": "Salt",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Growth Elixir Brew",
+      "outputItemName": "Growth Elixir",
+      "output_qty": 1,
+      "cook_mins": 10,
+      "unlock_price": 550,
+      "ingredients": [
+        {
+          "itemName": "Fertilizer",
+          "quantity": 1
+        },
+        {
+          "itemName": "Luminous Mushroom",
+          "quantity": 1
+        },
+        {
+          "itemName": "Distilled Water",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Smelter's Tonic Brew",
+      "outputItemName": "Smelter's Tonic",
+      "output_qty": 1,
+      "cook_mins": 10,
+      "unlock_price": 550,
+      "ingredients": [
+        {
+          "itemName": "Catalyst",
+          "quantity": 1
+        },
+        {
+          "itemName": "Chemical Ore",
+          "quantity": 1
+        },
+        {
+          "itemName": "Sulfur",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "name": "Mana Elixir Brew",
+      "outputItemName": "Mana Elixir",
+      "output_qty": 1,
+      "cook_mins": 14,
+      "unlock_price": 700,
+      "ingredients": [
+        {
+          "itemName": "Chemical Ore",
+          "quantity": 2
+        },
+        {
+          "itemName": "Luminous Mushroom",
+          "quantity": 1
+        },
+        {
+          "itemName": "Gem",
+          "quantity": 1
+        },
+        {
+          "itemName": "Distilled Water",
+          "quantity": 1
+        }
+      ]
     }
   ],
   "shopRules": {
@@ -727,6 +1314,71 @@
         "cityKey": "FERRUM",
         "matcherType": "ITEM_NAME",
         "matcherValue": "Hammer"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Crude Oil Barrel"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Natural Gas Canister"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Crystal Geode"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Coolant"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Wrench"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Soldering Iron"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Herb Seed"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Mushroom Spore"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Mineral Sample"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Distilled Water"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Sulfur"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Sickle"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Mortar & Pestle"
       }
     ],
     "recipeRules": [
@@ -764,6 +1416,76 @@
         "cityKey": "FERRUM",
         "matcherType": "RECIPE_NAME",
         "matcherValue": "Spatula Crafting"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Wrench Crafting"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Soldering Iron Crafting"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Sickle Crafting"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Mortar Crafting"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Gas Distillation"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Oil Refining"
+      },
+      {
+        "cityKey": "VOLTARA",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Fuel Cell Assembly"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Flux Synthesis"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Fertilizer Brew"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Catalyst Synthesis"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Healing Potion Brew"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Growth Elixir Brew"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Smelter's Tonic Brew"
+      },
+      {
+        "cityKey": "MEDICO",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Mana Elixir Brew"
       }
     ]
   },
@@ -803,6 +1525,42 @@
       "mustBeEquipped": true,
       "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
       "errorMessage": "Cooking in Agraria requires Spatula equipped before starting work."
+    },
+    {
+      "cityKey": "VOLTARA",
+      "jobSlot": "first_job",
+      "workType": "EXTRACT",
+      "requiredItemName": "Wrench",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Extraction in Voltara requires Wrench equipped before starting work."
+    },
+    {
+      "cityKey": "VOLTARA",
+      "jobSlot": "secondary_job",
+      "workType": "REFINE",
+      "requiredItemName": "Soldering Iron",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Refining in Voltara requires Soldering Iron equipped before starting work."
+    },
+    {
+      "cityKey": "MEDICO",
+      "jobSlot": "first_job",
+      "workType": "FORAGE",
+      "requiredItemName": "Sickle",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Foraging in Medico requires Sickle equipped before starting work."
+    },
+    {
+      "cityKey": "MEDICO",
+      "jobSlot": "secondary_job",
+      "workType": "BREW",
+      "requiredItemName": "Mortar & Pestle",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Brewing in Medico requires Mortar & Pestle equipped before starting work."
     }
   ]
 }

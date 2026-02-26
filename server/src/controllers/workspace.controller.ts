@@ -34,6 +34,23 @@ type IngredientSelectionInput = {
 // Small tolerance to avoid client/server clock drift causing false "Not ready yet".
 const READY_GRACE_MS = 5000;
 
+// All supported work types
+type WorkType = "FARM" | "COOK" | "MINE" | "SMELT" | "EXTRACT" | "REFINE" | "GATHER" | "SEW" | "FORAGE" | "BREW";
+
+const FIRST_JOB_WORK_TYPES = new Set<WorkType>(["FARM", "MINE", "EXTRACT", "GATHER", "FORAGE"]);
+const SECONDARY_JOB_WORK_TYPES = new Set<WorkType>(["COOK", "SMELT", "REFINE", "SEW", "BREW"]);
+const ALL_WORK_TYPES = new Set<WorkType>([...FIRST_JOB_WORK_TYPES, ...SECONDARY_JOB_WORK_TYPES]);
+
+function isFirstJobWorkType(type: string): type is WorkType {
+    return FIRST_JOB_WORK_TYPES.has(type as WorkType);
+}
+function isSecondaryJobWorkType(type: string): type is WorkType {
+    return SECONDARY_JOB_WORK_TYPES.has(type as WorkType);
+}
+function isValidWorkType(type: string): type is WorkType {
+    return ALL_WORK_TYPES.has(type as WorkType);
+}
+
 let workOrderRarityColumnEnsured = false;
 
 const MINING_PERMIT_NAME = "Ferrum Mining Permit";
@@ -200,7 +217,7 @@ function applyTierReduction(baseHunger: number, tierReduction: number) {
     return HUNGER_TIERS[reducedIdx];
 }
 
-const TIERED_HARVEST_ITEM_NAMES = new Set(["Vegetable", "Chicken Meat", "Beef Meat"]);
+const TIERED_HARVEST_ITEM_NAMES = new Set(["Vegetable", "Chicken Meat", "Beef Meat", "Medicinal Herb", "Luminous Mushroom", "Chemical Ore"]);
 
 function isTieredHarvestItem(item: { type: string; name: string }) {
     return item.type === "RAW" && TIERED_HARVEST_ITEM_NAMES.has(item.name);
@@ -330,7 +347,7 @@ function formatOutputSummary(summary: OutputSummary[]): string {
 }
 
 async function getOrderOutput(
-    order: { id: number; type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number; recipe_id?: number | null },
+    order: { id: number; type: WorkType; item_id: number; quantity: number; recipe_id?: number | null },
     userId: number,
     db: DbClient,
     harvestDropRates: Record<EquipmentRarity, number>
@@ -389,7 +406,7 @@ async function getOrderOutput(
         return outputs;
     }
 
-    if (order.type === "FARM" || order.type === "MINE") {
+    if (isFirstJobWorkType(order.type)) {
         const seedItem = await db.item.findUnique({ where: { id: order.item_id } });
         if (!seedItem?.yield_item_id) {
             throw new Error("Seed has no yield configured");
@@ -422,7 +439,7 @@ async function getOrderOutput(
         ];
     }
 
-    if (order.type !== "COOK" && order.type !== "SMELT") {
+    if (!isSecondaryJobWorkType(order.type)) {
         throw new Error(`Unsupported work type for output resolution: ${order.type}`);
     }
 
@@ -592,13 +609,13 @@ async function placeOutputInInventory(
 
 async function awardOrderExp(
     userId: number,
-    orderType: "FARM" | "COOK" | "MINE" | "SMELT",
+    orderType: WorkType,
     outputRewards: Array<{ expValue: number; qty: number }>,
     db: DbClient,
     expConfig: { firstJobWorkExpMultiplier: number; secondaryJobWorkExpMultiplier: number }
 ) {
-    if (orderType !== "FARM" && orderType !== "COOK" && orderType !== "MINE" && orderType !== "SMELT") {
-        return { expGained: 0, levelUp: false, newLevel: 0, blacksmithUnlocked: false };
+    if (!isValidWorkType(orderType)) {
+        return { expGained: 0, levelUp: false, newLevel: 0, secondaryJobUnlocked: false };
     }
 
     const userRows = await db.$queryRaw<Array<{
@@ -615,7 +632,7 @@ async function awardOrderExp(
     const user = userRows[0];
     if (!user) throw new Error("User not found");
 
-    const occupation = (orderType === "FARM" || orderType === "MINE") ? "first_job" : "secondary_job";
+    const occupation = isFirstJobWorkType(orderType) ? "first_job" : "secondary_job";
     const currentLevel = occupation === "first_job"
         ? Number(user.first_job_level ?? 0)
         : Number(user.secondary_job_level ?? 0);
@@ -626,7 +643,7 @@ async function awardOrderExp(
     let expGained = 0;
     let levelUp = false;
     let newLevel = currentLevel;
-    let blacksmithUnlocked = false;
+    let secondaryJobUnlocked = false;
     const workExpMultiplier = occupation === "first_job"
         ? expConfig.firstJobWorkExpMultiplier
         : expConfig.secondaryJobWorkExpMultiplier;
@@ -689,13 +706,13 @@ async function awardOrderExp(
                         });
                     }
 
-                    blacksmithUnlocked = true;
+                    secondaryJobUnlocked = true;
                 }
             }
         }
     }
 
-    return { expGained, levelUp, newLevel, blacksmithUnlocked };
+    return { expGained, levelUp, newLevel, secondaryJobUnlocked };
 }
 
 async function getUserJobPayloadRow(userId: number, db: DbClient = prisma) {
@@ -819,20 +836,20 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             expGained: exp.expGained,
             levelUp: exp.levelUp,
             newLevel: exp.newLevel,
-            blacksmithUnlocked: exp.blacksmithUnlocked,
+            blacksmithUnlocked: exp.secondaryJobUnlocked,
         };
     });
 }
 
 async function buildCancelRefundOutputs(
-    order: { type: "FARM" | "COOK" | "MINE" | "SMELT"; item_id: number; quantity: number; recipe_id: number | null },
+    order: { type: WorkType; item_id: number; quantity: number; recipe_id: number | null },
     db: DbClient,
 ): Promise<OutputReward[]> {
-    if (order.type !== "FARM" && order.type !== "COOK" && order.type !== "MINE" && order.type !== "SMELT") {
+    if (!isValidWorkType(order.type)) {
         return [];
     }
 
-    if (order.type === "FARM" || order.type === "MINE") {
+    if (isFirstJobWorkType(order.type)) {
         const ferrumCatalog = await ensureFerrumCatalog(db);
         if (order.item_id === ferrumCatalog.miningPermitId) {
             return [];
@@ -980,25 +997,26 @@ export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<vo
 export const startWork = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { type, itemId, recipeId, quantity = 1, selectedIngredients, mode, layer } = req.body as {
-            type: "FARM" | "COOK";
+            type: "FARM" | "COOK" | "EXTRACT" | "REFINE" | "GATHER" | "SEW" | "FORAGE" | "BREW";
             itemId?: number;
             recipeId?: number;
             quantity?: number;
             selectedIngredients?: IngredientSelectionInput[];
-            mode?: "MINE";
+            mode?: "MINE" | "EXTRACT";
             layer?: MiningLayer;
         };
         const user = await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
         const isFerrum = cityProfile.city_key === "FERRUM";
+        const isVoltara = cityProfile.city_key === "VOLTARA";
         const taskTimeConfig = await getGameTaskTimeConfig();
         const ferrumMining = await getFerrumMiningConfig();
         const ferrumCatalog = await ensureFerrumCatalog(prisma);
 
         const equipmentEffects = await getUserEquipmentEffects(req.userId!);
 
-        if (type === "FARM") {
+        if (type === "FARM" || type === "EXTRACT" || type === "GATHER" || type === "FORAGE") {
             if (isFerrum) {
                 if (user.first_job_level < 1) {
                     res.status(403).json({ error: "Ferrum requires Miner occupation to run expeditions" });
@@ -1051,7 +1069,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const pendingMiningOrders = await prisma.workOrder.findMany({
                     where: {
                         user_id: req.userId!,
-                        type: { in: ["FARM", "MINE"] },
+                        type: { in: ["FARM", "MINE", "EXTRACT", "GATHER", "FORAGE"] as any[] },
                         item_id: ferrumCatalog.miningPermitId,
                         collected: false,
                     },
@@ -1103,8 +1121,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 userId: req.userId!,
                 cityKey: cityProfile.city_key,
                 jobSlot: "first_job",
-                workType: "FARM",
-                workspaceMode: cityProfile.city_key === "FERRUM" ? "MINE" : null,
+                workType: isVoltara ? "EXTRACT" : "FARM",
+                workspaceMode: isFerrum ? "MINE" : isVoltara ? "EXTRACT" : null,
                 itemId: Number(itemId),
             });
 
@@ -1120,10 +1138,12 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
+            const firstJobType = isVoltara ? "EXTRACT" : "FARM";
+
             const activeFarmOrders = await prisma.workOrder.findMany({
                 where: {
                     user_id: req.userId!,
-                    type: "FARM",
+                    type: firstJobType as any,
                     collected: false,
                 },
                 orderBy: { started_at: "asc" },
@@ -1193,7 +1213,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             let order = await prisma.workOrder.create({
                 data: {
                     user_id: req.userId!,
-                    type: "FARM",
+                    type: firstJobType as any,
                     item_id: Number(itemId),
                     quantity,
                     completes_at: completesAt,
@@ -1234,7 +1254,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 message,
                 order,
             });
-        } else if (type === "COOK") {
+        } else if (type === "COOK" || type === "REFINE" || type === "SEW" || type === "BREW") {
 
             if (!recipeId || !Number.isInteger(Number(recipeId))) {
                 res.status(400).json({ error: "recipeId is required for COOK" });
@@ -1279,7 +1299,8 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             }
 
             // Validate workspace equipment requirements (e.g. Hammer for SMELT, Spatula for COOK)
-            const cookWorkType = isFerrum ? "SMELT" : "COOK";
+            const cityWkMap: Record<string, WorkType> = { FERRUM: "SMELT", VOLTARA: "REFINE" };
+            const cookWorkType: WorkType = cityWkMap[cityProfile.city_key ?? ""] ?? "COOK";
             const cookWorkspaceRequirement = await validateWorkspaceRequirements({
                 userId: req.userId!,
                 cityKey: cityProfile.city_key,
@@ -1493,7 +1514,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const pendingCooks = await prisma.workOrder.findMany({
                 where: {
                     user_id: req.userId!,
-                    type: { in: ["COOK", "SMELT"] },
+                    type: { in: ["COOK", "SMELT", "REFINE", "SEW", "BREW"] as any[] },
                     collected: false,
                 },
                 orderBy: [{ started_at: "asc" }, { id: "asc" }],
@@ -1523,12 +1544,12 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const startsAt = new Date(startMs);
             const completesAt = new Date(startMs + durationMs);
 
-            const workType = isFerrum ? "SMELT" : "COOK";
+            const workType: WorkType = cityWkMap[cityProfile.city_key] ?? "COOK";
 
             const order = await prisma.workOrder.create({
                 data: {
                     user_id: req.userId!,
-                    type: workType,
+                    type: workType as any,
                     item_id: recipe.output_item_id,
                     recipe_id: Number(recipeId),
                     quantity: recipe.output_qty,
@@ -1563,7 +1584,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 order,
             });
         } else {
-            res.status(400).json({ error: 'Invalid work type. Use "FARM" or "COOK"' });
+            res.status(400).json({ error: 'Invalid work type. Use "FARM" or "COOK" (or city-specific types)' });
         }
     } catch (error) {
         console.error("startWork error:", error);
@@ -1782,9 +1803,9 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
 
             await tx.workOrder.delete({ where: { id: order.id } });
 
-            if (order.type === "COOK" || order.type === "SMELT") {
+            if (isSecondaryJobWorkType(order.type)) {
                 await rescheduleSecondaryJobQueueAfterCancel(req.userId!, tx);
-            } else if (order.type === "FARM" || order.type === "MINE") {
+            } else if (isFirstJobWorkType(order.type)) {
                 const ferrumCatalog = await ensureFerrumCatalog(tx);
                 if (order.item_id === ferrumCatalog.miningPermitId) {
                     await rescheduleFerrumMiningQueueAfterCancel(req.userId!, tx);

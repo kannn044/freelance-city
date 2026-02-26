@@ -45,98 +45,99 @@ const CITY_CATALOG: Array<{
     };
     first_job_special_task_item_name?: string;
 }> = [
-    {
-        key: "AGRARIA",
-        name: "Agraria",
-        playable: true,
-        description: "เกษตร & อาหาร: ปากท้องของโลก",
-        occupations: [
-            "Farmer: ปลูกผัก เลี้ยงสัตว์ (ผลิตวัตถุดิบสด)",
-            "Chef: ปรุงอาหาร (เปลี่ยนวัตถุดิบเป็นพลังงานให้คนทั้งเซิร์ฟเวอร์)",
-        ],
-        occupation_labels: {
-            first_job: "Farmer",
-            secondary_job: "Chef",
+        {
+            key: "AGRARIA",
+            name: "Agraria",
+            playable: true,
+            description: "เกษตร & อาหาร: ปากท้องของโลก",
+            occupations: [
+                "Farmer: ปลูกผัก เลี้ยงสัตว์ (ผลิตวัตถุดิบสด)",
+                "Chef: ปรุงอาหาร (เปลี่ยนวัตถุดิบเป็นพลังงานให้คนทั้งเซิร์ฟเวอร์)",
+            ],
+            occupation_labels: {
+                first_job: "Farmer",
+                secondary_job: "Chef",
+            },
+            workspace_modes: {
+                first_job: "FARM",
+                secondary_job: "COOK",
+            },
         },
-        workspace_modes: {
-            first_job: "FARM",
-            secondary_job: "COOK",
+        {
+            key: "FERRUM",
+            name: "Ferrum",
+            playable: true,
+            description: "อุตสาหกรรม & เครื่องมือ: กระดูกสันหลังการผลิต",
+            occupations: [
+                "Miner: ขุดแร่เหล็ก หิน (แลกแรงกายกับทรัพยากรหนัก)",
+                "Blacksmith: ถลุงแร่ ตีเครื่องมือเกษตร/เครื่องครัว",
+            ],
+            occupation_labels: {
+                first_job: "Miner",
+                secondary_job: "Blacksmith",
+            },
+            workspace_modes: {
+                first_job: "MINE",
+                secondary_job: "SMELT",
+            },
+            first_job_special_task_item_name: "Ferrum Mining Permit",
         },
-    },
-    {
-        key: "FERRUM",
-        name: "Ferrum",
-        playable: true,
-        description: "อุตสาหกรรม & เครื่องมือ: กระดูกสันหลังการผลิต",
-        occupations: [
-            "Miner: ขุดแร่เหล็ก หิน (แลกแรงกายกับทรัพยากรหนัก)",
-            "Blacksmith: ถลุงแร่ ตีเครื่องมือเกษตร/เครื่องครัว",
-        ],
-        occupation_labels: {
-            first_job: "Miner",
-            secondary_job: "Blacksmith",
+        {
+            key: "VOLTARA",
+            name: "Voltara",
+            playable: true,
+            description: "พลังงาน & เชื้อเพลิง: เลือดหล่อเลี้ยงเครื่องจักร",
+            occupations: [
+                "Technician: ขุดเจาะน้ำมันดิบ ดูแลเครื่องปั่นไฟ",
+                "Engineer: กลั่นก๊าซหุงต้มและน้ำมันเชื้อเพลิง",
+            ],
+            occupation_labels: {
+                first_job: "Technician",
+                secondary_job: "Engineer",
+            },
+            workspace_modes: {
+                first_job: "EXTRACT",
+                secondary_job: "REFINE",
+            },
+            first_job_special_task_item_name: "Voltara Drill Permit",
         },
-        workspace_modes: {
-            first_job: "MINE",
-            secondary_job: "SMELT",
+        {
+            key: "TEXTILIS",
+            name: "Textilis",
+            playable: true,
+            description: "สิ่งทอ & แฟชั่น: เกราะป้องกันและช่องเก็บของ",
+            occupations: [
+                "Weaver: ปลูกฝ้าย เลี้ยงแกะเก็บขน",
+                "Tailor: ตัดเย็บชุดทำงานและกระเป๋าเป้ขยายช่องเก็บของ",
+            ],
+            occupation_labels: {
+                first_job: "Weaver",
+                secondary_job: "Tailor",
+            },
+            workspace_modes: {
+                first_job: "GATHER",
+                secondary_job: "SEW",
+            },
         },
-        first_job_special_task_item_name: "Ferrum Mining Permit",
-    },
-    {
-        key: "VOLTARA",
-        name: "Voltara",
-        playable: true,
-        description: "พลังงาน & เชื้อเพลิง: เลือดหล่อเลี้ยงเครื่องจักร",
-        occupations: [
-            "Technician: ขุดเจาะน้ำมันดิบ ดูแลเครื่องปั่นไฟ",
-            "Engineer: กลั่นก๊าซหุงต้มและน้ำมันเชื้อเพลิง",
-        ],
-        occupation_labels: {
-            first_job: "Technician",
-            secondary_job: "Engineer",
+        {
+            key: "MEDICO",
+            name: "Medico",
+            playable: true,
+            description: "วิทยาการ & เคมี: ตัวเร่งปฏิกิริยา",
+            occupations: [
+                "Gatherer: เก็บสมุนไพร หาแร่เคมี",
+                "Alchemist: ปรุงปุ๋ย น้ำยา Flux และยารักษา",
+            ],
+            occupation_labels: {
+                first_job: "Gatherer",
+                secondary_job: "Alchemist",
+            },
+            workspace_modes: {
+                first_job: "FORAGE",
+                secondary_job: "BREW",
+            },
         },
-        workspace_modes: {
-            first_job: "EXTRACT",
-            secondary_job: "REFINE",
-        },
-    },
-    {
-        key: "TEXTILIS",
-        name: "Textilis",
-        playable: true,
-        description: "สิ่งทอ & แฟชั่น: เกราะป้องกันและช่องเก็บของ",
-        occupations: [
-            "Weaver: ปลูกฝ้าย เลี้ยงแกะเก็บขน",
-            "Tailor: ตัดเย็บชุดทำงานและกระเป๋าเป้ขยายช่องเก็บของ",
-        ],
-        occupation_labels: {
-            first_job: "Weaver",
-            secondary_job: "Tailor",
-        },
-        workspace_modes: {
-            first_job: "GATHER",
-            secondary_job: "SEW",
-        },
-    },
-    {
-        key: "MEDICO",
-        name: "Medico",
-        playable: true,
-        description: "วิทยาการ & เคมี: ตัวเร่งปฏิกิริยา",
-        occupations: [
-            "Gatherer: เก็บสมุนไพร หาแร่เคมี",
-            "Alchemist: ปรุงปุ๋ย น้ำยา Flux และยารักษา",
-        ],
-        occupation_labels: {
-            first_job: "Gatherer",
-            secondary_job: "Alchemist",
-        },
-        workspace_modes: {
-            first_job: "FORAGE",
-            secondary_job: "BREW",
-        },
-    },
-];
+    ];
 
 const OCCUPATION_BY_CITY: Record<CityKey, Record<JobSlot, { key: OccupationKey; displayName: string }>> = {
     AGRARIA: {
@@ -169,39 +170,39 @@ const SKILL_BRANCH_TEMPLATE: Array<{
     maxLevel: number;
     effectConfig: Record<string, unknown>;
 }> = [
-    {
-        branchSlot: 1,
-        branchKey: "TIME_QUEUE",
-        branchName: "Workflow Mastery",
-        effectType: "TIME_QUEUE",
-        maxLevel: 5,
-        effectConfig: {
-            timeReductionPctByLevel: [5, 10, 15, 20, 25],
-            queueLimitByLevel: [1, 1, 2, 2, 3],
+        {
+            branchSlot: 1,
+            branchKey: "TIME_QUEUE",
+            branchName: "Workflow Mastery",
+            effectType: "TIME_QUEUE",
+            maxLevel: 5,
+            effectConfig: {
+                timeReductionPctByLevel: [5, 10, 15, 20, 25],
+                queueLimitByLevel: [1, 1, 2, 2, 3],
+            },
         },
-    },
-    {
-        branchSlot: 2,
-        branchKey: "CRAFT_COST",
-        branchName: "Resource Efficiency",
-        effectType: "CRAFT_COST",
-        maxLevel: 5,
-        effectConfig: {
-            saveAllIngredientsChancePctByLevel: [6, 12, 18, 24, 30],
+        {
+            branchSlot: 2,
+            branchKey: "CRAFT_COST",
+            branchName: "Resource Efficiency",
+            effectType: "CRAFT_COST",
+            maxLevel: 5,
+            effectConfig: {
+                saveAllIngredientsChancePctByLevel: [6, 12, 18, 24, 30],
+            },
         },
-    },
-    {
-        branchSlot: 3,
-        branchKey: "OUTPUT_BONUS",
-        branchName: "Output Mastery",
-        effectType: "OUTPUT_BONUS",
-        maxLevel: 5,
-        effectConfig: {
-            bonusOutputChancePctByLevel: [4, 8, 12, 16, 20],
-            bonusOutputQty: 1,
+        {
+            branchSlot: 3,
+            branchKey: "OUTPUT_BONUS",
+            branchName: "Output Mastery",
+            effectType: "OUTPUT_BONUS",
+            maxLevel: 5,
+            effectConfig: {
+                bonusOutputChancePctByLevel: [4, 8, 12, 16, 20],
+                bonusOutputQty: 1,
+            },
         },
-    },
-];
+    ];
 
 const CITY_TIER_THRESHOLDS = [
     0,
