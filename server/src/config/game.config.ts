@@ -223,8 +223,8 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     maxListingsPerTick: 2,
     // At most 5 units purchased from one listing per tick.
     maxQtyPerListing: 5,
-    // Bot ignores listings priced above 150% of reference unit price.
-    maxUnitPriceRatio: 1.50,
+    // Bot ignores listings priced above 350% of reference unit price.
+    maxUnitPriceRatio: 3.50,
     // Avoid instant bot buy right after user lists an item.
     minListingAgeMs: 60_000,
     // 65% chance to create simulated player sell listings each tick.
