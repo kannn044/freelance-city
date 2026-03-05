@@ -495,8 +495,11 @@ const InventoryGrid = () => {
             <div
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gridTemplateColumns: 'repeat(4, 4.5rem)',
+                    gridAutoRows: '4.5rem',
                     gap: '0.45rem',
+                    width: 'fit-content',
+                    margin: '0 auto',
                     padding: '0.75rem',
                     borderRadius: '0.6rem',
                     border: '1px solid rgba(255,255,255,0.08)',
@@ -530,7 +533,8 @@ const InventoryGrid = () => {
                             whileTap={hasItem ? { scale: 0.95 } : {}}
                             style={{
                                 position: 'relative',
-                                aspectRatio: '1',
+                                width: '4.5rem',
+                                height: '4.5rem',
                                 borderRadius: '0.58rem',
                                 border: hasItem
                                     ? '1px solid rgba(255,255,255,0.16)'
@@ -545,8 +549,10 @@ const InventoryGrid = () => {
                                 cursor: hasItem ? 'grab' : 'default',
                                 transition: 'all 0.2s',
                                 padding: '0.22rem',
+                                overflow: 'visible',
                                 opacity: draggingSlotId === slot?.id ? 0.5 : 1,
                                 boxShadow: hasItem ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
+                                flexShrink: 0,
                             }}
                         >
                             {hasItem ? (

@@ -3,25 +3,9 @@ import api from '../lib/api';
 import { normalizeUserJobFields, useAuthStore } from './authStore';
 import type { EquipmentRarity } from '../lib/equipmentRarity';
 import { getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
-import { DEFAULT_HUNGER_TASK_DECAY_PER_SEC, DEFAULT_DURABILITY_DECAY_PER_SEC, DEFAULT_FERRUM_MINING_CONFIG, type HungerTaskDecayConfig, type DurabilityDecayConfig, type FerrumMiningConfig } from '../lib/gameConstants';
-
+import { DEFAULT_HUNGER_TASK_DECAY_PER_SEC, DEFAULT_DURABILITY_DECAY_PER_SEC, type HungerTaskDecayConfig, type DurabilityDecayConfig } from '../lib/gameConstants';
 
 // ─── Types ───────────────────────────────────────────
-
-export interface RepairIngredient {
-    item_id: number;
-    item_name: string;
-    item_icon: string;
-    recipe_qty: number;
-    repair_qty: number;
-}
-
-export interface RepairCostResult {
-    ingredients: RepairIngredient[];
-    missingPct: number;
-    durability: number;
-    maxDurability: number;
-}
 
 export interface Item {
     id: number;
@@ -52,6 +36,19 @@ export interface InventorySlot {
     item: Item | null;
 }
 
+export interface RepairCostResult {
+    ingredients: {
+        item_id: number;
+        item_name: string;
+        item_icon: string;
+        recipe_qty: number;
+        repair_qty: number;
+    }[];
+    missingPct: number;
+    durability: number;
+    maxDurability: number;
+}
+
 export interface EquipmentSlotState {
     slot: 'HEAD' | 'UPPER_BODY' | 'LOWER_BODY' | 'ARM' | 'GLOVE' | 'SHOE';
     item_id: number | null;
@@ -61,13 +58,12 @@ export interface EquipmentSlotState {
     effect_key?: string | null;
     effect_value?: number | null;
     effect_value2?: number | null;
-    durability?: number;
-    durability_updated_at?: string | null;
+    durability?: number | null;
 }
 
 export interface WorkOrder {
     id: number;
-    type: 'FARM' | 'COOK' | 'MINE' | 'SMELT' | 'EXTRACT' | 'REFINE' | 'GATHER' | 'SEW' | 'FORAGE' | 'BREW';
+    type: 'FARM' | 'COOK';
     item_id: number;
     recipe_id: number | null;
     quantity: number;
@@ -164,7 +160,19 @@ export interface EquipmentBoxInfo {
     rarityOdds?: EquipmentBoxRarityOdds[];
 }
 
-export type { FerrumMiningConfig };
+export interface FerrumMiningConfig {
+    hungerCostPerExpedition: number;
+    layerTimeMins: {
+        surface: number;
+        deep: number;
+        core: number;
+    };
+    dropRates: {
+        surface: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
+        deep: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
+        core: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
+    };
+}
 
 function mergeAuthUser(nextUser: any) {
     if (!nextUser) return;
@@ -204,8 +212,11 @@ interface GameState {
     satietyBuff: number;
     buffExpiresAt: number | null;
     taskDecay: HungerTaskDecayConfig;
-    durabilityDecay: DurabilityDecayConfig;
     ferrumMiningConfig: FerrumMiningConfig;
+
+    // Client-side durability interpolation
+    durabilityUpdatedAt: number; // timestamp ms
+    durabilityDecay: DurabilityDecayConfig;
 
     // Loading
     isLoading: boolean;
@@ -237,12 +248,11 @@ interface GameState {
     unequipItem: (slot: EquipmentSlotState['slot']) => Promise<void>;
     organizeInventory: (mode: 'combine' | 'sort-az') => Promise<void>;
     discardItem: (slotId: number, quantity?: number) => Promise<void>;
+    fetchRepairCost: (slotKey: string | number) => Promise<RepairCostResult | null>;
+    repairEquipment: (slotKey: string | number) => Promise<void>;
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
     cancelListing: (listingId: number) => Promise<void>;
-
-    fetchRepairCost: (slotOrId: string | number) => Promise<RepairCostResult | null>;
-    repairEquipment: (slotOrId: string | number) => Promise<boolean>;
 
     tickHunger: () => void;
     tickDurability: () => void;
@@ -268,13 +278,22 @@ export const useGameStore = create<GameState>((set, get) => ({
         farmPerPlot: DEFAULT_HUNGER_TASK_DECAY_PER_SEC.FARM_PER_PLOT,
         cookPerMenu: DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
     },
+    durabilityUpdatedAt: Date.now(),
     durabilityDecay: {
         farm: DEFAULT_DURABILITY_DECAY_PER_SEC.FARM,
         cook: DEFAULT_DURABILITY_DECAY_PER_SEC.COOK,
         mine: DEFAULT_DURABILITY_DECAY_PER_SEC.MINE,
         smelt: DEFAULT_DURABILITY_DECAY_PER_SEC.SMELT,
     },
-    ferrumMiningConfig: { ...DEFAULT_FERRUM_MINING_CONFIG },
+    ferrumMiningConfig: {
+        hungerCostPerExpedition: 200,
+        layerTimeMins: { surface: 6, deep: 11, core: 16 },
+        dropRates: {
+            surface: { ironOre: 0.65, copperOre: 0.3, steelOre: 0, stone: 0.7, coal: 0.45, gem: 0.02 },
+            deep: { ironOre: 0.45, copperOre: 0.45, steelOre: 0.18, stone: 0.55, coal: 0.6, gem: 0.05 },
+            core: { ironOre: 0.3, copperOre: 0.35, steelOre: 0.35, stone: 0.45, coal: 0.7, gem: 0.09 },
+        },
+    },
     isLoading: false,
     actionMessage: null,
 
@@ -365,12 +384,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                         ? cookPerMenu
                         : DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
                 },
-                durabilityDecay: {
-                    farm: Number.isFinite(Number(data?.durabilityDecay?.farm)) ? Number(data.durabilityDecay.farm) : DEFAULT_DURABILITY_DECAY_PER_SEC.FARM,
-                    cook: Number.isFinite(Number(data?.durabilityDecay?.cook)) ? Number(data.durabilityDecay.cook) : DEFAULT_DURABILITY_DECAY_PER_SEC.COOK,
-                    mine: Number.isFinite(Number(data?.durabilityDecay?.mine)) ? Number(data.durabilityDecay.mine) : DEFAULT_DURABILITY_DECAY_PER_SEC.MINE,
-                    smelt: Number.isFinite(Number(data?.durabilityDecay?.smelt)) ? Number(data.durabilityDecay.smelt) : DEFAULT_DURABILITY_DECAY_PER_SEC.SMELT,
-                },
                 ferrumMiningConfig: data?.ferrumMining ?? get().ferrumMiningConfig,
             });
         } catch (err) {
@@ -385,6 +398,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             set({
                 hunger: authUser.hunger,
                 hungerUpdatedAt: Date.now(),
+                durabilityUpdatedAt: Date.now(),
             });
         }
         await Promise.all([
@@ -617,8 +631,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            // Refresh work orders – server reconciles pauses after equip
-            get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to equip item' });
         }
@@ -632,8 +644,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            // Refresh work orders – server reconciles pauses after unequip
-            get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to unequip item' });
         }
@@ -662,6 +672,33 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to discard item' });
+        }
+    },
+
+    fetchRepairCost: async (slotKey) => {
+        try {
+            const isSlotId = typeof slotKey === 'number';
+            const params = isSlotId ? { slotId: slotKey } : { slot: slotKey };
+            const { data } = await api.get('/game/equipment/repair-cost', { params });
+            return data as RepairCostResult;
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to get repair cost' });
+            return null;
+        }
+    },
+
+    repairEquipment: async (slotKey) => {
+        try {
+            const isSlotId = typeof slotKey === 'number';
+            const body = isSlotId ? { slotId: slotKey } : { slot: slotKey };
+            const { data } = await api.post('/game/equipment/repair', body);
+            set({
+                inventory: data.slots ?? get().inventory,
+                equipment: data.equipment ?? get().equipment,
+                actionMessage: data.message,
+            });
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to repair equipment' });
         }
     },
 
@@ -713,31 +750,43 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
-    fetchRepairCost: async (slotOrId) => {
-        try {
-            const query = typeof slotOrId === 'number' ? `?slotId=${slotOrId}` : `?slot=${slotOrId}`;
-            const { data } = await api.get(`/game/equipment/repair-cost${query}`);
-            return data as RepairCostResult;
-        } catch (err: any) {
-            set({ actionMessage: err.response?.data?.error || 'Failed to get repair cost' });
-            return null;
-        }
-    },
+    tickDurability: () => {
+        const { equipment, workOrders, durabilityUpdatedAt, durabilityDecay } = get();
+        const now = Date.now();
+        const elapsed = now - durabilityUpdatedAt;
+        if (elapsed <= 0) return;
 
-    repairEquipment: async (slotOrId) => {
-        try {
-            const payload = typeof slotOrId === 'number' ? { slotId: slotOrId } : { slot: slotOrId };
-            const { data } = await api.post('/game/equipment/repair', payload);
-            set({
-                inventory: data.slots ?? get().inventory,
-                equipment: data.equipment ?? get().equipment,
-                actionMessage: data.message,
-            });
-            return true;
-        } catch (err: any) {
-            set({ actionMessage: err.response?.data?.error || 'Failed to repair equipment' });
-            return false;
+        const elapsedSec = elapsed / 1000;
+
+        const activeOrders = workOrders.filter((o) => {
+            if (o.paused_at) return false;
+            if (o.collected) return false;
+            const start = new Date(o.started_at).getTime();
+            const end = new Date(o.completes_at).getTime();
+            return now >= start && now < end;
+        });
+
+        let totalDecay = 0;
+        for (const order of activeOrders) {
+            const orderType = String(order.type).toUpperCase();
+            if (orderType === 'FARM') totalDecay += elapsedSec * durabilityDecay.farm;
+            else if (orderType === 'COOK') totalDecay += elapsedSec * durabilityDecay.cook;
+            else if (orderType === 'MINE') totalDecay += elapsedSec * durabilityDecay.mine;
+            else if (orderType === 'SMELT') totalDecay += elapsedSec * durabilityDecay.smelt;
         }
+
+        if (totalDecay <= 0) {
+            set({ durabilityUpdatedAt: now });
+            return;
+        }
+
+        const updatedEquipment = equipment.map((eq) => {
+            if (!eq.item_id || eq.durability == null) return eq;
+            const newDurability = Math.max(0, eq.durability - totalDecay);
+            return { ...eq, durability: newDurability };
+        });
+
+        set({ equipment: updatedEquipment, durabilityUpdatedAt: now });
     },
 
     tickHunger: () => {
@@ -758,17 +807,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
         for (const order of activeOrders) {
-            const isFirstJob = ['FARM', 'MINE', 'EXTRACT', 'GATHER', 'FORAGE'].includes(order.type);
-            const isSecondaryJob = ['COOK', 'SMELT', 'REFINE', 'SEW', 'BREW'].includes(order.type);
-
-            if (isFirstJob) {
+            if (order.type === 'FARM') {
                 const isMiningPermit = String(order.item?.name ?? '') === 'Ferrum Mining Permit';
                 const isDeepOrCore = order.recipe_id === 2 || order.recipe_id === 3;
                 const burnMultiplier = isMiningPermit && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
                 const key = `${order.item_id}:${order.recipe_id ?? 0}:${burnMultiplier}`;
                 const prev = farmBySeed.get(key) ?? { count: 0, burnMultiplier };
                 farmBySeed.set(key, { count: prev.count + 1, burnMultiplier });
-            } else if (isSecondaryJob) {
+            } else if (order.type === 'COOK') {
                 activeCookMenus += 1;
             }
         }
@@ -812,56 +858,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         const newHunger = Math.max(0, hunger - decay);
         set({ hunger: newHunger, hungerUpdatedAt: now });
-    },
-
-    tickDurability: () => {
-        const { equipment, workOrders, durabilityDecay } = get();
-        const now = Date.now();
-
-        const activeOrders = workOrders.filter((o) => {
-            const start = new Date(o.started_at).getTime();
-            const end = new Date(o.completes_at).getTime();
-            return now >= start && now < end && !o.paused_at;
-        });
-
-        if (activeOrders.length === 0) return;
-
-        const updated = equipment.map((eq) => {
-            if (!eq.item_id || eq.durability == null || eq.durability <= 0) return eq;
-
-            const lastUpdated = eq.durability_updated_at
-                ? new Date(eq.durability_updated_at).getTime()
-                : now;
-            if (now <= lastUpdated) return eq;
-
-            let totalDecay = 0;
-            for (const order of activeOrders) {
-                const orderStart = new Date(order.started_at).getTime();
-                const orderEnd = new Date(order.completes_at).getTime();
-                const overlapStart = Math.max(lastUpdated, orderStart);
-                const overlapEnd = Math.min(now, orderEnd);
-                if (overlapEnd <= overlapStart) continue;
-
-                const overlapSec = (overlapEnd - overlapStart) / 1000;
-                const orderType = order.type.toUpperCase();
-                let rate = 0;
-                if (['FARM', 'EXTRACT', 'GATHER', 'FORAGE'].includes(orderType)) rate = durabilityDecay.farm;
-                else if (['COOK', 'REFINE', 'SEW', 'BREW'].includes(orderType)) rate = durabilityDecay.cook;
-                else if (orderType === 'MINE') rate = durabilityDecay.mine;
-                else if (orderType === 'SMELT') rate = durabilityDecay.smelt;
-                totalDecay += overlapSec * rate;
-            }
-
-            if (totalDecay <= 0) return { ...eq, durability_updated_at: new Date(now).toISOString() };
-
-            return {
-                ...eq,
-                durability: Math.max(0, eq.durability - totalDecay),
-                durability_updated_at: new Date(now).toISOString(),
-            };
-        });
-
-        set({ equipment: updated });
     },
 
     setActionMessage: (message) => set({ actionMessage: message }),
