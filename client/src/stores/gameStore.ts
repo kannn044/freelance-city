@@ -167,6 +167,11 @@ export interface FerrumMiningConfig {
         deep: number;
         core: number;
     };
+    effectiveLayerTimeMins?: {
+        surface: number;
+        deep: number;
+        core: number;
+    };
     dropRates: {
         surface: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
         deep: { ironOre: number; copperOre: number; steelOre: number; stone: number; coal: number; gem: number };
