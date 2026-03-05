@@ -63,7 +63,7 @@ export interface EquipmentSlotState {
 
 export interface WorkOrder {
     id: number;
-    type: 'FARM' | 'COOK';
+    type: 'FARM' | 'COOK' | 'MINE' | 'SMELT' | 'EXTRACT' | 'REFINE' | 'GATHER' | 'SEW' | 'FORAGE' | 'BREW';
     item_id: number;
     recipe_id: number | null;
     quantity: number;

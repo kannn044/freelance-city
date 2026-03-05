@@ -5,7 +5,7 @@ type DbClient = Prisma.TransactionClient | typeof prisma;
 const MINING_PERMIT_NAME = "Ferrum Mining Permit";
 
 type JobSlot = "first_job" | "secondary_job";
-type WorkType = "FARM" | "COOK" | "MINE" | "SMELT";
+type WorkType = "FARM" | "COOK" | "MINE" | "SMELT" | "EXTRACT" | "REFINE" | "GATHER" | "SEW" | "FORAGE" | "BREW";
 
 type WorkspaceRuleRow = {
     id: number;

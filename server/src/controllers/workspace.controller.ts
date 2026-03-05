@@ -1138,12 +1138,12 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
-            const firstJobType = isVoltara ? "EXTRACT" : "FARM";
+            const firstJobType: WorkType = isVoltara ? "EXTRACT" : "FARM";
 
             const activeFarmOrders = await prisma.workOrder.findMany({
                 where: {
                     user_id: req.userId!,
-                    type: firstJobType as any,
+                    type: firstJobType,
                     collected: false,
                 },
                 orderBy: { started_at: "asc" },
@@ -1544,7 +1544,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const startsAt = new Date(startMs);
             const completesAt = new Date(startMs + durationMs);
 
-            const workType: WorkType = cityWkMap[cityProfile.city_key] ?? "COOK";
+            const workType: WorkType = cookWorkType;
 
             const order = await prisma.workOrder.create({
                 data: {
@@ -1801,7 +1801,53 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
                 }
             }
 
+            // Before deleting, check if this FARM-type order was in a complete plot
+            // so we can revert the 10% time bonus on the remaining 8 orders.
+            // Query by the same type as the cancelled order (FARM for Agaria, EXTRACT for Voltara)
+            // to match how activeFarmOrders is scoped when the bonus is applied.
+            const FIRST_JOB_FARM_TYPES = ["FARM", "EXTRACT", "GATHER", "FORAGE"];
+            let plotBonusRevertOrders: Array<{ id: number; completes_at: Date }> = [];
+            if (FIRST_JOB_FARM_TYPES.includes(order.type)) {
+                const allSameSeedOrders = await tx.workOrder.findMany({
+                    where: {
+                        user_id: req.userId!,
+                        type: order.type as any,
+                        item_id: order.item_id,
+                        collected: false,
+                    },
+                    orderBy: [{ started_at: "asc" }, { id: "asc" }],
+                });
+
+                const totalCount = allSameSeedOrders.length;
+                const cancelledIndex = allSameSeedOrders.findIndex((o) => o.id === order.id);
+                if (cancelledIndex !== -1) {
+                    const plotGroup = Math.floor(cancelledIndex / 9); // 0-based
+                    const totalCompletePlots = Math.floor(totalCount / 9);
+                    // Only revert if the cancelled order was inside a complete plot
+                    if (plotGroup < totalCompletePlots) {
+                        const plotStart = plotGroup * 9;
+                        const plotOrders = allSameSeedOrders.slice(plotStart, plotStart + 9);
+                        const remainingPlotOrders = plotOrders.filter((o) => o.id !== order.id);
+                        const cancelNow = Date.now();
+                        plotBonusRevertOrders = remainingPlotOrders.map((o) => {
+                            const remainingMs = Math.max(0, new Date(o.completes_at).getTime() - cancelNow);
+                            // Undo the 10% reduction: original = reduced / 0.9
+                            const revertedMs = Math.floor(remainingMs / 0.9);
+                            return { id: o.id, completes_at: new Date(cancelNow + revertedMs) };
+                        });
+                    }
+                }
+            }
+
             await tx.workOrder.delete({ where: { id: order.id } });
+
+            // Revert the plot bonus for remaining orders in the same complete plot
+            for (const revert of plotBonusRevertOrders) {
+                await tx.workOrder.update({
+                    where: { id: revert.id },
+                    data: { completes_at: revert.completes_at },
+                });
+            }
 
             if (isSecondaryJobWorkType(order.type)) {
                 await rescheduleSecondaryJobQueueAfterCancel(req.userId!, tx);

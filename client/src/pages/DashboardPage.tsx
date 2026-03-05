@@ -29,6 +29,10 @@ import iconInventoryPng from '../assets/items/ui/icon_inventory.png';
 import HungerBar from '../components/HungerBar';
 import InventoryGrid from '../components/InventoryGrid';
 import WorkspacePanel from '../components/WorkspacePanel';
+import AgrariaActiveOrders from '../components/active-orders/AgrariaActiveOrders';
+import FerrumActiveOrders from '../components/active-orders/FerrumActiveOrders';
+import MedicoActiveOrders from '../components/active-orders/MedicoActiveOrders';
+import VoltaraActiveOrders from '../components/active-orders/VoltaraActiveOrders';
 import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
@@ -1009,7 +1013,11 @@ const DashboardPage = () => {
                             >
                                 <img src={iconActiveOrdersPng} alt="Active Orders" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.active_orders')}
                             </h2>
-                            <ActiveOrdersGrid />
+                            {user?.city_key === 'AGRARIA' ? <AgrariaActiveOrders /> :
+                             user?.city_key === 'FERRUM' ? <FerrumActiveOrders /> :
+                             user?.city_key === 'MEDICO' ? <MedicoActiveOrders /> :
+                             user?.city_key === 'VOLTARA' ? <VoltaraActiveOrders /> :
+                             <ActiveOrdersGrid />}
                         </motion.section>
                     </div>
 

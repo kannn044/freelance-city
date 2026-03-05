@@ -15,6 +15,10 @@ import {
 } from '../../lib/activeOrdersUtils';
 
 const ORDERS_COLUMN_HEIGHT = '20rem';
+const CIRCUIT_PLOT_SIZE = 154;
+const CENTER_R = 19;
+const NODE_R = 13;
+const RING_RADIUS = 54;
 
 const VoltaraActiveOrders = () => {
     const { t } = useTranslation();
@@ -59,7 +63,7 @@ const VoltaraActiveOrders = () => {
         return getRemainingMs(o.completes_at, orderNow) <= 0;
     }).length;
 
-    // Group EXTRACT tasks dynamically by seed item
+    // Group EXTRACT tasks dynamically by item name
     const extractGroups = Array.from(new Set(firstJobOrders.map(o => o.item.name))).map(itemName => {
         const orders = firstJobOrders.filter(o => o.item.name === itemName);
         return {
@@ -70,10 +74,10 @@ const VoltaraActiveOrders = () => {
     });
 
     const getExtractGroupColor = (name: string) => {
-        if (name.includes('Crude Oil')) return { border: 'rgba(245,158,11,0.4)', bg: 'rgba(245,158,11,0.1)', glow: '#f59e0b' };
-        if (name.includes('Natural Gas')) return { border: 'rgba(56,189,248,0.4)', bg: 'rgba(56,189,248,0.1)', glow: '#38bdf8' };
-        if (name.includes('Crystal')) return { border: 'rgba(192,132,252,0.4)', bg: 'rgba(192,132,252,0.1)', glow: '#c084fc' };
-        return { border: 'rgba(16,185,129,0.4)', bg: 'rgba(16,185,129,0.1)', glow: '#10b981' };
+        if (name.includes('Crude Oil')) return { border: 'rgba(245,158,11,0.4)', bg: 'rgba(245,158,11,0.1)', glow: '#f59e0b', trackColor: 'rgba(245,158,11,0.25)' };
+        if (name.includes('Natural Gas')) return { border: 'rgba(56,189,248,0.4)', bg: 'rgba(56,189,248,0.1)', glow: '#38bdf8', trackColor: 'rgba(56,189,248,0.25)' };
+        if (name.includes('Crystal')) return { border: 'rgba(192,132,252,0.4)', bg: 'rgba(192,132,252,0.1)', glow: '#c084fc', trackColor: 'rgba(192,132,252,0.25)' };
+        return { border: 'rgba(16,185,129,0.4)', bg: 'rgba(16,185,129,0.1)', glow: '#10b981', trackColor: 'rgba(16,185,129,0.25)' };
     };
 
     const renderCancelConfirmModal = () => {
@@ -97,73 +101,245 @@ const VoltaraActiveOrders = () => {
         );
     };
 
-    const renderExtractNode = (order: WorkOrder, colors: any) => {
+    // Renders a single circular node slot in the radial circuit plot
+    const renderCircuitNode = (
+        order: WorkOrder | null,
+        slotIndex: number,
+        isCenter: boolean,
+        posX: number,
+        posY: number,
+        colors: ReturnType<typeof getExtractGroupColor>
+    ) => {
+        const diameter = isCenter ? CENTER_R * 2 : NODE_R * 2;
+        const half = diameter / 2;
+
+        if (!order) {
+            return (
+                <div
+                    key={`empty-${slotIndex}`}
+                    style={{
+                        position: 'absolute',
+                        left: posX - half,
+                        top: posY - half,
+                        width: diameter,
+                        height: diameter,
+                        borderRadius: '50%',
+                        border: `1px dashed ${colors.trackColor}`,
+                        background: 'rgba(2,6,23,0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: isCenter ? '0.65rem' : '0.5rem',
+                        color: 'rgba(255,255,255,0.2)',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    {isCenter ? '○' : '·'}
+                </div>
+            );
+        }
+
         const orderNow = getOrderNowMs(order, effectiveNowMs);
         const progress = getProgress(order, orderNow);
         const ready = progress >= 100;
         const pausedByRequirement = Boolean(order.paused_at) && !ready;
         const pausedByKcal = hunger <= 0 && !ready;
 
-        let statusText = `${Math.floor(progress)}%`;
-        if (ready) statusText = t('active_orders.ready');
-        else if (pausedByRequirement) statusText = t('active_orders.paused_gear');
-        else if (pausedByKcal) statusText = t('active_orders.paused_kcal');
+        const circumference = 2 * Math.PI * (half - 2);
+        const dashOffset = circumference * (1 - progress / 100);
 
         return (
             <motion.div
-                key={order.id}
+                key={`node-${order.id}`}
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
+                onClick={() => { if (ready) collectWork(order.id); }}
+                style={{
+                    position: 'absolute',
+                    left: posX - half,
+                    top: posY - half,
+                    width: diameter,
+                    height: diameter,
+                    borderRadius: '50%',
+                    background: ready
+                        ? `radial-gradient(circle, ${colors.bg}, rgba(2,6,23,0.7))`
+                        : 'rgba(2,6,23,0.7)',
+                    border: `1.5px solid ${ready ? colors.glow : colors.trackColor}`,
+                    boxShadow: ready ? `0 0 14px ${colors.glow}, inset 0 0 8px ${colors.bg}` : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: ready ? 'pointer' : 'default',
+                    boxSizing: 'border-box',
+                    zIndex: 2,
+                }}
+                title={ready ? `${order.item.name} — ${t('active_orders.ready')}` : `${order.item.name} — ${pausedByRequirement ? t('active_orders.paused_gear') : pausedByKcal ? t('active_orders.paused_kcal') : `${Math.floor(progress)}%`}`}
+            >
+                {/* SVG arc progress ring */}
+                <svg
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '50%' }}
+                    viewBox={`0 0 ${diameter} ${diameter}`}
+                >
+                    <circle
+                        cx={half}
+                        cy={half}
+                        r={half - 2}
+                        fill="none"
+                        stroke={colors.trackColor}
+                        strokeWidth="1.5"
+                    />
+                    {!ready && (
+                        <circle
+                            cx={half}
+                            cy={half}
+                            r={half - 2}
+                            fill="none"
+                            stroke={colors.glow}
+                            strokeWidth="1.5"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={dashOffset}
+                            strokeLinecap="round"
+                            transform={`rotate(-90 ${half} ${half})`}
+                            style={{ transition: 'stroke-dashoffset 1s linear' }}
+                        />
+                    )}
+                </svg>
+
+                {/* Item icon or ready indicator */}
+                {isCenter ? (
+                    <div style={{ zIndex: 1 }}>{renderItemIcon(order.item, 16)}</div>
+                ) : ready ? (
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.glow, boxShadow: `0 0 6px ${colors.glow}`, zIndex: 1 }} />
+                ) : (
+                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: colors.trackColor, zIndex: 1 }} />
+                )}
+
+                {/* Cancel button on non-ready nodes */}
+                {!ready && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc', { item: order.item.name }) });
+                        }}
+                        style={{
+                            position: 'absolute',
+                            top: '-3px',
+                            right: '-3px',
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            border: '1px solid rgba(248,113,113,0.6)',
+                            background: 'rgba(220,38,38,0.5)',
+                            color: '#fecaca',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            padding: 0,
+                            zIndex: 3,
+                        }}
+                    >
+                        <X style={{ width: '5px', height: '5px' }} />
+                    </button>
+                )}
+            </motion.div>
+        );
+    };
+
+    // Renders a full radial circuit plot for one extraction group
+    const renderCircuitPlot = (group: { itemName: string; itemIcon: any; orders: WorkOrder[] }) => {
+        const colors = getExtractGroupColor(group.itemName);
+        const slots = Array.from({ length: 9 }, (_, i) => group.orders[i] ?? null);
+        const centerSlot = slots[0];
+        const ringSlots = slots.slice(1); // 8 ring nodes
+
+        const cx = CIRCUIT_PLOT_SIZE / 2;
+        const cy = CIRCUIT_PLOT_SIZE / 2;
+        const ringAngles = [90, 45, 0, 315, 270, 225, 180, 135]; // clockwise from top
+        const ringPositions = ringAngles.map(deg => {
+            const rad = (deg * Math.PI) / 180;
+            return { x: cx + RING_RADIUS * Math.cos(rad), y: cy - RING_RADIUS * Math.sin(rad) };
+        });
+
+        const filledCount = slots.filter(Boolean).length;
+        const readyInGroup = slots.filter(s => {
+            if (!s) return false;
+            const now = getOrderNowMs(s, effectiveNowMs);
+            return getRemainingMs(s.completes_at, now) <= 0;
+        }).length;
+        const soonestOrder = slots.filter((s): s is WorkOrder => s !== null && getRemainingMs(s.completes_at, getOrderNowMs(s, effectiveNowMs)) > 0)
+            .sort((a, b) => getRemainingMs(a.completes_at, getOrderNowMs(a, effectiveNowMs)) - getRemainingMs(b.completes_at, getOrderNowMs(b, effectiveNowMs)))[0] ?? null;
+
+        return (
+            <div
+                key={`circuit-plot-${group.itemName}`}
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
+                    alignItems: 'center',
                     gap: '0.35rem',
-                    padding: '0.45rem',
-                    borderRadius: '0.4rem',
-                    background: 'rgba(2,6,23,0.4)',
-                    border: `1px solid ${ready ? colors.glow : 'rgba(255,255,255,0.08)'}`,
-                    boxShadow: ready ? `0 0 12px ${colors.bg}` : 'none',
-                    position: 'relative',
+                    border: `1px solid ${colors.border}`,
+                    background: `linear-gradient(180deg, ${colors.bg}, rgba(2,6,23,0.06))`,
+                    borderRadius: '0.75rem',
+                    padding: '0.5rem 0.45rem 0.45rem',
                 }}
             >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.62rem', color: ready ? colors.glow : 'rgba(255,255,255,0.6)', fontWeight: 700, fontFamily: 'monospace' }}>
-                        NODE_{order.id.toString().slice(-4)}
+                {/* Group header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingBottom: '0.2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        {renderItemIcon(group.itemIcon, 13)}
+                        <span style={{ fontSize: '0.62rem', fontWeight: 800, color: colors.glow, fontFamily: 'monospace', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                            {group.itemName}_CIRCUIT
+                        </span>
                     </div>
-                    {!ready ? (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc', { item: order.item.name }) });
-                            }}
-                            style={{ background: 'transparent', border: 'none', color: '#fca5a5', cursor: 'pointer', padding: 0 }}
-                        >
-                            <X style={{ width: '0.6rem', height: '0.6rem' }} />
-                        </button>
-                    ) : (
-                        <div style={{ width: '0.6rem', height: '0.6rem', background: colors.glow, borderRadius: '50%', boxShadow: `0 0 8px ${colors.glow}` }} />
+                    <span style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.55)', fontFamily: 'monospace' }}>
+                        {filledCount}/9{readyInGroup > 0 ? ` · ${readyInGroup}★` : ''}
+                    </span>
+                </div>
+
+                {/* Radial circle plot */}
+                <div style={{ position: 'relative', width: CIRCUIT_PLOT_SIZE, height: CIRCUIT_PLOT_SIZE, flexShrink: 0 }}>
+                    {/* SVG orbit track + spoke lines */}
+                    <svg
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                        viewBox={`0 0 ${CIRCUIT_PLOT_SIZE} ${CIRCUIT_PLOT_SIZE}`}
+                    >
+                        {/* Outer orbit ring */}
+                        <circle cx={cx} cy={cy} r={RING_RADIUS} fill="none" stroke={colors.trackColor} strokeWidth="0.8" strokeDasharray="3 4" />
+                        {/* Spoke lines from center to each ring position */}
+                        {ringPositions.map((pos, i) => (
+                            <line
+                                key={`spoke-${i}`}
+                                x1={cx}
+                                y1={cy}
+                                x2={pos.x}
+                                y2={pos.y}
+                                stroke={colors.trackColor}
+                                strokeWidth="0.6"
+                                strokeDasharray="2 3"
+                            />
+                        ))}
+                    </svg>
+
+                    {/* Center node */}
+                    {renderCircuitNode(centerSlot, 0, true, cx, cy, colors)}
+
+                    {/* Ring nodes */}
+                    {ringSlots.map((order, i) =>
+                        renderCircuitNode(order, i + 1, false, ringPositions[i].x, ringPositions[i].y, colors)
                     )}
                 </div>
 
-                <div style={{ height: '0.3rem', background: 'rgba(255,255,255,0.1)', borderRadius: '0.15rem', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${progress}%`, background: ready ? colors.glow : `linear-gradient(90deg, ${colors.bg}, ${colors.glow})`, transition: 'width 1s linear' }} />
+                {/* Status footer */}
+                <div style={{ fontSize: '0.55rem', color: soonestOrder ? colors.glow : 'rgba(255,255,255,0.35)', fontFamily: 'monospace', textAlign: 'center' }}>
+                    {soonestOrder
+                        ? `NEXT: ${formatTimeLeft(soonestOrder.completes_at, t, getOrderNowMs(soonestOrder, effectiveNowMs))}`
+                        : readyInGroup > 0
+                            ? `${readyInGroup} NODE${readyInGroup > 1 ? 'S' : ''} READY`
+                            : 'NO_ACTIVE_NODES'}
                 </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.58rem', color: 'rgba(255,255,255,0.5)', fontFamily: 'monospace' }}>
-                        {statusText}
-                    </div>
-                    {ready && (
-                        <button
-                            onClick={() => collectWork(order.id)}
-                            style={{ background: colors.bg, border: `1px solid ${colors.glow}`, color: colors.glow, fontSize: '0.55rem', fontWeight: 700, padding: '0.15rem 0.35rem', borderRadius: '0.2rem', cursor: 'pointer', textTransform: 'uppercase' }}
-                        >
-                            {t('active_orders.collect')}
-                        </button>
-                    )}
-                </div>
-            </motion.div>
+            </div>
         );
     };
 
@@ -262,30 +438,15 @@ const VoltaraActiveOrders = () => {
                     {showFirstJobColumn && (
                         <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '0.8rem', background: 'rgba(16,185,129,0.02)', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(16,185,129,0.18)', color: '#10b981', fontSize: '0.8rem', fontWeight: 700 }}>
-                                <Cpu style={{ width: '0.9rem', height: '0.9rem' }} /> EXTACTION_ARRAY // {firstJobLabel}
+                                <Cpu style={{ width: '0.9rem', height: '0.9rem' }} /> CIRCUIT_PLOTS // {firstJobLabel}
                             </div>
                             <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', overflowY: 'auto', overflowX: 'hidden' }}>
                                 {extractGroups.length === 0 ? (
                                     <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '2rem 0', fontFamily: 'monospace' }}>
-                                        NO_ACTIVE_EXTRACTIONS
+                                        NO_ACTIVE_CIRCUITS
                                     </p>
                                 ) : (
-                                    extractGroups.map(group => {
-                                        const colors = getExtractGroupColor(group.itemName);
-                                        return (
-                                            <div key={`extract-group-${group.itemName}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', border: `1px solid ${colors.border}`, background: colors.bg, borderRadius: '0.6rem', padding: '0.5rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', borderBottom: `1px solid ${colors.border}`, paddingBottom: '0.3rem' }}>
-                                                    {renderItemIcon(group.itemIcon, 14)}
-                                                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: colors.glow, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-                                                        {group.itemName.toUpperCase()}_RIG
-                                                    </span>
-                                                </div>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.4rem' }}>
-                                                    {group.orders.map(o => renderExtractNode(o, colors))}
-                                                </div>
-                                            </div>
-                                        );
-                                    })
+                                    extractGroups.map(group => renderCircuitPlot(group))
                                 )}
                             </div>
                         </div>
