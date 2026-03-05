@@ -217,19 +217,19 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     enabled: true,
     // Run approximately every 15 seconds.
     tickMs: 15_000,
-    // 30% chance to execute buy behavior each tick.
-    buyChancePerTick: 0.3,
+    // 80% chance to execute buy behavior each tick.
+    buyChancePerTick: 0.8,
     // At most 2 listings handled per tick.
     maxListingsPerTick: 2,
     // At most 5 units purchased from one listing per tick.
     maxQtyPerListing: 5,
-    // Bot ignores listings priced above 350% of reference unit price.
-    maxUnitPriceRatio: 3.50,
+    // Bot ignores listings priced above 500% of reference unit price.
+    maxUnitPriceRatio: 5.00,
     // Avoid instant bot buy right after user lists an item.
-    minListingAgeMs: 60_000,
-    // 65% chance to create simulated player sell listings each tick.
+    minListingAgeMs: 10_000,
+    // 100% chance to create simulated player sell listings each tick.
     sellChancePerTick: 1.0,
-    // At most 60 new bot listings per refresh cycle.
+    // At most 200 new bot listings per refresh cycle.
     maxSellListingsPerTick: 200,
     // Cap active simulated sellers per item.
     maxSellersPerItem: 10,
@@ -242,7 +242,7 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     // Requested market simulation items (RAW, INGREDIENT, MEAL).
     sellItemNames: [
         // RAW
-        "Chicken Meat", "Beef Meat", "Vegetable", "Iron Ore", "Copper Ore", "Steel Ore", "Stone", "Gem", "Gas",
+        "Chicken Meat", "Beef Meat", "Vegetable", "Iron Ore", "Copper Ore", "Steel Ore", "Gem", "Gas",
         // INGREDIENT
         "Salt", "Coal", "Flux", "Oil", "Iron Ingot", "Copper Ingot", "Steel Ingot",
         // MEAL
