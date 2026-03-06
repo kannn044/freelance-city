@@ -55,6 +55,12 @@ export const DURABILITY_DECAY_PER_SEC = {
     COOK: 0.15,
     MINE: 0.1,
     SMELT: 0.15,
+    EXTRACT: 0.1,
+    REFINE: 0.15,
+    GATHER: 0.1,
+    SEW: 0.15,
+    FORAGE: 0.1,
+    BREW: 0.15,
 } as const;
 
 /** Alias for client-side fallback usage */
@@ -65,6 +71,12 @@ export type DurabilityDecayConfig = {
     cook: number;
     mine: number;
     smelt: number;
+    extract: number;
+    refine: number;
+    gather: number;
+    sew: number;
+    forage: number;
+    brew: number;
 };
 
 // ─── Level Thresholds ───────────────────────────────────

@@ -153,6 +153,8 @@ const AgrariaActiveOrders = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.45rem',
+                    overflow: 'hidden',
+                    minWidth: 0,
                 }}
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
@@ -226,6 +228,8 @@ const AgrariaActiveOrders = () => {
                             fontSize: '0.68rem',
                             fontWeight: 600,
                             cursor: 'pointer',
+                            width: '100%',
+                            boxSizing: 'border-box',
                         }}
                     >
                         {t('active_orders.collect')}
@@ -246,6 +250,8 @@ const AgrariaActiveOrders = () => {
                             fontSize: '0.66rem',
                             fontWeight: 700,
                             cursor: 'pointer',
+                            width: '100%',
+                            boxSizing: 'border-box',
                         }}
                     >
                         {t('active_orders.cancel')}
@@ -258,7 +264,8 @@ const AgrariaActiveOrders = () => {
     const renderFirstJobPlotCell = (
         order: WorkOrder | null,
         index: number,
-        palette: { accent: string; border: string; bg: string }
+        palette: { accent: string; border: string; bg: string },
+        isFullPlot: boolean = false
     ) => {
         if (!order) {
             return (
@@ -318,7 +325,7 @@ const AgrariaActiveOrders = () => {
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc', { item: order.item.name }) });
+                            setCancelConfirm({ orderId: order.id, message: isFullPlot ? t('active_orders.cancel_confirm_desc_full_plot', { item: order.item.name }) : t('active_orders.cancel_confirm_desc', { item: order.item.name }) });
                         }}
                         title={t('active_orders.cancel')}
                         style={{
@@ -550,7 +557,7 @@ const AgrariaActiveOrders = () => {
                                                         accent: seedType.accent,
                                                         border: seedType.border,
                                                         bg: seedType.bg,
-                                                    })
+                                                    }, seedType.full)
                                                 )}
                                             </div>
 

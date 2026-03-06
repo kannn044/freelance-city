@@ -33,10 +33,12 @@ import AgrariaActiveOrders from '../components/active-orders/AgrariaActiveOrders
 import FerrumActiveOrders from '../components/active-orders/FerrumActiveOrders';
 import MedicoActiveOrders from '../components/active-orders/MedicoActiveOrders';
 import VoltaraActiveOrders from '../components/active-orders/VoltaraActiveOrders';
+import TextilisActiveOrders from '../components/active-orders/TextilisActiveOrders';
 import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 type SkillBranchKey = string;
 
@@ -582,6 +584,7 @@ const DashboardPage = () => {
 
                     {/* Right side */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.7rem' : '1.15rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <LanguageSwitcher compact={isMobile} />
                         <motion.button
                             whileHover={{ scale: 1.04 }}
                             whileTap={{ scale: 0.96 }}
@@ -1017,6 +1020,7 @@ const DashboardPage = () => {
                              user?.city_key === 'FERRUM' ? <FerrumActiveOrders /> :
                              user?.city_key === 'MEDICO' ? <MedicoActiveOrders /> :
                              user?.city_key === 'VOLTARA' ? <VoltaraActiveOrders /> :
+                             user?.city_key === 'TEXTILIS' ? <TextilisActiveOrders /> :
                              <ActiveOrdersGrid />}
                         </motion.section>
                     </div>

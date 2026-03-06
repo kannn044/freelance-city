@@ -38,6 +38,8 @@ const MarketplacePage = () => {
         inventory,
         salesHistory,
         shopItems,
+        shopUserCityKey,
+        shopBrowsingCityKey,
         recipeShop,
         fetchMarket,
         fetchInventory,
@@ -55,6 +57,7 @@ const MarketplacePage = () => {
     const [typeFilter, setTypeFilter] = useState<ItemTypeFilter>('ALL');
     const [rarityFilter, setRarityFilter] = useState<RarityFilter>('ALL');
     const [cityFilter, setCityFilter] = useState('ALL');
+    const [npcShopCityFilter, setNpcShopCityFilter] = useState('');
     const [minPriceInput, setMinPriceInput] = useState('');
     const [maxPriceInput, setMaxPriceInput] = useState('');
     const [showAffordableOnly, setShowAffordableOnly] = useState(false);
@@ -86,9 +89,9 @@ const MarketplacePage = () => {
         void Promise.all([fetchMarket(), fetchInventory(), fetchSalesHistory()]);
     };
 
-    const refreshNpcShopNow = () => {
+    const refreshNpcShopNow = (city?: string) => {
         setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-        void Promise.all([fetchShop(), fetchRecipeShop(), fetchInventory()]);
+        void Promise.all([fetchShop(city), fetchRecipeShop(), fetchInventory()]);
     };
 
     const refreshNow = () => {
@@ -96,14 +99,14 @@ const MarketplacePage = () => {
             refreshMarketNow();
             return;
         }
-        refreshNpcShopNow();
+        refreshNpcShopNow(npcShopCityFilter || undefined);
     };
 
     useEffect(() => {
         if (activeTab === 'MARKET') {
             refreshMarketNow();
         } else {
-            refreshNpcShopNow();
+            refreshNpcShopNow(npcShopCityFilter || undefined);
         }
 
         const interval = setInterval(() => {
@@ -111,11 +114,12 @@ const MarketplacePage = () => {
                 refreshMarketNow();
                 return;
             }
-            refreshNpcShopNow();
+            refreshNpcShopNow(npcShopCityFilter || undefined);
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [activeTab, fetchInventory, fetchMarket, fetchRecipeShop, fetchSalesHistory, fetchShop]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, npcShopCityFilter, fetchInventory, fetchMarket, fetchRecipeShop, fetchSalesHistory, fetchShop]);
 
     const ownListings = useMemo(
         () => marketListings.filter((l) => l.seller_id === user?.id).sort((a, b) => b.id - a.id),
@@ -846,12 +850,51 @@ const MarketplacePage = () => {
                             </div>
                         </div>
 
+                        {/* City selector */}
+                        <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                            {[
+                                { key: '', label: t('marketplace.my_city') },
+                                { key: 'AGRARIA', label: 'Agraria' },
+                                { key: 'FERRUM', label: 'Ferrum' },
+                                { key: 'VOLTARA', label: 'Voltara' },
+                                { key: 'TEXTILIS', label: 'Textilis' },
+                                { key: 'MEDICO', label: 'Medico' },
+                            ].map(({ key, label }) => {
+                                const isActive = npcShopCityFilter === key;
+                                return (
+                                    <button
+                                        key={key}
+                                        type="button"
+                                        onClick={() => setNpcShopCityFilter(key)}
+                                        style={{
+                                            borderRadius: '0.5rem',
+                                            border: `1px solid ${isActive ? 'rgba(99,102,241,0.7)' : 'rgba(148,163,184,0.2)'}`,
+                                            background: isActive ? 'rgba(99,102,241,0.28)' : 'rgba(30,41,59,0.4)',
+                                            color: isActive ? '#dbeafe' : 'rgba(226,232,240,0.7)',
+                                            fontSize: '0.73rem',
+                                            fontWeight: isActive ? 700 : 400,
+                                            padding: '0.3rem 0.65rem',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                            {shopBrowsingCityKey && shopUserCityKey && shopBrowsingCityKey !== shopUserCityKey && (
+                                <span style={{ fontSize: '0.7rem', color: '#fbbf24', marginLeft: '0.25rem' }}>
+                                    ⚠ {t('marketplace.browse_only')}
+                                </span>
+                            )}
+                        </div>
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                             {shopItems.map((item) => {
                                 const unitPrice = Math.max(0, Number(item.buy_price ?? 0));
                                 const qty = Math.max(1, Math.floor(shopBuyQty[item.id] ?? 1));
                                 const total = unitPrice * qty;
-                                const canBuy = unitPrice > 0 && !!user && user.money >= total;
+                                const isSameCity = !shopBrowsingCityKey || !shopUserCityKey || shopBrowsingCityKey === shopUserCityKey;
+                                const canBuy = unitPrice > 0 && !!user && user.money >= total && isSameCity;
 
                                 return (
                                     <div

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Mail, Lock, ArrowRight, Gamepad2, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const LoginPage = () => {
     const { t } = useTranslation();
@@ -49,6 +50,10 @@ const LoginPage = () => {
 
     return (
         <div className="min-h-screen bg-grid flex items-center justify-center p-6 relative overflow-hidden">
+            {/* Language Switcher */}
+            <div style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', zIndex: 20 }}>
+                <LanguageSwitcher />
+            </div>
             {/* Animated background orbs */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div

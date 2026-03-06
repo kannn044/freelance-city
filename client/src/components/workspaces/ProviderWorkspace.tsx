@@ -7,9 +7,11 @@ import { useState } from 'react';
 import { RequirementModal, type RequirementModalState } from './RequirementModal';
 import type { WorkspaceActionResult } from '../../stores/gameStore';
 
+const PLOT_SIZE = 9;
+
 const ProviderWorkspace = () => {
     const { t } = useTranslation();
-    const { inventory, startFarm } = useGameStore();
+    const { inventory, startFarm, workOrders } = useGameStore();
 
     const [requirementModal, setRequirementModal] = useState<RequirementModalState>({
         open: false,
@@ -57,31 +59,45 @@ const ProviderWorkspace = () => {
                     {t('workspace.no_seeds')}
                 </p>
             ) : (
-                seedSlots.map((slot) => (
-                    <motion.button
-                        key={slot.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => slot.item && handleStartFarm(slot.item.id)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '0.55rem 0.6rem',
-                            borderRadius: '0.5rem',
-                            border: '1px solid rgba(255,255,255,0.12)',
-                            background: 'rgba(255,255,255,0.03)',
-                            color: 'rgba(255,255,255,0.9)',
-                            fontSize: '0.75rem',
-                            fontWeight: 500,
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                            {renderItemIcon(slot.item, 15)} {slot.item?.name} (x{slot.quantity})
-                        </span>
-                    </motion.button>
-                ))
+                seedSlots.map((slot) => {
+                    const filledSlots = slot.item ? workOrders.filter((o) => o.type === 'FARM' && o.item_id === slot.item!.id && !o.collected).length : 0;
+                    const plotFill = filledSlots % PLOT_SIZE;
+                    const plotFillDisplay = filledSlots === 0 ? 0 : plotFill === 0 ? PLOT_SIZE : plotFill;
+                    const isPlotFull = plotFillDisplay === PLOT_SIZE;
+                    return (
+                        <motion.button
+                            key={slot.id}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => slot.item && handleStartFarm(slot.item.id)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '0.55rem 0.6rem',
+                                borderRadius: '0.5rem',
+                                border: `1px solid ${isPlotFull ? 'rgba(134,239,172,0.5)' : 'rgba(255,255,255,0.12)'}`,
+                                background: isPlotFull ? 'rgba(134,239,172,0.07)' : 'rgba(255,255,255,0.03)',
+                                color: 'rgba(255,255,255,0.9)',
+                                fontSize: '0.75rem',
+                                fontWeight: 500,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                                {renderItemIcon(slot.item, 15)} {slot.item?.name} (x{slot.quantity})
+                            </span>
+                            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.15rem' }}>
+                                <span style={{ fontSize: '0.65rem', color: 'rgba(134,239,172,0.7)', fontWeight: 600 }}>
+                                    {t('workspace.farm', { defaultValue: 'Farm' })}
+                                </span>
+                                <span style={{ fontSize: '0.58rem', color: isPlotFull ? '#86efac' : 'rgba(255,255,255,0.35)', fontWeight: isPlotFull ? 700 : 400 }}>
+                                    {plotFillDisplay}/{PLOT_SIZE} {isPlotFull ? '⚡ -10%' : ''}
+                                </span>
+                            </span>
+                        </motion.button>
+                    );
+                })
             )}
 
             <RequirementModal modalState={requirementModal} setModalState={setRequirementModal} />

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, CheckCircle, Leaf, FlaskConical, X } from 'lucide-react';
+import { Clock, CheckCircle, Leaf, Scissors, X } from 'lucide-react';
 import { useGameStore } from '../../stores/gameStore';
 import type { WorkOrder } from '../../stores/gameStore';
 import { renderItemIcon } from '../../lib/itemVisual';
@@ -16,7 +16,7 @@ import {
 
 const ORDERS_COLUMN_HEIGHT = '20rem';
 
-const MedicoActiveOrders = () => {
+const TextilisActiveOrders = () => {
     const { t } = useTranslation();
     const { workOrders, collectWork, collectReadyWork, cancelWork, hunger } = useGameStore();
     const user = useAuthStore((s: any) => s.user);
@@ -26,8 +26,8 @@ const MedicoActiveOrders = () => {
 
     const showFirstJobColumn = (user?.first_job_level ?? 0) > 0;
     const showSecondaryJobColumn = (user?.secondary_job_level ?? 0) > 0;
-    const firstJobLabel = user?.city?.occupation_labels?.first_job ?? 'Gatherer';
-    const secondaryJobLabel = user?.city?.occupation_labels?.secondary_job ?? 'Alchemist';
+    const firstJobLabel = user?.city?.occupation_labels?.first_job ?? 'Weaver';
+    const secondaryJobLabel = user?.city?.occupation_labels?.secondary_job ?? 'Tailor';
 
     useEffect(() => {
         const interval = setInterval(() => setTick((t) => t + 1), 1000);
@@ -47,11 +47,11 @@ const MedicoActiveOrders = () => {
     const effectiveNowMs = pausedNowRef.current ?? Date.now();
 
     const firstJobOrders = workOrders
-        .filter((o) => o.type === 'FORAGE' || o.type === 'FARM')
+        .filter((o) => o.type === 'GATHER' || o.type === 'FARM')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
     const secondaryJobOrders = workOrders
-        .filter((o) => o.type === 'BREW' || o.type === 'COOK')
+        .filter((o) => o.type === 'SEW' || o.type === 'COOK')
         .sort((a, b) => new Date(a.started_at).getTime() - new Date(b.started_at).getTime());
 
     const readyCount = workOrders.filter((o) => {
@@ -59,8 +59,7 @@ const MedicoActiveOrders = () => {
         return getRemainingMs(o.completes_at, orderNow) <= 0;
     }).length;
 
-    // Group FORAGE tasks by seed type
-    const forageGroups = Array.from(new Set(firstJobOrders.map(o => o.item.name))).map(itemName => {
+    const gatherGroups = Array.from(new Set(firstJobOrders.map(o => o.item.name))).map(itemName => {
         const orders = firstJobOrders.filter(o => o.item.name === itemName);
         return {
             itemName,
@@ -69,11 +68,10 @@ const MedicoActiveOrders = () => {
         };
     });
 
-    const getForageGroupStyle = (name: string) => {
-        if (name.includes('Herb')) return { border: 'rgba(74,222,128,0.4)', bg: 'rgba(74,222,128,0.08)', glow: '#4ade80', emoji: '🌿' };
-        if (name.includes('Mushroom')) return { border: 'rgba(192,132,252,0.4)', bg: 'rgba(192,132,252,0.08)', glow: '#c084fc', emoji: '🍄' };
-        if (name.includes('Mineral')) return { border: 'rgba(56,189,248,0.4)', bg: 'rgba(56,189,248,0.08)', glow: '#38bdf8', emoji: '🧪' };
-        return { border: 'rgba(74,222,128,0.4)', bg: 'rgba(74,222,128,0.08)', glow: '#4ade80', emoji: '🌱' };
+    const getGatherGroupStyle = (name: string) => {
+        if (name.toLowerCase().includes('cotton')) return { border: 'rgba(74,222,128,0.4)', bg: 'rgba(74,222,128,0.08)', glow: '#4ade80', emoji: '🌾' };
+        if (name.toLowerCase().includes('wool') || name.toLowerCase().includes('sheep')) return { border: 'rgba(167,139,250,0.4)', bg: 'rgba(167,139,250,0.08)', glow: '#a78bfa', emoji: '🧶' };
+        return { border: 'rgba(167,139,250,0.35)', bg: 'rgba(167,139,250,0.07)', glow: '#c084fc', emoji: '🌿' };
     };
 
     const renderCancelConfirmModal = () => {
@@ -96,7 +94,7 @@ const MedicoActiveOrders = () => {
         );
     };
 
-    const renderForageNode = (order: WorkOrder, style: { glow: string; bg: string }, isFullPlot: boolean = false) => {
+    const renderGatherNode = (order: WorkOrder, style: { glow: string; bg: string }, isFullPlot: boolean = false) => {
         const orderNow = getOrderNowMs(order, effectiveNowMs);
         const progress = getProgress(order, orderNow);
         const ready = progress >= 100;
@@ -104,7 +102,7 @@ const MedicoActiveOrders = () => {
         const pausedByKcal = hunger <= 0 && !ready;
 
         let statusText = formatTimeLeft(order.completes_at, t, orderNow);
-        if (ready) statusText = t('active_orders.ready');
+        if (ready) statusText = '';
         else if (pausedByRequirement) statusText = t('active_orders.paused_gear');
         else if (pausedByKcal) statusText = t('active_orders.paused_kcal');
 
@@ -118,7 +116,7 @@ const MedicoActiveOrders = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.3rem',
-                    padding: '0.4rem',
+                    padding: '0.2rem',
                     borderRadius: '0.45rem',
                     background: ready ? `${style.bg}` : 'rgba(2,6,23,0.35)',
                     border: `1px solid ${ready ? style.glow : 'rgba(255,255,255,0.06)'}`,
@@ -130,7 +128,7 @@ const MedicoActiveOrders = () => {
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        {renderItemIcon(order.item, 14)}
+                        {renderItemIcon(order.item, 20)}
                         <span style={{ fontSize: '0.58rem', color: ready ? style.glow : 'rgba(255,255,255,0.55)', fontWeight: 600 }}>
                             x{order.quantity}
                         </span>
@@ -159,19 +157,35 @@ const MedicoActiveOrders = () => {
                         {statusText}
                     </span>
                     {ready && (
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.96 }}
                             onClick={() => collectWork(order.id)}
-                            style={{ background: style.bg, border: `1px solid ${style.glow}`, color: style.glow, fontSize: '0.52rem', fontWeight: 700, padding: '0.12rem 0.3rem', borderRadius: '0.2rem', cursor: 'pointer' }}
+                            title={t('active_orders.collect')}
+                            style={{
+                                background: 'transparent',
+                                border: `1px solid ${style.glow}`,
+                                color: style.glow,
+                                padding: '0.1rem',
+                                borderRadius: '0.18rem',
+                                cursor: 'pointer',
+                                boxShadow: `0 0 8px ${style.glow}22`,
+                                transition: 'box-shadow 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: 1,
+                            }}
                         >
-                            {t('active_orders.collect')}
-                        </button>
+                            <CheckCircle style={{ width: '2.2rem', height: '0.8rem' }} />
+                        </motion.button>
                     )}
                 </div>
             </motion.div>
         );
     };
 
-    const renderBrewTask = (order: WorkOrder) => {
+    const renderSewTask = (order: WorkOrder) => {
         const orderNow = getOrderNowMs(order, effectiveNowMs);
         const progress = getProgress(order, orderNow);
         const ready = progress >= 100;
@@ -180,7 +194,7 @@ const MedicoActiveOrders = () => {
         const pausedByKcal = hunger <= 0 && !ready;
         const timeLabel = ready ? t('active_orders.ready') : queued ? t('active_orders.queued') : pausedByRequirement ? t('active_orders.paused_gear') : pausedByKcal ? t('active_orders.paused_kcal') : formatTimeLeft(order.completes_at, t, orderNow);
 
-        const glowColor = '#a78bfa'; // Purple for Alchemist
+        const glowColor = '#a78bfa';
 
         return (
             <motion.div
@@ -194,9 +208,9 @@ const MedicoActiveOrders = () => {
                     gap: '0.5rem',
                     padding: '0.6rem',
                     borderRadius: '0.55rem',
-                    background: ready ? 'rgba(167,139,250,0.08)' : 'rgba(15,23,42,0.55)',
-                    border: `1px solid ${ready ? glowColor : 'rgba(167,139,250,0.18)'}`,
-                    boxShadow: ready ? '0 0 14px rgba(167,139,250,0.15)' : 'none',
+                    background: ready ? 'rgba(167,139,250,0.06)' : 'rgba(15,23,42,0.55)',
+                    border: `1px solid ${ready ? 'rgba(167,139,250,0.5)' : 'rgba(167,139,250,0.18)'}`,
+                    boxShadow: ready ? '0 0 20px rgba(167,139,250,0.08), inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
                     position: 'relative'
                 }}
             >
@@ -221,16 +235,36 @@ const MedicoActiveOrders = () => {
                         <div style={{
                             height: '100%',
                             width: `${progress}%`,
-                            background: ready ? glowColor : `linear-gradient(90deg, rgba(167,139,250,0.2), ${glowColor})`,
+                            background: ready ? `linear-gradient(90deg, rgba(167,139,250,0.6), ${glowColor})` : `linear-gradient(90deg, rgba(167,139,250,0.2), ${glowColor})`,
                             transition: 'width 1s linear',
                             borderRadius: '0.1rem',
                         }} />
                     </div>
 
                     {ready ? (
-                        <button onClick={() => collectWork(order.id)} style={{ alignSelf: 'flex-start', background: 'rgba(167,139,250,0.12)', border: `1px solid ${glowColor}`, color: glowColor, padding: '0.18rem 0.45rem', borderRadius: '0.25rem', fontSize: '0.58rem', fontWeight: 700, cursor: 'pointer', marginTop: '0.05rem' }}>
+                        <motion.button
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => collectWork(order.id)}
+                            style={{
+                                alignSelf: 'flex-start',
+                                background: 'transparent',
+                                border: `1px solid rgba(167,139,250,0.6)`,
+                                color: glowColor,
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: '0.22rem',
+                                fontSize: '0.55rem',
+                                fontWeight: 600,
+                                letterSpacing: '0.07em',
+                                textTransform: 'uppercase',
+                                cursor: 'pointer',
+                                marginTop: '0.05rem',
+                                boxShadow: '0 0 10px rgba(167,139,250,0.15)',
+                                transition: 'box-shadow 0.2s ease',
+                            }}
+                        >
                             {t('active_orders.collect')}
-                        </button>
+                        </motion.button>
                     ) : (
                         <button onClick={() => setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc', { item: order.item.name }) })} style={{ position: 'absolute', right: '0.4rem', bottom: '0.35rem', background: 'transparent', border: 'none', color: 'rgba(248,113,113,0.65)', fontSize: '0.52rem', textDecoration: 'underline', cursor: 'pointer' }}>
                             {t('active_orders.cancel')}
@@ -247,18 +281,22 @@ const MedicoActiveOrders = () => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <motion.button
                         whileHover={{ scale: readyCount > 0 ? 1.02 : 1 }}
-                        whileTap={{ scale: readyCount > 0 ? 0.98 : 1 }}
+                        whileTap={{ scale: readyCount > 0 ? 0.97 : 1 }}
                         onClick={() => collectReadyWork()}
                         disabled={readyCount === 0}
                         style={{
-                            padding: '0.4rem 0.7rem',
-                            borderRadius: '0.45rem',
-                            border: '1px solid rgba(74,222,128,0.35)',
-                            background: readyCount > 0 ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.04)',
-                            color: readyCount > 0 ? '#4ade80' : 'rgba(255,255,255,0.45)',
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
+                            padding: '0.4rem 0.85rem',
+                            borderRadius: '0.38rem',
+                            border: readyCount > 0 ? '1px solid rgba(167,139,250,0.55)' : '1px solid rgba(255,255,255,0.08)',
+                            background: 'transparent',
+                            color: readyCount > 0 ? '#a78bfa' : 'rgba(255,255,255,0.25)',
+                            fontSize: '0.65rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
                             cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
+                            boxShadow: readyCount > 0 ? '0 0 16px rgba(167,139,250,0.12)' : 'none',
+                            transition: 'all 0.2s ease',
                         }}
                     >
                         {t('active_orders.collect_all_ready', { count: readyCount })}
@@ -268,20 +306,20 @@ const MedicoActiveOrders = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: showFirstJobColumn && showSecondaryJobColumn ? 'repeat(2, minmax(260px, 1fr))' : 'minmax(260px, 1fr)', gap: '0.9rem' }}>
 
                     {showFirstJobColumn && (
-                        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(74,222,128,0.03), rgba(15,23,42,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(74,222,128,0.18)', color: '#4ade80', fontSize: '0.8rem', fontWeight: 700 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(167,139,250,0.03), rgba(15,23,42,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(167,139,250,0.18)', color: '#a78bfa', fontSize: '0.8rem', fontWeight: 700 }}>
                                 <Leaf style={{ width: '0.9rem', height: '0.9rem' }} /> {firstJobLabel}
                             </div>
                             <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.65rem', overflowY: 'auto', overflowX: 'hidden' }}>
-                                {forageGroups.length === 0 ? (
+                                {gatherGroups.length === 0 ? (
                                     <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '2rem 0' }}>
-                                        {t('active_orders.no_first_job_orders', { defaultValue: 'No active foraging' })}
+                                        {t('active_orders.no_first_job_orders', { defaultValue: 'No active gathering' })}
                                     </p>
                                 ) : (
-                                    forageGroups.map(group => {
-                                        const style = getForageGroupStyle(group.itemName);
+                                    gatherGroups.map(group => {
+                                        const style = getGatherGroupStyle(group.itemName);
                                         return (
-                                            <div key={`forage-group-${group.itemName}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', border: `1px solid ${style.border}`, background: style.bg, borderRadius: '0.6rem', padding: '0.5rem' }}>
+                                            <div key={`gather-group-${group.itemName}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', border: `1px solid ${style.border}`, background: style.bg, borderRadius: '0.6rem', padding: '0.5rem' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', borderBottom: `1px solid ${style.border}`, paddingBottom: '0.3rem' }}>
                                                     <span style={{ fontSize: '0.78rem' }}>{style.emoji}</span>
                                                     <span style={{ fontSize: '0.66rem', fontWeight: 800, color: style.glow }}>
@@ -291,8 +329,8 @@ const MedicoActiveOrders = () => {
                                                         {group.orders.length} active
                                                     </span>
                                                 </div>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(105px, 1fr))', gap: '0.35rem' }}>
-                                                    {group.orders.map((o, orderIndex) => renderForageNode(o, style, orderIndex < Math.floor(group.orders.length / 9) * 9))}
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.35rem' }}>
+                                                    {group.orders.map((o, orderIndex) => renderGatherNode(o, style, orderIndex < Math.floor(group.orders.length / 6) * 6))}
                                                 </div>
                                             </div>
                                         );
@@ -305,16 +343,16 @@ const MedicoActiveOrders = () => {
                     {showSecondaryJobColumn && (
                         <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(167,139,250,0.03), rgba(15,23,42,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(167,139,250,0.18)', color: '#a78bfa', fontSize: '0.8rem', fontWeight: 700 }}>
-                                <FlaskConical style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobLabel}
+                                <Scissors style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobLabel}
                             </div>
                             <div style={{ flex: 1, minHeight: 0, padding: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem', overflowY: 'auto', overflowX: 'hidden' }}>
                                 <AnimatePresence>
                                     {secondaryJobOrders.length === 0 ? (
                                         <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: '2rem 0' }}>
-                                            {t('active_orders.no_secondary_orders', { defaultValue: 'No active brews' })}
+                                            {t('active_orders.no_secondary_orders', { defaultValue: 'No active sewing' })}
                                         </p>
                                     ) : (
-                                        secondaryJobOrders.map((order: WorkOrder) => renderBrewTask(order))
+                                        secondaryJobOrders.map((order: WorkOrder) => renderSewTask(order))
                                     )}
                                 </AnimatePresence>
                             </div>
@@ -333,4 +371,4 @@ const MedicoActiveOrders = () => {
     );
 };
 
-export default MedicoActiveOrders;
+export default TextilisActiveOrders;

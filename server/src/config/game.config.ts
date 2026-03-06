@@ -243,8 +243,10 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     sellItemNames: [
         // RAW
         "Chicken Meat", "Beef Meat", "Vegetable", "Iron Ore", "Copper Ore", "Steel Ore", "Gem", "Gas",
+        "Raw Cotton", "Sheep Wool",
         // INGREDIENT
         "Salt", "Coal", "Flux", "Oil", "Iron Ingot", "Copper Ingot", "Steel Ingot",
+        "Cotton Thread", "Wool Thread",
         // MEAL
         "Chicken Salad", "Beef Steak", "Beef Stew", "Chicken Stew"
     ],

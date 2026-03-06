@@ -375,11 +375,12 @@ async function getAllowedRecipeCatalogForUser(
     );
 }
 
+const VALID_CITY_KEYS = ["AGRARIA", "FERRUM", "VOLTARA", "TEXTILIS", "MEDICO"] as const;
+
 /**
  * GET /game/shop — List items available for purchase from NPC shop
- * Filtered by user's unlocked occupations:
- *   Provider (first_job_level >= 1) → SEED items
- *   Chef (secondary_job_level >= 1) → INGREDIENT items
+ * Supports optional ?city=AGRARIA query param to browse another city's shop.
+ * Buying is only allowed from the user's own city.
  */
 export const getShop = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -393,8 +394,14 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
             return;
         }
 
-        const cityKey = normalizeCityKey(city.city_key);
-        const items = await getAllowedShopItemsForUser(cityKey, {
+        const userCityKey = normalizeCityKey(city.city_key);
+        // Allow browsing another city's shop via ?city= query param
+        const queriedCity = String(req.query.city ?? "").trim().toUpperCase();
+        const browsingCityKey = (VALID_CITY_KEYS as readonly string[]).includes(queriedCity)
+            ? queriedCity
+            : userCityKey;
+
+        const items = await getAllowedShopItemsForUser(browsingCityKey, {
             first_job_level: Number(user.first_job_level ?? 0),
             secondary_job_level: Number(user.secondary_job_level ?? 0),
         });
@@ -404,7 +411,7 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
             buy_price: getEffectiveNpcBuyPrice(item.buy_price, pricing.npcShopMultiplier),
         }));
 
-        res.json({ items: pricedItems });
+        res.json({ items: pricedItems, userCityKey, browsingCityKey });
     } catch (error) {
         console.error("getShop error:", error);
         res.status(500).json({ error: "Failed to fetch shop" });

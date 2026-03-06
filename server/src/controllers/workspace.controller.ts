@@ -20,7 +20,7 @@ import { getFerrumMiningConfig, getGameExpConfig, getGameHarvestRarityConfig, ge
 import { getUserCityProfile } from "../services/city.service";
 import { reconcileWorkspaceOrderPausesForUser, validateWorkspaceRequirements } from "../services/workspaceRules.service";
 import { toJobPayload } from "../lib/userPayload";
-import { syncDurability } from "../services/durability.service";
+import { syncDurability, getBrokenEquipmentSlots } from "../services/durability.service";
 
 interface AuthRequest extends Request {
     userId?: number;
@@ -217,7 +217,7 @@ function applyTierReduction(baseHunger: number, tierReduction: number) {
     return HUNGER_TIERS[reducedIdx];
 }
 
-const TIERED_HARVEST_ITEM_NAMES = new Set(["Vegetable", "Chicken Meat", "Beef Meat", "Medicinal Herb", "Luminous Mushroom", "Chemical Ore"]);
+const TIERED_HARVEST_ITEM_NAMES = new Set(["Vegetable", "Chicken Meat", "Beef Meat", "Medicinal Herb", "Luminous Mushroom", "Chemical Ore", "Raw Cotton", "Sheep Wool"]);
 
 function isTieredHarvestItem(item: { type: string; name: string }) {
     return item.type === "RAW" && TIERED_HARVEST_ITEM_NAMES.has(item.name);
@@ -687,23 +687,32 @@ async function awardOrderExp(
                 `;
                 const cityKey = cityRows[0]?.city_key ?? null;
 
-                if (cityKey === "FERRUM") {
+                const SECONDARY_JOB_STARTER_RECIPES: Record<string, string[]> = {
+                    FERRUM: ["Iron Ingot Smelt", "Copper Ingot Smelt", "Steel Ingot Smelt", "Extract stone"],
+                    TEXTILIS: ["Sew Fiber Hood", "Sew Cargo Shorts", "Sew Wool Mittens"],
+                    MEDICO: ["Healing Potion", "Growth Elixir"],
+                };
+
+                const starterRecipeNames = SECONDARY_JOB_STARTER_RECIPES[cityKey ?? ""] ?? [];
+                if (starterRecipeNames.length > 0 || cityKey === "AGRARIA" || cityKey === "VOLTARA") {
                     await db.$executeRaw`
                         UPDATE users
                         SET secondary_job_level = 1
                         WHERE id = ${userId}
                     `;
 
-                    const smeltRecipes = await db.recipe.findMany({
-                        where: { name: { in: ["Iron Ingot Smelt", "Copper Ingot Smelt", "Steel Ingot Smelt", "Extract stone"] } },
-                        select: { id: true },
-                    });
-                    for (const r of smeltRecipes) {
-                        await db.userRecipeUnlock.upsert({
-                            where: { user_id_recipe_id: { user_id: userId, recipe_id: r.id } },
-                            update: {},
-                            create: { user_id: userId, recipe_id: r.id },
+                    if (starterRecipeNames.length > 0) {
+                        const starterRecipes = await db.recipe.findMany({
+                            where: { name: { in: starterRecipeNames } },
+                            select: { id: true },
                         });
+                        for (const r of starterRecipes) {
+                            await db.userRecipeUnlock.upsert({
+                                where: { user_id_recipe_id: { user_id: userId, recipe_id: r.id } },
+                                update: {},
+                                create: { user_id: userId, recipe_id: r.id },
+                            });
+                        }
                     }
 
                     secondaryJobUnlocked = true;
@@ -886,7 +895,7 @@ async function rescheduleSecondaryJobQueueAfterCancel(userId: number, db: DbClie
     const remaining = await db.workOrder.findMany({
         where: {
             user_id: userId,
-            type: { in: ["COOK", "SMELT"] },
+            type: { in: ["COOK", "SMELT", "REFINE", "SEW", "BREW"] },
             collected: false,
         },
         orderBy: [{ started_at: "asc" }, { id: "asc" }],
@@ -975,6 +984,9 @@ export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<vo
         await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+        // NOTE: syncDurability is intentionally NOT called here.
+        // Durability display is computed client-side in real-time (tickDurability).
+        // Server syncs are done only on checkpoints: collect, equip/unequip, repair.
 
         const orders = await prisma.workOrder.findMany({
             where: { user_id: req.userId!, collected: false },
@@ -1010,11 +1022,24 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
         const isFerrum = cityProfile.city_key === "FERRUM";
         const isVoltara = cityProfile.city_key === "VOLTARA";
+        const isTextilis = cityProfile.city_key === "TEXTILIS";
+        const isMedico = cityProfile.city_key === "MEDICO";
         const taskTimeConfig = await getGameTaskTimeConfig();
         const ferrumMining = await getFerrumMiningConfig();
         const ferrumCatalog = await ensureFerrumCatalog(prisma);
 
         const equipmentEffects = await getUserEquipmentEffects(req.userId!);
+
+        // Block task start if any equipped item has 0 durability (broken)
+        const brokenSlots = await getBrokenEquipmentSlots(req.userId!);
+        if (brokenSlots.length > 0) {
+            const names = brokenSlots.map((s) => s.item_name ?? s.slot).join(", ");
+            res.status(400).json({
+                error: `Your equipment is broken and must be repaired before working: ${names}`,
+                code: "EQUIPMENT_BROKEN",
+            });
+            return;
+        }
 
         if (type === "FARM" || type === "EXTRACT" || type === "GATHER" || type === "FORAGE") {
             if (isFerrum) {
@@ -1117,12 +1142,15 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
+            const firstJobWorkType: WorkType = isVoltara ? "EXTRACT" : isTextilis ? "GATHER" : isMedico ? "FORAGE" : "FARM";
+            const firstJobWorkspaceMode: string | null = isFerrum ? "MINE" : isVoltara ? "EXTRACT" : isTextilis ? "GATHER" : isMedico ? "FORAGE" : null;
+
             const farmWorkspaceRequirement = await validateWorkspaceRequirements({
                 userId: req.userId!,
                 cityKey: cityProfile.city_key,
                 jobSlot: "first_job",
-                workType: isVoltara ? "EXTRACT" : "FARM",
-                workspaceMode: isFerrum ? "MINE" : isVoltara ? "EXTRACT" : null,
+                workType: firstJobWorkType,
+                workspaceMode: firstJobWorkspaceMode,
                 itemId: Number(itemId),
             });
 
@@ -1138,7 +1166,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 return;
             }
 
-            const firstJobType: WorkType = isVoltara ? "EXTRACT" : "FARM";
+            const firstJobType: WorkType = firstJobWorkType;
 
             const activeFarmOrders = await prisma.workOrder.findMany({
                 where: {
@@ -1173,10 +1201,11 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const branchSkillLevel = Number(firstJobBranchLevels.branch1 ?? 0);
 
             // Plot limit is controlled by game.config helper.
-            // Each plot holds 9 tasks.
+            // Textilis uses 6 tasks per plot (2x3); other cities use 9 (3x3).
+            const plotSize = isTextilis ? 6 : 9;
             const branchOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
             const maxPlots = getFirstJobSkillPlotCount(branchSkillLevel);
-            const maxOrders = maxPlots * 9;
+            const maxOrders = maxPlots * plotSize;
             if (branchOrders.length >= maxOrders) {
                 res.status(400).json({
                     error: `Plot limit reached for ${slot.item.name}. Max ${maxPlots} plot(s) (${maxOrders} tasks).`,
@@ -1223,19 +1252,19 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
             let message = `Started farming ${slot.item.name}. Ready in ${Math.ceil(growMins)} minutes.`;
 
-            // 3x3 full-plot bonus per seed type:
-            // when same-seed active orders reach a multiple of 9,
-            // apply bonus to the newest 9 orders of that seed plot
+            // Full-plot bonus per seed type:
+            // Textilis: 6 tasks per plot, others: 9 tasks per plot.
+            // When a plot is full, apply bonus to all orders in that plot.
             const sameSeedFarmOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
-            if ((sameSeedFarmOrders.length + 1) % 9 === 0) {
+            if ((sameSeedFarmOrders.length + 1) % plotSize === 0) {
                 const now = Date.now();
                 const allOrders = [...sameSeedFarmOrders, order];
-                const plotOrders = allOrders.slice(-9);
+                const plotOrders = allOrders.slice(-plotSize);
                 const remainingMsList = plotOrders.map((o) => Math.max(0, new Date(o.completes_at).getTime() - now));
                 const avgRemainingMs = remainingMsList.reduce((sum, ms) => sum + ms, 0) / remainingMsList.length;
                 const reducedAvgMs = Math.max(1000, Math.floor(avgRemainingMs * 0.9));
                 const bonusCompletesAt = new Date(now + reducedAvgMs);
-                const plotIndex = Math.ceil((sameSeedFarmOrders.length + 1) / 9);
+                const plotIndex = Math.ceil((sameSeedFarmOrders.length + 1) / plotSize);
 
                 await prisma.workOrder.updateMany({
                     where: { id: { in: plotOrders.map((o) => o.id) } },
@@ -1247,7 +1276,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     include: { item: true },
                 }) as typeof order;
 
-                message = `Started farming ${slot.item.name}. Plot ${plotIndex} (9/9) full bonus activated: timers averaged and reduced by 10% (ready in ~${Math.ceil(reducedAvgMs / 60000)} minutes).`;
+                message = `Started farming ${slot.item.name}. Plot ${plotIndex} (${plotSize}/${plotSize}) full bonus activated: timers averaged and reduced by 10% (ready in ~${Math.ceil(reducedAvgMs / 60000)} minutes).`;
             }
 
             res.json({
@@ -1299,7 +1328,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             }
 
             // Validate workspace equipment requirements (e.g. Hammer for SMELT, Spatula for COOK)
-            const cityWkMap: Record<string, WorkType> = { FERRUM: "SMELT", VOLTARA: "REFINE" };
+            const cityWkMap: Record<string, WorkType> = { FERRUM: "SMELT", VOLTARA: "REFINE", TEXTILIS: "SEW", MEDICO: "BREW" };
             const cookWorkType: WorkType = cityWkMap[cityProfile.city_key ?? ""] ?? "COOK";
             const cookWorkspaceRequirement = await validateWorkspaceRequirements({
                 userId: req.userId!,
@@ -1821,12 +1850,14 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
                 const totalCount = allSameSeedOrders.length;
                 const cancelledIndex = allSameSeedOrders.findIndex((o) => o.id === order.id);
                 if (cancelledIndex !== -1) {
-                    const plotGroup = Math.floor(cancelledIndex / 9); // 0-based
-                    const totalCompletePlots = Math.floor(totalCount / 9);
+                    // Plot size is 6 for Textilis (GATHER type), 9 for all other cities
+                    const cancelPlotSize = order.type === "GATHER" ? 6 : 9;
+                    const plotGroup = Math.floor(cancelledIndex / cancelPlotSize); // 0-based
+                    const totalCompletePlots = Math.floor(totalCount / cancelPlotSize);
                     // Only revert if the cancelled order was inside a complete plot
                     if (plotGroup < totalCompletePlots) {
-                        const plotStart = plotGroup * 9;
-                        const plotOrders = allSameSeedOrders.slice(plotStart, plotStart + 9);
+                        const plotStart = plotGroup * cancelPlotSize;
+                        const plotOrders = allSameSeedOrders.slice(plotStart, plotStart + cancelPlotSize);
                         const remainingPlotOrders = plotOrders.filter((o) => o.id !== order.id);
                         const cancelNow = Date.now();
                         plotBonusRevertOrders = remainingPlotOrders.map((o) => {

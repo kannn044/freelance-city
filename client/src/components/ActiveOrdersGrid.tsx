@@ -189,6 +189,8 @@ const ActiveOrdersGrid = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.45rem',
+                    overflow: 'hidden',
+                    minWidth: 0,
                 }}
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
@@ -262,6 +264,8 @@ const ActiveOrdersGrid = () => {
                             fontSize: '0.68rem',
                             fontWeight: 600,
                             cursor: 'pointer',
+                            width: '100%',
+                            boxSizing: 'border-box',
                         }}
                     >
                         {t('active_orders.collect')}
@@ -282,6 +286,8 @@ const ActiveOrdersGrid = () => {
                             fontSize: '0.66rem',
                             fontWeight: 700,
                             cursor: 'pointer',
+                            width: '100%',
+                            boxSizing: 'border-box',
                         }}
                     >
                         {t('active_orders.cancel')}

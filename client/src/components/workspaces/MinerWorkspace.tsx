@@ -7,9 +7,11 @@ import { useState } from 'react';
 import { RequirementModal, type RequirementModalState } from './RequirementModal';
 import type { WorkspaceActionResult } from '../../stores/gameStore';
 
+const PLOT_SIZE = 6;
+
 const MinerWorkspace = () => {
     const { t } = useTranslation();
-    const { startMine, ferrumMiningConfig } = useGameStore();
+    const { startMine, ferrumMiningConfig, workOrders } = useGameStore();
     const user = useAuthStore((s) => s.user);
     const firstJobLabel = user?.city?.occupation_labels?.first_job ?? 'First Job';
 
@@ -47,6 +49,11 @@ const MinerWorkspace = () => {
         openRequirementModalFromResult(result);
     };
 
+    const activeMineOrders = workOrders.filter((o) => o.type === 'MINE' && !o.collected).length;
+    const plotFill = activeMineOrders % PLOT_SIZE;
+    const plotFillDisplay = activeMineOrders === 0 ? 0 : plotFill === 0 ? PLOT_SIZE : plotFill;
+    const isPlotFull = plotFillDisplay === PLOT_SIZE;
+
     return (
         <>
             <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}>
@@ -64,13 +71,12 @@ const MinerWorkspace = () => {
                     onClick={() => handleStartMine(layer.key)}
                     style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-start',
+                        alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '0.6rem',
                         borderRadius: '0.5rem',
-                        border: '1px solid rgba(56,189,248,0.28)',
-                        background: 'rgba(15,23,42,0.45)',
+                        border: `1px solid ${isPlotFull ? 'rgba(56,189,248,0.55)' : 'rgba(56,189,248,0.28)'}`,
+                        background: isPlotFull ? 'rgba(56,189,248,0.1)' : 'rgba(15,23,42,0.45)',
                         color: 'rgba(255,255,255,0.9)',
                         fontSize: '0.73rem',
                         fontWeight: 600,
@@ -78,10 +84,20 @@ const MinerWorkspace = () => {
                         gap: '0.2rem',
                     }}
                 >
-                    <span>{layer.label}</span>
-                    <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)' }}>{layer.note}</span>
-                    <span style={{ fontSize: '0.62rem', color: '#67e8f9' }}>
-                        {t('workspace.mine_time_cost', { mins: layer.mins })}
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.15rem' }}>
+                        <span>{layer.label}</span>
+                        <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>{layer.note}</span>
+                        <span style={{ fontSize: '0.62rem', color: '#67e8f9', fontWeight: 400 }}>
+                            {t('workspace.mine_time_cost', { mins: layer.mins })}
+                        </span>
+                    </span>
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.15rem' }}>
+                        <span style={{ fontSize: '0.65rem', color: 'rgba(56,189,248,0.7)', fontWeight: 600 }}>
+                            {t('workspace.mine', { defaultValue: 'Mine' })}
+                        </span>
+                        <span style={{ fontSize: '0.58rem', color: isPlotFull ? '#38bdf8' : 'rgba(255,255,255,0.35)', fontWeight: isPlotFull ? 700 : 400 }}>
+                            {plotFillDisplay}/{PLOT_SIZE} {isPlotFull ? '⚡ -10%' : ''}
+                        </span>
                     </span>
                 </motion.button>
             ))}
@@ -92,3 +108,4 @@ const MinerWorkspace = () => {
 };
 
 export default MinerWorkspace;
+

@@ -68,6 +68,7 @@ interface EquipmentRow {
 }
 
 interface ActiveOrderRow {
+    id: number;
     type: string;
     started_at: Date;
     completes_at: Date;
@@ -95,9 +96,9 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
     const now = new Date();
     const nowMs = now.getTime();
 
-    // Get active (not-collected, not-paused) work orders
+    // Get active (not-collected) work orders
     const orders = await db.$queryRaw<ActiveOrderRow[]>`
-        SELECT w.type, w.started_at, w.completes_at, w.paused_at, i.name as item_name
+        SELECT w.id, w.type, w.started_at, w.completes_at, w.paused_at, i.name as item_name
         FROM work_orders w
         LEFT JOIN items i ON i.id = w.item_id
         WHERE w.user_id = ${userId}
@@ -107,8 +108,12 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
     // Load decay config
     const decayConfig = await getGameDurabilityDecayConfig();
 
+    // Track whether any equipment is broken (durability <= 0) after this sync
+    let anyBroken = false;
+
     for (const eq of equipRows) {
         if (Number(eq.durability) <= 0) {
+            anyBroken = true;
             // Already broken — just touch updated_at to avoid repeated calculation
             if (eq.durability_updated_at.getTime() < nowMs - 60_000) {
                 await db.$executeRaw`
@@ -149,6 +154,12 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
             else if (orderType === "COOK") rate = decayConfig.cook;
             else if (orderType === "MINE") rate = decayConfig.mine;
             else if (orderType === "SMELT") rate = decayConfig.smelt;
+            else if (orderType === "EXTRACT") rate = decayConfig.extract;
+            else if (orderType === "REFINE") rate = decayConfig.refine;
+            else if (orderType === "GATHER") rate = decayConfig.gather;
+            else if (orderType === "SEW") rate = decayConfig.sew;
+            else if (orderType === "FORAGE") rate = decayConfig.forage;
+            else if (orderType === "BREW") rate = decayConfig.brew;
 
             totalDecay += overlapSec * rate;
         }
@@ -165,6 +176,8 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
 
         const newDurability = Math.max(0, Number(eq.durability) - totalDecay);
 
+        if (newDurability <= 0) anyBroken = true;
+
         await db.$executeRaw`
             UPDATE user_equipments
             SET durability = ${newDurability},
@@ -172,4 +185,55 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
             WHERE id = ${eq.id}
         `;
     }
+
+    // If any equipment is broken, pause all currently-running (non-paused) work orders
+    if (anyBroken) {
+        for (const order of orders) {
+            if (order.paused_at) {
+                // Already paused — keep extending so the elapsed paused time is not counted
+                const pausedAtMs = new Date(order.paused_at).getTime();
+                const deltaMs = Math.max(0, nowMs - pausedAtMs);
+                const nextStarted = new Date(new Date(order.started_at).getTime() + deltaMs);
+                const nextCompletes = new Date(new Date(order.completes_at).getTime() + deltaMs);
+                await db.$executeRaw`
+                    UPDATE work_orders
+                    SET started_at   = ${nextStarted},
+                        completes_at = ${nextCompletes},
+                        paused_at    = ${now}
+                    WHERE id = ${order.id}
+                `;
+            } else {
+                // Running — pause it now
+                await db.$executeRaw`
+                    UPDATE work_orders
+                    SET paused_at = ${now}
+                    WHERE id = ${order.id}
+                `;
+            }
+        }
+    }
+}
+
+interface BrokenEquipmentRow {
+    slot: string;
+    item_name: string | null;
+}
+
+/**
+ * Syncs durability then returns any equipped items with durability = 0 (broken).
+ * Used to block task start when equipment is broken — all cities.
+ */
+export async function getBrokenEquipmentSlots(userId: number): Promise<BrokenEquipmentRow[]> {
+    await syncDurability(userId);
+
+    const broken = await prisma.$queryRaw<BrokenEquipmentRow[]>`
+        SELECT ue.slot, i.name as item_name
+        FROM user_equipments ue
+        LEFT JOIN items i ON i.id = ue.item_id
+        WHERE ue.user_id = ${userId}
+          AND ue.item_id IS NOT NULL
+          AND ue.durability <= 0
+    `;
+
+    return broken;
 }

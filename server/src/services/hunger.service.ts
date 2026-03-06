@@ -164,8 +164,11 @@ export async function syncHunger(userId: number): Promise<any> {
     `;
     const hasSafetyHelmet = String(headRows[0]?.item_name ?? "").toLowerCase() === "safety helmet";
 
+    const FIRST_JOB_TYPES = new Set(["FARM", "MINE", "EXTRACT", "GATHER", "FORAGE"]);
+    const SECONDARY_JOB_TYPES = new Set(["COOK", "SMELT", "REFINE", "SEW", "BREW"]);
+
     let firstJobDecayKcal = 0;
-    const farmOrders = orders.filter((o) => o.type === "FARM");
+    const farmOrders = orders.filter((o) => FIRST_JOB_TYPES.has(o.type));
 
     const farmBySeed = new Map<string, Array<{ startMs: number; endMs: number; burnMultiplier: number }>>();
     for (const o of farmOrders) {
@@ -222,7 +225,7 @@ export async function syncHunger(userId: number): Promise<any> {
     }
 
     let secondaryJobDecayKcal = 0;
-    const cookOrders = orders.filter((o) => o.type === "COOK");
+    const cookOrders = orders.filter((o) => SECONDARY_JOB_TYPES.has(o.type));
     for (const o of cookOrders) {
         const startMs = Math.max(fromMs, o.started_at.getTime());
         const endMs = Math.min(toMs, o.completes_at.getTime());

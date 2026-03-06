@@ -207,6 +207,8 @@ interface GameState {
     marketListings: MarketListing[];
     salesHistory: SaleHistoryEntry[];
     shopItems: Item[];
+    shopUserCityKey: string;
+    shopBrowsingCityKey: string;
     recipes: Recipe[];
     recipeShop: Recipe[];
     equipmentBoxInfo: EquipmentBoxInfo | null;
@@ -232,7 +234,7 @@ interface GameState {
     fetchWorkOrders: () => Promise<void>;
     fetchMarket: () => Promise<void>;
     fetchSalesHistory: () => Promise<void>;
-    fetchShop: () => Promise<void>;
+    fetchShop: (city?: string) => Promise<void>;
     fetchRecipes: () => Promise<void>;
     fetchRecipeShop: () => Promise<void>;
     fetchEquipmentBoxInfo: () => Promise<void>;
@@ -272,6 +274,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     marketListings: [],
     salesHistory: [],
     shopItems: [],
+    shopUserCityKey: '',
+    shopBrowsingCityKey: '',
     recipes: [],
     recipeShop: [],
     equipmentBoxInfo: null,
@@ -289,6 +293,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         cook: DEFAULT_DURABILITY_DECAY_PER_SEC.COOK,
         mine: DEFAULT_DURABILITY_DECAY_PER_SEC.MINE,
         smelt: DEFAULT_DURABILITY_DECAY_PER_SEC.SMELT,
+        extract: DEFAULT_DURABILITY_DECAY_PER_SEC.EXTRACT,
+        refine: DEFAULT_DURABILITY_DECAY_PER_SEC.REFINE,
+        gather: DEFAULT_DURABILITY_DECAY_PER_SEC.GATHER,
+        sew: DEFAULT_DURABILITY_DECAY_PER_SEC.SEW,
+        forage: DEFAULT_DURABILITY_DECAY_PER_SEC.FORAGE,
+        brew: DEFAULT_DURABILITY_DECAY_PER_SEC.BREW,
     },
     ferrumMiningConfig: {
         hungerCostPerExpedition: 200,
@@ -338,10 +348,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
-    fetchShop: async () => {
+    fetchShop: async (city?: string) => {
         try {
-            const { data } = await api.get('/game/shop');
-            set({ shopItems: data.items });
+            const params = city ? `?city=${encodeURIComponent(city)}` : '';
+            const { data } = await api.get(`/game/shop${params}`);
+            set({
+                shopItems: data.items,
+                shopUserCityKey: data.userCityKey ?? '',
+                shopBrowsingCityKey: data.browsingCityKey ?? '',
+            });
         } catch (err) {
             console.error('fetchShop error', err);
         }
@@ -379,6 +394,11 @@ export const useGameStore = create<GameState>((set, get) => ({
             const { data } = await api.get('/game/runtime-config');
             const farmPerPlot = Number(data?.taskDecay?.farmPerPlot);
             const cookPerMenu = Number(data?.taskDecay?.cookPerMenu);
+            const dd = data?.durabilityDecay ?? {};
+            const safeDd = (key: string, fallback: number) => {
+                const v = Number(dd[key]);
+                return Number.isFinite(v) ? v : fallback;
+            };
 
             set({
                 taskDecay: {
@@ -388,6 +408,18 @@ export const useGameStore = create<GameState>((set, get) => ({
                     cookPerMenu: Number.isFinite(cookPerMenu)
                         ? cookPerMenu
                         : DEFAULT_HUNGER_TASK_DECAY_PER_SEC.COOK_PER_MENU,
+                },
+                durabilityDecay: {
+                    farm:    safeDd('farm',    DEFAULT_DURABILITY_DECAY_PER_SEC.FARM),
+                    cook:    safeDd('cook',    DEFAULT_DURABILITY_DECAY_PER_SEC.COOK),
+                    mine:    safeDd('mine',    DEFAULT_DURABILITY_DECAY_PER_SEC.MINE),
+                    smelt:   safeDd('smelt',   DEFAULT_DURABILITY_DECAY_PER_SEC.SMELT),
+                    extract: safeDd('extract', DEFAULT_DURABILITY_DECAY_PER_SEC.EXTRACT),
+                    refine:  safeDd('refine',  DEFAULT_DURABILITY_DECAY_PER_SEC.REFINE),
+                    gather:  safeDd('gather',  DEFAULT_DURABILITY_DECAY_PER_SEC.GATHER),
+                    sew:     safeDd('sew',     DEFAULT_DURABILITY_DECAY_PER_SEC.SEW),
+                    forage:  safeDd('forage',  DEFAULT_DURABILITY_DECAY_PER_SEC.FORAGE),
+                    brew:    safeDd('brew',    DEFAULT_DURABILITY_DECAY_PER_SEC.BREW),
                 },
                 ferrumMiningConfig: data?.ferrumMining ?? get().ferrumMiningConfig,
             });
@@ -761,23 +793,30 @@ export const useGameStore = create<GameState>((set, get) => ({
         const elapsed = now - durabilityUpdatedAt;
         if (elapsed <= 0) return;
 
-        const elapsedSec = elapsed / 1000;
-
-        const activeOrders = workOrders.filter((o) => {
-            if (o.paused_at) return false;
-            if (o.collected) return false;
-            const start = new Date(o.started_at).getTime();
-            const end = new Date(o.completes_at).getTime();
-            return now >= start && now < end;
-        });
-
+        // Compute per-order decay using exact overlap between [lastTick, now] and [order.started_at, order.completes_at]
+        // This avoids over-counting when an order finishes between ticks.
         let totalDecay = 0;
-        for (const order of activeOrders) {
-            const orderType = String(order.type).toUpperCase();
-            if (orderType === 'FARM') totalDecay += elapsedSec * durabilityDecay.farm;
-            else if (orderType === 'COOK') totalDecay += elapsedSec * durabilityDecay.cook;
-            else if (orderType === 'MINE') totalDecay += elapsedSec * durabilityDecay.mine;
-            else if (orderType === 'SMELT') totalDecay += elapsedSec * durabilityDecay.smelt;
+        for (const o of workOrders) {
+            if (o.paused_at || o.collected) continue;
+            const start = new Date(o.started_at).getTime();
+            const end   = new Date(o.completes_at).getTime();
+            const overlapStart = Math.max(durabilityUpdatedAt, start);
+            const overlapEnd   = Math.min(now, end);
+            if (overlapEnd <= overlapStart) continue;
+            const overlapSec = (overlapEnd - overlapStart) / 1000;
+            const t = String(o.type).toUpperCase();
+            let rate = 0;
+            if      (t === 'FARM')    rate = durabilityDecay.farm;
+            else if (t === 'COOK')    rate = durabilityDecay.cook;
+            else if (t === 'MINE')    rate = durabilityDecay.mine;
+            else if (t === 'SMELT')   rate = durabilityDecay.smelt;
+            else if (t === 'EXTRACT') rate = durabilityDecay.extract;
+            else if (t === 'REFINE')  rate = durabilityDecay.refine;
+            else if (t === 'GATHER')  rate = durabilityDecay.gather;
+            else if (t === 'SEW')     rate = durabilityDecay.sew;
+            else if (t === 'FORAGE')  rate = durabilityDecay.forage;
+            else if (t === 'BREW')    rate = durabilityDecay.brew;
+            totalDecay += overlapSec * rate;
         }
 
         if (totalDecay <= 0) {
@@ -811,15 +850,18 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         const hasSafetyHelmet = equipment.some((eq) => eq.slot === 'HEAD' && String(eq.item_name ?? '').toLowerCase() === 'safety helmet');
 
+        const FIRST_JOB_TYPES = new Set(['FARM', 'MINE', 'EXTRACT', 'GATHER', 'FORAGE']);
+        const SECONDARY_JOB_TYPES = new Set(['COOK', 'SMELT', 'REFINE', 'SEW', 'BREW']);
+
         for (const order of activeOrders) {
-            if (order.type === 'FARM') {
+            if (FIRST_JOB_TYPES.has(order.type)) {
                 const isMiningPermit = String(order.item?.name ?? '') === 'Ferrum Mining Permit';
                 const isDeepOrCore = order.recipe_id === 2 || order.recipe_id === 3;
                 const burnMultiplier = isMiningPermit && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
                 const key = `${order.item_id}:${order.recipe_id ?? 0}:${burnMultiplier}`;
                 const prev = farmBySeed.get(key) ?? { count: 0, burnMultiplier };
                 farmBySeed.set(key, { count: prev.count + 1, burnMultiplier });
-            } else if (order.type === 'COOK') {
+            } else if (SECONDARY_JOB_TYPES.has(order.type)) {
                 activeCookMenus += 1;
             }
         }

@@ -108,7 +108,8 @@ const VoltaraActiveOrders = () => {
         isCenter: boolean,
         posX: number,
         posY: number,
-        colors: ReturnType<typeof getExtractGroupColor>
+        colors: ReturnType<typeof getExtractGroupColor>,
+        isFullPlot: boolean = false
     ) => {
         const diameter = isCenter ? CENTER_R * 2 : NODE_R * 2;
         const half = diameter / 2;
@@ -220,7 +221,7 @@ const VoltaraActiveOrders = () => {
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            setCancelConfirm({ orderId: order.id, message: t('active_orders.cancel_confirm_desc', { item: order.item.name }) });
+                            setCancelConfirm({ orderId: order.id, message: isFullPlot ? t('active_orders.cancel_confirm_desc_full_plot', { item: order.item.name }) : t('active_orders.cancel_confirm_desc', { item: order.item.name }) });
                         }}
                         style={{
                             position: 'absolute',
@@ -323,11 +324,11 @@ const VoltaraActiveOrders = () => {
                     </svg>
 
                     {/* Center node */}
-                    {renderCircuitNode(centerSlot, 0, true, cx, cy, colors)}
+                    {renderCircuitNode(centerSlot, 0, true, cx, cy, colors, group.orders.length >= 9)}
 
                     {/* Ring nodes */}
                     {ringSlots.map((order, i) =>
-                        renderCircuitNode(order, i + 1, false, ringPositions[i].x, ringPositions[i].y, colors)
+                        renderCircuitNode(order, i + 1, false, ringPositions[i].x, ringPositions[i].y, colors, group.orders.length >= 9)
                     )}
                 </div>
 

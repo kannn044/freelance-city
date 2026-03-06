@@ -28,6 +28,12 @@ export interface GameDurabilityDecayConfig {
     cook: number;
     mine: number;
     smelt: number;
+    extract: number;
+    refine: number;
+    gather: number;
+    sew: number;
+    forage: number;
+    brew: number;
 }
 
 export interface GameTaskTimeConfig {
@@ -84,6 +90,12 @@ const DEFAULT_DURABILITY_DECAY: GameDurabilityDecayConfig = {
     cook: DURABILITY_DECAY_PER_SEC.COOK,
     mine: DURABILITY_DECAY_PER_SEC.MINE,
     smelt: DURABILITY_DECAY_PER_SEC.SMELT,
+    extract: DURABILITY_DECAY_PER_SEC.EXTRACT,
+    refine: DURABILITY_DECAY_PER_SEC.REFINE,
+    gather: DURABILITY_DECAY_PER_SEC.GATHER,
+    sew: DURABILITY_DECAY_PER_SEC.SEW,
+    forage: DURABILITY_DECAY_PER_SEC.FORAGE,
+    brew: DURABILITY_DECAY_PER_SEC.BREW,
 };
 
 const DEFAULT_TASK_TIME: GameTaskTimeConfig = {
@@ -167,6 +179,30 @@ function parseDurabilityDecay(rows: Array<{ setting_key: string; setting_value: 
         if (row.setting_key === "durability_decay_smelt") {
             const n = Number(row.setting_value);
             if (Number.isFinite(n)) out.smelt = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_extract") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.extract = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_refine") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.refine = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_gather") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.gather = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_sew") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.sew = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_forage") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.forage = clamp(n, 0, 1);
+        }
+        if (row.setting_key === "durability_decay_brew") {
+            const n = Number(row.setting_value);
+            if (Number.isFinite(n)) out.brew = clamp(n, 0, 1);
         }
     }
 

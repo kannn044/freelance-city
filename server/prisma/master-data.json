@@ -631,7 +631,7 @@
       "type": "MEAL",
       "sell_price": 400,
       "kcal": 100,
-      "buff_pct": 0.20,
+      "buff_pct": 0.2,
       "buff_mins": 30,
       "max_stack": 10,
       "exp_value": 4.0,
@@ -656,6 +656,261 @@
       "exp_value": 0,
       "icon": "mortar_pestle",
       "equipment_slot": "ARM"
+    },
+    {
+      "name": "Cotton Seed",
+      "type": "SEED",
+      "buy_price": 15,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 20,
+      "grow_mins": 45,
+      "exp_value": 3,
+      "icon": "🌱",
+      "equipment_slot": null,
+      "effect_key": null,
+      "effect_value": null,
+      "effect_value2": null
+    },
+    {
+      "name": "Sheep Fleece Pouch",
+      "type": "SEED",
+      "buy_price": 20,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 20,
+      "grow_mins": 60,
+      "exp_value": 4,
+      "icon": "🐑",
+      "equipment_slot": null,
+      "effect_key": null,
+      "effect_value": null,
+      "effect_value2": null
+    },
+    {
+      "name": "Raw Cotton",
+      "type": "RAW",
+      "buy_price": null,
+      "sell_price": 8,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 30,
+      "grow_mins": null,
+      "exp_value": 2,
+      "icon": "🌾",
+      "equipment_slot": null,
+      "effect_key": null,
+      "effect_value": null,
+      "effect_value2": null
+    },
+    {
+      "name": "Sheep Wool",
+      "type": "RAW",
+      "buy_price": null,
+      "sell_price": 12,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 20,
+      "grow_mins": null,
+      "exp_value": 3,
+      "icon": "🧶",
+      "equipment_slot": null,
+      "effect_key": null,
+      "effect_value": null,
+      "effect_value2": null
+    },
+    {
+      "name": "Cotton Thread",
+      "type": "INGREDIENT",
+      "buy_price": 6,
+      "sell_price": 3,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 50,
+      "grow_mins": null,
+      "exp_value": 0,
+      "icon": "🪡",
+      "equipment_slot": null,
+      "effect_key": null,
+      "effect_value": null,
+      "effect_value2": null
+    },
+    {
+      "name": "Wool Thread",
+      "type": "INGREDIENT",
+      "buy_price": 10,
+      "sell_price": 5,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 50,
+      "grow_mins": null,
+      "exp_value": 0,
+      "icon": "🧵",
+      "equipment_slot": null,
+      "effect_key": null,
+      "effect_value": null,
+      "effect_value2": null
+    },
+    {
+      "name": "Loom",
+      "type": "EQUIPMENT",
+      "buy_price": 90,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 0,
+      "icon": "🔩",
+      "equipment_slot": "ARM",
+      "effect_key": "farm_time_reduction_pct",
+      "effect_value": 0.08,
+      "effect_value2": null
+    },
+    {
+      "name": "Sewing Kit",
+      "type": "EQUIPMENT",
+      "buy_price": 90,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 0,
+      "icon": "🧰",
+      "equipment_slot": "ARM",
+      "effect_key": "cook_time_reduction_pct",
+      "effect_value": 0.08,
+      "effect_value2": null
+    },
+    {
+      "name": "Fiber Hood",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 5,
+      "icon": "🎓",
+      "equipment_slot": "HEAD",
+      "effect_key": "max_hunger_bonus",
+      "effect_value": 400,
+      "effect_value2": null
+    },
+    {
+      "name": "Woven Vest",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 6,
+      "icon": "🦺",
+      "equipment_slot": "UPPER_BODY",
+      "effect_key": "farm_time_reduction_pct",
+      "effect_value": 0.15,
+      "effect_value2": null
+    },
+    {
+      "name": "Wool Coat",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 6,
+      "icon": "🧥",
+      "equipment_slot": "UPPER_BODY",
+      "effect_key": "hunger_decay_reduction_per_min",
+      "effect_value": 2.0,
+      "effect_value2": null
+    },
+    {
+      "name": "Cargo Shorts",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 6,
+      "icon": "👖",
+      "equipment_slot": "LOWER_BODY",
+      "effect_key": "raw_stack_bonus",
+      "effect_value": 8,
+      "effect_value2": null
+    },
+    {
+      "name": "Linen Backpack",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 6,
+      "icon": "🎒",
+      "equipment_slot": "LOWER_BODY",
+      "effect_key": "ingredient_stack_bonus",
+      "effect_value": 8,
+      "effect_value2": null
+    },
+    {
+      "name": "Wool Mittens",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 5,
+      "icon": "🧤",
+      "equipment_slot": "GLOVE",
+      "effect_key": "farm_double_yield_chance",
+      "effect_value": 0.08,
+      "effect_value2": null
+    },
+    {
+      "name": "Canvas Shoes",
+      "type": "EQUIPMENT",
+      "buy_price": null,
+      "sell_price": null,
+      "kcal": null,
+      "buff_pct": null,
+      "buff_mins": null,
+      "max_stack": 1,
+      "grow_mins": null,
+      "exp_value": 5,
+      "icon": "👟",
+      "equipment_slot": "SHOE",
+      "effect_key": "cook_time_reduction_pct",
+      "effect_value": 0.1,
+      "effect_value2": null
     }
   ],
   "yieldLinks": [
@@ -703,6 +958,16 @@
       "seedItemName": "Mineral Sample",
       "yieldItemName": "Chemical Ore",
       "yield_qty": 1
+    },
+    {
+      "seedItemName": "Cotton Seed",
+      "yieldItemName": "Raw Cotton",
+      "yield_qty": 3
+    },
+    {
+      "seedItemName": "Sheep Fleece Pouch",
+      "yieldItemName": "Sheep Wool",
+      "yield_qty": 2
     }
   ],
   "recipes": [
@@ -1271,6 +1536,125 @@
           "quantity": 1
         }
       ]
+    },
+    {
+      "name": "Sew Fiber Hood",
+      "outputItemName": "Fiber Hood",
+      "output_qty": 1,
+      "cook_mins": 25,
+      "unlock_price": 200,
+      "ingredients": [
+        {
+          "itemName": "Raw Cotton",
+          "quantity": 3
+        },
+        {
+          "itemName": "Cotton Thread",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "Sew Woven Vest",
+      "outputItemName": "Woven Vest",
+      "output_qty": 1,
+      "cook_mins": 35,
+      "unlock_price": 300,
+      "ingredients": [
+        {
+          "itemName": "Raw Cotton",
+          "quantity": 4
+        },
+        {
+          "itemName": "Cotton Thread",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "Sew Wool Coat",
+      "outputItemName": "Wool Coat",
+      "output_qty": 1,
+      "cook_mins": 40,
+      "unlock_price": 320,
+      "ingredients": [
+        {
+          "itemName": "Sheep Wool",
+          "quantity": 4
+        },
+        {
+          "itemName": "Wool Thread",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "name": "Sew Cargo Shorts",
+      "outputItemName": "Cargo Shorts",
+      "output_qty": 1,
+      "cook_mins": 30,
+      "unlock_price": 220,
+      "ingredients": [
+        {
+          "itemName": "Raw Cotton",
+          "quantity": 3
+        },
+        {
+          "itemName": "Cotton Thread",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "Sew Linen Backpack",
+      "outputItemName": "Linen Backpack",
+      "output_qty": 1,
+      "cook_mins": 35,
+      "unlock_price": 260,
+      "ingredients": [
+        {
+          "itemName": "Sheep Wool",
+          "quantity": 3
+        },
+        {
+          "itemName": "Wool Thread",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "Sew Wool Mittens",
+      "outputItemName": "Wool Mittens",
+      "output_qty": 1,
+      "cook_mins": 20,
+      "unlock_price": 180,
+      "ingredients": [
+        {
+          "itemName": "Sheep Wool",
+          "quantity": 2
+        },
+        {
+          "itemName": "Wool Thread",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "name": "Sew Canvas Shoes",
+      "outputItemName": "Canvas Shoes",
+      "output_qty": 1,
+      "cook_mins": 25,
+      "unlock_price": 200,
+      "ingredients": [
+        {
+          "itemName": "Raw Cotton",
+          "quantity": 3
+        },
+        {
+          "itemName": "Cotton Thread",
+          "quantity": 2
+        }
+      ]
     }
   ],
   "shopRules": {
@@ -1379,6 +1763,36 @@
         "cityKey": "MEDICO",
         "matcherType": "ITEM_NAME",
         "matcherValue": "Mortar & Pestle"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Cotton Seed"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Sheep Fleece Pouch"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Cotton Thread"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Wool Thread"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Loom"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Sewing Kit"
       }
     ],
     "recipeRules": [
@@ -1486,6 +1900,11 @@
         "cityKey": "MEDICO",
         "matcherType": "RECIPE_NAME",
         "matcherValue": "Mana Elixir Brew"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "RECIPE_NAME_LIKE",
+        "matcherValue": "%Sew%"
       }
     ]
   },
@@ -1561,6 +1980,24 @@
       "mustBeEquipped": true,
       "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
       "errorMessage": "Brewing in Medico requires Mortar & Pestle equipped before starting work."
+    },
+    {
+      "cityKey": "TEXTILIS",
+      "jobSlot": "first_job",
+      "workType": "GATHER",
+      "requiredItemName": "Loom",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Gathering in Textilis requires Loom equipped before starting work."
+    },
+    {
+      "cityKey": "TEXTILIS",
+      "jobSlot": "secondary_job",
+      "workType": "SEW",
+      "requiredItemName": "Sewing Kit",
+      "mustBeEquipped": true,
+      "errorCode": "REQUIRED_TOOL_NOT_EQUIPPED",
+      "errorMessage": "Sewing in Textilis requires Sewing Kit equipped before starting work."
     }
   ]
 }

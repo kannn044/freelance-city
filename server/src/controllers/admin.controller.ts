@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
     getFerrumMiningConfig,
+    getGameDurabilityDecayConfig,
     getGamePricing,
     getGameRuntimeConfig,
     getGameTaskDecayConfig,
@@ -119,10 +120,11 @@ export async function setPricingConfig(req: AuthRequest, res: Response): Promise
  */
 export async function getPublicRuntimeConfig(req: AuthRequest, res: Response): Promise<void> {
     try {
-        const [taskDecay, taskTime, ferrumMining] = await Promise.all([
+        const [taskDecay, taskTime, ferrumMining, durabilityDecay] = await Promise.all([
             getGameTaskDecayConfig(),
             getGameTaskTimeConfig(),
             getFerrumMiningConfig(),
+            getGameDurabilityDecayConfig(),
         ]);
 
         // Compute effective layer times for this user
@@ -151,6 +153,7 @@ export async function getPublicRuntimeConfig(req: AuthRequest, res: Response): P
         res.json({
             taskDecay,
             taskTime,
+            durabilityDecay,
             ferrumMining: {
                 ...ferrumMining,
                 effectiveLayerTimeMins,

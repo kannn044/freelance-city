@@ -7,6 +7,8 @@ import TechnicianWorkspace from './workspaces/TechnicianWorkspace';
 import ChefWorkspace from './workspaces/ChefWorkspace';
 import BlacksmithWorkspace from './workspaces/BlacksmithWorkspace';
 import EngineerWorkspace from './workspaces/EngineerWorkspace';
+import WeaverWorkspace from './workspaces/WeaverWorkspace';
+import TailorWorkspace from './workspaces/TailorWorkspace';
 
 const WorkspacePanel = () => {
     const { t } = useTranslation();
@@ -58,13 +60,15 @@ const WorkspacePanel = () => {
                 {doFirstJob && (
                     firstJobWorkspaceMode === 'MINE' ? <MinerWorkspace /> :
                         firstJobWorkspaceMode === 'EXTRACT' ? <TechnicianWorkspace /> :
-                            <ProviderWorkspace />
+                            firstJobWorkspaceMode === 'GATHER' ? <WeaverWorkspace /> :
+                                <ProviderWorkspace />
                 )}
 
                 {doSecondJob && (
                     secondaryJobWorkspaceMode === 'SMELT' ? <BlacksmithWorkspace /> :
                         secondaryJobWorkspaceMode === 'REFINE' ? <EngineerWorkspace /> :
-                            <ChefWorkspace />
+                            secondaryJobWorkspaceMode === 'SEW' ? <TailorWorkspace /> :
+                                <ChefWorkspace />
                 )}
             </motion.div>
         </div>
