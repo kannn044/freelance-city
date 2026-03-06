@@ -108,12 +108,8 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
     // Load decay config
     const decayConfig = await getGameDurabilityDecayConfig();
 
-    // Track whether any equipment is broken (durability <= 0) after this sync
-    let anyBroken = false;
-
     for (const eq of equipRows) {
         if (Number(eq.durability) <= 0) {
-            anyBroken = true;
             // Already broken — just touch updated_at to avoid repeated calculation
             if (eq.durability_updated_at.getTime() < nowMs - 60_000) {
                 await db.$executeRaw`
@@ -176,41 +172,12 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
 
         const newDurability = Math.max(0, Number(eq.durability) - totalDecay);
 
-        if (newDurability <= 0) anyBroken = true;
-
         await db.$executeRaw`
             UPDATE user_equipments
             SET durability = ${newDurability},
                 durability_updated_at = ${now}
             WHERE id = ${eq.id}
         `;
-    }
-
-    // If any equipment is broken, pause all currently-running (non-paused) work orders
-    if (anyBroken) {
-        for (const order of orders) {
-            if (order.paused_at) {
-                // Already paused — keep extending so the elapsed paused time is not counted
-                const pausedAtMs = new Date(order.paused_at).getTime();
-                const deltaMs = Math.max(0, nowMs - pausedAtMs);
-                const nextStarted = new Date(new Date(order.started_at).getTime() + deltaMs);
-                const nextCompletes = new Date(new Date(order.completes_at).getTime() + deltaMs);
-                await db.$executeRaw`
-                    UPDATE work_orders
-                    SET started_at   = ${nextStarted},
-                        completes_at = ${nextCompletes},
-                        paused_at    = ${now}
-                    WHERE id = ${order.id}
-                `;
-            } else {
-                // Running — pause it now
-                await db.$executeRaw`
-                    UPDATE work_orders
-                    SET paused_at = ${now}
-                    WHERE id = ${order.id}
-                `;
-            }
-        }
     }
 }
 

@@ -49,24 +49,24 @@ const ClassSelection = () => {
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
                     className="absolute w-[640px] h-[640px] rounded-full opacity-8"
-                    style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 70%)', top: '10%', left: '-10%' }}
+                    style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)', top: '10%', left: '-10%' }}
                     animate={{ scale: [1, 1.08, 1], opacity: [0.05, 0.1, 0.05] }}
                     transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                 />
                 <motion.div
                     className="absolute w-[640px] h-[640px] rounded-full opacity-8"
-                    style={{ background: 'radial-gradient(circle, #a78bfa 0%, transparent 70%)', bottom: '10%', right: '-10%' }}
+                    style={{ background: 'radial-gradient(circle, #fb923c 0%, transparent 70%)', bottom: '10%', right: '-10%' }}
                     animate={{ scale: [1, 1.08, 1], opacity: [0.05, 0.1, 0.05] }}
                     transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
                 />
             </div>
 
             <motion.div className="text-center relative z-10" style={{ marginBottom: '2.5rem' }} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                <motion.div className="inline-flex items-center rounded-full text-xs font-semibold" style={{ background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', color: '#a5b4fc', padding: '0.5rem 1.25rem', marginBottom: '1.25rem', gap: '0.5rem' }}>
+                <motion.div className="inline-flex items-center rounded-full text-xs font-semibold" style={{ background: 'rgba(245, 158, 11, 0.13)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#fbbf24', padding: '0.5rem 1.25rem', marginBottom: '1.25rem', gap: '0.5rem' }}>
                     <Sparkles className="w-3.5 h-3.5" />
                     {t('class_selection.ecosystem_scale_up')}
                 </motion.div>
-                <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #c7d2fe, #e0e7ff, #a5b4fc)', marginBottom: '1rem' }}>
+                <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #fef3c7, #fde68a, #f59e0b)', marginBottom: '1rem' }}>
                     {t('class_selection.title')}
                 </h1>
                 <p className="text-text-secondary text-lg max-w-2xl mx-auto">{t('class_selection.subtitle')}</p>
@@ -78,7 +78,7 @@ const ClassSelection = () => {
                         key={city.key}
                         type="button"
                         className="glass-card text-left"
-                        style={{ padding: '1.2rem', border: city.playable ? '1px solid rgba(99,102,241,0.45)' : '1px solid rgba(148,163,184,0.25)', opacity: city.playable ? 1 : 0.6, cursor: city.playable ? 'pointer' : 'not-allowed' }}
+                        style={{ padding: '1.2rem', border: city.playable ? '1px solid rgba(245,158,11,0.45)' : '1px solid rgba(148,163,184,0.25)', opacity: city.playable ? 1 : 0.6, cursor: city.playable ? 'pointer' : 'not-allowed' }}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: city.playable ? 1 : 0.6, y: 0 }}
                         transition={{ delay: index * 0.07 }}
@@ -106,7 +106,7 @@ const ClassSelection = () => {
                                 </div>
                             )}
                             {Array.isArray(city.occupations) && city.occupations.length > 0 && (
-                                <div className="text-xs" style={{ color: '#93c5fd' }}>
+                                <div className="text-xs" style={{ color: '#fbbf24' }}>
                                     {t('class_selection.occupations')}: {city.occupations.join(' • ')}
                                 </div>
                             )}
@@ -123,7 +123,7 @@ const ClassSelection = () => {
                         </div>
 
                         {city.playable && (
-                            <div className="mt-3 text-sm font-medium flex items-center" style={{ color: '#93c5fd', gap: '0.4rem' }}>
+                            <div className="mt-3 text-sm font-medium flex items-center" style={{ color: '#fbbf24', gap: '0.4rem' }}>
                                 {t('class_selection.enter_city')} <ArrowRight className="w-4 h-4" />
                             </div>
                         )}
@@ -136,7 +136,7 @@ const ClassSelection = () => {
                     <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                         <motion.div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCancel} />
                         <motion.div className="glass-card max-w-md w-full relative z-10 text-center" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ type: 'spring', duration: 0.5 }} style={{ padding: '2rem 1.75rem' }}>
-                            <ShieldCheck className="w-14 h-14 mx-auto" style={{ marginBottom: '1rem', color: '#93c5fd' }} />
+                            <ShieldCheck className="w-14 h-14 mx-auto" style={{ marginBottom: '1rem', color: '#fbbf24' }} />
                             <h3 className="text-2xl font-bold text-text-primary" style={{ marginBottom: '0.65rem' }}>{t('class_selection.confirm_title')}</h3>
                             <p className="text-text-secondary" style={{ marginBottom: '1.3rem' }}>
                                 {t('class_selection.confirm_desc', { name: selected.name })}

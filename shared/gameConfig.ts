@@ -51,16 +51,16 @@ export type HungerTaskDecayConfig = {
  * Values are configurable at runtime via game_settings table.
  */
 export const DURABILITY_DECAY_PER_SEC = {
-    FARM: 0.1,
-    COOK: 0.15,
-    MINE: 0.1,
-    SMELT: 0.15,
-    EXTRACT: 0.1,
-    REFINE: 0.15,
-    GATHER: 0.1,
-    SEW: 0.15,
-    FORAGE: 0.1,
-    BREW: 0.15,
+    FARM: 0.01,
+    COOK: 0.015,
+    MINE: 0.01,
+    SMELT: 0.015,
+    EXTRACT: 0.01,
+    REFINE: 0.015,
+    GATHER: 0.01,
+    SEW: 0.015,
+    FORAGE: 0.01,
+    BREW: 0.015,
 } as const;
 
 /** Alias for client-side fallback usage */

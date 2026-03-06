@@ -118,6 +118,18 @@ async function hasEquippedItem(userId: number, itemName: string, db: DbClient): 
     return Number(rows[0]?.cnt ?? 0) > 0;
 }
 
+async function hasUsableEquippedItem(userId: number, itemName: string, db: DbClient): Promise<boolean> {
+    const rows = await db.$queryRaw<Array<{ cnt: number | bigint }>>`
+        SELECT COUNT(*) as cnt
+        FROM user_equipments ue
+        INNER JOIN items i ON i.id = ue.item_id
+        WHERE ue.user_id = ${userId}
+          AND LOWER(i.name) = LOWER(${itemName})
+          AND COALESCE(ue.durability, 0) > 0
+    `;
+    return Number(rows[0]?.cnt ?? 0) > 0;
+}
+
 async function hasItemInInventory(userId: number, itemName: string, db: DbClient): Promise<boolean> {
     const rows = await db.$queryRaw<Array<{ cnt: number | bigint }>>`
         SELECT COUNT(*) as cnt
@@ -177,7 +189,11 @@ export async function validateWorkspaceRequirements(
 
         const equipped = await hasEquippedItem(ctx.userId, requiredItemName, db);
         if (mustBeEquipped) {
-            if (!equipped) {
+            const usableEquipped = equipped
+                ? await hasUsableEquippedItem(ctx.userId, requiredItemName, db)
+                : false;
+
+            if (!usableEquipped) {
                 return {
                     ok: false,
                     statusCode: 400,
@@ -214,7 +230,7 @@ export async function validateWorkspaceRequirements(
 
 type ActiveOrderRow = {
     id: number;
-    type: "FARM" | "COOK" | "MINE" | "SMELT";
+    type: WorkType;
     item_id: number;
     recipe_id: number | null;
     started_at: Date;
@@ -228,16 +244,17 @@ function resolveOrderRequirementContext(
     cityKey: string,
     row: ActiveOrderRow,
 ): { jobSlot: JobSlot; workType: WorkType; workspaceMode: string | null } {
-    const upperCity = normalizeUpper(cityKey);
+    const upperType = normalizeUpper(row.type) as WorkType;
 
-    if (row.type === "COOK") {
-        if (upperCity === "FERRUM") {
-            return { jobSlot: "secondary_job", workType: "SMELT", workspaceMode: "SMELT" };
-        }
-        return { jobSlot: "secondary_job", workType: "COOK", workspaceMode: "COOK" };
+    if (upperType === "COOK" || upperType === "SMELT" || upperType === "REFINE" || upperType === "SEW" || upperType === "BREW") {
+        return { jobSlot: "secondary_job", workType: upperType, workspaceMode: upperType };
     }
 
-    if (upperCity === "FERRUM" && normalizeUpper(row.item_name) === normalizeUpper(MINING_PERMIT_NAME)) {
+    if (upperType === "MINE" || upperType === "EXTRACT" || upperType === "GATHER" || upperType === "FORAGE") {
+        return { jobSlot: "first_job", workType: upperType, workspaceMode: upperType };
+    }
+
+    if (normalizeUpper(cityKey) === "FERRUM" && normalizeUpper(row.item_name) === normalizeUpper(MINING_PERMIT_NAME)) {
         return { jobSlot: "first_job", workType: "MINE", workspaceMode: "MINE" };
     }
 

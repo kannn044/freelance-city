@@ -983,10 +983,8 @@ export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<vo
     try {
         await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
+        await syncDurability(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
-        // NOTE: syncDurability is intentionally NOT called here.
-        // Durability display is computed client-side in real-time (tickDurability).
-        // Server syncs are done only on checkpoints: collect, equip/unequip, repair.
 
         const orders = await prisma.workOrder.findMany({
             where: { user_id: req.userId!, collected: false },
@@ -1019,6 +1017,7 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
         };
         const user = await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
+        await syncDurability(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
         const isFerrum = cityProfile.city_key === "FERRUM";
         const isVoltara = cityProfile.city_key === "VOLTARA";
@@ -1085,30 +1084,33 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const minerPrepLevel = Number(firstJobBranchLevels.branch1 ?? 0);
                 const minerTimeReduction = getSecondaryJobSkillCookTimeReduction(minerPrepLevel);
 
-
-
                 const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
                 const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.firstJobTaskTimeMultiplier;
-                const durationMs = Math.max(1000, Math.floor(growMins * 60 * 1000));
+                // Use Math.ceil to match the displayed effectiveLayerTimeMins shown in WorkspacePanel
+                const durationMs = Math.max(1000, Math.ceil(growMins) * 60 * 1000);
 
-                const pendingMiningOrders = await prisma.workOrder.findMany({
+                const MINING_PLOT_SIZE = 3;
+
+                // All mining tasks run concurrently — fetch only orders for this specific layer
+                const sameLayerOrders = await prisma.workOrder.findMany({
                     where: {
                         user_id: req.userId!,
-                        type: { in: ["FARM", "MINE", "EXTRACT", "GATHER", "FORAGE"] as any[] },
+                        type: "MINE",
                         item_id: ferrumCatalog.miningPermitId,
+                        recipe_id: LAYER_CODE[miningLayer],
                         collected: false,
                     },
                     orderBy: [{ started_at: "asc" }, { id: "asc" }],
                 });
 
+                if (sameLayerOrders.length >= MINING_PLOT_SIZE) {
+                    res.status(400).json({ error: `${miningLayer} plot is full. Collect existing expeditions before starting more.` });
+                    return;
+                }
+
                 const nowMs = Date.now();
-                const lastOrder = pendingMiningOrders[pendingMiningOrders.length - 1];
-                const startsAtMs = lastOrder ? Math.max(nowMs, new Date(lastOrder.completes_at).getTime()) : nowMs;
-                const startsAt = new Date(startsAtMs);
-                const completesAt = new Date(startsAtMs + durationMs);
 
-
-
+                // Tasks run concurrently: every new order starts immediately
                 const order = await prisma.workOrder.create({
                     data: {
                         user_id: req.userId!,
@@ -1116,18 +1118,40 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                         item_id: ferrumCatalog.miningPermitId,
                         quantity: 1,
                         recipe_id: LAYER_CODE[miningLayer],
-                        started_at: startsAt,
-                        completes_at: completesAt,
+                        started_at: new Date(nowMs),
+                        completes_at: new Date(nowMs + durationMs),
                     },
                     include: { item: true },
                 });
 
-                res.json({
-                    message: startsAtMs > nowMs
-                        ? `Queued ${miningLayer.toLowerCase()} expedition. Starts when previous run completes.`
-                        : `Started ${miningLayer.toLowerCase()} expedition. Ready in ${Math.ceil(growMins)} min.`,
-                    order,
-                });
+                const allLayerOrders = [...sameLayerOrders, order];
+                const newLayerCount = allLayerOrders.length;
+                let message = `Started ${miningLayer.toLowerCase()} expedition. Ready in ${Math.ceil(growMins)} min.`;
+
+                // Recalculate plot: when adding to a partial plot, average all remaining times.
+                // When the plot fills (MINING_PLOT_SIZE), also apply a -10% bonus reduction.
+                if (sameLayerOrders.length > 0) {
+                    const remainingMsList = allLayerOrders.map((o) =>
+                        o.id === order.id ? durationMs : Math.max(0, new Date(o.completes_at).getTime() - nowMs)
+                    );
+                    const avgRemainingMs = remainingMsList.reduce((sum, ms) => sum + ms, 0) / remainingMsList.length;
+                    const isFullPlot = newLayerCount === MINING_PLOT_SIZE;
+                    const finalMs = isFullPlot
+                        ? Math.max(1000, Math.floor(avgRemainingMs * 0.9))
+                        : Math.max(1000, Math.floor(avgRemainingMs));
+                    const bonusAt = new Date(nowMs + finalMs);
+
+                    await prisma.workOrder.updateMany({
+                        where: { id: { in: allLayerOrders.map((o) => o.id) } },
+                        data: { completes_at: bonusAt },
+                    });
+
+                    message = isFullPlot
+                        ? `Started ${miningLayer.toLowerCase()} expedition. Plot full (${MINING_PLOT_SIZE}/${MINING_PLOT_SIZE}) — timers averaged and reduced by 10% (ready in ~${Math.ceil(finalMs / 60000)} min each).`
+                        : `Started ${miningLayer.toLowerCase()} expedition. Added to plot (${newLayerCount}/${MINING_PLOT_SIZE}) — timers averaged (ready in ~${Math.ceil(finalMs / 60000)} min each).`;
+                }
+
+                res.json({ message, order });
                 return;
             }
 
@@ -1252,22 +1276,31 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
 
             let message = `Started farming ${slot.item.name}. Ready in ${Math.ceil(growMins)} minutes.`;
 
-            // Full-plot bonus per seed type:
+            // Plot recalculation: when adding to an existing partial plot, average all remaining
+            // times across every order in that plot (including the new one).
+            // When the plot fills completely, also apply a -10% full-plot bonus.
             // Textilis: 6 tasks per plot, others: 9 tasks per plot.
-            // When a plot is full, apply bonus to all orders in that plot.
             const sameSeedFarmOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
-            if ((sameSeedFarmOrders.length + 1) % plotSize === 0) {
+            // positionInCurrentPlot: 0 = first task in a brand-new plot (no averaging needed)
+            const positionInCurrentPlot = sameSeedFarmOrders.length % plotSize;
+            if (positionInCurrentPlot > 0) {
                 const now = Date.now();
-                const allOrders = [...sameSeedFarmOrders, order];
-                const plotOrders = allOrders.slice(-plotSize);
-                const remainingMsList = plotOrders.map((o) => Math.max(0, new Date(o.completes_at).getTime() - now));
+                // The last `positionInCurrentPlot` existing orders belong to the current partial plot
+                const ordersInCurrentPlot = sameSeedFarmOrders.slice(-positionInCurrentPlot);
+                const currentPlotOrders = [...ordersInCurrentPlot, order];
+                const remainingMsList = currentPlotOrders.map((o) =>
+                    Math.max(0, new Date(o.completes_at).getTime() - now)
+                );
                 const avgRemainingMs = remainingMsList.reduce((sum, ms) => sum + ms, 0) / remainingMsList.length;
-                const reducedAvgMs = Math.max(1000, Math.floor(avgRemainingMs * 0.9));
-                const bonusCompletesAt = new Date(now + reducedAvgMs);
-                const plotIndex = Math.ceil((sameSeedFarmOrders.length + 1) / plotSize);
+                const isFullPlot = (positionInCurrentPlot + 1) === plotSize;
+                const finalMs = isFullPlot
+                    ? Math.max(1000, Math.floor(avgRemainingMs * 0.9))
+                    : Math.max(1000, Math.floor(avgRemainingMs));
+                const bonusCompletesAt = new Date(now + finalMs);
+                const plotIndex = Math.floor(sameSeedFarmOrders.length / plotSize) + 1;
 
                 await prisma.workOrder.updateMany({
-                    where: { id: { in: plotOrders.map((o) => o.id) } },
+                    where: { id: { in: currentPlotOrders.map((o) => o.id) } },
                     data: { completes_at: bonusCompletesAt },
                 });
 
@@ -1276,7 +1309,9 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     include: { item: true },
                 }) as typeof order;
 
-                message = `Started farming ${slot.item.name}. Plot ${plotIndex} (${plotSize}/${plotSize}) full bonus activated: timers averaged and reduced by 10% (ready in ~${Math.ceil(reducedAvgMs / 60000)} minutes).`;
+                message = isFullPlot
+                    ? `Started farming ${slot.item.name}. Plot ${plotIndex} (${plotSize}/${plotSize}) full bonus activated: timers averaged and reduced by 10% (ready in ~${Math.ceil(finalMs / 60000)} minutes).`
+                    : `Started farming ${slot.item.name}. Plot ${plotIndex} (${positionInCurrentPlot + 1}/${plotSize}) — timers averaged (ready in ~${Math.ceil(finalMs / 60000)} minutes).`;
             }
 
             res.json({
@@ -1628,6 +1663,7 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
     try {
         await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
+        await syncDurability(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         if (typeof req.params.orderId !== 'string') {
@@ -1635,9 +1671,6 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
             return;
         }
         const orderId = parseInt(req.params.orderId);
-
-        // Sync durability BEFORE task collection to accurately calculate decay
-        await syncDurability(req.userId!);
 
         const result = await collectSingleReadyOrder(req.userId!, orderId);
 
@@ -1704,10 +1737,8 @@ export const collectReadyWork = async (req: AuthRequest, res: Response): Promise
     try {
         await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
-        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
-
-        // Sync durability BEFORE task collection to accurately calculate decay
         await syncDurability(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         const readyOrders = await prisma.workOrder.findMany({
             where: {
@@ -1784,6 +1815,7 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
     try {
         await syncHunger(req.userId!);
         const cityProfile = await getUserCityProfile(req.userId!);
+        await syncDurability(req.userId!);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         if (typeof req.params.orderId !== "string") {
@@ -1798,9 +1830,6 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
         }
 
         const now = Date.now();
-
-        // Sync durability BEFORE cancelling order to accurately calculate decay
-        await syncDurability(req.userId!);
 
         const result = await prisma.$transaction(async (tx) => {
             const order = await tx.workOrder.findFirst({

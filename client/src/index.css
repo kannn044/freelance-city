@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
-/* === Cyberpunk Dark Theme === */
+/* === Forge / Crafting Theme — Global Variables === */
 @theme {
-  --color-bg-primary: #0a0e17;
-  --color-bg-secondary: #111827;
-  --color-bg-glass: rgba(17, 24, 39, 0.6);
-  --color-bg-glass-hover: rgba(17, 24, 39, 0.8);
-  --color-border-glass: rgba(99, 102, 241, 0.2);
-  --color-border-glow: rgba(99, 102, 241, 0.5);
-  --color-neon-indigo: #818cf8;
-  --color-neon-violet: #a78bfa;
-  --color-neon-cyan: #22d3ee;
+  --color-bg-primary: #0f0a04;
+  --color-bg-secondary: #1a0e05;
+  --color-bg-glass: rgba(30, 19, 10, 0.82);
+  --color-bg-glass-hover: rgba(22, 13, 5, 0.95);
+  --color-border-glass: rgba(245, 158, 11, 0.22);
+  --color-border-glow: rgba(245, 158, 11, 0.5);
+  --color-neon-indigo: #f59e0b;
+  --color-neon-violet: #fb923c;
+  --color-neon-cyan: #fbbf24;
   --color-neon-emerald: #34d399;
   --color-neon-amber: #fbbf24;
   --color-neon-rose: #fb7185;
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted: #64748b;
+  --color-text-primary: #fef3c7;
+  --color-text-secondary: #c4a882;
+  --color-text-muted: #7a5c3e;
 }
 
 /* === Base Styles === */
@@ -33,76 +33,90 @@ html {
 }
 
 body {
-  background-color: var(--color-bg-primary);
+  background-color: #0f0a04;
+  background-image:
+    linear-gradient(rgba(10, 5, 0, 0.62) 0%, rgba(10, 5, 0, 0.62) 100%),
+    radial-gradient(ellipse at bottom, rgba(245, 158, 11, 0.10) 0%, transparent 55%),
+    url('./assets/bg/bg.png');
+  background-size: auto, auto, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed;
   color: var(--color-text-primary);
   min-height: 100vh;
 }
 
-/* === Animated Background Grid === */
+/* === Background grid overlay (forge-tinted) === */
 .bg-grid {
   background-image:
-    linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
+    linear-gradient(rgba(10, 5, 0, 0.45) 0%, rgba(10, 5, 0, 0.45) 100%),
+    linear-gradient(rgba(245, 158, 11, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.03) 1px, transparent 1px);
+  background-size: auto, 48px 48px, 48px 48px;
 }
 
-/* === Glassmorphism Card === */
+/* === Forge Glass Card === */
 .glass-card {
   background: var(--color-bg-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--color-border-glass);
-  border-radius: 1rem;
+  border-radius: 0.5rem;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(245, 158, 11, 0.04);
 }
 
-/* === Glow Effects === */
+/* === Forge Glow === */
 .glow-indigo {
   box-shadow:
-    0 0 20px rgba(99, 102, 241, 0.15),
-    0 0 40px rgba(99, 102, 241, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 0 20px rgba(245, 158, 11, 0.12),
+    0 0 40px rgba(234, 88, 12, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* === Input Styles === */
+/* === Input Styles (Forge) === */
 .input-cyber {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-  color: var(--color-text-primary);
-  font-size: 1rem;
+  background: rgba(10, 6, 2, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 0.375rem;
+  padding: 0.9rem 1.1rem;
+  color: #fef3c7;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
   outline: none;
   width: 100%;
 }
 
 .input-cyber:focus {
-  border-color: var(--color-neon-indigo);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
 }
 
 .input-cyber::placeholder {
-  color: var(--color-text-muted);
+  color: #7a5c3e;
 }
 
-/* === Button Styles === */
+/* === Button Styles (Forge) === */
 .btn-cyber {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-  font-weight: 600;
+  background: linear-gradient(135deg, #b45309, #ea580c);
+  color: #fef3c7;
+  font-weight: 700;
   padding: 1rem 2rem;
-  border-radius: 0.75rem;
-  border: none;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 158, 11, 0.35);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
 .btn-cyber:hover {
-  box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
   transform: translateY(-1px);
+  background: linear-gradient(135deg, #d97706, #f97316);
 }
 
 .btn-cyber:active {
@@ -110,9 +124,163 @@ body {
 }
 
 .btn-cyber:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+}
+
+/* === Primary / Secondary Forge Buttons === */
+.btn-primary {
+  background: linear-gradient(135deg, #b45309, #ea580c);
+  color: #fef3c7;
+  font-weight: 700;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, #d97706, #f97316);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: rgba(30, 19, 10, 0.7);
+  color: #c4a882;
+  font-weight: 600;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fef3c7;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* === Forge / Crafting Theme === */
+.bg-forge {
+  background-color: #0f0a04;
+  background-image:
+    linear-gradient(
+      rgba(10, 5, 0, 0.68) 0%,
+      rgba(10, 5, 0, 0.68) 100%
+    ),
+    radial-gradient(ellipse at bottom, rgba(245, 158, 11, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse at top,    rgba(120, 40,  0, 0.10) 0%, transparent 50%),
+    url('./assets/bg/bg.png');
+  background-size: auto, auto, auto, cover;
+  background-position: center, center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed, fixed;
+}
+
+.forge-card {
+  background: linear-gradient(160deg, rgba(30, 19, 10, 0.82) 0%, rgba(22, 13, 5, 0.88) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 40px rgba(245, 158, 11, 0.1),
+    0 0 80px rgba(234, 88, 12, 0.05),
+    inset 0 1px 0 rgba(245, 158, 11, 0.06);
+}
+
+.input-forge {
+  background: rgba(10, 6, 2, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 0.375rem;
+  padding: 0.875rem 1rem;
+  color: #fef3c7;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  outline: none;
+  width: 100%;
+}
+
+.input-forge:focus {
+  border-color: rgba(245, 158, 11, 0.65);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08), inset 0 0 12px rgba(245, 158, 11, 0.04);
+}
+
+.input-forge::placeholder {
+  color: #5a3e28;
+}
+
+.btn-forge {
+  background: linear-gradient(135deg, #b45309, #ea580c);
+  color: #fef3c7;
+  font-weight: 700;
+  padding: 1rem 2rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  cursor: pointer;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-forge:hover {
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.45), 0 0 70px rgba(234, 88, 12, 0.2);
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #d97706, #f97316);
+}
+
+.btn-forge:active {
+  transform: translateY(0);
+}
+
+.btn-forge:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toggle-forge {
+  font-size: 0.875rem;
+  color: #78604a;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.toggle-forge:hover {
+  color: #f59e0b;
+}
+
+@keyframes ember-rise {
+  0%   { transform: translateY(0px) translateX(0px) scale(1);   opacity: 0; }
+  10%  { opacity: 1; }
+  80%  { opacity: 0.6; }
+  100% { transform: translateY(-100vh) translateX(var(--drift)) scale(0.3); opacity: 0; }
+}
+
+@keyframes forge-pulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(245, 158, 11, 0.35), 0 0 36px rgba(234, 88, 12, 0.15); }
+  50%       { box-shadow: 0 0 32px rgba(245, 158, 11, 0.65), 0 0 64px rgba(234, 88, 12, 0.35); }
+}
+
+@keyframes title-flicker {
+  0%, 89%, 91%, 93%, 100% { opacity: 1; }
+  90%, 92%                { opacity: 0.75; }
 }
 
 /* === Scrollbar === */
@@ -125,6 +293,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(245, 158, 11, 0.28);
   border-radius: 3px;
 }

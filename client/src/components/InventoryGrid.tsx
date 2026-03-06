@@ -311,7 +311,7 @@ const InventoryGrid = () => {
                                             minWidth: '10rem',
                                             padding: '0.4rem 0.5rem',
                                             borderRadius: '0.4rem',
-                                            background: 'rgba(15,23,42,0.96)',
+                                            background: 'rgba(22,13,5,0.96)',
                                             border: `1px solid ${barColor}33`,
                                             boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
                                             zIndex: 30,
@@ -377,7 +377,7 @@ const InventoryGrid = () => {
                                                 transform: 'translateX(-50%) rotate(45deg)',
                                                 width: '8px',
                                                 height: '8px',
-                                                background: 'rgba(15,23,42,0.96)',
+                                                background: 'rgba(22,13,5,0.96)',
                                                 borderRight: `1px solid ${barColor}33`,
                                                 borderBottom: `1px solid ${barColor}33`,
                                             }}
@@ -449,7 +449,7 @@ const InventoryGrid = () => {
                         borderRadius: '0.4rem',
                         border: '1px solid rgba(147,197,253,0.34)',
                         background: 'rgba(147,197,253,0.08)',
-                        color: '#bfdbfe',
+                        color: '#fde68a',
                         display: 'inline-flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -540,7 +540,7 @@ const InventoryGrid = () => {
                                     ? '1px solid rgba(255,255,255,0.16)'
                                     : '1px dashed rgba(255,255,255,0.16)',
                                 background: hasItem
-                                    ? 'linear-gradient(135deg, rgba(30,41,59,0.72), rgba(15,23,42,0.84))'
+                                    ? 'linear-gradient(135deg, rgba(30,19,10,0.72), rgba(22,13,5,0.84))'
                                     : 'rgba(255, 255, 255, 0.02)',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -623,7 +623,7 @@ const InventoryGrid = () => {
                                                 bottom: '0.12rem',
                                                 left: '0.15rem',
                                                 fontSize: '0.52rem',
-                                                color: '#93c5fd',
+                                                color: '#fbbf24',
                                                 fontWeight: 700,
                                             }}
                                         >
@@ -643,7 +643,7 @@ const InventoryGrid = () => {
                                                 minWidth: '12rem',
                                                 padding: '0.5rem',
                                                 borderRadius: '0.5rem',
-                                                background: 'rgba(15,23,42,0.96)',
+                                                background: 'rgba(22,13,5,0.96)',
                                                 border: '1px solid rgba(255,255,255,0.1)',
                                                 boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
                                                 zIndex: 100,
@@ -774,7 +774,7 @@ const InventoryGrid = () => {
                                                     transform: 'translateX(-50%) rotate(45deg)',
                                                     width: '8px',
                                                     height: '8px',
-                                                    background: 'rgba(15,23,42,0.96)',
+                                                    background: 'rgba(22,13,5,0.96)',
                                                     borderRight: '1px solid rgba(255,255,255,0.1)',
                                                     borderBottom: '1px solid rgba(255,255,255,0.1)',
                                                 }}
@@ -807,7 +807,7 @@ const InventoryGrid = () => {
                         style={{
                             position: 'fixed',
                             inset: 0,
-                            background: 'rgba(2,6,23,0.58)',
+                            background: 'rgba(10,5,0,0.58)',
                             zIndex: 140,
                             display: 'flex',
                             alignItems: 'center',
@@ -826,7 +826,7 @@ const InventoryGrid = () => {
                                 maxWidth: '22rem',
                                 borderRadius: '0.75rem',
                                 border: '1px solid rgba(255,255,255,0.15)',
-                                background: 'rgba(15,23,42,0.96)',
+                                background: 'rgba(22,13,5,0.96)',
                                 padding: '0.9rem',
                             }}
                         >
@@ -856,7 +856,7 @@ const InventoryGrid = () => {
                                     style={{
                                         border: '1px solid rgba(99,102,241,0.45)',
                                         background: 'rgba(99,102,241,0.2)',
-                                        color: '#e0e7ff',
+                                        color: '#fde68a',
                                         borderRadius: '0.4rem',
                                         fontSize: '0.65rem',
                                         fontWeight: 700,

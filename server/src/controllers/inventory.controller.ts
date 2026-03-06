@@ -923,6 +923,9 @@ export const repairEquipment = async (req: AuthRequest, res: Response): Promise<
             orderBy: { slot: "asc" },
         });
 
+        const cityProfile = await getUserCityProfile(req.userId!);
+        await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
+
         const equipment = await getEquipmentState(req.userId!);
 
         res.json({

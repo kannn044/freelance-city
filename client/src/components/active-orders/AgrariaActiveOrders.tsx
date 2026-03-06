@@ -136,8 +136,8 @@ const AgrariaActiveOrders = () => {
             ? '1px solid rgba(52, 211, 153, 0.22)'
             : '1px solid rgba(251, 146, 60, 0.22)';
         const bg = accent === 'first_job'
-            ? 'rgba(52, 211, 153, 0.04)'
-            : 'rgba(251, 146, 60, 0.04)';
+            ? 'rgba(52, 211, 153, 0.18)'
+            : 'rgba(251, 146, 60, 0.18)';
 
         return (
             <motion.div
@@ -276,7 +276,7 @@ const AgrariaActiveOrders = () => {
                         aspectRatio: '1 / 1',
                         borderRadius: FIRST_JOB_CELL_RADIUS,
                         border: `1px solid ${palette.border}`,
-                        background: `linear-gradient(145deg, ${palette.bg}, rgba(15,23,42,0.12))`,
+                        background: `linear-gradient(145deg, ${palette.bg}, rgba(22,13,5,0.78))`,
                         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -8px 18px rgba(0,0,0,0.12)',
                         display: 'flex',
                         alignItems: 'center',
@@ -308,7 +308,7 @@ const AgrariaActiveOrders = () => {
                     border: ready ? `1px solid ${palette.accent}` : `1px solid ${palette.border}`,
                     background: ready
                         ? `linear-gradient(145deg, ${palette.bg}, rgba(255,255,255,0.08))`
-                        : `linear-gradient(145deg, ${palette.bg}, rgba(15,23,42,0.12))`,
+                        : `linear-gradient(145deg, ${palette.bg}, rgba(22,13,5,0.78))`,
                     boxShadow: ready
                         ? `0 0 18px ${palette.bg}, inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -10px 18px rgba(0,0,0,0.16)`
                         : 'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -10px 18px rgba(0,0,0,0.16)',
@@ -372,7 +372,7 @@ const AgrariaActiveOrders = () => {
                 style={{
                     position: 'fixed',
                     inset: 0,
-                    background: 'rgba(2,6,23,0.68)',
+                    background: 'rgba(10,5,0,0.68)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -387,7 +387,7 @@ const AgrariaActiveOrders = () => {
                         width: 'min(100%, 24rem)',
                         borderRadius: '0.85rem',
                         border: '1px solid rgba(248,113,113,0.35)',
-                        background: 'linear-gradient(180deg, rgba(30,41,59,0.96), rgba(15,23,42,0.96))',
+                        background: 'linear-gradient(180deg, rgba(30,19,10,0.96), rgba(22,13,5,0.96))',
                         boxShadow: '0 14px 44px rgba(0,0,0,0.45)',
                         padding: '0.95rem',
                         display: 'flex',
@@ -454,7 +454,7 @@ const AgrariaActiveOrders = () => {
                             padding: '0.4rem 0.7rem',
                             borderRadius: '0.45rem',
                             border: '1px solid rgba(52,211,153,0.35)',
-                            background: readyCount > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.04)',
+                            background: readyCount > 0 ? 'rgba(52,211,153,0.12)' : 'rgba(255,255,255,0.12)',
                             color: readyCount > 0 ? '#34d399' : 'rgba(255,255,255,0.45)',
                             fontSize: '0.7rem',
                             fontWeight: 700,
@@ -482,7 +482,7 @@ const AgrariaActiveOrders = () => {
                                 flexDirection: 'column',
                                 border: '1px solid rgba(52, 211, 153, 0.2)',
                                 borderRadius: '0.8rem',
-                                background: 'rgba(52, 211, 153, 0.02)',
+                                background: 'rgba(52, 211, 153, 0.14)',
                                 height: ORDERS_COLUMN_HEIGHT,
                                 minHeight: ORDERS_COLUMN_HEIGHT,
                                 overflow: 'hidden',
@@ -521,7 +521,7 @@ const AgrariaActiveOrders = () => {
                                                 flexDirection: 'column',
                                                 gap: '0.35rem',
                                                 border: `1px solid ${seedType.border}`,
-                                                background: `linear-gradient(180deg, ${seedType.bg}, rgba(15,23,42,0.08))`,
+                                                background: `linear-gradient(180deg, ${seedType.bg}, rgba(22,13,5,0.78))`,
                                                 borderRadius: '0.75rem',
                                                 padding: '0.45rem',
                                             }}
@@ -579,7 +579,7 @@ const AgrariaActiveOrders = () => {
                                 flexDirection: 'column',
                                 border: '1px solid rgba(251, 146, 60, 0.2)',
                                 borderRadius: '0.8rem',
-                                background: 'rgba(251, 146, 60, 0.02)',
+                                background: 'rgba(251, 146, 60, 0.14)',
                                 height: ORDERS_COLUMN_HEIGHT,
                                 minHeight: ORDERS_COLUMN_HEIGHT,
                                 overflow: 'hidden',
@@ -627,7 +627,7 @@ const AgrariaActiveOrders = () => {
                             style={{
                                 border: '1px solid rgba(255,255,255,0.1)',
                                 borderRadius: '0.8rem',
-                                background: 'rgba(255,255,255,0.02)',
+                                background: 'rgba(255,255,255,0.10)',
                                 padding: '1rem',
                                 fontSize: '0.75rem',
                                 color: 'rgba(255,255,255,0.5)',

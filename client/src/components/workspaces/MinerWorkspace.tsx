@@ -7,7 +7,13 @@ import { useState } from 'react';
 import { RequirementModal, type RequirementModalState } from './RequirementModal';
 import type { WorkspaceActionResult } from '../../stores/gameStore';
 
-const PLOT_SIZE = 6;
+const LAYER_PLOT_SIZE = 3;
+
+const resolveLayerFromRecipeId = (recipeId: number | null): 'SURFACE' | 'DEEP' | 'CORE' => {
+    if (recipeId === 2) return 'DEEP';
+    if (recipeId === 3) return 'CORE';
+    return 'SURFACE';
+};
 
 const MinerWorkspace = () => {
     const { t } = useTranslation();
@@ -49,10 +55,10 @@ const MinerWorkspace = () => {
         openRequirementModalFromResult(result);
     };
 
-    const activeMineOrders = workOrders.filter((o) => o.type === 'MINE' && !o.collected).length;
-    const plotFill = activeMineOrders % PLOT_SIZE;
-    const plotFillDisplay = activeMineOrders === 0 ? 0 : plotFill === 0 ? PLOT_SIZE : plotFill;
-    const isPlotFull = plotFillDisplay === PLOT_SIZE;
+    const getLayerOrderCount = (layerKey: 'SURFACE' | 'DEEP' | 'CORE') =>
+        workOrders.filter(
+            (o) => o.type === 'MINE' && !o.collected && resolveLayerFromRecipeId((o as any).recipe_id ?? null) === layerKey
+        ).length;
 
     return (
         <>
@@ -63,7 +69,24 @@ const MinerWorkspace = () => {
                 { key: 'SURFACE', label: t('workspace.mine_layers.SURFACE.label'), mins: ferrumMiningConfig.effectiveLayerTimeMins?.surface ?? ferrumMiningConfig.layerTimeMins.surface, note: t('workspace.mine_layers.SURFACE.note') },
                 { key: 'DEEP', label: t('workspace.mine_layers.DEEP.label'), mins: ferrumMiningConfig.effectiveLayerTimeMins?.deep ?? ferrumMiningConfig.layerTimeMins.deep, note: t('workspace.mine_layers.DEEP.note') },
                 { key: 'CORE', label: t('workspace.mine_layers.CORE.label'), mins: ferrumMiningConfig.effectiveLayerTimeMins?.core ?? ferrumMiningConfig.layerTimeMins.core, note: t('workspace.mine_layers.CORE.note') },
-            ] as const).map((layer) => (
+            ] as const).map((layer) => {
+                const layerCount = getLayerOrderCount(layer.key);
+                const layerFill = layerCount % LAYER_PLOT_SIZE;
+                const layerFillDisplay = layerCount === 0 ? 0 : layerFill === 0 ? LAYER_PLOT_SIZE : layerFill;
+                const isLayerFull = layerFillDisplay === LAYER_PLOT_SIZE;
+                const layerDepthColor =
+                    layer.key === 'CORE' ? 'rgba(239,68,68,0.55)' :
+                    layer.key === 'DEEP' ? 'rgba(245,158,11,0.55)' :
+                    'rgba(56,189,248,0.55)';
+                const layerDepthColorDim =
+                    layer.key === 'CORE' ? 'rgba(239,68,68,0.28)' :
+                    layer.key === 'DEEP' ? 'rgba(245,158,11,0.28)' :
+                    'rgba(56,189,248,0.28)';
+                const layerDepthAccent =
+                    layer.key === 'CORE' ? '#fca5a5' :
+                    layer.key === 'DEEP' ? '#fde68a' :
+                    '#67e8f9';
+                return (
                 <motion.button
                     key={layer.key}
                     whileHover={{ scale: 1.02 }}
@@ -75,32 +98,53 @@ const MinerWorkspace = () => {
                         justifyContent: 'space-between',
                         padding: '0.6rem',
                         borderRadius: '0.5rem',
-                        border: `1px solid ${isPlotFull ? 'rgba(56,189,248,0.55)' : 'rgba(56,189,248,0.28)'}`,
-                        background: isPlotFull ? 'rgba(56,189,248,0.1)' : 'rgba(15,23,42,0.45)',
+                        border: `1px solid ${isLayerFull ? layerDepthColor : layerDepthColorDim}`,
+                        background: isLayerFull ? `${layerDepthColorDim.replace('0.28', '0.1')}` : 'rgba(22,13,5,0.45)',
                         color: 'rgba(255,255,255,0.9)',
                         fontSize: '0.73rem',
                         fontWeight: 600,
                         cursor: 'pointer',
                         gap: '0.2rem',
+                        width: '100%',
                     }}
                 >
                     <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.15rem' }}>
                         <span>{layer.label}</span>
                         <span style={{ fontSize: '0.62rem', color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>{layer.note}</span>
-                        <span style={{ fontSize: '0.62rem', color: '#67e8f9', fontWeight: 400 }}>
+                        <span style={{ fontSize: '0.62rem', color: layerDepthAccent, fontWeight: 400 }}>
                             {t('workspace.mine_time_cost', { mins: layer.mins })}
                         </span>
                     </span>
-                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.15rem' }}>
-                        <span style={{ fontSize: '0.65rem', color: 'rgba(56,189,248,0.7)', fontWeight: 600 }}>
+                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.18rem' }}>
+                        <span style={{ fontSize: '0.65rem', color: layerDepthAccent, fontWeight: 600 }}>
                             {t('workspace.mine', { defaultValue: 'Mine' })}
                         </span>
-                        <span style={{ fontSize: '0.58rem', color: isPlotFull ? '#38bdf8' : 'rgba(255,255,255,0.35)', fontWeight: isPlotFull ? 700 : 400 }}>
-                            {plotFillDisplay}/{PLOT_SIZE} {isPlotFull ? '⚡ -10%' : ''}
+                        {/* Plot slots */}
+                        <span style={{ display: 'flex', gap: '0.18rem', alignItems: 'center' }}>
+                            {Array.from({ length: LAYER_PLOT_SIZE }).map((_, i) => (
+                                <span
+                                    key={i}
+                                    style={{
+                                        width: '0.55rem',
+                                        height: '0.55rem',
+                                        borderRadius: '0.12rem',
+                                        background: i < layerFillDisplay
+                                            ? layerDepthAccent
+                                            : 'rgba(255,255,255,0.12)',
+                                        border: `1px solid ${i < layerFillDisplay ? layerDepthAccent : 'rgba(255,255,255,0.2)'}`,
+                                        boxShadow: i < layerFillDisplay ? `0 0 5px ${layerDepthAccent}88` : 'none',
+                                        transition: 'all 0.3s',
+                                    }}
+                                />
+                            ))}
+                        </span>
+                        <span style={{ fontSize: '0.58rem', color: isLayerFull ? layerDepthAccent : 'rgba(255,255,255,0.35)', fontWeight: isLayerFull ? 700 : 400 }}>
+                            {layerFillDisplay}/{LAYER_PLOT_SIZE} {isLayerFull ? '⚡ -10%' : ''}
                         </span>
                     </span>
                 </motion.button>
-            ))}
+                );
+            })}
 
             <RequirementModal modalState={requirementModal} setModalState={setRequirementModal} />
         </>

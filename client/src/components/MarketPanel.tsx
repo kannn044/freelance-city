@@ -393,7 +393,7 @@ const MarketPanel = () => {
                                                 overflowY: 'auto',
                                                 borderRadius: '0.35rem',
                                                 border: '1px solid rgba(255,255,255,0.1)',
-                                                background: 'rgba(2,6,23,0.88)',
+                                                background: 'rgba(10,5,0,0.88)',
                                                 padding: '0.2rem',
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -528,7 +528,7 @@ const MarketPanel = () => {
                                 padding: '0.35rem 0.45rem',
                                 borderRadius: '0.35rem',
                                 border: '1px solid rgba(255,255,255,0.12)',
-                                background: 'rgba(15,23,42,0.5)',
+                                background: 'rgba(22,13,5,0.5)',
                                 color: 'white',
                                 fontSize: '0.65rem',
                             }}
@@ -585,7 +585,7 @@ const MarketPanel = () => {
                                                 padding: '0.22rem 0.3rem',
                                                 borderRadius: '0.35rem',
                                                 border: '1px solid rgba(255,255,255,0.14)',
-                                                background: 'rgba(15,23,42,0.45)',
+                                                background: 'rgba(22,13,5,0.45)',
                                                 color: 'white',
                                                 fontSize: '0.62rem',
                                             }}
@@ -639,7 +639,7 @@ const MarketPanel = () => {
                                 padding: '0.35rem 0.45rem',
                                 borderRadius: '0.35rem',
                                 border: '1px solid rgba(255,255,255,0.12)',
-                                background: 'rgba(15,23,42,0.5)',
+                                background: 'rgba(22,13,5,0.5)',
                                 color: 'white',
                                 fontSize: '0.65rem',
                             }}
@@ -678,7 +678,7 @@ const MarketPanel = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#93c5fd' }}>
+                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#fbbf24' }}>
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Coins size={11} /> {getTotalPrice(listing.price, listing.quantity)}</span>
                                     </span>
                                     <motion.button
@@ -727,7 +727,7 @@ const MarketPanel = () => {
                                 padding: '0.35rem 0.45rem',
                                 borderRadius: '0.35rem',
                                 border: '1px solid rgba(255,255,255,0.12)',
-                                background: 'rgba(15,23,42,0.5)',
+                                background: 'rgba(22,13,5,0.5)',
                                 color: 'white',
                                 fontSize: '0.65rem',
                             }}
@@ -911,7 +911,7 @@ const MarketPanel = () => {
                                         padding: '0.22rem 0.3rem',
                                         borderRadius: '0.35rem',
                                         border: '1px solid rgba(255,255,255,0.14)',
-                                        background: 'rgba(15,23,42,0.45)',
+                                        background: 'rgba(22,13,5,0.45)',
                                         color: 'white',
                                         fontSize: '0.62rem',
                                     }}
@@ -1014,7 +1014,7 @@ const MarketPanel = () => {
                         style={{
                             position: 'fixed',
                             inset: 0,
-                            background: 'rgba(2,6,23,0.58)',
+                            background: 'rgba(10,5,0,0.58)',
                             zIndex: 100,
                             display: 'flex',
                             alignItems: 'center',
@@ -1033,7 +1033,7 @@ const MarketPanel = () => {
                                 maxWidth: '24rem',
                                 borderRadius: '0.75rem',
                                 border: '1px solid rgba(167,139,250,0.35)',
-                                background: 'rgba(15,23,42,0.96)',
+                                background: 'rgba(22,13,5,0.96)',
                                 padding: '0.9rem',
                             }}
                         >
@@ -1089,7 +1089,7 @@ const MarketPanel = () => {
                         style={{
                             position: 'fixed',
                             inset: 0,
-                            background: 'rgba(2,6,23,0.65)',
+                            background: 'rgba(10,5,0,0.65)',
                             zIndex: 130,
                             display: 'flex',
                             alignItems: 'center',
@@ -1110,7 +1110,7 @@ const MarketPanel = () => {
                                 maxWidth: '22rem',
                                 borderRadius: '0.8rem',
                                 border: '1px solid rgba(167,139,250,0.35)',
-                                background: 'rgba(15,23,42,0.97)',
+                                background: 'rgba(22,13,5,0.97)',
                                 padding: '1rem',
                             }}
                         >
@@ -1274,7 +1274,7 @@ const MarketPanel = () => {
                         style={{
                             position: 'fixed',
                             inset: 0,
-                            background: 'rgba(2,6,23,0.58)',
+                            background: 'rgba(10,5,0,0.58)',
                             zIndex: 110,
                             display: 'flex',
                             alignItems: 'center',
@@ -1293,7 +1293,7 @@ const MarketPanel = () => {
                                 maxWidth: '22rem',
                                 borderRadius: '0.75rem',
                                 border: '1px solid rgba(255,255,255,0.15)',
-                                background: 'rgba(15,23,42,0.96)',
+                                background: 'rgba(22,13,5,0.96)',
                                 padding: '0.9rem',
                             }}
                         >
@@ -1323,7 +1323,7 @@ const MarketPanel = () => {
                                     style={{
                                         border: '1px solid rgba(99,102,241,0.45)',
                                         background: 'rgba(99,102,241,0.2)',
-                                        color: '#e0e7ff',
+                                        color: '#fde68a',
                                         borderRadius: '0.4rem',
                                         fontSize: '0.65rem',
                                         fontWeight: 700,

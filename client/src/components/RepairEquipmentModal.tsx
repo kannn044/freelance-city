@@ -41,7 +41,7 @@ const RepairEquipmentModal: React.FC<RepairEquipmentModalProps> = ({
                     style={{
                         position: 'fixed',
                         inset: 0,
-                        background: 'rgba(2,6,23,0.58)',
+                        background: 'rgba(10,5,0,0.58)',
                         zIndex: 150,
                         display: 'flex',
                         alignItems: 'center',
@@ -60,7 +60,7 @@ const RepairEquipmentModal: React.FC<RepairEquipmentModalProps> = ({
                             maxWidth: '22rem',
                             borderRadius: '0.75rem',
                             border: '1px solid rgba(251,191,36,0.3)',
-                            background: 'rgba(15,23,42,0.96)',
+                            background: 'rgba(22,13,5,0.96)',
                             padding: '0.9rem',
                         }}
                     >

@@ -668,6 +668,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to equip item' });
         }
@@ -681,6 +682,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to unequip item' });
         }
@@ -694,6 +696,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to organize inventory' });
         }
@@ -707,6 +710,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to discard item' });
         }
@@ -734,6 +738,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to repair equipment' });
         }
