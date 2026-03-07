@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'freelance-city-server',
       cwd: './server',
-      script: 'dist/index.js',
+      script: 'dist/server/src/index.js',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
