@@ -1,17 +1,13 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft,
     Clock3,
     Filter,
     Gem,
     Layers,
-    Coins,
     RefreshCw,
     Search,
     ShoppingCart,
-    Sparkles,
     Tag,
     Store,
 } from 'lucide-react';
@@ -20,6 +16,7 @@ import { useGameStore } from '../stores/gameStore';
 import { renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, type EquipmentRarity } from '../lib/equipmentRarity';
 import { useTranslation } from 'react-i18next';
+import TopNavBar from '../components/TopNavBar';
 
 type SortMode = 'PRICE_ASC' | 'PRICE_DESC' | 'NEWEST' | 'QTY_DESC';
 type ItemTypeFilter = 'ALL' | 'SEED' | 'RAW' | 'INGREDIENT' | 'MEAL' | 'EQUIPMENT';
@@ -31,7 +28,6 @@ const rarityOptions: RarityFilter[] = ['ALL', 'NORMAL', 'RARE', 'EPIC', 'LEGENDA
 
 const MarketplacePage = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
     const {
         marketListings,
@@ -202,136 +198,75 @@ const MarketplacePage = () => {
         fn?.();
     };
 
+    // Stable ember particles
+    const embers = useMemo(() =>
+        Array.from({ length: 16 }, (_, i) => ({
+            id: i,
+            left: `${5 + Math.random() * 90}%`,
+            delay: `${Math.random() * 10}s`,
+            duration: `${7 + Math.random() * 9}s`,
+            size: `${2 + Math.random() * 3}px`,
+            drift: `${-30 + Math.random() * 60}px`,
+            hue: Math.random() > 0.5 ? '#fbbf24' : '#f97316',
+        })), []);
+
     return (
         <div
-            className="bg-grid"
+            className="bg-forge"
             style={{
                 minHeight: '100vh',
-                background: 'transparent',
                 color: '#f1f5f9',
                 fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
                 position: 'relative',
                 overflow: 'hidden',
             }}
         >
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+                {embers.map((e) => (
+                    <span key={e.id} style={{
+                        position: 'absolute', bottom: '-8px', left: e.left,
+                        width: e.size, height: e.size, borderRadius: '50%',
+                        background: `radial-gradient(circle, ${e.hue} 0%, #92400e 100%)`,
+                        filter: 'blur(0.8px)',
+                        '--drift': e.drift,
+                        animation: `ember-rise ${e.duration} ${e.delay} infinite ease-in`,
+                    } as CSSProperties} />
+                ))}
+                <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '70%', height: '200px', background: 'radial-gradient(ellipse at bottom, rgba(234,88,12,0.1) 0%, transparent 70%)' }} />
                 <motion.div
-                    style={{
-                        position: 'absolute',
-                        top: '-6rem',
-                        right: '-8rem',
-                        width: '30rem',
-                        height: '30rem',
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(56,189,248,0.22), rgba(56,189,248,0))',
-                        filter: 'blur(12px)',
-                    }}
+                    style={{ position: 'absolute', top: '-6rem', right: '-8rem', width: '30rem', height: '30rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,158,11,0.18), rgba(245,158,11,0))', filter: 'blur(12px)' }}
                     animate={{ x: [0, -20, 0], y: [0, 15, 0] }}
                     transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
                 />
                 <motion.div
-                    style={{
-                        position: 'absolute',
-                        bottom: '-9rem',
-                        left: '-10rem',
-                        width: '34rem',
-                        height: '34rem',
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(168,85,247,0.18), rgba(168,85,247,0))',
-                        filter: 'blur(16px)',
-                    }}
+                    style={{ position: 'absolute', bottom: '-9rem', left: '-10rem', width: '34rem', height: '34rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(234,88,12,0.12), rgba(234,88,12,0))', filter: 'blur(16px)' }}
                     animate={{ x: [0, 25, 0], y: [0, -20, 0] }}
                     transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
                 />
             </div>
 
-            <header
-                style={{
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 20,
-                    borderBottom: '1px solid rgba(129, 140, 248, 0.18)',
-                    background: 'rgba(10, 14, 23, 0.72)',
-                    backdropFilter: 'blur(20px)',
-                }}
-            >
-                <div
-                    style={{
-                        maxWidth: '1320px',
-                        margin: '0 auto',
-                        height: '4.6rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0 1.35rem',
-                        gap: '1rem',
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-                        <button
-                            onClick={() => navigate('/dashboard')}
-                            style={{
-                                borderRadius: '0.7rem',
-                                border: '1px solid rgba(245,158,11,0.2)',
-                                background: 'rgba(30,19,10,0.6)',
-                                color: '#fef3c7',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                                fontSize: '0.76rem',
-                                padding: '0.46rem 0.72rem',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <ArrowLeft size={14} />
-                            {t('common.back')}
-                        </button>
-                        <div>
-                            <div style={{ fontSize: '1.08rem', fontWeight: 700, letterSpacing: '-0.02em', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
-                                <Sparkles size={15} style={{ color: '#fbbf24' }} />
-                                {t('marketplace.title')}
-                            </div>
-
-                        </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                        <div
-                            style={{
-                                borderRadius: '9999px',
-                                background: 'rgba(52, 211, 153, 0.12)',
-                                padding: '0.36rem 0.85rem',
-                                border: '1px solid rgba(52, 211, 153, 0.24)',
-                                fontFamily: 'monospace',
-                                color: '#6ee7b7',
-                                fontSize: '0.82rem',
-                                fontWeight: 700,
-                            }}
-                        >
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                                <Coins size={13} /> {user?.money?.toLocaleString() ?? '-'}
-                            </span>
-                        </div>
-                        <button
-                            onClick={refreshNow}
-                            style={{
-                                borderRadius: '0.7rem',
-                                border: '1px solid rgba(245,158,11,0.2)',
-                                background: 'rgba(30,19,10,0.6)',
-                                color: '#fef3c7',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.35rem',
-                                fontSize: '0.76rem',
-                                padding: '0.45rem 0.7rem',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <RefreshCw size={13} />
-                            {t('common.refresh')}
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <TopNavBar
+                rightExtra={
+                    <button
+                        onClick={refreshNow}
+                        style={{
+                            borderRadius: '0.6rem',
+                            border: '1px solid rgba(245,158,11,0.2)',
+                            background: 'rgba(30,19,10,0.6)',
+                            color: '#fef3c7',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            fontSize: '0.76rem',
+                            padding: '0.4rem 0.65rem',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <RefreshCw size={13} />
+                        {t('common.refresh')}
+                    </button>
+                }
+            />
 
             <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '1.2rem', position: 'relative', zIndex: 1 }}>
                 <div

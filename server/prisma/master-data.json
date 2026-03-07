@@ -42,7 +42,7 @@
       "type": "RAW",
       "sell_price": 80,
       "max_stack": 20,
-      "exp_value": 1.0,
+      "exp_value": 1,
       "icon": "chicken_meat"
     },
     {
@@ -323,7 +323,7 @@
       "buy_price": null,
       "max_stack": 30,
       "sell_price": 90,
-      "exp_value": 1.0,
+      "exp_value": 1,
       "icon": "oil"
     },
     {
@@ -358,7 +358,7 @@
       "buff_pct": 0.05,
       "buff_mins": 30,
       "max_stack": 10,
-      "exp_value": 2.0,
+      "exp_value": 2,
       "icon": "chicken_salad"
     },
     {
@@ -369,7 +369,7 @@
       "buff_pct": 0.15,
       "buff_mins": 45,
       "max_stack": 10,
-      "exp_value": 3.0,
+      "exp_value": 3,
       "icon": "beef_steak"
     },
     {
@@ -380,7 +380,7 @@
       "buff_pct": 0.15,
       "buff_mins": 45,
       "max_stack": 10,
-      "exp_value": 3.0,
+      "exp_value": 3,
       "icon": "beef_stew"
     },
     {
@@ -391,7 +391,7 @@
       "buff_pct": 0.15,
       "buff_mins": 45,
       "max_stack": 10,
-      "exp_value": 3.0,
+      "exp_value": 3,
       "icon": "chicken_stew"
     },
     {
@@ -436,7 +436,7 @@
       "type": "RAW",
       "sell_price": 60,
       "max_stack": 20,
-      "exp_value": 1.0,
+      "exp_value": 1,
       "icon": "crude_oil"
     },
     {
@@ -468,7 +468,7 @@
       "type": "INGREDIENT",
       "sell_price": 250,
       "max_stack": 20,
-      "exp_value": 2.0,
+      "exp_value": 2,
       "icon": "fuel_cell"
     },
     {
@@ -540,7 +540,7 @@
       "type": "RAW",
       "sell_price": 65,
       "max_stack": 20,
-      "exp_value": 1.0,
+      "exp_value": 1,
       "icon": "luminous_mushroom"
     },
     {
@@ -572,7 +572,7 @@
       "type": "INGREDIENT",
       "sell_price": 200,
       "max_stack": 15,
-      "exp_value": 2.0,
+      "exp_value": 2,
       "icon": "catalyst"
     },
     {
@@ -612,7 +612,7 @@
       "buff_pct": 0.15,
       "buff_mins": 40,
       "max_stack": 10,
-      "exp_value": 3.0,
+      "exp_value": 3,
       "icon": "growth_elixir"
     },
     {
@@ -623,7 +623,7 @@
       "buff_pct": 0.15,
       "buff_mins": 40,
       "max_stack": 10,
-      "exp_value": 3.0,
+      "exp_value": 3,
       "icon": "smelters_tonic"
     },
     {
@@ -634,7 +634,7 @@
       "buff_pct": 0.2,
       "buff_mins": 30,
       "max_stack": 10,
-      "exp_value": 4.0,
+      "exp_value": 4,
       "icon": "mana_elixir"
     },
     {
@@ -841,7 +841,7 @@
       "icon": "🧥",
       "equipment_slot": "UPPER_BODY",
       "effect_key": "hunger_decay_reduction_per_min",
-      "effect_value": 2.0,
+      "effect_value": 2,
       "effect_value2": null
     },
     {
@@ -1913,279 +1913,442 @@
       "cityKey": "AGRARIA",
       "title": "Morning Market Order",
       "description": "Supply the morning crowd with fresh Chicken Salads.",
-      "rewardCredits": 380,
-      "rewardExp": 20,
-      "requirements": [{ "itemName": "Chicken Salad", "quantity": 5 }]
+      "rewardCredits": 1140,
+      "rewardExp": 60,
+      "requirements": [
+        {
+          "itemName": "Chicken Salad",
+          "quantity": 5
+        }
+      ]
     },
     {
       "cityKey": "AGRARIA",
       "title": "Noble's Dinner",
       "description": "The nobility demand premium Beef Steaks for tonight's feast.",
-      "rewardCredits": 440,
-      "rewardExp": 25,
-      "requirements": [{ "itemName": "Beef Steak", "quantity": 3 }]
+      "rewardCredits": 1320,
+      "rewardExp": 75,
+      "requirements": [
+        {
+          "itemName": "Beef Steak",
+          "quantity": 3
+        }
+      ]
     },
     {
       "cityKey": "AGRARIA",
       "title": "Winter Stew Order",
       "description": "Deliver hearty Beef Stews to warm the city workers.",
-      "rewardCredits": 480,
-      "rewardExp": 28,
-      "requirements": [{ "itemName": "Beef Stew", "quantity": 3 }]
+      "rewardCredits": 1440,
+      "rewardExp": 84,
+      "requirements": [
+        {
+          "itemName": "Beef Stew",
+          "quantity": 3
+        }
+      ]
     },
     {
       "cityKey": "AGRARIA",
       "title": "Festival Catering",
       "description": "Prepare Chicken Stews for the city festival.",
-      "rewardCredits": 450,
-      "rewardExp": 26,
-      "requirements": [{ "itemName": "Chicken Stew", "quantity": 3 }]
+      "rewardCredits": 1350,
+      "rewardExp": 78,
+      "requirements": [
+        {
+          "itemName": "Chicken Stew",
+          "quantity": 3
+        }
+      ]
     },
     {
       "cityKey": "AGRARIA",
       "title": "Mixed Banquet Platter",
       "description": "Provide a variety of dishes for the evening banquet.",
-      "rewardCredits": 540,
-      "rewardExp": 32,
+      "rewardCredits": 1620,
+      "rewardExp": 96,
       "requirements": [
-        { "itemName": "Beef Steak", "quantity": 2 },
-        { "itemName": "Chicken Salad", "quantity": 2 }
+        {
+          "itemName": "Beef Steak",
+          "quantity": 2
+        },
+        {
+          "itemName": "Chicken Salad",
+          "quantity": 2
+        }
       ]
     },
     {
       "cityKey": "AGRARIA",
       "title": "Tavern Special",
       "description": "The local tavern needs two types of stew on the menu today.",
-      "rewardCredits": 580,
-      "rewardExp": 35,
+      "rewardCredits": 1740,
+      "rewardExp": 105,
       "requirements": [
-        { "itemName": "Beef Stew", "quantity": 2 },
-        { "itemName": "Chicken Stew", "quantity": 2 }
+        {
+          "itemName": "Beef Stew",
+          "quantity": 2
+        },
+        {
+          "itemName": "Chicken Stew",
+          "quantity": 2
+        }
       ]
     },
     {
       "cityKey": "FERRUM",
       "title": "Forge Stockpile",
       "description": "Stock up the forge with Iron Ingots.",
-      "rewardCredits": 360,
-      "rewardExp": 20,
-      "requirements": [{ "itemName": "Iron Ingot", "quantity": 5 }]
+      "rewardCredits": 1080,
+      "rewardExp": 60,
+      "requirements": [
+        {
+          "itemName": "Iron Ingot",
+          "quantity": 5
+        }
+      ]
     },
     {
       "cityKey": "FERRUM",
       "title": "Wiring Commission",
       "description": "Supply Copper Ingots for electrical infrastructure.",
-      "rewardCredits": 400,
-      "rewardExp": 23,
-      "requirements": [{ "itemName": "Copper Ingot", "quantity": 4 }]
+      "rewardCredits": 1200,
+      "rewardExp": 69,
+      "requirements": [
+        {
+          "itemName": "Copper Ingot",
+          "quantity": 4
+        }
+      ]
     },
     {
       "cityKey": "FERRUM",
       "title": "Heavy Construction",
       "description": "Deliver high-grade Steel Ingots for structural work.",
-      "rewardCredits": 450,
-      "rewardExp": 27,
-      "requirements": [{ "itemName": "Steel Ingot", "quantity": 3 }]
+      "rewardCredits": 1350,
+      "rewardExp": 81,
+      "requirements": [
+        {
+          "itemName": "Steel Ingot",
+          "quantity": 3
+        }
+      ]
     },
     {
       "cityKey": "FERRUM",
       "title": "Farmer's Tool Kit",
       "description": "Craft tools for the agricultural districts.",
-      "rewardCredits": 480,
-      "rewardExp": 29,
+      "rewardCredits": 1440,
+      "rewardExp": 87,
       "requirements": [
-        { "itemName": "Fork", "quantity": 1 },
-        { "itemName": "Spatula", "quantity": 1 }
+        {
+          "itemName": "Fork",
+          "quantity": 1
+        },
+        {
+          "itemName": "Spatula",
+          "quantity": 1
+        }
       ]
     },
     {
       "cityKey": "FERRUM",
       "title": "Mining Equipment Order",
       "description": "Supply the mine with new Hammers and Mattocks.",
-      "rewardCredits": 530,
-      "rewardExp": 32,
+      "rewardCredits": 1590,
+      "rewardExp": 96,
       "requirements": [
-        { "itemName": "Hammer", "quantity": 1 },
-        { "itemName": "Mattock", "quantity": 1 }
+        {
+          "itemName": "Hammer",
+          "quantity": 1
+        },
+        {
+          "itemName": "Mattock",
+          "quantity": 1
+        }
       ]
     },
     {
       "cityKey": "FERRUM",
       "title": "Alloy Shipment",
       "description": "Mixed ingot shipment for the inter-city trade run.",
-      "rewardCredits": 520,
-      "rewardExp": 30,
+      "rewardCredits": 1560,
+      "rewardExp": 90,
       "requirements": [
-        { "itemName": "Iron Ingot", "quantity": 3 },
-        { "itemName": "Copper Ingot", "quantity": 2 }
+        {
+          "itemName": "Iron Ingot",
+          "quantity": 3
+        },
+        {
+          "itemName": "Copper Ingot",
+          "quantity": 2
+        }
       ]
     },
     {
       "cityKey": "VOLTARA",
       "title": "Gas Line Refill",
       "description": "Refill the city gas lines with processed Gas.",
-      "rewardCredits": 370,
-      "rewardExp": 20,
-      "requirements": [{ "itemName": "Gas", "quantity": 5 }]
+      "rewardCredits": 1110,
+      "rewardExp": 60,
+      "requirements": [
+        {
+          "itemName": "Gas",
+          "quantity": 5
+        }
+      ]
     },
     {
       "cityKey": "VOLTARA",
       "title": "Machinery Lubrication",
       "description": "Supply refined Oil to keep the city machines running.",
-      "rewardCredits": 430,
-      "rewardExp": 25,
-      "requirements": [{ "itemName": "Oil", "quantity": 4 }]
+      "rewardCredits": 1290,
+      "rewardExp": 75,
+      "requirements": [
+        {
+          "itemName": "Oil",
+          "quantity": 4
+        }
+      ]
     },
     {
       "cityKey": "VOLTARA",
       "title": "Power Grid Upgrade",
       "description": "Deliver Fuel Cells to boost the district power grid.",
-      "rewardCredits": 540,
-      "rewardExp": 32,
-      "requirements": [{ "itemName": "Fuel Cell", "quantity": 2 }]
+      "rewardCredits": 1620,
+      "rewardExp": 96,
+      "requirements": [
+        {
+          "itemName": "Fuel Cell",
+          "quantity": 2
+        }
+      ]
     },
     {
       "cityKey": "VOLTARA",
       "title": "Energy Bundle",
       "description": "Mixed fuel delivery for the eastern refineries.",
-      "rewardCredits": 470,
-      "rewardExp": 28,
+      "rewardCredits": 1410,
+      "rewardExp": 84,
       "requirements": [
-        { "itemName": "Gas", "quantity": 3 },
-        { "itemName": "Oil", "quantity": 2 }
+        {
+          "itemName": "Gas",
+          "quantity": 3
+        },
+        {
+          "itemName": "Oil",
+          "quantity": 2
+        }
       ]
     },
     {
       "cityKey": "VOLTARA",
       "title": "Emergency Fuel Supply",
       "description": "Rush delivery of Gas and a Fuel Cell to the backup generators.",
-      "rewardCredits": 510,
-      "rewardExp": 30,
+      "rewardCredits": 1530,
+      "rewardExp": 90,
       "requirements": [
-        { "itemName": "Fuel Cell", "quantity": 1 },
-        { "itemName": "Gas", "quantity": 3 }
+        {
+          "itemName": "Fuel Cell",
+          "quantity": 1
+        },
+        {
+          "itemName": "Gas",
+          "quantity": 3
+        }
       ]
     },
     {
       "cityKey": "VOLTARA",
       "title": "Industrial Refining Pack",
       "description": "Supply Oil and a Fuel Cell for heavy industrial operations.",
-      "rewardCredits": 560,
-      "rewardExp": 34,
+      "rewardCredits": 1680,
+      "rewardExp": 102,
       "requirements": [
-        { "itemName": "Oil", "quantity": 3 },
-        { "itemName": "Fuel Cell", "quantity": 1 }
+        {
+          "itemName": "Oil",
+          "quantity": 3
+        },
+        {
+          "itemName": "Fuel Cell",
+          "quantity": 1
+        }
       ]
     },
     {
       "cityKey": "MEDICO",
       "title": "Agricultural Support",
       "description": "Provide Fertilizer to help the farming districts.",
-      "rewardCredits": 370,
-      "rewardExp": 20,
-      "requirements": [{ "itemName": "Fertilizer", "quantity": 4 }]
+      "rewardCredits": 1110,
+      "rewardExp": 60,
+      "requirements": [
+        {
+          "itemName": "Fertilizer",
+          "quantity": 4
+        }
+      ]
     },
     {
       "cityKey": "MEDICO",
       "title": "Field Medic Supplies",
       "description": "Stock the field medic stations with Healing Potions.",
-      "rewardCredits": 480,
-      "rewardExp": 29,
-      "requirements": [{ "itemName": "Healing Potion", "quantity": 3 }]
+      "rewardCredits": 1440,
+      "rewardExp": 87,
+      "requirements": [
+        {
+          "itemName": "Healing Potion",
+          "quantity": 3
+        }
+      ]
     },
     {
       "cityKey": "MEDICO",
       "title": "Growth Season Boost",
       "description": "Supply Growth Elixirs to accelerate this season's harvest.",
-      "rewardCredits": 430,
-      "rewardExp": 26,
-      "requirements": [{ "itemName": "Growth Elixir", "quantity": 2 }]
+      "rewardCredits": 1290,
+      "rewardExp": 78,
+      "requirements": [
+        {
+          "itemName": "Growth Elixir",
+          "quantity": 2
+        }
+      ]
     },
     {
       "cityKey": "MEDICO",
       "title": "Smelter Health Pack",
       "description": "Deliver Smelter's Tonics to the forge district workers.",
-      "rewardCredits": 430,
-      "rewardExp": 26,
-      "requirements": [{ "itemName": "Smelter's Tonic", "quantity": 2 }]
+      "rewardCredits": 1290,
+      "rewardExp": 78,
+      "requirements": [
+        {
+          "itemName": "Smelter's Tonic",
+          "quantity": 2
+        }
+      ]
     },
     {
       "cityKey": "MEDICO",
       "title": "Arcane Research Order",
       "description": "High-priority delivery of Mana Elixirs and Healing Potions for the research lab.",
-      "rewardCredits": 580,
-      "rewardExp": 35,
+      "rewardCredits": 1740,
+      "rewardExp": 105,
       "requirements": [
-        { "itemName": "Mana Elixir", "quantity": 1 },
-        { "itemName": "Healing Potion", "quantity": 2 }
+        {
+          "itemName": "Mana Elixir",
+          "quantity": 1
+        },
+        {
+          "itemName": "Healing Potion",
+          "quantity": 2
+        }
       ]
     },
     {
       "cityKey": "MEDICO",
       "title": "Chemistry Supplies",
       "description": "Deliver Catalysts and Fertilizer for the biolab experiments.",
-      "rewardCredits": 550,
-      "rewardExp": 32,
+      "rewardCredits": 1650,
+      "rewardExp": 96,
       "requirements": [
-        { "itemName": "Catalyst", "quantity": 2 },
-        { "itemName": "Fertilizer", "quantity": 3 }
+        {
+          "itemName": "Catalyst",
+          "quantity": 2
+        },
+        {
+          "itemName": "Fertilizer",
+          "quantity": 3
+        }
       ]
     },
     {
       "cityKey": "TEXTILIS",
       "title": "Head Gear Order",
       "description": "Supply a Fiber Hood to the new city scouts.",
-      "rewardCredits": 430,
-      "rewardExp": 26,
-      "requirements": [{ "itemName": "Fiber Hood", "quantity": 1 }]
+      "rewardCredits": 1290,
+      "rewardExp": 78,
+      "requirements": [
+        {
+          "itemName": "Fiber Hood",
+          "quantity": 1
+        }
+      ]
     },
     {
       "cityKey": "TEXTILIS",
       "title": "Field Worker Outfit",
       "description": "Outfit the field workers with a Woven Vest and Cargo Shorts.",
-      "rewardCredits": 580,
-      "rewardExp": 34,
+      "rewardCredits": 1740,
+      "rewardExp": 102,
       "requirements": [
-        { "itemName": "Woven Vest", "quantity": 1 },
-        { "itemName": "Cargo Shorts", "quantity": 1 }
+        {
+          "itemName": "Woven Vest",
+          "quantity": 1
+        },
+        {
+          "itemName": "Cargo Shorts",
+          "quantity": 1
+        }
       ]
     },
     {
       "cityKey": "TEXTILIS",
       "title": "Cold Season Gear",
       "description": "Deliver Wool Coats for the incoming cold season.",
-      "rewardCredits": 480,
-      "rewardExp": 29,
-      "requirements": [{ "itemName": "Wool Coat", "quantity": 1 }]
+      "rewardCredits": 1440,
+      "rewardExp": 87,
+      "requirements": [
+        {
+          "itemName": "Wool Coat",
+          "quantity": 1
+        }
+      ]
     },
     {
       "cityKey": "TEXTILIS",
       "title": "Glove Resupply",
       "description": "Resupply the workshop with Wool Mittens.",
-      "rewardCredits": 450,
-      "rewardExp": 27,
-      "requirements": [{ "itemName": "Wool Mittens", "quantity": 2 }]
+      "rewardCredits": 1350,
+      "rewardExp": 81,
+      "requirements": [
+        {
+          "itemName": "Wool Mittens",
+          "quantity": 2
+        }
+      ]
     },
     {
       "cityKey": "TEXTILIS",
       "title": "Traveler's Kit",
       "description": "Supply a Linen Backpack and Canvas Shoes for the trade envoys.",
-      "rewardCredits": 530,
-      "rewardExp": 31,
+      "rewardCredits": 1590,
+      "rewardExp": 93,
       "requirements": [
-        { "itemName": "Linen Backpack", "quantity": 1 },
-        { "itemName": "Canvas Shoes", "quantity": 1 }
+        {
+          "itemName": "Linen Backpack",
+          "quantity": 1
+        },
+        {
+          "itemName": "Canvas Shoes",
+          "quantity": 1
+        }
       ]
     },
     {
       "cityKey": "TEXTILIS",
       "title": "Elite Tailor Commission",
       "description": "High-end commission for a Woven Vest and Wool Coat.",
-      "rewardCredits": 630,
-      "rewardExp": 38,
+      "rewardCredits": 1890,
+      "rewardExp": 114,
       "requirements": [
-        { "itemName": "Woven Vest", "quantity": 1 },
-        { "itemName": "Wool Coat", "quantity": 1 }
+        {
+          "itemName": "Woven Vest",
+          "quantity": 1
+        },
+        {
+          "itemName": "Wool Coat",
+          "quantity": 1
+        }
       ]
     }
   ],

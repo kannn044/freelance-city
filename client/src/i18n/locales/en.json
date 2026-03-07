@@ -1,4 +1,9 @@
 {
+  "nav": {
+    "dashboard": "Dashboard",
+    "marketplace": "Marketplace",
+    "quests": "Daily Quests"
+  },
   "common": {
     "loading": "Loading...",
     "cancel": "Cancel",

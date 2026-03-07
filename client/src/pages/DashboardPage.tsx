@@ -1,11 +1,10 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useMemo, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { normalizeUserJobFields, useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
 import { getExpProgress } from '../lib/gameConstants';
 import {
-    LogOut,
     User as UserIcon,
     Briefcase,
     Award,
@@ -17,10 +16,7 @@ import {
     Sprout,
     UtensilsCrossed,
     Pickaxe,
-    ShoppingCart,
-    Coins,
     Hammer,
-    ClipboardList,
 } from 'lucide-react';
 
 import iconCityStatusPng from '../assets/items/ui/icon_city_status.png';
@@ -39,7 +35,7 @@ import ActiveOrdersGrid from '../components/ActiveOrdersGrid';
 import api from '../lib/api';
 import { getEquipmentRarityColor, getEquipmentRarityLabel, getEquipmentRarityMultiplier } from '../lib/equipmentRarity';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import TopNavBar from '../components/TopNavBar';
 
 type SkillBranchKey = string;
 
@@ -113,7 +109,7 @@ const CITY_TIER_THRESHOLDS = [
 const DashboardPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { user, logout, fetchMe } = useAuthStore();
+    const { user, fetchMe } = useAuthStore();
     const {
         hunger,
         equipment,
@@ -463,261 +459,60 @@ const DashboardPage = () => {
     const remainingToNextTier = nextTierTarget !== null ? Math.max(0, nextTierTarget - cityTreasury) : 0;
     const isMobile = viewportWidth < 900;
     const isTablet = viewportWidth >= 900 && viewportWidth < 1200;
-    const isCompactTopBar = viewportWidth < 1140;
     const topSummaryGridTemplate = viewportWidth < 1100 ? '1fr' : '1.1fr 1.9fr';
     const dashboardGridTemplate = isMobile ? '1fr' : isTablet ? 'repeat(2, minmax(0, 1fr))' : '1.15fr 1fr 1fr';
     const panelHeight = isMobile ? 'auto' : isTablet ? '30rem' : '32rem';
 
+    // Stable ember particles
+    const embers = useMemo(() =>
+        Array.from({ length: 20 }, (_, i) => ({
+            id: i,
+            left: `${5 + Math.random() * 90}%`,
+            delay: `${Math.random() * 10}s`,
+            duration: `${7 + Math.random() * 9}s`,
+            size: `${2 + Math.random() * 3}px`,
+            drift: `${-30 + Math.random() * 60}px`,
+            hue: Math.random() > 0.5 ? '#fbbf24' : '#f97316',
+        })), []);
+
     return (
         <div
-            className="bg-grid"
+            className="bg-forge"
             style={{
                 minHeight: '100vh',
-                background: 'transparent',
                 color: '#f1f5f9',
                 fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
                 position: 'relative',
                 overflow: 'hidden',
             }}
         >
-            {/* ─── Animated Background Orbs ─────────────────────── */}
-            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+            {/* ─── Ember Particles ─────────────────────────────── */}
+            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+                {embers.map((e) => (
+                    <span key={e.id} style={{
+                        position: 'absolute', bottom: '-8px', left: e.left,
+                        width: e.size, height: e.size, borderRadius: '50%',
+                        background: `radial-gradient(circle, ${e.hue} 0%, #92400e 100%)`,
+                        filter: 'blur(0.8px)',
+                        '--drift': e.drift,
+                        animation: `ember-rise ${e.duration} ${e.delay} infinite ease-in`,
+                    } as React.CSSProperties} />
+                ))}
+                <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '70%', height: '220px', background: 'radial-gradient(ellipse at bottom, rgba(234,88,12,0.1) 0%, transparent 70%)' }} />
                 <motion.div
-                    style={{
-                        position: 'absolute',
-                        width: '500px',
-                        height: '500px',
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)',
-                        top: '-5%',
-                        right: '-5%',
-                        opacity: 0.06,
-                    }}
+                    style={{ position: 'absolute', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)', top: '-5%', right: '-5%', opacity: 0.06 }}
                     animate={{ x: [0, -30, 0], y: [0, 20, 0] }}
                     transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
                 />
                 <motion.div
-                    style={{
-                        position: 'absolute',
-                        width: '400px',
-                        height: '400px',
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, #fb923c 0%, transparent 70%)',
-                        bottom: '10%',
-                        left: '-5%',
-                        opacity: 0.05,
-                    }}
+                    style={{ position: 'absolute', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, #fb923c 0%, transparent 70%)', bottom: '10%', left: '-5%', opacity: 0.05 }}
                     animate={{ x: [0, 40, 0], y: [0, -30, 0] }}
                     transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                <motion.div
-                    style={{
-                        position: 'absolute',
-                        width: '300px',
-                        height: '300px',
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)',
-                        top: '40%',
-                        left: '50%',
-                        opacity: 0.04,
-                    }}
-                    animate={{ x: [0, 25, 0], y: [0, -20, 0] }}
-                    transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
                 />
             </div>
 
             {/* ─── Top Bar ───────────────────────────────────────── */}
-            <header
-                style={{
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 20,
-                    borderBottom: '1px solid rgba(245, 158, 11, 0.15)',
-                    background: 'rgba(15, 8, 2, 0.85)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                }}
-            >
-                <div
-                    style={{
-                        maxWidth: '1280px',
-                        margin: '0 auto',
-                        display: 'flex',
-                        minHeight: '4rem',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: isCompactTopBar ? 'wrap' : 'nowrap',
-                        gap: isCompactTopBar ? '0.6rem' : 0,
-                        padding: isMobile ? '0.65rem 0.9rem' : '0 1.5rem',
-                    }}
-                >
-                    {/* Logo */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
-                        <motion.div
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                            style={{
-                                display: 'flex',
-                                height: '2.5rem',
-                                width: '2.5rem',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '0.75rem',
-                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(234, 88, 12, 0.15))',
-                                border: '1px solid rgba(245, 158, 11, 0.3)',
-                                boxShadow: '0 0 15px rgba(245, 158, 11, 0.25)',
-                            }}
-                        >
-                            <img src={iconCityStatusPng} alt="City" style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }} />
-                        </motion.div>
-                        <h1
-                            style={{
-                                fontSize: isMobile ? '1.02rem' : '1.25rem',
-                                fontWeight: 700,
-                                letterSpacing: '-0.02em',
-                                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                            }}
-                        >
-                            {t('dashboard.title')}
-                        </h1>
-                    </div>
-
-                    {/* Right side */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.7rem' : '1.15rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                        <LanguageSwitcher compact={isMobile} />
-                        <motion.button
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.96 }}
-                            onClick={() => navigate('/marketplace')}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.45rem',
-                                borderRadius: '0.65rem',
-                                border: '1px solid rgba(245, 158, 11, 0.35)',
-                                background: 'rgba(245, 158, 11, 0.1)',
-                                color: '#fbbf24',
-                                fontSize: isMobile ? '0.7rem' : '0.76rem',
-                                fontWeight: 700,
-                                padding: isMobile ? '0.38rem 0.58rem' : '0.45rem 0.72rem',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <ShoppingCart size={14} />
-                            {!isMobile && t('dashboard.marketplace_hub')}
-                        </motion.button>
-
-                        <motion.button
-                            whileHover={{ scale: 1.04 }}
-                            whileTap={{ scale: 0.96 }}
-                            onClick={() => navigate('/quests')}
-                            style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '0.45rem',
-                                borderRadius: '0.65rem',
-                                border: '1px solid rgba(251, 191, 36, 0.35)',
-                                background: 'rgba(251, 191, 36, 0.1)',
-                                color: '#fde68a',
-                                fontSize: isMobile ? '0.7rem' : '0.76rem',
-                                fontWeight: 700,
-                                padding: isMobile ? '0.38rem 0.58rem' : '0.45rem 0.72rem',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <ClipboardList size={14} />
-                            {!isMobile && 'Daily Quests'}
-                        </motion.button>
-
-                        {/* Money Pill */}
-                        <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                borderRadius: '9999px',
-                                background: 'rgba(52, 211, 153, 0.08)',
-                                padding: isMobile ? '0.3rem 0.6rem' : '0.375rem 1rem',
-                                border: '1px solid rgba(52, 211, 153, 0.2)',
-                                boxShadow: '0 0 10px rgba(52, 211, 153, 0.1)',
-                            }}
-                        >
-                            <Coins size={14} />
-                            <span
-                                style={{
-                                    fontFamily: 'monospace',
-                                    fontWeight: 600,
-                                    color: '#6ee7b7',
-                                    fontSize: isMobile ? '0.78rem' : '0.875rem',
-                                }}
-                            >
-                                {user.money.toLocaleString()}
-                            </span>
-                        </motion.div>
-
-                        {/* User Info */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                <span style={{ fontSize: isMobile ? '0.76rem' : '0.875rem', fontWeight: 600, color: '#e2e8f0' }}>
-                                    {user.email.split('@')[0]}
-                                </span>
-                                <span
-                                    style={{
-                                        fontSize: '0.7rem',
-                                        color: '#94a3b8',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.35rem',
-                                    }}
-                                >
-                                    <span
-                                        style={{
-                                            display: 'inline-block',
-                                            width: '0.5rem',
-                                            height: '0.5rem',
-                                            borderRadius: '9999px',
-                                            background: roleTheme.color,
-                                        }}
-                                    />
-                                    <span
-                                        style={{
-                                            color: roleTheme.color,
-                                            background: roleTheme.bg,
-                                            border: roleTheme.border,
-                                            borderRadius: '9999px',
-                                            padding: '0.1rem 0.5rem',
-                                            fontWeight: 700,
-                                        }}
-                                    >
-                                        {userRole}
-                                    </span>
-                                </span>
-                            </div>
-                            <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => { logout(); navigate('/'); }}
-                                style={{
-                                    borderRadius: '0.5rem',
-                                    padding: '0.5rem',
-                                    color: '#94a3b8',
-                                    background: 'transparent',
-                                    border: '1px solid rgba(255,255,255,0.06)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'all 0.2s',
-                                }}
-                            >
-                                <LogOut size={18} />
-                            </motion.button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <TopNavBar />
 
             {/* ─── Action Message Toast ──────────────────────────── */}
             <div

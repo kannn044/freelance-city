@@ -566,7 +566,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/gunkhemnak/Gun/freelance-city/server/src/generated/prisma",
+      "value": "D:\\freelance-city\\server\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -575,16 +575,16 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/gunkhemnak/Gun/freelance-city/server/prisma/schema.prisma",
+    "sourceFilePath": "D:\\freelance-city\\server\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
+    "rootEnvPath": null,
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../../../prisma",
@@ -594,7 +594,6 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

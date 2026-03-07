@@ -1,4 +1,9 @@
 {
+  "nav": {
+    "dashboard": "แดชบอร์ด",
+    "marketplace": "ตลาด",
+    "quests": "เควสประจำวัน"
+  },
   "common": {
     "loading": "กำลังโหลด...",
     "cancel": "ยกเลิก",

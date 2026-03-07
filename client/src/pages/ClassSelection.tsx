@@ -44,19 +44,41 @@ const ClassSelection = () => {
         setSelectedCity(null);
     };
 
+    const embers = useMemo(() =>
+        Array.from({ length: 18 }, (_, i) => ({
+            id: i,
+            left: `${5 + Math.random() * 90}%`,
+            delay: `${Math.random() * 10}s`,
+            duration: `${7 + Math.random() * 9}s`,
+            size: `${2 + Math.random() * 3}px`,
+            drift: `${-30 + Math.random() * 60}px`,
+            hue: Math.random() > 0.5 ? '#fbbf24' : '#f97316',
+        })), []);
+
     return (
-        <div className="min-h-screen bg-grid flex flex-col items-center justify-center relative overflow-hidden" style={{ padding: '2rem' }}>
+        <div className="min-h-screen bg-forge flex flex-col items-center justify-center relative overflow-hidden" style={{ padding: '2rem' }}>
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {embers.map((e) => (
+                    <span key={e.id} style={{
+                        position: 'absolute', bottom: '-8px', left: e.left,
+                        width: e.size, height: e.size, borderRadius: '50%',
+                        background: `radial-gradient(circle, ${e.hue} 0%, #92400e 100%)`,
+                        filter: 'blur(0.8px)',
+                        '--drift': e.drift,
+                        animation: `ember-rise ${e.duration} ${e.delay} infinite ease-in`,
+                    } as React.CSSProperties} />
+                ))}
+                <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '70%', height: '220px', background: 'radial-gradient(ellipse at bottom, rgba(234,88,12,0.13) 0%, transparent 70%)' }} />
                 <motion.div
-                    className="absolute w-[640px] h-[640px] rounded-full opacity-8"
+                    className="absolute w-[640px] h-[640px] rounded-full"
                     style={{ background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)', top: '10%', left: '-10%' }}
-                    animate={{ scale: [1, 1.08, 1], opacity: [0.05, 0.1, 0.05] }}
+                    animate={{ scale: [1, 1.08, 1], opacity: [0.04, 0.08, 0.04] }}
                     transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                 />
                 <motion.div
-                    className="absolute w-[640px] h-[640px] rounded-full opacity-8"
-                    style={{ background: 'radial-gradient(circle, #fb923c 0%, transparent 70%)', bottom: '10%', right: '-10%' }}
-                    animate={{ scale: [1, 1.08, 1], opacity: [0.05, 0.1, 0.05] }}
+                    className="absolute w-[640px] h-[640px] rounded-full"
+                    style={{ background: 'radial-gradient(circle, #ea580c 0%, transparent 70%)', bottom: '10%', right: '-10%' }}
+                    animate={{ scale: [1, 1.08, 1], opacity: [0.04, 0.08, 0.04] }}
                     transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
                 />
             </div>

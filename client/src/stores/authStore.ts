@@ -158,7 +158,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-    token: localStorage.getItem('fc_token'),
+    token: sessionStorage.getItem('fc_token'),
     user: null,
     isLoading: false,
     error: null,
@@ -168,7 +168,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const { data } = await api.post('/auth/login', { email, password });
-            localStorage.setItem('fc_token', data.token);
+            sessionStorage.setItem('fc_token', data.token);
             set({ token: data.token, user: normalizeUserJobFields(data.user), isLoading: false });
         } catch (err: any) {
             set({
@@ -183,7 +183,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
             const { data } = await api.post('/auth/register', { email, password });
-            localStorage.setItem('fc_token', data.token);
+            sessionStorage.setItem('fc_token', data.token);
             set({ token: data.token, user: normalizeUserJobFields(data.user), isLoading: false });
         } catch (err: any) {
             set({
@@ -254,13 +254,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             console.log('Fetched user data:', data);
             set({ user: normalizeUserJobFields(data.user), isLoading: false });
         } catch {
-            localStorage.removeItem('fc_token');
+            sessionStorage.removeItem('fc_token');
             set({ token: null, user: null, isLoading: false });
         }
     },
 
     logout: () => {
-        localStorage.removeItem('fc_token');
+        sessionStorage.removeItem('fc_token');
         set({ token: null, user: null, error: null });
     },
 
