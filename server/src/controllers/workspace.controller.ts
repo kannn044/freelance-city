@@ -1201,8 +1201,9 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const branchSkillLevel = Number(firstJobBranchLevels.branch1 ?? 0);
 
             // Plot limit is controlled by game.config helper.
-            // Textilis uses 6 tasks per plot (2x3); other cities use 9 (3x3).
-            const plotSize = isTextilis ? 6 : 9;
+            // Textilis uses 6 tasks per plot (2x3); Medico uses 6 tasks per plot (pentagon);
+            // other cities use 9 (3x3).
+            const plotSize = (isTextilis || isMedico) ? 6 : 9;
             const branchOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
             const maxPlots = getFirstJobSkillPlotCount(branchSkillLevel);
             const maxOrders = maxPlots * plotSize;
@@ -1850,8 +1851,8 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
                 const totalCount = allSameSeedOrders.length;
                 const cancelledIndex = allSameSeedOrders.findIndex((o) => o.id === order.id);
                 if (cancelledIndex !== -1) {
-                    // Plot size is 6 for Textilis (GATHER type), 9 for all other cities
-                    const cancelPlotSize = order.type === "GATHER" ? 6 : 9;
+                    // Plot size is 6 for Textilis (GATHER) and Medico (FORAGE), 9 for all other cities
+                    const cancelPlotSize = (order.type === "GATHER" || order.type === "FORAGE") ? 6 : 9;
                     const plotGroup = Math.floor(cancelledIndex / cancelPlotSize); // 0-based
                     const totalCompletePlots = Math.floor(totalCount / cancelPlotSize);
                     // Only revert if the cancelled order was inside a complete plot

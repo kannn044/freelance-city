@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import ClassSelection from './pages/ClassSelection';
 import DashboardPage from './pages/DashboardPage';
 import MarketplacePage from './pages/MarketplacePage';
+import QuestPage from './pages/QuestPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuthStore();
@@ -56,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MarketplacePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/quests"
+            element={
+              <ProtectedRoute>
+                <QuestPage />
               </ProtectedRoute>
             }
           />

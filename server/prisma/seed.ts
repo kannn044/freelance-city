@@ -59,6 +59,20 @@ type WorkspaceRule = {
     isEnabled?: boolean;
 };
 
+type MasterDataDailyQuestRequirement = {
+    itemName: string;
+    quantity: number;
+};
+
+type MasterDataDailyQuest = {
+    cityKey: string;
+    title: string;
+    description: string;
+    rewardCredits: number;
+    rewardExp: number;
+    requirements: MasterDataDailyQuestRequirement[];
+};
+
 type MasterData = {
     gameSettings: Array<{ key: string; value: string }>;
     items: MasterDataItem[];
@@ -69,6 +83,7 @@ type MasterData = {
         recipeRules: ShopRule[];
     };
     workspaceRules?: WorkspaceRule[];
+    dailyQuests?: MasterDataDailyQuest[];
 };
 
 function isTruthy(v: string | undefined): boolean {
@@ -776,6 +791,63 @@ async function seedWorkspaceRules(workspaceRules: WorkspaceRule[]) {
     }
 }
 
+async function seedDailyQuests(quests: MasterDataDailyQuest[]) {
+    for (const quest of quests) {
+        // Find item IDs for requirements upfront
+        const reqItems: Array<{ itemName: string; quantity: number; itemId: number }> = [];
+        for (const req of quest.requirements) {
+            const item = await prisma.item.findUnique({ where: { name: req.itemName } });
+            if (!item) throw new Error(`Daily quest requirement item not found: ${req.itemName}`);
+            reqItems.push({ itemName: req.itemName, quantity: req.quantity, itemId: item.id });
+        }
+
+        // Upsert the template by (cityKey + title)
+        const existing = await prisma.dailyQuestTemplate.findFirst({
+            where: { city_key: quest.cityKey.toUpperCase(), title: quest.title },
+            include: { requirements: true },
+        });
+
+        let templateId: number;
+        if (existing) {
+            await prisma.dailyQuestTemplate.update({
+                where: { id: existing.id },
+                data: {
+                    description: quest.description,
+                    reward_credits: quest.rewardCredits,
+                    reward_exp: quest.rewardExp,
+                    is_active: true,
+                },
+            });
+            templateId = existing.id;
+            // Remove old requirements and re-create
+            await prisma.dailyQuestRequirement.deleteMany({ where: { template_id: templateId } });
+        } else {
+            const created = await prisma.dailyQuestTemplate.create({
+                data: {
+                    city_key: quest.cityKey.toUpperCase(),
+                    title: quest.title,
+                    description: quest.description,
+                    reward_credits: quest.rewardCredits,
+                    reward_exp: quest.rewardExp,
+                    is_active: true,
+                },
+            });
+            templateId = created.id;
+        }
+
+        for (const req of reqItems) {
+            await prisma.dailyQuestRequirement.create({
+                data: {
+                    template_id: templateId,
+                    item_id: req.itemId,
+                    quantity: req.quantity,
+                },
+            });
+        }
+    }
+    console.log(`Seeded ${quests.length} daily quest templates.`);
+}
+
 async function main() {
     const masterData = loadMasterData();
     console.log(`Seed mode: ${SYNC_DELETE_MODE ? "sync-delete" : "upsert-only"}`);
@@ -793,6 +865,9 @@ async function main() {
 
     console.log("Seeding workspace rules...");
     await seedWorkspaceRules(masterData.workspaceRules ?? []);
+
+    console.log("Seeding daily quests...");
+    await seedDailyQuests(masterData.dailyQuests ?? []);
 
     console.log("Seed complete!");
 }

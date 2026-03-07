@@ -9,6 +9,7 @@ import BlacksmithWorkspace from './workspaces/BlacksmithWorkspace';
 import EngineerWorkspace from './workspaces/EngineerWorkspace';
 import WeaverWorkspace from './workspaces/WeaverWorkspace';
 import TailorWorkspace from './workspaces/TailorWorkspace';
+import ForagerWorkspace from './workspaces/ForagerWorkspace';
 
 const WorkspacePanel = () => {
     const { t } = useTranslation();
@@ -61,7 +62,8 @@ const WorkspacePanel = () => {
                     firstJobWorkspaceMode === 'MINE' ? <MinerWorkspace /> :
                         firstJobWorkspaceMode === 'EXTRACT' ? <TechnicianWorkspace /> :
                             firstJobWorkspaceMode === 'GATHER' ? <WeaverWorkspace /> :
-                                <ProviderWorkspace />
+                                firstJobWorkspaceMode === 'FORAGE' ? <ForagerWorkspace /> :
+                                    <ProviderWorkspace />
                 )}
 
                 {doSecondJob && (

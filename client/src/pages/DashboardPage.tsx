@@ -20,6 +20,7 @@ import {
     ShoppingCart,
     Coins,
     Hammer,
+    ClipboardList,
 } from 'lucide-react';
 
 import iconCityStatusPng from '../assets/items/ui/icon_city_status.png';
@@ -605,6 +606,28 @@ const DashboardPage = () => {
                         >
                             <ShoppingCart size={14} />
                             {!isMobile && t('dashboard.marketplace_hub')}
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => navigate('/quests')}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.45rem',
+                                borderRadius: '0.65rem',
+                                border: '1px solid rgba(251, 191, 36, 0.35)',
+                                background: 'rgba(251, 191, 36, 0.1)',
+                                color: '#fde68a',
+                                fontSize: isMobile ? '0.7rem' : '0.76rem',
+                                fontWeight: 700,
+                                padding: isMobile ? '0.38rem 0.58rem' : '0.45rem 0.72rem',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <ClipboardList size={14} />
+                            {!isMobile && 'Daily Quests'}
                         </motion.button>
 
                         {/* Money Pill */}

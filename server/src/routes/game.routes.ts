@@ -39,6 +39,7 @@ import {
 	setCityTaxesController,
 	voteMayorController,
 } from "../controllers/city.controller";
+import { getDailyQuests, submitQuest } from "../controllers/quest.controller";
 
 const router = Router();
 
@@ -98,5 +99,9 @@ router.post("/shop/equipment-box/open", openEquipmentBox);
 router.get("/shop/recipes", getRecipeShop);
 router.post("/shop/recipes/buy", buyRecipeUnlock);
 router.get("/recipes", getRecipes);
+
+// ─── Daily Quests ────────────────────────────────────
+router.get("/quests", getDailyQuests);
+router.post("/quests/submit/:questId", submitQuest);
 
 export default router;

@@ -14,7 +14,12 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@prisma/client": ["./src/generated/prisma"],
+      "@prisma/client/*": ["./src/generated/prisma/*"]
+    }
   },
   "include": [
     "src/**/*",

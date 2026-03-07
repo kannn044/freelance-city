@@ -76,30 +76,30 @@ enum SkillEffectType {
 // ─── User ────────────────────────────────────────────────
 
 model User {
-  id                Int      @id @default(autoincrement())
-  email             String   @unique
-  password_hash     String
-  role              UserRole @default(CITIZEN)
-  money             Int      @default(5000)
-  hunger            Float    @default(2400)
-  hunger_updated_at DateTime @default(now())
-  satiety_buff      Float    @default(0)
-  buff_expires_at   DateTime?
-  city_key          String?
-  city_selected_at  DateTime?
-  first_job_level   Int      @default(0) // 0 = not unlocked, 1+ = active level
-  first_job_skill_level Int  @default(0)
-  first_job_exp     Int      @default(0)
-  secondary_job_level Int    @default(0)
-  secondary_job_skill_level Int @default(0)
-  secondary_job_exp Int      @default(0)
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
+  id                        Int       @id @default(autoincrement())
+  email                     String    @unique
+  password_hash             String
+  role                      UserRole  @default(CITIZEN)
+  money                     Int       @default(5000)
+  hunger                    Float     @default(2400)
+  hunger_updated_at         DateTime  @default(now())
+  satiety_buff              Float     @default(0)
+  buff_expires_at           DateTime?
+  city_key                  String?
+  city_selected_at          DateTime?
+  first_job_level           Int       @default(0) // 0 = not unlocked, 1+ = active level
+  first_job_skill_level     Int       @default(0)
+  first_job_exp             Int       @default(0)
+  secondary_job_level       Int       @default(0)
+  secondary_job_skill_level Int       @default(0)
+  secondary_job_exp         Int       @default(0)
+  created_at                DateTime  @default(now())
+  updated_at                DateTime  @updatedAt
 
   inventory      InventorySlot[]
   work_orders    WorkOrder[]
-  sell_listings  MarketListing[]   @relation("seller")
-  buy_history    MarketListing[]   @relation("buyer")
+  sell_listings  MarketListing[]     @relation("seller")
+  buy_history    MarketListing[]     @relation("buyer")
   recipe_unlocks UserRecipeUnlock[]
   equipments     UserEquipment[]
   job_progress   UserJobProgress[]
@@ -112,30 +112,30 @@ model User {
 // ─── Item Catalog ────────────────────────────────────────
 
 model Item {
-  id              Int            @id @default(autoincrement())
-  name            String         @unique
-  type            ItemType
-  equipment_slot  EquipmentSlot?
-  effect_key      String?
-  effect_value    Float?
-  effect_value2   Float?
-  buy_price       Int? // NPC shop price (null = not buyable)
-  sell_price      Int? // NPC sell price (null = not sellable to NPC)
-  kcal            Int? // Kcal restored when eaten
-  buff_pct        Float? // Hunger decay slowdown % (e.g. 0.05 = 5%)
-  buff_mins       Int? // Buff duration in real minutes
-  max_stack       Int            @default(1)
-  grow_mins       Int? // Growth time for seeds (real minutes)
-  yield_item_id   Int? // Item produced when harvested
-  yield_qty       Int? // Quantity produced
-  exp_value       Float          @default(1.0) // Base EXP multiplier for market sales
-  icon            String         @default("box")
+  id             Int            @id @default(autoincrement())
+  name           String         @unique
+  type           ItemType
+  equipment_slot EquipmentSlot?
+  effect_key     String?
+  effect_value   Float?
+  effect_value2  Float?
+  buy_price      Int? // NPC shop price (null = not buyable)
+  sell_price     Int? // NPC sell price (null = not sellable to NPC)
+  kcal           Int? // Kcal restored when eaten
+  buff_pct       Float? // Hunger decay slowdown % (e.g. 0.05 = 5%)
+  buff_mins      Int? // Buff duration in real minutes
+  max_stack      Int            @default(1)
+  grow_mins      Int? // Growth time for seeds (real minutes)
+  yield_item_id  Int? // Item produced when harvested
+  yield_qty      Int? // Quantity produced
+  exp_value      Float          @default(1.0) // Base EXP multiplier for market sales
+  icon           String         @default("box")
 
-  yield_item         Item?                @relation("yield", fields: [yield_item_id], references: [id])
-  yielded_from       Item[]               @relation("yield")
+  yield_item         Item?                   @relation("yield", fields: [yield_item_id], references: [id])
+  yielded_from       Item[]                  @relation("yield")
   inventory_slots    InventorySlot[]
   work_orders        WorkOrder[]
-  recipe_outputs     Recipe[]             @relation("recipeOutput")
+  recipe_outputs     Recipe[]                @relation("recipeOutput")
   recipe_ingredients RecipeIngredient[]
   market_listings    MarketListing[]
   equipped_on        UserEquipment[]
@@ -190,12 +190,12 @@ model UserRecipeUnlock {
 // ─── Inventory ───────────────────────────────────────────
 
 model InventorySlot {
-  id       Int @id @default(autoincrement())
-  user_id  Int
-  slot     Int // 0–15
-  item_id  Int?
-  quantity Int @default(0)
-  equipment_rarity EquipmentRarity?
+  id                   Int              @id @default(autoincrement())
+  user_id              Int
+  slot                 Int // 0–15
+  item_id              Int?
+  quantity             Int              @default(0)
+  equipment_rarity     EquipmentRarity?
   equipment_durability Float?
 
   user User  @relation(fields: [user_id], references: [id])
@@ -206,14 +206,14 @@ model InventorySlot {
 }
 
 model UserEquipment {
-  id         Int           @id @default(autoincrement())
-  user_id    Int
-  slot       EquipmentSlot
-  item_id    Int?
-  item_rarity EquipmentRarity?
-  durability  Float        @default(100)
-  durability_updated_at DateTime @default(now())
-  updated_at DateTime      @updatedAt
+  id                    Int              @id @default(autoincrement())
+  user_id               Int
+  slot                  EquipmentSlot
+  item_id               Int?
+  item_rarity           EquipmentRarity?
+  durability            Float            @default(100)
+  durability_updated_at DateTime         @default(now())
+  updated_at            DateTime         @updatedAt
 
   user User  @relation(fields: [user_id], references: [id])
   item Item? @relation(fields: [item_id], references: [id])
@@ -225,17 +225,17 @@ model UserEquipment {
 // ─── Work Orders ─────────────────────────────────────────
 
 model WorkOrder {
-  id           Int      @id @default(autoincrement())
-  user_id      Int
-  type         WorkType
-  item_id      Int // The seed/recipe item being worked
-  recipe_id    Int? // Recipe ID if cooking
+  id            Int              @id @default(autoincrement())
+  user_id       Int
+  type          WorkType
+  item_id       Int // The seed/recipe item being worked
+  recipe_id     Int? // Recipe ID if cooking
   output_rarity EquipmentRarity?
-  quantity     Int      @default(1)
-  started_at   DateTime @default(now())
-  completes_at DateTime
-  paused_at    DateTime?
-  collected    Boolean  @default(false)
+  quantity      Int              @default(1)
+  started_at    DateTime         @default(now())
+  completes_at  DateTime
+  paused_at     DateTime?
+  collected     Boolean          @default(false)
 
   user User @relation(fields: [user_id], references: [id])
   item Item @relation(fields: [item_id], references: [id])
@@ -246,16 +246,16 @@ model WorkOrder {
 // ─── Market ──────────────────────────────────────────────
 
 model MarketListing {
-  id         Int           @id @default(autoincrement())
-  seller_id  Int
-  buyer_id   Int?
-  item_id    Int
-  quantity   Int
-  price      Int           // Total price
+  id               Int              @id @default(autoincrement())
+  seller_id        Int
+  buyer_id         Int?
+  item_id          Int
+  quantity         Int
+  price            Int // Total price
   equipment_rarity EquipmentRarity?
-  status     ListingStatus @default(ACTIVE)
-  created_at DateTime      @default(now())
-  sold_at    DateTime?
+  status           ListingStatus    @default(ACTIVE)
+  created_at       DateTime         @default(now())
+  sold_at          DateTime?
 
   seller User  @relation("seller", fields: [seller_id], references: [id])
   buyer  User? @relation("buyer", fields: [buyer_id], references: [id])
@@ -267,7 +267,7 @@ model MarketListing {
 // ─── Dynamic Occupation Progression ─────────────────────
 
 model OccupationCatalog {
-  occupation_key String @id
+  occupation_key String   @id
   city_key       String
   job_slot       JobSlot
   display_name   String
@@ -284,16 +284,16 @@ model OccupationCatalog {
 }
 
 model OccupationSkillBranchCatalog {
-  id                 Int @id @default(autoincrement())
+  id                 Int             @id @default(autoincrement())
   occupation_key     String
   branch_slot        Int
   branch_key         String
   branch_name        String
   effect_type        SkillEffectType
-  max_level          Int @default(5)
+  max_level          Int             @default(5)
   effect_config_json Json
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
 
   occupation OccupationCatalog @relation(fields: [occupation_key], references: [occupation_key])
 
@@ -303,12 +303,12 @@ model OccupationSkillBranchCatalog {
 }
 
 model UserJobProgress {
-  id             Int @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   user_id        Int
   job_slot       JobSlot
   occupation_key String
-  level          Int @default(1)
-  exp            Int @default(0)
+  level          Int      @default(1)
+  exp            Int      @default(0)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
@@ -320,12 +320,12 @@ model UserJobProgress {
 }
 
 model UserSkillProgress {
-  id             Int @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   user_id        Int
   job_slot       JobSlot
   occupation_key String
   branch_key     String
-  level          Int @default(0)
+  level          Int      @default(0)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
@@ -339,20 +339,20 @@ model UserSkillProgress {
 // ─── Dynamic Workspace Rules ───────────────────────────
 
 model CityWorkspaceRule {
-  id               Int      @id @default(autoincrement())
-  city_key         String   @db.VarChar(32)
-  job_slot         JobSlot
-  work_type        WorkType
-  workspace_mode   String   @default("") @db.VarChar(32)
-  matcher_type     String   @db.VarChar(32)
-  matcher_value    String   @default("") @db.VarChar(96)
-  required_item_name String @db.VarChar(96)
-  must_be_equipped Boolean  @default(true)
-  error_code       String   @default("WORKSPACE_REQUIREMENT_FAILED") @db.VarChar(64)
-  error_message    String   @db.VarChar(255)
-  is_enabled       Boolean  @default(true)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id                 Int      @id @default(autoincrement())
+  city_key           String   @db.VarChar(32)
+  job_slot           JobSlot
+  work_type          WorkType
+  workspace_mode     String   @default("") @db.VarChar(32)
+  matcher_type       String   @db.VarChar(32)
+  matcher_value      String   @default("") @db.VarChar(96)
+  required_item_name String   @db.VarChar(96)
+  must_be_equipped   Boolean  @default(true)
+  error_code         String   @default("WORKSPACE_REQUIREMENT_FAILED") @db.VarChar(64)
+  error_message      String   @db.VarChar(255)
+  is_enabled         Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
 
   @@unique([city_key, job_slot, work_type, workspace_mode, matcher_type, matcher_value, required_item_name])
   @@index([city_key, job_slot, work_type, is_enabled])
@@ -370,18 +370,18 @@ model GameSetting {
 }
 
 model CityState {
-  city_key               String   @id
-  display_name           String
-  treasury               BigInt   @default(0)
-  tier                   Int      @default(1)
-  domestic_trade_tax_bp  Int      @default(300)
-  export_tax_bp          Int      @default(300)
-  import_tax_bp          Int      @default(300)
-  mayor_user_id          Int?
-  cycle_started_at       DateTime
-  cycle_ends_at          DateTime
-  created_at             DateTime @default(now())
-  updated_at             DateTime @updatedAt
+  city_key              String   @id
+  display_name          String
+  treasury              BigInt   @default(0)
+  tier                  Int      @default(1)
+  domestic_trade_tax_bp Int      @default(300)
+  export_tax_bp         Int      @default(300)
+  import_tax_bp         Int      @default(300)
+  mayor_user_id         Int?
+  cycle_started_at      DateTime
+  cycle_ends_at         DateTime
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
 
   @@map("city_states")
 }
@@ -473,7 +473,7 @@ model PlayerDailyQuest {
   id           Int       @id @default(autoincrement())
   user_id      Int
   template_id  Int
-  quest_date   DateTime  // UTC midnight of the quest day
+  quest_date   DateTime // UTC midnight of the quest day
   completed    Boolean   @default(false)
   completed_at DateTime?
   created_at   DateTime  @default(now())
