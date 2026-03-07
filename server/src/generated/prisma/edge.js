@@ -566,7 +566,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\freelance-city\\server\\src\\generated\\prisma",
+      "value": "/Users/gunkhemnak/Gun/freelance-city/server/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -575,12 +575,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "darwin-arm64",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\freelance-city\\server\\prisma\\schema.prisma",
+    "sourceFilePath": "/Users/gunkhemnak/Gun/freelance-city/server/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

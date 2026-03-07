@@ -54,6 +54,7 @@ function isValidWorkType(type: string): type is WorkType {
 let workOrderRarityColumnEnsured = false;
 
 const MINING_PERMIT_NAME = "Ferrum Mining Permit";
+const DRILL_PERMIT_NAME = "Voltara Drill Permit";
 type MiningLayer = "SURFACE" | "DEEP" | "CORE";
 
 const LAYER_CODE: Record<MiningLayer, number> = {
@@ -207,6 +208,28 @@ async function ensureFerrumCatalog(db: DbClient = prisma) {
     };
 }
 
+async function ensureVoltaraCatalog(db: DbClient = prisma) {
+    const getItemByName = async (name: string) => {
+        const item = await db.item.findUnique({ where: { name } });
+        if (!item) {
+            throw new Error(`Missing master data item: ${name}. Please run prisma seed.`);
+        }
+        return item;
+    };
+
+    const drillPermit = await getItemByName(DRILL_PERMIT_NAME);
+    const crudeOil = await getItemByName("Crude Oil");
+    const rawGas = await getItemByName("Raw Gas");
+
+    return {
+        drillPermitId: drillPermit.id,
+        extractItemIds: {
+            crudeOilId: crudeOil.id,
+            rawGasId: rawGas.id,
+        },
+    };
+}
+
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
 function applyTierReduction(baseHunger: number, tierReduction: number) {
@@ -353,7 +376,37 @@ async function getOrderOutput(
     harvestDropRates: Record<EquipmentRarity, number>
 ): Promise<OutputReward[]> {
     const ferrumCatalog = await ensureFerrumCatalog(db);
+    const voltaraCatalog = await ensureVoltaraCatalog(db);
     const effects = await getUserEquipmentEffects(userId, db);
+
+    if (order.type === "EXTRACT" && order.item_id === voltaraCatalog.drillPermitId) {
+        const outputs: OutputReward[] = [];
+        const rollQty = (chance: number, min = 1, max = 1) => (Math.random() < chance ? min + Math.floor(Math.random() * (max - min + 1)) : 0);
+
+        const pushTiered = (itemId: number, qty: number) => {
+            if (qty <= 0) return;
+            const splits = splitByHarvestRarity(qty, harvestDropRates);
+            for (const s of splits) {
+                outputs.push({
+                    outputItemId: itemId,
+                    outputQty: s.qty,
+                    outputRarity: s.rarity,
+                });
+            }
+        };
+
+        const crudeOilQty = rollQty(0.8, 1, 3);
+        const rawGasQty = rollQty(0.5, 1, 2);
+
+        pushTiered(voltaraCatalog.extractItemIds.crudeOilId, crudeOilQty);
+        pushTiered(voltaraCatalog.extractItemIds.rawGasId, rawGasQty);
+
+        if (outputs.length === 0) {
+            pushTiered(voltaraCatalog.extractItemIds.crudeOilId, 1);
+        }
+
+        return outputs;
+    }
 
     if ((order.type === "FARM" || order.type === "MINE") && order.item_id === ferrumCatalog.miningPermitId) {
         const miningConfig = await getFerrumMiningConfig();
