@@ -118,15 +118,14 @@ const MedicoActiveOrders = () => {
         return { itemName, itemIcon: orders[0].item, style: getGathererStyle(itemName), slots, filled: orders.slice(0, PLOT_SIZE).filter(Boolean).length };
     });
 
-    // ── Cancel confirmation modal ──────────────────────────────
     const renderCancelConfirmModal = () => {
         if (!cancelConfirm) return null;
         return (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,5,0,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    style={{ width: 'min(100%, 24rem)', borderRadius: '1rem', border: '1px solid rgba(248,113,113,0.35)', background: 'linear-gradient(160deg,rgba(15,23,42,0.98),rgba(2,6,23,0.98))', boxShadow: '0 18px 60px rgba(0,0,0,0.55),0 0 40px rgba(248,113,113,0.08)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                    style={{ width: 'min(100%, 24rem)', borderRadius: '0.85rem', border: '1px solid rgba(248,113,113,0.35)', background: 'linear-gradient(180deg, rgba(30,19,10,0.96), rgba(22,13,5,0.96))', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', padding: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
                 >
                     <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#fecaca' }}>{t('active_orders.cancel_confirm_title')}</div>
                     <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.84)', lineHeight: 1.55 }}>{cancelConfirm.message}</div>
@@ -163,15 +162,15 @@ const MedicoActiveOrders = () => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 style={{
-                    position: 'absolute', top: pos.top, left: pos.left,
-                    width: CELL, height: CELL,
-                    borderRadius: '0.4rem',
-                    background: ready ? `radial-gradient(circle at 50% 40%, ${style.bg}, rgba(2,6,23,0.6))` : 'rgba(2,6,23,0.65)',
-                    border: `1px solid ${ready ? style.glow : style.border}`,
-                    boxShadow: ready ? `0 0 12px ${style.glow}55, inset 0 0 8px ${style.bg}` : 'none',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '0.18rem 0.12rem 0.14rem',
-                    cursor: ready ? 'pointer' : 'default',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.3rem',
+                    padding: '0.4rem',
+                    borderRadius: '0.45rem',
+                    background: ready ? `${style.bg}` : 'rgba(10,5,0,0.35)',
+                    border: `1px solid ${ready ? style.glow : 'rgba(255,255,255,0.06)'}`,
+                    boxShadow: ready ? `0 0 10px ${style.bg}, inset 0 0 8px ${style.bg}` : 'none',
+                    position: 'relative',
                     overflow: 'hidden',
                     zIndex: slotIndex === 0 ? 2 : 1,
                 }}
@@ -255,8 +254,26 @@ const MedicoActiveOrders = () => {
         const liquidH = Math.round((progress / 100) * TUBE_H);
 
         return (
-            <motion.div key={order.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', minWidth: TUBE_W + 18, maxWidth: TUBE_W + 28, position: 'relative' }}>
+            <motion.div
+                key={order.id}
+                layout
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.6rem',
+                    borderRadius: '0.55rem',
+                    background: ready ? 'rgba(167,139,250,0.08)' : 'rgba(22,13,5,0.55)',
+                    border: `1px solid ${ready ? colors.glow : 'rgba(167,139,250,0.18)'}`,
+                    boxShadow: ready ? '0 0 14px rgba(167,139,250,0.15)' : 'none',
+                    position: 'relative'
+                }}
+            >
+                <div style={{ width: '2.2rem', height: '2.2rem', borderRadius: '0.45rem', background: 'rgba(10,5,0,0.45)', border: '1px solid rgba(167,139,250,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {renderItemIcon(order.item, 22)}
+                </div>
 
                 {/* Stopper cap */}
                 <div style={{ width: TUBE_W - 4, height: 5, borderRadius: '2px 2px 0 0', background: ready ? colors.glow : `${colors.glow}55`, boxShadow: ready ? `0 0 8px ${colors.glow}` : 'none', flexShrink: 0 }} />
@@ -418,7 +435,16 @@ const MedicoActiveOrders = () => {
                         whileTap={{ scale: readyCount > 0 ? 0.97 : 1 }}
                         onClick={() => collectReadyWork()}
                         disabled={readyCount === 0}
-                        style={{ padding: '0.4rem 0.75rem', borderRadius: '0.5rem', border: `1px solid ${readyCount > 0 ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.08)'}`, background: readyCount > 0 ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.03)', color: readyCount > 0 ? '#34d399' : 'rgba(255,255,255,0.3)', fontSize: '0.68rem', fontWeight: 700, cursor: readyCount > 0 ? 'pointer' : 'not-allowed', fontFamily: 'monospace', letterSpacing: '0.04em' }}
+                        style={{
+                            padding: '0.4rem 0.7rem',
+                            borderRadius: '0.45rem',
+                            border: '1px solid rgba(74,222,128,0.35)',
+                            background: readyCount > 0 ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.12)',
+                            color: readyCount > 0 ? '#4ade80' : 'rgba(255,255,255,0.45)',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            cursor: readyCount > 0 ? 'pointer' : 'not-allowed',
+                        }}
                     >
                         {t('active_orders.collect_all_ready', { count: readyCount })}
                     </motion.button>
@@ -426,10 +452,13 @@ const MedicoActiveOrders = () => {
 
                 {/* Job columns */}
                 <div style={{ display: 'grid', gridTemplateColumns: showFirstJobColumn && showSecondaryJobColumn ? 'repeat(2, minmax(260px, 1fr))' : 'minmax(260px, 1fr)', gap: '0.9rem' }}>
+
                     {showFirstJobColumn && renderGathererColumn()}
+
                     {showSecondaryJobColumn && renderAlchemistRack()}
+
                     {!showFirstJobColumn && !showSecondaryJobColumn && (
-                        <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.9rem', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', fontFamily: 'monospace' }}>
+                        <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.8rem', background: 'rgba(255,255,255,0.10)', padding: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
                             {t('active_orders.no_occupation')}
                         </div>
                     )}

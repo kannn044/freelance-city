@@ -170,7 +170,7 @@ const BlacksmithWorkspace = () => {
                             style={{
                                 position: 'fixed',
                                 inset: 0,
-                                background: 'rgba(2,6,23,0.62)',
+                                background: 'rgba(10,5,0,0.62)',
                                 zIndex: 9999,
                                 display: 'flex',
                                 alignItems: 'center',
@@ -191,7 +191,7 @@ const BlacksmithWorkspace = () => {
                                     overflow: 'hidden',
                                     borderRadius: '0.75rem',
                                     border: '1px solid rgba(255,255,255,0.14)',
-                                    background: 'rgba(15,23,42,0.96)',
+                                    background: 'rgba(22,13,5,0.96)',
                                     padding: '0.85rem',
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -297,7 +297,7 @@ const BlacksmithWorkspace = () => {
                                                                     padding: '0.35rem 0.45rem',
                                                                     borderRadius: '0.42rem',
                                                                     border: '1px solid rgba(255,255,255,0.1)',
-                                                                    background: 'rgba(2,6,23,0.48)',
+                                                                    background: 'rgba(10,5,0,0.48)',
                                                                 }}
                                                             >
                                                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -321,7 +321,7 @@ const BlacksmithWorkspace = () => {
                                                                         padding: '0.22rem 0.3rem',
                                                                         borderRadius: '0.35rem',
                                                                         border: '1px solid rgba(255,255,255,0.14)',
-                                                                        background: 'rgba(15,23,42,0.45)',
+                                                                        background: 'rgba(22,13,5,0.45)',
                                                                         color: 'white',
                                                                         fontSize: '0.62rem',
                                                                     }}

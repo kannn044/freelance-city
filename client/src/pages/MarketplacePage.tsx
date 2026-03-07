@@ -207,7 +207,7 @@ const MarketplacePage = () => {
             className="bg-grid"
             style={{
                 minHeight: '100vh',
-                background: '#0a0e17',
+                background: 'transparent',
                 color: '#f1f5f9',
                 fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
                 position: 'relative',
@@ -272,9 +272,9 @@ const MarketplacePage = () => {
                             onClick={() => navigate('/dashboard')}
                             style={{
                                 borderRadius: '0.7rem',
-                                border: '1px solid rgba(191,219,254,0.2)',
-                                background: 'rgba(30,41,59,0.5)',
-                                color: '#dbeafe',
+                                border: '1px solid rgba(245,158,11,0.2)',
+                                background: 'rgba(30,19,10,0.6)',
+                                color: '#fef3c7',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '0.4rem',
@@ -288,7 +288,7 @@ const MarketplacePage = () => {
                         </button>
                         <div>
                             <div style={{ fontSize: '1.08rem', fontWeight: 700, letterSpacing: '-0.02em', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
-                                <Sparkles size={15} style={{ color: '#c4b5fd' }} />
+                                <Sparkles size={15} style={{ color: '#fbbf24' }} />
                                 {t('marketplace.title')}
                             </div>
 
@@ -315,9 +315,9 @@ const MarketplacePage = () => {
                             onClick={refreshNow}
                             style={{
                                 borderRadius: '0.7rem',
-                                border: '1px solid rgba(191,219,254,0.2)',
-                                background: 'rgba(30,41,59,0.52)',
-                                color: '#dbeafe',
+                                border: '1px solid rgba(245,158,11,0.2)',
+                                background: 'rgba(30,19,10,0.6)',
+                                color: '#fef3c7',
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '0.35rem',
@@ -338,8 +338,8 @@ const MarketplacePage = () => {
                     style={{
                         display: 'inline-flex',
                         borderRadius: '0.8rem',
-                        background: 'rgba(15,23,42,0.6)',
-                        border: '1px solid rgba(148,163,184,0.2)',
+                        background: 'rgba(15,8,2,0.7)',
+                        border: '1px solid rgba(245,158,11,0.2)',
                         padding: '0.25rem',
                         gap: '0.25rem',
                         marginBottom: '0.9rem',
@@ -351,8 +351,8 @@ const MarketplacePage = () => {
                         style={{
                             borderRadius: '0.58rem',
                             border: 'none',
-                            background: activeTab === 'MARKET' ? 'rgba(99,102,241,0.28)' : 'transparent',
-                            color: activeTab === 'MARKET' ? '#dbeafe' : 'rgba(226,232,240,0.72)',
+                            background: activeTab === 'MARKET' ? 'rgba(245,158,11,0.22)' : 'transparent',
+                            color: activeTab === 'MARKET' ? '#fef3c7' : 'rgba(226,232,240,0.65)',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             padding: '0.4rem 0.7rem',
@@ -370,8 +370,8 @@ const MarketplacePage = () => {
                         style={{
                             borderRadius: '0.58rem',
                             border: 'none',
-                            background: activeTab === 'NPC_SHOP' ? 'rgba(99,102,241,0.28)' : 'transparent',
-                            color: activeTab === 'NPC_SHOP' ? '#dbeafe' : 'rgba(226,232,240,0.72)',
+                            background: activeTab === 'NPC_SHOP' ? 'rgba(245,158,11,0.22)' : 'transparent',
+                            color: activeTab === 'NPC_SHOP' ? '#fef3c7' : 'rgba(226,232,240,0.65)',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             padding: '0.4rem 0.7rem',
@@ -407,7 +407,7 @@ const MarketplacePage = () => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '2.35fr 1.15fr', gap: '1rem', alignItems: 'start' }}>
-                    <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(99,102,241,0.24)', background: 'rgba(15,23,42,0.7)' }}>
+                    <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(245,158,11,0.22)', background: 'rgba(22,13,5,0.75)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                             <h2 style={{ margin: 0, fontSize: '0.98rem', display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
                                 <ShoppingCart size={15} />
@@ -421,13 +421,13 @@ const MarketplacePage = () => {
                         <div
                             style={{
                                 border: '1px solid rgba(255,255,255,0.08)',
-                                background: 'linear-gradient(135deg, rgba(99,102,241,0.14), rgba(14,116,144,0.12))',
+                                background: 'linear-gradient(135deg, rgba(245,158,11,0.07), rgba(234,88,12,0.05))',
                                 borderRadius: '0.85rem',
                                 padding: '0.75rem',
                                 marginBottom: '0.8rem',
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.55rem', color: '#c7d2fe', fontSize: '0.8rem', fontWeight: 600 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.55rem', color: '#fbbf24', fontSize: '0.8rem', fontWeight: 600 }}>
                                 <Filter size={14} /> {t('marketplace.filters')}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.1fr 0.8fr 0.8fr 1fr', gap: '0.45rem' }}>
@@ -514,12 +514,12 @@ const MarketplacePage = () => {
                                             border: '1px solid rgba(148,163,184,0.18)',
                                             borderRadius: '0.9rem',
                                             padding: '0.78rem',
-                                            background: 'linear-gradient(135deg, rgba(30,41,59,0.8), rgba(2,6,23,0.92))',
+                                            background: 'linear-gradient(135deg, rgba(30,19,10,0.85), rgba(10,5,0,0.92))',
                                             display: 'grid',
                                             gridTemplateColumns: '1.8fr 1fr 0.75fr',
                                             gap: '0.75rem',
                                             alignItems: 'center',
-                                            boxShadow: '0 10px 25px rgba(2,6,23,0.4)',
+                                            boxShadow: '0 10px 25px rgba(5,2,0,0.45)',
                                         }}
                                     >
                                         <div>
@@ -535,7 +535,7 @@ const MarketplacePage = () => {
                                                 <span style={metaPillStyle}><Store size={11} /> {sellerName}</span>
                                                 <span style={metaPillStyle}><Gem size={11} /> {cityName}</span>
                                             </div>
-                                            <div style={{ marginTop: '0.3rem', fontSize: '0.73rem', color: '#c7d2fe' }}>
+                                            <div style={{ marginTop: '0.3rem', fontSize: '0.73rem', color: '#fbbf24' }}>
                                                 {t('marketplace.available')}: {listing.quantity.toLocaleString()} • {t('marketplace.unit')}: {listing.price.toLocaleString()} {t('common.credits')}
                                             </div>
                                         </div>
@@ -595,7 +595,7 @@ const MarketplacePage = () => {
                             })}
 
                             {listings.length === 0 && (
-                                <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(2,6,23,0.45)' }}>
+                                <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(5,2,0,0.45)' }}>
                                     {t('marketplace.no_listings')}
                                 </div>
                             )}
@@ -603,7 +603,7 @@ const MarketplacePage = () => {
                     </section>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', position: 'sticky', top: '5.3rem' }}>
-                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,41,59,0.55)' }}>
+                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,19,10,0.65)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
                                 <Tag size={15} /> {t('marketplace.sell_from_inventory')}
                             </h3>
@@ -627,7 +627,7 @@ const MarketplacePage = () => {
                                         style={{
                                             border: '1px solid rgba(148,163,184,0.22)',
                                             borderRadius: '0.65rem',
-                                            background: 'rgba(2,6,23,0.45)',
+                                            background: 'rgba(5,2,0,0.5)',
                                             padding: '0.48rem 0.55rem',
                                             display: 'inline-flex',
                                             alignItems: 'center',
@@ -726,7 +726,7 @@ const MarketplacePage = () => {
                             </div>
                         </section>
 
-                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(56,189,248,0.24)', background: 'rgba(15,23,42,0.7)' }}>
+                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(56,189,248,0.24)', background: 'rgba(22,13,5,0.75)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
                                 <Store size={15} /> {t('marketplace.stats.my_listings')} ({ownListings.length})
                             </h3>
@@ -797,7 +797,7 @@ const MarketplacePage = () => {
                             </div>
                         </section>
 
-                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.7)' }}>
+                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(22,13,5,0.75)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', fontSize: '0.86rem' }}>{t('marketplace.recent_sales_title', { count: salesHistory.length })}</h3>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.36rem', maxHeight: '11rem', overflowY: 'auto' }}>
                                 {salesHistory.slice(0, 12).map((sale) => (
@@ -840,7 +840,7 @@ const MarketplacePage = () => {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', alignItems: 'start' }}>
-                    <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(99,102,241,0.24)', background: 'rgba(15,23,42,0.7)' }}>
+                    <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(245,158,11,0.22)', background: 'rgba(22,13,5,0.75)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                             <h2 style={{ margin: 0, fontSize: '0.98rem', display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
                                 <Store size={15} /> {t('marketplace.npc_shop_items', { count: shopItems.length })}
@@ -868,9 +868,9 @@ const MarketplacePage = () => {
                                         onClick={() => setNpcShopCityFilter(key)}
                                         style={{
                                             borderRadius: '0.5rem',
-                                            border: `1px solid ${isActive ? 'rgba(99,102,241,0.7)' : 'rgba(148,163,184,0.2)'}`,
-                                            background: isActive ? 'rgba(99,102,241,0.28)' : 'rgba(30,41,59,0.4)',
-                                            color: isActive ? '#dbeafe' : 'rgba(226,232,240,0.7)',
+                                            border: `1px solid ${isActive ? 'rgba(245,158,11,0.65)' : 'rgba(148,163,184,0.2)'}`,
+                                            background: isActive ? 'rgba(245,158,11,0.2)' : 'rgba(30,19,10,0.5)',
+                                            color: isActive ? '#fef3c7' : 'rgba(226,232,240,0.7)',
                                             fontSize: '0.73rem',
                                             fontWeight: isActive ? 700 : 400,
                                             padding: '0.3rem 0.65rem',
@@ -903,7 +903,7 @@ const MarketplacePage = () => {
                                             border: '1px solid rgba(148,163,184,0.18)',
                                             borderRadius: '0.85rem',
                                             padding: '0.75rem',
-                                            background: 'linear-gradient(135deg, rgba(30,41,59,0.8), rgba(2,6,23,0.92))',
+                                            background: 'linear-gradient(135deg, rgba(30,19,10,0.85), rgba(10,5,0,0.92))',
                                             display: 'grid',
                                             gridTemplateColumns: '1.65fr 0.7fr 0.7fr',
                                             alignItems: 'center',
@@ -915,7 +915,7 @@ const MarketplacePage = () => {
                                                 {renderItemIcon(item, 20)}
                                                 {item.name}
                                             </div>
-                                            <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: '#c7d2fe' }}>
+                                            <div style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: '#fbbf24' }}>
                                                 {t('marketplace.type')}: {item.type} • {t('marketplace.unit')}: {unitPrice.toLocaleString()} {t('common.credits')}
                                             </div>
                                         </div>
@@ -974,14 +974,14 @@ const MarketplacePage = () => {
                             })}
 
                             {shopItems.length === 0 && (
-                                <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(2,6,23,0.45)' }}>
+                                <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(5,2,0,0.45)' }}>
                                     {t('marketplace.no_npc_items')}
                                 </div>
                             )}
                         </div>
                     </section>
 
-                    <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,41,59,0.55)' }}>
+                    <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,19,10,0.65)' }}>
                         <h3 style={{ margin: 0, marginBottom: '0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
                             <Tag size={15} /> {t('marketplace.recipe_shop', { count: recipeShop.length })}
                         </h3>
@@ -998,7 +998,7 @@ const MarketplacePage = () => {
                                             border: '1px solid rgba(255,255,255,0.12)',
                                             borderRadius: '0.6rem',
                                             padding: '0.55rem',
-                                            background: 'rgba(2,6,23,0.55)',
+                                            background: 'rgba(5,2,0,0.6)',
                                         }}
                                     >
                                         <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f8fafc' }}>{recipe.name}</div>
@@ -1059,7 +1059,7 @@ const MarketplacePage = () => {
                     style={{
                         position: 'fixed',
                         inset: 0,
-                        background: 'rgba(2,6,23,0.72)',
+                        background: 'rgba(5,2,0,0.78)',
                         backdropFilter: 'blur(4px)',
                         zIndex: 40,
                         display: 'flex',
@@ -1074,9 +1074,9 @@ const MarketplacePage = () => {
                             width: '100%',
                             maxWidth: '520px',
                             borderRadius: '0.9rem',
-                            border: '1px solid rgba(148,163,184,0.28)',
-                            background: 'linear-gradient(135deg, rgba(15,23,42,0.96), rgba(2,6,23,0.96))',
-                            boxShadow: '0 20px 45px rgba(2,6,23,0.55)',
+                            border: '1px solid rgba(245,158,11,0.28)',
+                            background: 'linear-gradient(135deg, rgba(22,13,5,0.97), rgba(10,5,0,0.97))',
+                            boxShadow: '0 20px 45px rgba(0,0,0,0.65)',
                             padding: '1rem',
                         }}
                     >
@@ -1102,8 +1102,8 @@ const MarketplacePage = () => {
                                 style={{
                                     borderRadius: '0.55rem',
                                     border: '1px solid rgba(148,163,184,0.25)',
-                                    background: 'rgba(30,41,59,0.6)',
-                                    color: '#cbd5e1',
+                                    background: 'rgba(30,19,10,0.7)',
+                                    color: '#c4a882',
                                     padding: '0.42rem 0.7rem',
                                     fontSize: '0.76rem',
                                     fontWeight: 700,
@@ -1117,9 +1117,9 @@ const MarketplacePage = () => {
                                 onClick={runConfirm}
                                 style={{
                                     borderRadius: '0.55rem',
-                                    border: '1px solid rgba(99,102,241,0.34)',
-                                    background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(56,189,248,0.18))',
-                                    color: '#dbeafe',
+                                    border: '1px solid rgba(245,158,11,0.35)',
+                                    background: 'linear-gradient(135deg, rgba(180,83,9,0.5), rgba(234,88,12,0.35))',
+                                    color: '#fef3c7',
                                     padding: '0.42rem 0.78rem',
                                     fontSize: '0.76rem',
                                     fontWeight: 700,
@@ -1139,7 +1139,7 @@ const MarketplacePage = () => {
 const statCardStyle: CSSProperties = {
     borderRadius: '0.85rem',
     border: '1px solid rgba(148,163,184,0.2)',
-    background: 'linear-gradient(135deg, rgba(30,41,59,0.7), rgba(15,23,42,0.9))',
+    background: 'linear-gradient(135deg, rgba(30,19,10,0.75), rgba(15,8,2,0.9))',
     padding: '0.7rem 0.8rem',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
 };
@@ -1159,9 +1159,9 @@ const statValueStyle: CSSProperties = {
 
 const chipButtonStyle: CSSProperties = {
     borderRadius: '9999px',
-    border: '1px solid rgba(191,219,254,0.24)',
-    background: 'rgba(15,23,42,0.6)',
-    color: '#dbeafe',
+    border: '1px solid rgba(245,158,11,0.2)',
+    background: 'rgba(15,8,2,0.65)',
+    color: '#fbbf24',
     fontSize: '0.66rem',
     padding: '0.23rem 0.55rem',
     cursor: 'pointer',
@@ -1182,7 +1182,7 @@ const metaPillStyle: CSSProperties = {
 const inputStyle: CSSProperties = {
     borderRadius: '0.5rem',
     border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(2,6,23,0.65)',
+    background: 'rgba(5,2,0,0.75)',
     color: 'white',
     fontSize: '0.75rem',
     padding: '0.45rem 0.5rem',

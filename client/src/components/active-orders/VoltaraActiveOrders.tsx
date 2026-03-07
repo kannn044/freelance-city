@@ -84,11 +84,11 @@ const VoltaraActiveOrders = () => {
         if (!cancelConfirm) return null;
 
         return (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,5,0,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    style={{ width: 'min(100%, 24rem)', borderRadius: '0.85rem', border: '1px solid rgba(248,113,113,0.35)', background: 'linear-gradient(180deg, rgba(30,41,59,0.96), rgba(15,23,42,0.96))', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', padding: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                    style={{ width: 'min(100%, 24rem)', borderRadius: '0.85rem', border: '1px solid rgba(248,113,113,0.35)', background: 'linear-gradient(180deg, rgba(30,19,10,0.96), rgba(22,13,5,0.96))', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', padding: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
                 >
                     <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#fecaca' }}>{t('active_orders.cancel_confirm_title')}</div>
                     <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.84)', lineHeight: 1.5 }}>{cancelConfirm.message}</div>
@@ -126,7 +126,7 @@ const VoltaraActiveOrders = () => {
                         height: diameter,
                         borderRadius: '50%',
                         border: `1px dashed ${colors.trackColor}`,
-                        background: 'rgba(2,6,23,0.55)',
+                        background: 'rgba(10,5,0,0.55)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -164,8 +164,8 @@ const VoltaraActiveOrders = () => {
                     height: diameter,
                     borderRadius: '50%',
                     background: ready
-                        ? `radial-gradient(circle, ${colors.bg}, rgba(2,6,23,0.7))`
-                        : 'rgba(2,6,23,0.7)',
+                        ? `radial-gradient(circle, ${colors.bg}, rgba(10,5,0,0.7))`
+                        : 'rgba(10,5,0,0.7)',
                     border: `1.5px solid ${ready ? colors.glow : colors.trackColor}`,
                     boxShadow: ready ? `0 0 14px ${colors.glow}, inset 0 0 8px ${colors.bg}` : 'none',
                     display: 'flex',
@@ -281,7 +281,7 @@ const VoltaraActiveOrders = () => {
                     alignItems: 'center',
                     gap: '0.35rem',
                     border: `1px solid ${colors.border}`,
-                    background: `linear-gradient(180deg, ${colors.bg}, rgba(2,6,23,0.06))`,
+                    background: `linear-gradient(180deg, ${colors.bg}, rgba(10,5,0,0.06))`,
                     borderRadius: '0.75rem',
                     padding: '0.5rem 0.45rem 0.45rem',
                 }}
@@ -367,13 +367,13 @@ const VoltaraActiveOrders = () => {
                     gap: '0.5rem',
                     padding: '0.6rem',
                     borderRadius: '0.5rem',
-                    background: 'rgba(15,23,42,0.6)',
+                    background: 'rgba(22,13,5,0.6)',
                     border: `1px solid ${ready ? glowColor : 'rgba(56,189,248,0.2)'}`,
                     boxShadow: ready ? `0 0 15px rgba(56,189,248,0.15)` : 'none',
                     position: 'relative'
                 }}
             >
-                <div style={{ width: '2.4rem', height: '2.4rem', borderRadius: '0.4rem', background: 'rgba(2,6,23,0.5)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '2.4rem', height: '2.4rem', borderRadius: '0.4rem', background: 'rgba(10,5,0,0.5)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {renderItemIcon(order.item, 24)}
                 </div>
 
@@ -421,7 +421,7 @@ const VoltaraActiveOrders = () => {
                             padding: '0.4rem 0.7rem',
                             borderRadius: '0.45rem',
                             border: '1px solid rgba(56,189,248,0.35)',
-                            background: readyCount > 0 ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.04)',
+                            background: readyCount > 0 ? 'rgba(56,189,248,0.12)' : 'rgba(255,255,255,0.12)',
                             color: readyCount > 0 ? '#38bdf8' : 'rgba(255,255,255,0.45)',
                             fontSize: '0.7rem',
                             fontWeight: 700,

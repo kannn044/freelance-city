@@ -473,7 +473,7 @@ const DashboardPage = () => {
             className="bg-grid"
             style={{
                 minHeight: '100vh',
-                background: '#0a0e17',
+                background: 'transparent',
                 color: '#f1f5f9',
                 fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
                 position: 'relative',
@@ -488,7 +488,7 @@ const DashboardPage = () => {
                         width: '500px',
                         height: '500px',
                         borderRadius: '50%',
-                        background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)',
+                        background: 'radial-gradient(circle, #f59e0b 0%, transparent 70%)',
                         top: '-5%',
                         right: '-5%',
                         opacity: 0.06,
@@ -502,7 +502,7 @@ const DashboardPage = () => {
                         width: '400px',
                         height: '400px',
                         borderRadius: '50%',
-                        background: 'radial-gradient(circle, #a78bfa 0%, transparent 70%)',
+                        background: 'radial-gradient(circle, #fb923c 0%, transparent 70%)',
                         bottom: '10%',
                         left: '-5%',
                         opacity: 0.05,
@@ -532,8 +532,8 @@ const DashboardPage = () => {
                     position: 'sticky',
                     top: 0,
                     zIndex: 20,
-                    borderBottom: '1px solid rgba(99, 102, 241, 0.15)',
-                    background: 'rgba(10, 14, 23, 0.8)',
+                    borderBottom: '1px solid rgba(245, 158, 11, 0.15)',
+                    background: 'rgba(15, 8, 2, 0.85)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
                 }}
@@ -562,9 +562,9 @@ const DashboardPage = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 borderRadius: '0.75rem',
-                                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2))',
-                                border: '1px solid rgba(99, 102, 241, 0.3)',
-                                boxShadow: '0 0 15px rgba(99, 102, 241, 0.3)',
+                                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(234, 88, 12, 0.15))',
+                                border: '1px solid rgba(245, 158, 11, 0.3)',
+                                boxShadow: '0 0 15px rgba(245, 158, 11, 0.25)',
                             }}
                         >
                             <img src={iconCityStatusPng} alt="City" style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }} />
@@ -574,7 +574,7 @@ const DashboardPage = () => {
                                 fontSize: isMobile ? '1.02rem' : '1.25rem',
                                 fontWeight: 700,
                                 letterSpacing: '-0.02em',
-                                background: 'linear-gradient(135deg, #c7d2fe, #e0e7ff)',
+                                background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                             }}
@@ -595,9 +595,9 @@ const DashboardPage = () => {
                                 alignItems: 'center',
                                 gap: '0.45rem',
                                 borderRadius: '0.65rem',
-                                border: '1px solid rgba(99, 102, 241, 0.35)',
-                                background: 'rgba(99, 102, 241, 0.12)',
-                                color: '#c7d2fe',
+                                border: '1px solid rgba(245, 158, 11, 0.35)',
+                                background: 'rgba(245, 158, 11, 0.1)',
+                                color: '#fbbf24',
                                 fontSize: isMobile ? '0.7rem' : '0.76rem',
                                 fontWeight: 700,
                                 padding: isMobile ? '0.38rem 0.58rem' : '0.45rem 0.72rem',
@@ -746,9 +746,9 @@ const DashboardPage = () => {
                                 fontSize: '0.875rem',
                                 fontWeight: 500,
                                 color: '#e2e8f0',
-                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.15)',
+                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(245, 158, 11, 0.18)',
                                 backdropFilter: 'blur(12px)',
-                                border: '1px solid rgba(99, 102, 241, 0.2)',
+                                border: '1px solid rgba(245, 158, 11, 0.2)',
                                 pointerEvents: 'auto',
                             }}
                         >
@@ -760,7 +760,7 @@ const DashboardPage = () => {
                                     width: '0.5rem',
                                     height: '0.5rem',
                                     borderRadius: '9999px',
-                                    background: '#818cf8',
+                                    background: '#f59e0b',
                                 }}
                             />
                             {actionMessage}
@@ -792,11 +792,9 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.45, delay: 0.06 }}
-                            className="glass-card"
+                            className="glass-card glow-indigo"
                             style={{
                                 padding: '0.85rem 0.95rem',
-                                border: '1px solid rgba(56, 189, 248, 0.28)',
-                                background: 'linear-gradient(135deg, rgba(30,41,59,0.7), rgba(14,116,144,0.12))',
                                 overflow: 'hidden',
                             }}
                         >
@@ -804,9 +802,9 @@ const DashboardPage = () => {
                                 <div>
                                     <h2
                                         style={{
-                                            fontSize: '0.98rem',
+                                            fontSize: '1.1rem',
                                             fontWeight: 700,
-                                            color: '#e2e8f0',
+                                            color: '#f1f5f9',
                                             marginBottom: '0.35rem',
                                             display: 'flex',
                                             alignItems: 'center',
@@ -816,19 +814,19 @@ const DashboardPage = () => {
                                         <img src={iconCityStatusPng} alt="City Status" style={{ width: '1rem', height: '1rem', objectFit: 'contain' }} /> {t('dashboard.city_status')}
                                     </h2>
                                     <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.78)' }}>
-                                        {t('dashboard.current_city')}: <strong style={{ color: '#bfdbfe' }}>{user.city?.name ?? user.city_key ?? t('common.unknown')}</strong>
+                                        {t('dashboard.current_city')}: <strong style={{ color: '#fde68a' }}>{user.city?.name ?? user.city_key ?? t('common.unknown')}</strong>
                                         {' '}• {t('dashboard.tier')} {cityTier}
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(245,158,11,0.22)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(245,158,11,0.07)' }}>
                                         {t('dashboard.taxes.domestic')}: <span style={{ color: '#fde68a', fontWeight: 700 }}>{user.city?.taxes?.domesticPct ?? 0}%</span>
                                     </div>
-                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(245,158,11,0.22)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(245,158,11,0.07)' }}>
                                         {t('dashboard.taxes.export')}: <span style={{ color: '#fca5a5', fontWeight: 700 }}>{user.city?.taxes?.exportPct ?? 0}%</span>
                                     </div>
-                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(148,163,184,0.25)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(2,6,23,0.4)' }}>
+                                    <div style={{ fontSize: '0.68rem', border: '1px solid rgba(245,158,11,0.22)', borderRadius: '0.5rem', padding: '0.28rem 0.45rem', background: 'rgba(245,158,11,0.07)' }}>
                                         {t('dashboard.taxes.import')}: <span style={{ color: '#86efac', fontWeight: 700 }}>{user.city?.taxes?.importPct ?? 0}%</span>
                                     </div>
                                 </div>
@@ -838,8 +836,8 @@ const DashboardPage = () => {
                                 style={{
                                     marginTop: '0.7rem',
                                     borderRadius: '0.7rem',
-                                    border: '1px solid rgba(148,163,184,0.2)',
-                                    background: 'rgba(2,6,23,0.35)',
+                                    border: '1px solid rgba(245,158,11,0.15)',
+                                    background: 'rgba(245,158,11,0.05)',
                                     padding: '0.65rem 0.72rem',
                                 }}
                             >
@@ -871,7 +869,7 @@ const DashboardPage = () => {
                                                         : '1px solid rgba(148,163,184,0.24)',
                                                     background: isSelected
                                                         ? 'rgba(56,189,248,0.12)'
-                                                        : 'rgba(15,23,42,0.45)',
+                                                        : 'rgba(22,13,5,0.5)',
                                                     color: '#e2e8f0',
                                                     fontSize: '0.69rem',
                                                     padding: '0.38rem 0.5rem',
@@ -881,7 +879,7 @@ const DashboardPage = () => {
                                                 <span>
                                                     {candidate.email.split('@')[0]} {isMayor ? '👑' : ''}
                                                 </span>
-                                                <span style={{ color: '#93c5fd', fontWeight: 700 }}>{t('dashboard.votes_count', { count: candidate.votes })}</span>
+                                                <span style={{ color: '#fbbf24', fontWeight: 700 }}>{t('dashboard.votes_count', { count: candidate.votes })}</span>
                                             </button>
                                         );
                                     })}
@@ -901,7 +899,7 @@ const DashboardPage = () => {
                                             borderRadius: '0.55rem',
                                             border: '1px solid rgba(56,189,248,0.4)',
                                             background: 'rgba(56,189,248,0.12)',
-                                            color: '#bae6fd',
+                                            color: '#fde68a',
                                             fontSize: '0.68rem',
                                             fontWeight: 700,
                                             padding: '0.35rem 0.65rem',
@@ -940,7 +938,7 @@ const DashboardPage = () => {
                                                             width: '100%',
                                                             borderRadius: '0.4rem',
                                                             border: '1px solid rgba(148,163,184,0.35)',
-                                                            background: 'rgba(15,23,42,0.75)',
+                                                            background: 'rgba(22,13,5,0.8)',
                                                             color: '#e2e8f0',
                                                             padding: '0.3rem 0.4rem',
                                                             fontSize: '0.7rem',
@@ -978,7 +976,7 @@ const DashboardPage = () => {
                                     <div style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.8)' }}>
                                         {t('dashboard.treasury_progress')}
                                     </div>
-                                    <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontFamily: 'monospace' }}>
+                                    <div style={{ fontSize: '0.75rem', color: '#fbbf24', fontFamily: 'monospace' }}>
                                         {nextTierTarget !== null
                                             ? `${cityTreasury.toLocaleString()} / ${nextTierTarget.toLocaleString()}`
                                             : `${cityTreasury.toLocaleString()} / ${t('common.max')}`}
@@ -1001,7 +999,7 @@ const DashboardPage = () => {
                                         transition={{ duration: 0.8, ease: 'easeOut' }}
                                         style={{
                                             height: '100%',
-                                            background: 'linear-gradient(90deg, #38bdf8, #818cf8)',
+                                            background: 'linear-gradient(90deg, #f59e0b, #ea580c)',
                                         }}
                                     />
                                 </div>
@@ -1018,19 +1016,17 @@ const DashboardPage = () => {
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.45 }}
-                            className="glass-card"
+                            className="glass-card glow-indigo"
                             style={{
                                 padding: '0.85rem 0.95rem',
-                                border: '1px solid rgba(99, 102, 241, 0.15)',
-                                background: 'rgba(99, 102, 241, 0.04)',
                                 overflow: 'hidden',
                             }}
                         >
                             <h2
                                 style={{
-                                    fontSize: '1rem',
+                                    fontSize: '1.1rem',
                                     fontWeight: 700,
-                                    color: '#e2e8f0',
+                                    color: '#f1f5f9',
                                     marginBottom: '0.85rem',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -1084,7 +1080,7 @@ const DashboardPage = () => {
                                         width: '6rem',
                                         height: '6rem',
                                         borderRadius: '50%',
-                                        background: 'rgba(99, 102, 241, 0.12)',
+                                        background: 'rgba(245, 158, 11, 0.08)',
                                         filter: 'blur(30px)',
                                     }}
                                 />
@@ -1101,11 +1097,11 @@ const DashboardPage = () => {
                                                 justifyContent: 'center',
                                                 borderRadius: '1rem',
                                                 background: 'linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(31, 41, 55, 0.8))',
-                                                border: '1px solid rgba(99, 102, 241, 0.2)',
+                                                border: '1px solid rgba(245, 102, 11, 0.2)',
                                                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
                                             }}
                                         >
-                                            <UserIcon size={28} style={{ color: '#a5b4fc' }} />
+                                            <UserIcon size={28} style={{ color: '#fbbf24' }} />
                                         </motion.div>
                                         <div>
                                             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f1f5f9' }}>
@@ -1137,7 +1133,7 @@ const DashboardPage = () => {
                                     <div
                                         style={{
                                             paddingTop: '1.25rem',
-                                            borderTop: '1px solid rgba(99, 102, 241, 0.1)',
+                                            borderTop: '1px solid rgba(245, 158, 11, 0.12)',
                                         }}
                                     >
                                         <h3
@@ -1194,14 +1190,14 @@ const DashboardPage = () => {
                                             marginTop: '0.8rem',
                                             padding: '0.7rem',
                                             borderRadius: '0.72rem',
-                                            border: '1px solid rgba(99, 102, 241, 0.16)',
-                                            background: 'rgba(99, 102, 241, 0.03)',
+                                            border: '1px solid rgba(245, 158, 11, 0.18)',
+                                                background: 'rgba(245, 158, 11, 0.04)',
                                             overflow: 'hidden',
                                         }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.45rem' }}>
-                                            <Zap size={14} style={{ color: '#818cf8' }} />
-                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c7d2fe' }}>{t('dashboard.active_buffs')}</span>
+                                            <Zap size={14} style={{ color: '#f59e0b' }} />
+                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#fbbf24' }}>{t('dashboard.active_buffs')}</span>
                                         </div>
 
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
@@ -1212,7 +1208,7 @@ const DashboardPage = () => {
                                                 <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.4 }}>
                                                     {t('dashboard.satiety_buff_desc', { value: Math.round((user.satiety_buff ?? 0) * 100) })}
                                                     <br />
-                                                    {t('dashboard.expires_in')}: <span style={{ color: '#a5b4fc', fontWeight: 700 }}>{formatDuration(foodBuffRemainingMs)}</span>
+                                                    {t('dashboard.expires_in')}: <span style={{ color: '#fbbf24', fontWeight: 700 }}>{formatDuration(foodBuffRemainingMs)}</span>
                                                 </div>
                                             ) : (
                                                 <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.45)' }}>
@@ -1332,8 +1328,8 @@ const DashboardPage = () => {
                                 <div
                                     style={{
                                         padding: '0.95rem 1rem',
-                                        borderBottom: '1px solid rgba(99, 102, 241, 0.1)',
-                                        background: 'rgba(99, 102, 241, 0.03)',
+                                        borderBottom: '1px solid rgba(245, 158, 11, 0.12)',
+                                        background: 'rgba(245, 158, 11, 0.03)',
                                     }}
                                 >
                                     <h2
@@ -1369,7 +1365,7 @@ const DashboardPage = () => {
                             position: 'fixed',
                             inset: 0,
                             zIndex: 120,
-                            background: 'rgba(2,6,23,0.62)',
+                            background: 'rgba(5,2,0,0.75)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1386,7 +1382,7 @@ const DashboardPage = () => {
                                 maxWidth: '34rem',
                                 borderRadius: '0.9rem',
                                 border: `1px solid ${firstJob.borderColor}`,
-                                background: 'rgba(15,23,42,0.96)',
+                                background: 'rgba(22,13,5,0.97)',
                                 padding: '1rem',
                             }}
                         >
@@ -1474,7 +1470,7 @@ const DashboardPage = () => {
                             position: 'fixed',
                             inset: 0,
                             zIndex: 120,
-                            background: 'rgba(2,6,23,0.62)',
+                            background: 'rgba(5,2,0,0.75)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -1491,7 +1487,7 @@ const DashboardPage = () => {
                                 maxWidth: '34rem',
                                 borderRadius: '0.9rem',
                                 border: `1px solid ${secondaryJob.borderColor}`,
-                                background: 'rgba(15,23,42,0.96)',
+                                background: 'rgba(22,13,5,0.97)',
                                 padding: '1rem',
                             }}
                         >

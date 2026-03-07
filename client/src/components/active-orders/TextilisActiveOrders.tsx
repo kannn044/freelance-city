@@ -69,7 +69,7 @@ const TextilisActiveOrders = () => {
     });
 
     const getGatherGroupStyle = (name: string) => {
-        if (name.toLowerCase().includes('cotton')) return { border: 'rgba(74,222,128,0.4)', bg: 'rgba(74,222,128,0.08)', glow: '#4ade80', emoji: '🌾' };
+        if (name.toLowerCase().includes('cotton')) return { border: 'rgba(74,222,128,0.4)', bg: 'rgba(74,222,128,0.18)', glow: '#4ade80', emoji: '🌾' };
         if (name.toLowerCase().includes('wool') || name.toLowerCase().includes('sheep')) return { border: 'rgba(167,139,250,0.4)', bg: 'rgba(167,139,250,0.08)', glow: '#a78bfa', emoji: '🧶' };
         return { border: 'rgba(167,139,250,0.35)', bg: 'rgba(167,139,250,0.07)', glow: '#c084fc', emoji: '🌿' };
     };
@@ -77,11 +77,11 @@ const TextilisActiveOrders = () => {
     const renderCancelConfirmModal = () => {
         if (!cancelConfirm) return null;
         return (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(10,5,0,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1200, padding: '1rem' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    style={{ width: 'min(100%, 24rem)', borderRadius: '0.85rem', border: '1px solid rgba(248,113,113,0.35)', background: 'linear-gradient(180deg, rgba(30,41,59,0.96), rgba(15,23,42,0.96))', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', padding: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                    style={{ width: 'min(100%, 24rem)', borderRadius: '0.85rem', border: '1px solid rgba(248,113,113,0.35)', background: 'linear-gradient(180deg, rgba(30,19,10,0.96), rgba(22,13,5,0.96))', boxShadow: '0 14px 44px rgba(0,0,0,0.45)', padding: '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
                 >
                     <div style={{ fontSize: '0.86rem', fontWeight: 800, color: '#fecaca' }}>{t('active_orders.cancel_confirm_title')}</div>
                     <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.84)', lineHeight: 1.5 }}>{cancelConfirm.message}</div>
@@ -118,7 +118,7 @@ const TextilisActiveOrders = () => {
                     gap: '0.3rem',
                     padding: '0.2rem',
                     borderRadius: '0.45rem',
-                    background: ready ? `${style.bg}` : 'rgba(2,6,23,0.35)',
+                    background: ready ? `${style.bg}` : 'rgba(10,5,0,0.35)',
                     border: `1px solid ${ready ? style.glow : 'rgba(255,255,255,0.06)'}`,
                     boxShadow: ready ? `0 0 10px ${style.bg}, inset 0 0 8px ${style.bg}` : 'none',
                     position: 'relative',
@@ -208,13 +208,13 @@ const TextilisActiveOrders = () => {
                     gap: '0.5rem',
                     padding: '0.6rem',
                     borderRadius: '0.55rem',
-                    background: ready ? 'rgba(167,139,250,0.06)' : 'rgba(15,23,42,0.55)',
+                    background: ready ? 'rgba(167,139,250,0.06)' : 'rgba(22,13,5,0.55)',
                     border: `1px solid ${ready ? 'rgba(167,139,250,0.5)' : 'rgba(167,139,250,0.18)'}`,
-                    boxShadow: ready ? '0 0 20px rgba(167,139,250,0.08), inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
+                    boxShadow: ready ? '0 0 20px rgba(167,139,250,0.08), inset 0 1px 0 rgba(255,255,255,0.12)' : 'none',
                     position: 'relative'
                 }}
             >
-                <div style={{ width: '2.2rem', height: '2.2rem', borderRadius: '0.45rem', background: 'rgba(2,6,23,0.45)', border: '1px solid rgba(167,139,250,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '2.2rem', height: '2.2rem', borderRadius: '0.45rem', background: 'rgba(10,5,0,0.45)', border: '1px solid rgba(167,139,250,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {renderItemIcon(order.item, 22)}
                 </div>
 
@@ -306,7 +306,7 @@ const TextilisActiveOrders = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: showFirstJobColumn && showSecondaryJobColumn ? 'repeat(2, minmax(260px, 1fr))' : 'minmax(260px, 1fr)', gap: '0.9rem' }}>
 
                     {showFirstJobColumn && (
-                        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(167,139,250,0.03), rgba(15,23,42,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(167,139,250,0.03), rgba(22,13,5,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(167,139,250,0.18)', color: '#a78bfa', fontSize: '0.8rem', fontWeight: 700 }}>
                                 <Leaf style={{ width: '0.9rem', height: '0.9rem' }} /> {firstJobLabel}
                             </div>
@@ -341,7 +341,7 @@ const TextilisActiveOrders = () => {
                     )}
 
                     {showSecondaryJobColumn && (
-                        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(167,139,250,0.03), rgba(15,23,42,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '0.8rem', background: 'linear-gradient(180deg, rgba(167,139,250,0.03), rgba(22,13,5,0.5))', height: ORDERS_COLUMN_HEIGHT, minHeight: ORDERS_COLUMN_HEIGHT, overflow: 'hidden' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.65rem 0.8rem', borderBottom: '1px solid rgba(167,139,250,0.18)', color: '#a78bfa', fontSize: '0.8rem', fontWeight: 700 }}>
                                 <Scissors style={{ width: '0.9rem', height: '0.9rem' }} /> {secondaryJobLabel}
                             </div>
@@ -360,7 +360,7 @@ const TextilisActiveOrders = () => {
                     )}
 
                     {!showFirstJobColumn && !showSecondaryJobColumn && (
-                        <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.8rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
+                        <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.8rem', background: 'rgba(255,255,255,0.10)', padding: '1rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', textAlign: 'center' }}>
                             {t('active_orders.no_occupation')}
                         </div>
                     )}
