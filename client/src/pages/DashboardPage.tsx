@@ -229,6 +229,18 @@ const DashboardPage = () => {
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
+    // Stable ember particles — must be declared before any early return (Rules of Hooks)
+    const embers = useMemo(() =>
+        Array.from({ length: 20 }, (_, i) => ({
+            id: i,
+            left: `${5 + Math.random() * 90}%`,
+            delay: `${Math.random() * 10}s`,
+            duration: `${7 + Math.random() * 9}s`,
+            size: `${2 + Math.random() * 3}px`,
+            drift: `${-30 + Math.random() * 60}px`,
+            hue: Math.random() > 0.5 ? '#fbbf24' : '#f97316',
+        })), []);
+
     if (!user) {
         return (
             <div
@@ -462,18 +474,6 @@ const DashboardPage = () => {
     const topSummaryGridTemplate = viewportWidth < 1100 ? '1fr' : '1.1fr 1.9fr';
     const dashboardGridTemplate = isMobile ? '1fr' : isTablet ? 'repeat(2, minmax(0, 1fr))' : '1.15fr 1fr 1fr';
     const panelHeight = isMobile ? 'auto' : isTablet ? '30rem' : '32rem';
-
-    // Stable ember particles
-    const embers = useMemo(() =>
-        Array.from({ length: 20 }, (_, i) => ({
-            id: i,
-            left: `${5 + Math.random() * 90}%`,
-            delay: `${Math.random() * 10}s`,
-            duration: `${7 + Math.random() * 9}s`,
-            size: `${2 + Math.random() * 3}px`,
-            drift: `${-30 + Math.random() * 60}px`,
-            hue: Math.random() > 0.5 ? '#fbbf24' : '#f97316',
-        })), []);
 
     return (
         <div
