@@ -2,7 +2,14 @@
 
 ## 1. Overview
 
-The **Enchantment System** allows players to power up their equipment beyond the base rarity cap. Equipment is enchanted at the **Textilis city** workshop using Enchantment Materials crafted by the Tailor/Weaver occupations. Each successful enchantment raises the item's **enchant level** from +0 to a maximum of **+12**, amplifying its base stats and unlocking **Special Stats** at milestone levels (+3, +6, +9, +12).
+The **Enchantment System** lets players power up equipment beyond the base rarity cap. Two cities support enchanting:
+
+| City | Workshop | Items Enchanted | Workspace Type |
+|:---|:---|:---|:---|
+| **Textilis** | Enchantment Loom | Armor & Clothing (HEAD, UPPER_BODY, LOWER_BODY, GLOVE, SHOE) | SEW |
+| **Ferrum** | Upgrade Forge | Tools & Weapons (ARM slot — Mattock, Fork, etc.) | SMELT |
+
+Each item enchants from **+0** to **+12**, amplifying base stats and unlocking **Special Stats** at milestone levels (+3, +6, +9, +12). Textilis and Ferrum maintain **separate special stat pools** matched to their item types.
 
 ---
 
@@ -27,53 +34,73 @@ The **Enchantment System** allows players to power up their equipment beyond the
 
 ### 2.2 Failure Behavior
 
-- **+1 to +5 failure**: Enchant level is **unchanged** (safe zone). No penalty.
-- **+6 to +9 failure**: Enchant level **drops by 1** (e.g., attempting +7 fails → item reverts to +6).
-- **+10 to +12 failure**: Enchant level **drops by 2** (e.g., attempting +11 fails → item reverts to +9). Special stats at lost milestones are **re-rolled** on re-reaching that milestone.
+| Zone | Levels | On Failure |
+|:---|:---|:---|
+| **Safe Zone** | +1 to +5 | Drop 1 level. **Floor at +1** — failing at +1 stays at +1, cannot reach +0. |
+| **Danger Zone** | +6 to +9 | Drop 1 level **+ 50% chance to destroy the item entirely**. |
+| **Extreme Zone** | +10 to +12 | Drop 2 levels **+ 50% chance to destroy the item entirely**. |
 
-> **Rationale**: Adds meaningful tension at high levels without outright destroying the item. This mirrors the existing durability attrition loop.
+> If the item is destroyed, it is removed from the inventory slot permanently and all enchant data is lost.
+
+**Failure pseudocode:**
+```typescript
+function resolveFailure(currentLevel: number): FailureResult {
+  const drop = ENCHANT_FAILURE_DROP[currentLevel];
+  const newLevel = Math.max(currentLevel - drop, ENCHANT_LEVEL_FLOOR); // floor at +1
+
+  const inDestroyZone = currentLevel >= ENCHANT_DESTROY_ZONE_MIN;
+  const destroyed = inDestroyZone && Math.random() < ENCHANT_DESTROY_CHANCE;
+
+  if (destroyed) return { destroyed: true, newLevel: 0 };
+  return { destroyed: false, newLevel };
+}
+```
 
 ### 2.3 Milestone Levels (+3 / +6 / +9 / +12)
 
-When an item **successfully reaches** a milestone level for the first time (or re-reaches it after a failure drop), the system randomly assigns **one new Special Stat** from the available pool (see Section 5). A fully enchanted (+12) item will have **exactly 4 Special Stats**.
+When an item **successfully reaches** a milestone, the system assigns **one Special Stat** chosen at random from the city-specific pool (excluding already assigned stats). Dropping below a milestone clears those stats; re-reaching it re-rolls fresh.
 
 ---
 
-## 3. Enchantment Materials (Textilis Crafting)
+## 3. Enchantment Materials
 
-Textilis introduces three tiers of Enchantment Materials, crafted via the **Tailor** (SEW) workspace:
+### 3.1 Textilis Materials (crafted via Tailor — SEW workspace)
 
 | Material | Craft Time | Ingredients | Used For |
 |:---|:---|:---|:---|
-| **Enchant Stone** | 5 min | 3× Fiber Thread + 1× Salt | +1 to +6 |
-| **Rune Shard** | 15 min | 2× Enchant Stone + 1× Iron Ingot + 1× Flux | +7 to +9 |
+| **Enchant Stone** | 5 min | 3× Fiber Thread + 1× Salt | +1 to +5 |
+| **Rune Shard** | 15 min | 2× Enchant Stone + 1× Iron Ingot + 1× Flux | +6 to +9 |
 | **Arcane Crystal** | 40 min | 2× Rune Shard + 1× Steel Ingot + 1× Oil | +10 to +12 |
 
-> `Fiber Thread` is a RAW material produced by the Weaver (SEW/EXTRACT) workspace in Textilis from `Fiber Seeds`.
+### 3.2 Ferrum Materials (crafted via Blacksmith — SMELT workspace)
 
-### 3.1 Material + Gold Cost per Attempt
+| Material | Craft Time | Ingredients | Used For |
+|:---|:---|:---|:---|
+| **Metal Dust** | 5 min | 3× Iron Ore + 1× Coal | +1 to +5 |
+| **Rune Ingot** | 15 min | 2× Metal Dust + 1× Steel Bar + 1× Flux | +6 to +9 |
+| **Chaos Core** | 40 min | 2× Rune Ingot + 1× Alloy Bar + 1× Oil | +10 to +12 |
 
-| Enchant Attempt | Material Required | Gold Cost |
-|:---:|:---|:---:|
-| +1 → +2 | 3× Enchant Stone | 500g |
-| +2 → +3 | 5× Enchant Stone | 1000g |
-| +3 → +4 | 10× Enchant Stone | 2000g |
-| +4 → +5 | 15× Enchant Stone | 4000g |
-| +5 → +6 | 30× Enchant Stone | 8000g |
-| +6 → +7 | 10× Rune Shard | 12,000g |
-| +7 → +8 | 20× Rune Shard | 18,000g |
-| +8 → +9 | 30× Rune Shard | 24,000g |
-| +9 → +10 | 10× Arcane Crystal | 28,000g |
-| +10 → +11 | 20× Arcane Crystal | 40,000g |
-| +11 → +12 | 30× Arcane Crystal | 90,000g |
+### 3.3 Material + Gold Cost per Attempt (both cities share the same scale)
+
+| Enchant Attempt | Textilis Material | Ferrum Material | Gold Cost |
+|:---:|:---|:---|:---:|
+| +0 → +1 | 3× Enchant Stone | 3× Metal Dust | 500g |
+| +1 → +2 | 5× Enchant Stone | 5× Metal Dust | 1,000g |
+| +2 → +3 | 10× Enchant Stone | 10× Metal Dust | 2,000g |
+| +3 → +4 | 15× Enchant Stone | 15× Metal Dust | 4,000g |
+| +4 → +5 | 30× Enchant Stone | 30× Metal Dust | 8,000g |
+| +5 → +6 | 10× Rune Shard | 10× Rune Ingot | 12,000g |
+| +6 → +7 | 20× Rune Shard | 20× Rune Ingot | 18,000g |
+| +7 → +8 | 30× Rune Shard | 30× Rune Ingot | 24,000g |
+| +8 → +9 | 10× Arcane Crystal | 10× Chaos Core | 28,000g |
+| +9 → +10 | 20× Arcane Crystal | 20× Chaos Core | 40,000g |
+| +10 → +11 | 30× Arcane Crystal | 30× Chaos Core | 90,000g |
 
 Materials are **consumed on attempt** regardless of success or failure.
 
 ---
 
-## 4. Base Stat Scaling (Enchant Level Multiplier)
-
-An enchanted item's **base effect** (`effect_value` / `effect_value2`) is multiplied by both the existing **rarity multiplier** and a new **enchant bonus multiplier**:
+## 4. Base Stat Scaling (Enchant Bonus Multiplier)
 
 ```
 effectiveStat = base_value × rarityMultiplier × (1 + enchantBonus)
@@ -95,139 +122,230 @@ effectiveStat = base_value × rarityMultiplier × (1 + enchantBonus)
 | +11 | 120% |
 | +12 | 150% |
 
-> Example: A **LEGENDARY Fork** (`farm_time_reduction_pct` base 0.40, rarity multiplier 1.0) at **+12** yields: `0.40 × 1.0 × (1 + 1.50)` = **70% farm time reduction** (capped at 80% system max).
+> Example: LEGENDARY Fork (farm_time_reduction_pct base 0.40, rarity 1.0x) at +12 → 0.40 × 1.0 × 2.50 = 100% (capped at 80% system max).
 
 ---
 
-## 5. Special Stats Design
+## 5. Special Stat Pools
 
-### 5.1 Special Stat Pool (12 available)
-
-The system maintains a pool of 12 special stats. On each milestone, **one is selected at random** from the stats **not yet assigned** to the item. The value shown is the flat bonus per special-stat occurrence (stacks if the same stat appears on multiple equipped items).
+### 5.1 Textilis Pool — Armor & Clothing (T-01 to T-12)
 
 | ID | Effect Key | Description | Value per Stack |
 |:---:|:---|:---|:---:|
-| SS-01 | `enchant_exp_gain_pct` | Bonus EXP from all work orders | +8% |
-| SS-02 | `enchant_durability_protect_pct` | Reduces equipment durability decay rate | −12% |
-| SS-03 | `enchant_rare_drop_pct` | Increases chance of Rare/Epic/Legendary harvest | +3% |
-| SS-04 | `enchant_harvest_qty_bonus` | Bonus item quantity on "FARM","MINE","EXTRACT","GATHER","FORAGE" collect (flat) | +1 qty |
-| SS-05 | `enchant_market_tax_discount_pct` | Reduces all market taxes (import/export/domestic) | −2% |
-| SS-06 | `enchant_task_hunger_cost_pct` | Reduces hunger burned per active task | −8% |
-| SS-07 | `enchant_max_hunger_flat` | Flat max hunger capacity bonus | +150 Kcal |
-| SS-08 | `enchant_cook_double_chance_pct` | Chance to produce double output on COOK/SMELT | +4% |
-| SS-09 | `enchant_mine_yield_bonus_pct` | Bonus ore/gem yield from MINE expeditions | +5% |
-| SS-10 | `enchant_satiety_buff_duration_pct` | Extends meal satiety buff duration | +15% |
-| SS-11 | `enchant_ingredient_save_extra_pct` | Extra chance to save all (primary + secondary) ingredients | +5% |
-| SS-12 | `enchant_work_speed_pct` | Universal work speed bonus (all task types) | +4% |
+| T-01 | `enchant_exp_gain_pct` | Bonus EXP from all work orders | +8% |
+| T-02 | `enchant_durability_protect_pct` | Reduces equipment durability decay rate | −12% |
+| T-03 | `enchant_rare_drop_pct` | Increases chance of Rare/Epic/Legendary harvest | +3% |
+| T-04 | `enchant_harvest_qty_bonus` | Bonus item qty on FARM/EXTRACT/GATHER/FORAGE | +1 qty |
+| T-05 | `enchant_market_tax_discount_pct` | Reduces all market taxes | −2% |
+| T-06 | `enchant_task_hunger_cost_pct` | Reduces hunger burned per active task | −8% |
+| T-07 | `enchant_max_hunger_flat` | Flat max hunger capacity bonus | +150 Kcal |
+| T-08 | `enchant_cook_double_chance_pct` | Chance to produce double output on COOK | +4% |
+| T-09 | `enchant_satiety_buff_duration_pct` | Extends meal satiety buff duration | +15% |
+| T-10 | `enchant_ingredient_save_extra_pct` | Extra chance to save all ingredients on COOK | +5% |
+| T-11 | `enchant_work_speed_pct` | Universal work speed bonus (all task types) | +4% |
+| T-12 | `enchant_gourmet_chance_pct` | Bonus chance to produce Gourmet quality meals | +3% |
 
-### 5.2 Milestone → Special Stat Assignment
+### 5.2 Ferrum Pool — Tools (F-01 to F-12)
+
+| ID | Effect Key | Description | Value per Stack |
+|:---:|:---|:---|:---:|
+| F-01 | `enchant_expedition_speed_pct` | Reduces expedition travel time | −10% |
+| F-02 | `enchant_ore_double_chance_pct` | Chance to double ore yield on MINE | +6% |
+| F-03 | `enchant_gem_find_pct` | Extra chance to find gems during MINE | +4% |
+| F-04 | `enchant_smelt_speed_pct` | Reduces SMELT task completion time | −8% |
+| F-05 | `enchant_alloy_bonus_pct` | Bonus output qty on SMELT alloy recipes | +5% |
+| F-06 | `enchant_deep_hunger_reduction_pct` | Reduces hunger drain during MINE/SMELT | −10% |
+| F-07 | `enchant_tool_durability_protect_pct` | ARM-slot tool durability decay reduction | −15% |
+| F-08 | `enchant_farm_yield_flat` | Flat bonus qty on FARM collect | +1 qty |
+| F-09 | `enchant_mine_rare_ore_pct` | Chance to find rare ore type during MINE | +3% |
+| F-10 | `enchant_craft_exp_bonus_pct` | Bonus EXP from SMELT/MINE work orders | +10% |
+| F-11 | `enchant_forge_double_chance_pct` | Chance to produce double output on SMELT | +5% |
+| F-12 | `enchant_resource_save_pct` | Chance to not consume input materials on SMELT | +4% |
+
+### 5.3 Milestone → Special Stat Assignment
 
 ```
-+3  reached → Roll 1 stat from pool[0..11]           → special_stat_1
-+6  reached → Roll 1 stat from pool minus SS already assigned → special_stat_2
-+9  reached → Roll 1 stat from pool minus SS already assigned → special_stat_3
-+12 reached → Roll 1 stat from pool minus SS already assigned → special_stat_4
++3  reached → Roll 1 stat from cityPool (no duplicates) → special_stat_1
++6  reached → Roll 1 stat from cityPool minus assigned  → special_stat_2
++9  reached → Roll 1 stat from cityPool minus assigned  → special_stat_3
++12 reached → Roll 1 stat from cityPool minus assigned  → special_stat_4
 ```
 
-If a level drops below a milestone (e.g., fail at +10 → revert to +8), `special_stat_3` and `special_stat_4` are **cleared**. When +9 is re-reached, a fresh random roll occurs for `special_stat_3`.
+Dropping below a milestone **clears** that stat slot. Re-reaching the milestone re-rolls fresh.
 
 ---
 
-## 6. Database Schema Changes
+## 6. Dynamic Architecture
 
-### 6.1 New Items (seed data in `master-data.json`)
+The enchantment system uses a **city config registry** — adding a new enchanting city requires zero changes to service logic, routes, or the `EnchantModal` component. Only a new config entry is needed.
 
-```json
-{ "name": "Enchant Stone",   "type": "INGREDIENT", "max_stack": 99, "buy_price": null, "sell_price": 40,  "icon": "enchant_stone" },
-{ "name": "Rune Shard",      "type": "INGREDIENT", "max_stack": 99, "buy_price": null, "sell_price": 120, "icon": "rune_shard" },
-{ "name": "Fiber Thread",    "type": "RAW",        "max_stack": 99, "buy_price": null, "sell_price": 15,  "icon": "fiber_thread" },
-{ "name": "Fiber Seed",      "type": "SEED",       "max_stack": 10, "buy_price": 30,  "sell_price": 10,  "icon": "fiber_seed",
-  "yield_item": "Fiber Thread", "yield_qty": 3, "grow_mins": 8 },
-{ "name": "Arcane Crystal",  "type": "INGREDIENT", "max_stack": 20, "buy_price": null, "sell_price": 600, "icon": "arcane_crystal" }
-```
-
-### 6.2 New Enchantment Recipes (in `recipes` + `recipe_ingredients`)
-
-```
-"Craft Enchant Stone":  3× Fiber Thread + 1× Salt  → 1× Enchant Stone  (SEW, 5 min)
-"Craft Rune Shard":     2× Enchant Stone + 1× Iron Ingot + 1× Flux → 1× Rune Shard (SEW, 15 min)
-"Craft Arcane Crystal": 2× Rune Shard + 1× Steel Ingot + 1× Oil → 1× Arcane Crystal (SEW, 40 min)
-```
-
-### 6.3 Schema Migrations
-
-#### `inventory_slots` table — add columns:
-
-```sql
-ALTER TABLE inventory_slots
-  ADD COLUMN enchant_level       TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  ADD COLUMN special_stat_1      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_2      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_3      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_4      VARCHAR(60) NULL;
-```
-
-#### `user_equipments` table — add columns:
-
-```sql
-ALTER TABLE user_equipments
-  ADD COLUMN enchant_level       TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  ADD COLUMN special_stat_1      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_2      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_3      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_4      VARCHAR(60) NULL;
-```
-
-#### `market_listings` table — add columns:
-
-```sql
-ALTER TABLE market_listings
-  ADD COLUMN enchant_level       TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  ADD COLUMN special_stat_1      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_2      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_3      VARCHAR(60) NULL,
-  ADD COLUMN special_stat_4      VARCHAR(60) NULL;
-```
-
-#### `prisma/schema.prisma` — update models:
-
-```prisma
-model InventorySlot {
-  // ... existing fields ...
-  enchant_level        Int     @default(0)
-  special_stat_1       String?
-  special_stat_2       String?
-  special_stat_3       String?
-  special_stat_4       String?
-}
-
-model UserEquipment {
-  // ... existing fields ...
-  enchant_level        Int     @default(0)
-  special_stat_1       String?
-  special_stat_2       String?
-  special_stat_3       String?
-  special_stat_4       String?
-}
-
-model MarketListing {
-  // ... existing fields ...
-  enchant_level        Int     @default(0)
-  special_stat_1       String?
-  special_stat_2       String?
-  special_stat_3       String?
-  special_stat_4       String?
-}
-```
-
----
-
-## 7. Backend Implementation
-
-### 7.1 New Constants (`shared/gameConfig.ts`)
+### 6.1 `CityEnchantConfig` Type (`shared/gameConfig.ts`)
 
 ```typescript
-// ─── Enchantment System ──────────────────────────────────
+export type EquipmentSlotKey = "HEAD" | "UPPER_BODY" | "LOWER_BODY" | "ARM" | "GLOVE" | "SHOE";
+
+export interface EnchantMaterialTier {
+  itemName: string;
+  forLevels: [number, number]; // [minLevel, maxLevel] inclusive
+}
+
+export interface CityEnchantConfig {
+  cityKey: string;
+  workshopLabel: string;
+  craftWorkType: string;                  // WorkType that crafts materials
+  uiTheme: {
+    primaryColor: string;                 // Hex color for glow/buttons/badges
+    icon: string;                         // Lucide icon name
+    gradientFrom: string;
+    gradientTo: string;
+  };
+  applicableSlots: EquipmentSlotKey[];    // Which slots this city can enchant
+  materialChain: EnchantMaterialTier[];   // 3-tier material chain
+  materialCost: Record<number, { qty: number; gold: number }>;
+  specialStatPool: string[];              // Pool of stat keys for this city
+}
+```
+
+### 6.2 `CITY_ENCHANT_CONFIGS` Registry (`shared/gameConfig.ts`)
+
+```typescript
+export const CITY_ENCHANT_CONFIGS: Record<string, CityEnchantConfig> = {
+
+  textilis: {
+    cityKey: "textilis",
+    workshopLabel: "Enchantment Loom",
+    craftWorkType: "SEW",
+    uiTheme: {
+      primaryColor: "#a78bfa",
+      icon: "Sparkles",
+      gradientFrom: "#4c1d95",
+      gradientTo: "#7c3aed",
+    },
+    applicableSlots: ["HEAD", "UPPER_BODY", "LOWER_BODY", "GLOVE", "SHOE"],
+    materialChain: [
+      { itemName: "Enchant Stone",  forLevels: [1, 5] },
+      { itemName: "Rune Shard",     forLevels: [6, 9] },
+      { itemName: "Arcane Crystal", forLevels: [10, 12] },
+    ],
+    materialCost: {
+      1:  { qty: 3,  gold: 500   },
+      2:  { qty: 5,  gold: 1000  },
+      3:  { qty: 10, gold: 2000  },
+      4:  { qty: 15, gold: 4000  },
+      5:  { qty: 30, gold: 8000  },
+      6:  { qty: 10, gold: 12000 },
+      7:  { qty: 20, gold: 18000 },
+      8:  { qty: 30, gold: 24000 },
+      9:  { qty: 10, gold: 28000 },
+      10: { qty: 20, gold: 40000 },
+      11: { qty: 30, gold: 90000 },
+    },
+    specialStatPool: [
+      "enchant_exp_gain_pct", "enchant_durability_protect_pct", "enchant_rare_drop_pct",
+      "enchant_harvest_qty_bonus", "enchant_market_tax_discount_pct", "enchant_task_hunger_cost_pct",
+      "enchant_max_hunger_flat", "enchant_cook_double_chance_pct", "enchant_satiety_buff_duration_pct",
+      "enchant_ingredient_save_extra_pct", "enchant_work_speed_pct", "enchant_gourmet_chance_pct",
+    ],
+  },
+
+  ferrum: {
+    cityKey: "ferrum",
+    workshopLabel: "Upgrade Forge",
+    craftWorkType: "SMELT",
+    uiTheme: {
+      primaryColor: "#fb923c",
+      icon: "Flame",
+      gradientFrom: "#7c2d12",
+      gradientTo: "#c2410c",
+    },
+    applicableSlots: ["ARM"],
+    materialChain: [
+      { itemName: "Metal Dust",  forLevels: [1, 5] },
+      { itemName: "Rune Ingot",  forLevels: [6, 9] },
+      { itemName: "Chaos Core",  forLevels: [10, 12] },
+    ],
+    materialCost: {
+      1:  { qty: 3,  gold: 500   },
+      2:  { qty: 5,  gold: 1000  },
+      3:  { qty: 10, gold: 2000  },
+      4:  { qty: 15, gold: 4000  },
+      5:  { qty: 30, gold: 8000  },
+      6:  { qty: 10, gold: 12000 },
+      7:  { qty: 20, gold: 18000 },
+      8:  { qty: 30, gold: 24000 },
+      9:  { qty: 10, gold: 28000 },
+      10: { qty: 20, gold: 40000 },
+      11: { qty: 30, gold: 90000 },
+    },
+    specialStatPool: [
+      "enchant_expedition_speed_pct", "enchant_ore_double_chance_pct", "enchant_gem_find_pct",
+      "enchant_smelt_speed_pct", "enchant_alloy_bonus_pct", "enchant_deep_hunger_reduction_pct",
+      "enchant_tool_durability_protect_pct", "enchant_farm_yield_flat", "enchant_mine_rare_ore_pct",
+      "enchant_craft_exp_bonus_pct", "enchant_forge_double_chance_pct", "enchant_resource_save_pct",
+    ],
+  },
+
+};
+```
+
+### 6.3 `SPECIAL_STAT_DEFINITIONS` — Master Record (24 stats)
+
+```typescript
+export const SPECIAL_STAT_DEFINITIONS: Record<string, { label: string; value: number; unit: string }> = {
+  // Textilis (T-01 to T-12)
+  enchant_exp_gain_pct:               { label: "EXP Gain",             value: 0.08,  unit: "+%" },
+  enchant_durability_protect_pct:     { label: "Durability Loss",      value: 0.12,  unit: "−%" },
+  enchant_rare_drop_pct:              { label: "Rare Drop",            value: 0.03,  unit: "+%" },
+  enchant_harvest_qty_bonus:          { label: "Harvest Qty",          value: 1,     unit: "+qty" },
+  enchant_market_tax_discount_pct:    { label: "Market Tax",           value: 0.02,  unit: "−%" },
+  enchant_task_hunger_cost_pct:       { label: "Task Hunger Cost",     value: 0.08,  unit: "−%" },
+  enchant_max_hunger_flat:            { label: "Max Hunger",           value: 150,   unit: "+Kcal" },
+  enchant_cook_double_chance_pct:     { label: "Cook Double",          value: 0.04,  unit: "+%" },
+  enchant_satiety_buff_duration_pct:  { label: "Buff Duration",        value: 0.15,  unit: "+%" },
+  enchant_ingredient_save_extra_pct:  { label: "Ingredient Save",      value: 0.05,  unit: "+%" },
+  enchant_work_speed_pct:             { label: "Work Speed",           value: 0.04,  unit: "+%" },
+  enchant_gourmet_chance_pct:         { label: "Gourmet Chance",       value: 0.03,  unit: "+%" },
+  // Ferrum (F-01 to F-12)
+  enchant_expedition_speed_pct:       { label: "Expedition Speed",     value: 0.10,  unit: "−%" },
+  enchant_ore_double_chance_pct:      { label: "Ore Double",           value: 0.06,  unit: "+%" },
+  enchant_gem_find_pct:               { label: "Gem Find",             value: 0.04,  unit: "+%" },
+  enchant_smelt_speed_pct:            { label: "Smelt Speed",          value: 0.08,  unit: "−%" },
+  enchant_alloy_bonus_pct:            { label: "Alloy Bonus",          value: 0.05,  unit: "+%" },
+  enchant_deep_hunger_reduction_pct:  { label: "Deep Task Hunger",     value: 0.10,  unit: "−%" },
+  enchant_tool_durability_protect_pct:{ label: "Tool Durability Loss", value: 0.15,  unit: "−%" },
+  enchant_farm_yield_flat:            { label: "Farm Yield",           value: 1,     unit: "+qty" },
+  enchant_mine_rare_ore_pct:          { label: "Rare Ore Find",        value: 0.03,  unit: "+%" },
+  enchant_craft_exp_bonus_pct:        { label: "Craft EXP",            value: 0.10,  unit: "+%" },
+  enchant_forge_double_chance_pct:    { label: "Forge Double",         value: 0.05,  unit: "+%" },
+  enchant_resource_save_pct:          { label: "Resource Save",        value: 0.04,  unit: "+%" },
+};
+```
+
+### 6.4 Utility Helpers (`shared/enchantmentUtils.ts`)
+
+```typescript
+import { CITY_ENCHANT_CONFIGS, CityEnchantConfig, EquipmentSlotKey } from "./gameConfig";
+
+/** Returns the config for whichever city enchants the given equipment slot. */
+export function getCityEnchantConfigForSlot(slot: EquipmentSlotKey): CityEnchantConfig | undefined {
+  return Object.values(CITY_ENCHANT_CONFIGS).find(cfg => cfg.applicableSlots.includes(slot));
+}
+
+/** Returns the material name for a given target level within a config. */
+export function getMaterialForLevel(cfg: CityEnchantConfig, targetLevel: number): string {
+  const tier = cfg.materialChain.find(
+    t => targetLevel >= t.forLevels[0] && targetLevel <= t.forLevels[1]
+  );
+  return tier?.itemName ?? "Unknown Material";
+}
+```
+
+---
+
+## 7. Shared Constants (`shared/gameConfig.ts`)
+
+```typescript
+// ─── Enchantment System ──────────────────────────────────────────────────────
 
 export const ENCHANT_SUCCESS_RATES: Record<number, number> = {
   1: 0.90, 2: 0.80, 3: 0.50, 4: 0.40, 5: 0.30,
@@ -243,332 +361,459 @@ export const ENCHANT_BONUS_MULTIPLIER: Record<number, number> = {
 
 export const ENCHANT_MILESTONES = [3, 6, 9, 12] as const;
 
+/**
+ * How many levels to drop on failure. Key = target level being attempted.
+ * Levels 1-5: drop 1 but floor at ENCHANT_LEVEL_FLOOR (item cannot reach +0).
+ * Levels 6-9: drop 1 + 50% destroy chance.
+ * Levels 10-12: drop 2 + 50% destroy chance.
+ */
 export const ENCHANT_FAILURE_DROP: Record<number, number> = {
-  // 1–5: no drop (0)
-  1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
-  // 6–9: drop 1
-  6: 1, 7: 1, 8: 1, 9: 1,
-  // 10–12: drop 2
-  10: 2, 11: 2, 12: 2,
+  1: 1, 2: 1, 3: 1, 4: 1, 5: 1,   // safe zone — floor applied
+  6: 1, 7: 1, 8: 1, 9: 1,          // danger zone — destroy risk
+  10: 2, 11: 2, 12: 2,              // extreme zone — destroy risk
 };
 
-export const ENCHANT_MATERIAL_COST: Record<number, { itemName: string; qty: number; gold: number }> = {
-  1: { itemName: "Enchant Stone", qty: 1, gold: 50 },
-  2: { itemName: "Enchant Stone", qty: 2, gold: 100 },
-  3: { itemName: "Enchant Stone", qty: 3, gold: 150 },
-  4: { itemName: "Enchant Stone", qty: 4, gold: 200 },
-  5: { itemName: "Enchant Stone", qty: 5, gold: 300 },
-  6: { itemName: "Rune Shard",    qty: 1, gold: 500 },
-  7: { itemName: "Rune Shard",    qty: 2, gold: 750 },
-  8: { itemName: "Rune Shard",    qty: 3, gold: 1000 },
-  9: { itemName: "Arcane Crystal",qty: 1, gold: 2000 },
-  10: { itemName: "Arcane Crystal", qty: 2, gold: 3500 },
-  11: { itemName: "Arcane Crystal", qty: 3, gold: 5000 },
-};
+export const ENCHANT_LEVEL_FLOOR      = 1;    // Cannot drop below +1 in safe zone
+export const ENCHANT_DESTROY_ZONE_MIN = 6;    // Levels >= 6 have destroy risk on failure
+export const ENCHANT_DESTROY_CHANCE   = 0.50; // 50% item destroy on failure in danger/extreme zones
 
-export const SPECIAL_STAT_POOL = [
-  "enchant_exp_gain_pct",
-  "enchant_durability_protect_pct",
-  "enchant_rare_drop_pct",
-  "enchant_harvest_qty_bonus",
-  "enchant_market_tax_discount_pct",
-  "enchant_task_hunger_cost_pct",
-  "enchant_max_hunger_flat",
-  "enchant_cook_double_chance_pct",
-  "enchant_mine_yield_bonus_pct",
-  "enchant_satiety_buff_duration_pct",
-  "enchant_ingredient_save_extra_pct",
-  "enchant_work_speed_pct",
-] as const;
-
-export type SpecialStatKey = typeof SPECIAL_STAT_POOL[number];
-
-export const SPECIAL_STAT_VALUES: Record<SpecialStatKey, number> = {
-  enchant_exp_gain_pct:               0.08,
-  enchant_durability_protect_pct:     0.12,
-  enchant_rare_drop_pct:              0.03,
-  enchant_harvest_qty_bonus:          1,
-  enchant_market_tax_discount_pct:    0.02,
-  enchant_task_hunger_cost_pct:       0.08,
-  enchant_max_hunger_flat:            150,
-  enchant_cook_double_chance_pct:     0.04,
-  enchant_mine_yield_bonus_pct:       0.05,
-  enchant_satiety_buff_duration_pct:  0.15,
-  enchant_ingredient_save_extra_pct:  0.05,
-  enchant_work_speed_pct:             0.04,
-};
+// Material costs live inside CITY_ENCHANT_CONFIGS (see Section 6.2).
+// CITY_ENCHANT_CONFIGS.textilis.materialCost[targetLevel] → { qty, gold }
+// CITY_ENCHANT_CONFIGS.ferrum.materialCost[targetLevel]   → { qty, gold }
 ```
 
-### 7.2 New Service: `server/src/services/enchantment.service.ts`
+---
 
-**Responsibilities:**
-- `rollEnchantResult(currentLevel)` — Rolls against success rate, returns `{ success, newLevel, droppedMilestones }`.
-- `assignSpecialStat(existingStats, newMilestone)` — Randomly picks a stat from the pool excluding already assigned.
-- `getEnchantedEffects(userId, db)` — Aggregates all special stats from `user_equipments` that are active (durability > 0 and enchant_level > 0).
-- `applyEnchantToInventorySlot(userId, slotId, db)` — Core transaction: deduct materials + gold, roll, update `enchant_level` and `special_stat_*`, return result.
-- `getEnchantCostPreview(currentLevel)` — Returns required material name, qty, and gold cost without mutating state.
+## 8. Backend Implementation
+
+### 8.1 New Service: `server/src/services/enchantment.service.ts`
 
 ```typescript
-// Pseudocode outline
 export async function attemptEnchant(
   userId: number,
   inventorySlotId: number,
   db = prisma
 ): Promise<EnchantAttemptResult> {
   return db.$transaction(async (tx) => {
-    // 1. Load the inventory slot (must be EQUIPMENT type, must be in player's inventory)
-    // 2. Validate current city = Textilis (or allow globally if design allows)
-    // 3. Load ENCHANT_MATERIAL_COST for targetLevel = currentLevel + 1
-    // 4. Deduct required material qty from inventory
-    // 5. Deduct gold from user.money
-    // 6. Roll success: Math.random() < ENCHANT_SUCCESS_RATES[targetLevel]
-    // 7a. Success:
-    //     - Increment enchant_level
-    //     - If new level is a MILESTONE: assign new special stat
-    // 7b. Failure:
-    //     - drop = ENCHANT_FAILURE_DROP[targetLevel]
-    //     - Decrement enchant_level by drop
-    //     - Clear special_stat fields for milestones now below current level
-    // 8. Return { success, newLevel, specialStatAdded, specialStatLost[] }
+    // 1. Load slot — must be EQUIPMENT, must belong to user
+    const slot = await tx.inventorySlot.findFirstOrThrow({
+      where: { id: inventorySlotId, user_id: userId },
+    });
+    const item = await tx.item.findUniqueOrThrow({ where: { id: slot.item_id } });
+
+    // 2. Resolve city config from equipment slot dynamically
+    const cfg = getCityEnchantConfigForSlot(item.equipment_slot as EquipmentSlotKey);
+    if (!cfg) throw new Error("Item slot is not enchantable");
+
+    // 3. Validate player is in the correct city
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+    if (user.current_city !== cfg.cityKey)
+      throw new Error(`Must be in ${cfg.workshopLabel} to enchant this item`);
+
+    const targetLevel = (slot.enchant_level ?? 0) + 1;
+    if (targetLevel > 12) throw new Error("Already at maximum enchant level +12");
+
+    // 4. Deduct material + gold
+    const cost = cfg.materialCost[targetLevel];
+    const materialName = getMaterialForLevel(cfg, targetLevel);
+    await deductMaterialFromInventory(userId, materialName, cost.qty, tx);
+    await tx.user.update({
+      where: { id: userId },
+      data: { money: { decrement: cost.gold } },
+    });
+
+    // 5. Roll success
+    const success = Math.random() < ENCHANT_SUCCESS_RATES[targetLevel];
+
+    if (success) {
+      const newLevel = targetLevel;
+      let specialStatAdded: string | null = null;
+
+      const statUpdate: Record<string, string | null> = {};
+      if ((ENCHANT_MILESTONES as readonly number[]).includes(newLevel)) {
+        const existing = [slot.special_stat_1, slot.special_stat_2,
+                          slot.special_stat_3, slot.special_stat_4].filter(Boolean) as string[];
+        specialStatAdded = pickRandomStat(cfg.specialStatPool, existing);
+        statUpdate[milestoneToStatKey(newLevel)] = specialStatAdded;
+      }
+
+      await tx.inventorySlot.update({
+        where: { id: inventorySlotId },
+        data: { enchant_level: newLevel, ...statUpdate },
+      });
+
+      return { success: true, newLevel, specialStatAdded, destroyed: false };
+
+    } else {
+      // 6. Failure resolution
+      const currentLevel = slot.enchant_level ?? 0;
+      const drop = ENCHANT_FAILURE_DROP[targetLevel] ?? 0;
+      const newLevel = Math.max(currentLevel - drop, ENCHANT_LEVEL_FLOOR);
+
+      const inDestroyZone = currentLevel >= ENCHANT_DESTROY_ZONE_MIN;
+      const destroyed = inDestroyZone && Math.random() < ENCHANT_DESTROY_CHANCE;
+
+      if (destroyed) {
+        await tx.inventorySlot.delete({ where: { id: inventorySlotId } });
+        return { success: false, newLevel: 0, destroyed: true, specialStatAdded: null };
+      }
+
+      // Clear stats for milestones above new level
+      const clearedStats = clearStatsAboveLevel(slot, newLevel);
+      await tx.inventorySlot.update({
+        where: { id: inventorySlotId },
+        data: { enchant_level: newLevel, ...clearedStats },
+      });
+
+      return { success: false, newLevel, destroyed: false, specialStatAdded: null };
+    }
   });
 }
 ```
 
-### 7.3 Update: `server/src/services/equipmentEffects.service.ts`
+### 8.2 Update: `server/src/services/equipmentEffects.service.ts`
 
-Extend `EquipmentEffectSummary` with new enchantment special-stat fields:
+Extend `EquipmentEffectSummary` with all 24 special-stat fields plus enchant base bonus:
 
 ```typescript
 export interface EquipmentEffectSummary {
-  // ... existing fields ...
+  // ...existing 12 fields...
 
-  // Enchantment special stats (aggregated across all equipped items)
-  enchantExpGainPct:              number;  // bonus EXP multiplier
-  enchantDurabilityProtectPct:    number;  // durability decay reduction
-  enchantRareDropPct:             number;  // rare drop bonus
-  enchantHarvestQtyBonus:         number;  // flat harvest bonus
-  enchantMarketTaxDiscountPct:    number;  // market tax discount
-  enchantTaskHungerCostPct:       number;  // task hunger cost reduction
-  enchantMaxHungerFlat:           number;  // flat max hunger
-  enchantCookDoubleChancePct:     number;  // cook double yield chance
-  enchantMineYieldBonusPct:       number;  // mine yield bonus
-  enchantSatietyBuffDurationPct:  number;  // satiety buff duration extension
-  enchantIngredientSaveExtraPct:  number;  // extra ingredient save chance
-  enchantWorkSpeedPct:            number;  // universal work speed bonus
+  // Textilis special stats (T-01 to T-12)
+  enchantExpGainPct:              number;
+  enchantDurabilityProtectPct:    number;
+  enchantRareDropPct:             number;
+  enchantHarvestQtyBonus:         number;
+  enchantMarketTaxDiscountPct:    number;
+  enchantTaskHungerCostPct:       number;
+  enchantMaxHungerFlat:           number;
+  enchantCookDoubleChancePct:     number;
+  enchantSatietyBuffDurationPct:  number;
+  enchantIngredientSaveExtraPct:  number;
+  enchantWorkSpeedPct:            number;
+  enchantGourmetChancePct:        number;
+
+  // Ferrum special stats (F-01 to F-12)
+  enchantExpeditionSpeedPct:       number;
+  enchantOreDoubleChancePct:       number;
+  enchantGemFindPct:               number;
+  enchantSmeltSpeedPct:            number;
+  enchantAlloyBonusPct:            number;
+  enchantDeepHungerReductionPct:   number;
+  enchantToolDurabilityProtectPct: number;
+  enchantFarmYieldFlat:            number;
+  enchantMineRareOrePct:           number;
+  enchantCraftExpBonusPct:         number;
+  enchantForgeDoubleChancePct:     number;
+  enchantResourceSavePct:          number;
 }
 ```
 
-In the `getUserEquipmentEffects` query, also `SELECT enchant_level, special_stat_1, special_stat_2, special_stat_3, special_stat_4 FROM user_equipments` and loop over active special stats, adding `SPECIAL_STAT_VALUES[key]` to the corresponding field.
-
-Additionally, apply the **enchant base bonus** to the existing effect calculation:
+Apply enchant base bonus when aggregating effect values:
 
 ```typescript
 const enchantBonus = ENCHANT_BONUS_MULTIPLIER[row.enchant_level ?? 0] ?? 0;
-const v = Number(row.effect_value ?? 0) * multiplier * (1 + enchantBonus);
+const effectiveValue = baseValue * rarityMultiplier * (1 + enchantBonus);
 ```
 
-### 7.4 New Controller: `server/src/controllers/enchantment.controller.ts`
+Loop over `special_stat_1..4` for each equipped item and accumulate via `SPECIAL_STAT_DEFINITIONS[key].value`.
+
+### 8.3 New Controller: `server/src/controllers/enchantment.controller.ts`
 
 | Endpoint | Method | Description |
 |:---|:---|:---|
-| `POST /game/enchant/attempt` | POST | Attempt to enchant an item. Body: `{ inventorySlotId }` |
-| `GET /game/enchant/preview/:slotId` | GET | Returns cost preview and current item enchant state |
+| `POST /game/enchant/attempt` | POST | Attempt enchant. Body: `{ inventorySlotId }` |
+| `GET /game/enchant/preview/:slotId` | GET | Cost preview + current enchant state |
+| `GET /game/enchant/configs` | GET | Returns `CITY_ENCHANT_CONFIGS` for client use |
 
-### 7.5 Route Registration: `server/src/routes/game.routes.ts`
+### 8.4 Routes: `server/src/routes/game.routes.ts`
 
 ```typescript
-import { attemptEnchant, getEnchantPreview } from "../controllers/enchantment.controller";
+import { attemptEnchant, getEnchantPreview, getEnchantConfigs } from "../controllers/enchantment.controller";
 
-router.post("/enchant/attempt", authMiddleware, attemptEnchant);
+router.post("/enchant/attempt",        authMiddleware, attemptEnchant);
 router.get("/enchant/preview/:slotId", authMiddleware, getEnchantPreview);
+router.get("/enchant/configs",         authMiddleware, getEnchantConfigs);
 ```
 
-### 7.6 Integration Touch Points
+### 8.5 Integration Touch Points
 
 | File | Change |
 |:---|:---|
-| `hunger.service.ts` | Apply `enchantTaskHungerCostPct` to per-task decay multiplier |
-| `workspace.controller.ts` | Apply `enchantWorkSpeedPct` to work order `completes_at` calculation; apply `enchantHarvestQtyBonus` on collect; apply `enchantMineYieldBonusPct` on mine collect; apply `enchantCookDoubleChancePct` on cook collect |
-| `level.service.ts` | Multiply EXP awarded by `(1 + enchantExpGainPct)` |
-| `durability.service.ts` | Multiply decay by `(1 - enchantDurabilityProtectPct)` before subtracting |
-| `market.controller.ts` | Subtract `enchantMarketTaxDiscountPct` from final tax percentage (floor at 0%) |
-| `hunger.service.ts` | Add `enchantMaxHungerFlat` to effective max hunger cap; apply `enchantSatietyBuffDurationPct` when setting `buff_expires_at` |
-| `inventory.controller.ts` | Persist `enchant_level` + `special_stat_1..4` when equipping/unequipping; include fields in getInventory response |
-| `quest.service.ts` | Include enchanted items in reward collection as-is (no rarity downgrade) |
+| `workspace.controller.ts` | Apply `enchantWorkSpeedPct`, `enchantHarvestQtyBonus`, `enchantMineRareOrePct`, `enchantOreDoubleChancePct`, `enchantCookDoubleChancePct`, `enchantForgeDoubleChancePct`, `enchantResourceSavePct`, `enchantFarmYieldFlat` on collect |
+| `hunger.service.ts` | Apply `enchantTaskHungerCostPct`, `enchantDeepHungerReductionPct`, `enchantMaxHungerFlat`, `enchantSatietyBuffDurationPct` |
+| `durability.service.ts` | `enchantDurabilityProtectPct` for armor; `enchantToolDurabilityProtectPct` for ARM-slot items |
+| `level.service.ts` | Multiply EXP by `(1 + enchantExpGainPct + enchantCraftExpBonusPct)` |
+| `market.controller.ts` | Subtract `enchantMarketTaxDiscountPct` from tax (floor 0%); carry enchant fields on listings |
+| `inventory.controller.ts` | Persist `enchant_level` + `special_stat_1..4` on equip/unequip; include in API response |
 
 ---
 
-## 8. Frontend Implementation
+## 9. Database Schema Changes
 
-### 8.1 Type Extensions (`client/src/lib/equipmentRarity.ts` or new `enchantment.ts`)
+### 9.1 New Items (`master-data.json`)
+
+**Textilis:**
+```json
+{ "name": "Fiber Seed",     "type": "SEED",       "max_stack": 10, "buy_price": 30,  "yield_item": "Fiber Thread", "yield_qty": 3, "grow_mins": 8 },
+{ "name": "Fiber Thread",   "type": "RAW",        "max_stack": 99, "sell_price": 15 },
+{ "name": "Enchant Stone",  "type": "INGREDIENT", "max_stack": 99, "sell_price": 40 },
+{ "name": "Rune Shard",     "type": "INGREDIENT", "max_stack": 99, "sell_price": 120 },
+{ "name": "Arcane Crystal", "type": "INGREDIENT", "max_stack": 20, "sell_price": 600 }
+```
+
+**Ferrum:**
+```json
+{ "name": "Metal Dust", "type": "INGREDIENT", "max_stack": 99, "sell_price": 40 },
+{ "name": "Rune Ingot", "type": "INGREDIENT", "max_stack": 99, "sell_price": 120 },
+{ "name": "Chaos Core", "type": "INGREDIENT", "max_stack": 20, "sell_price": 600 }
+```
+
+### 9.2 Schema Migrations (SQL)
+
+```sql
+ALTER TABLE inventory_slots
+  ADD COLUMN enchant_level  TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  ADD COLUMN special_stat_1 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_2 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_3 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_4 VARCHAR(60) NULL;
+
+ALTER TABLE user_equipments
+  ADD COLUMN enchant_level  TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  ADD COLUMN special_stat_1 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_2 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_3 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_4 VARCHAR(60) NULL;
+
+ALTER TABLE market_listings
+  ADD COLUMN enchant_level  TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  ADD COLUMN special_stat_1 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_2 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_3 VARCHAR(60) NULL,
+  ADD COLUMN special_stat_4 VARCHAR(60) NULL;
+```
+
+### 9.3 Prisma Schema (`schema.prisma`)
+
+```prisma
+model InventorySlot {
+  // ...existing fields...
+  enchant_level  Int     @default(0)
+  special_stat_1 String?
+  special_stat_2 String?
+  special_stat_3 String?
+  special_stat_4 String?
+}
+
+model UserEquipment {
+  // ...existing fields...
+  enchant_level  Int     @default(0)
+  special_stat_1 String?
+  special_stat_2 String?
+  special_stat_3 String?
+  special_stat_4 String?
+}
+
+model MarketListing {
+  // ...existing fields...
+  enchant_level  Int     @default(0)
+  special_stat_1 String?
+  special_stat_2 String?
+  special_stat_3 String?
+  special_stat_4 String?
+}
+```
+
+---
+
+## 10. Frontend Implementation
+
+### 10.1 `client/src/lib/enchantment.ts`
 
 ```typescript
-export const ENCHANT_BONUS_MULTIPLIER: Record<number, number> = {
-  0: 0, 1: 0.05, 2: 0.10, 3: 0.18, 4: 0.25, 5: 0.33,
-  6: 0.44, 7: 0.55, 8: 0.68, 9: 0.83, 10: 1.00, 11: 1.20, 12: 1.50,
-};
-
 export const ENCHANT_LEVEL_COLOR: Record<number, string> = {
-  0: 'rgba(255,255,255,0.4)',
-  1: '#a3e635', 2: '#a3e635', 3: '#34d399',  // +1–+3 green
-  4: '#38bdf8', 5: '#38bdf8', 6: '#818cf8',  // +4–+6 blue→indigo
-  7: '#a78bfa', 8: '#a78bfa', 9: '#f472b6',  // +7–+9 violet→pink
-  10: '#fb923c', 11: '#fb923c', 12: '#facc15', // +10–+12 orange→gold
-};
-
-export const SPECIAL_STAT_LABELS: Record<string, string> = {
-  enchant_exp_gain_pct:              'EXP Gain +8%',
-  enchant_durability_protect_pct:    'Durability Loss −12%',
-  enchant_rare_drop_pct:             'Rare Drop +3%',
-  enchant_harvest_qty_bonus:         '+1 Harvest Qty',
-  enchant_market_tax_discount_pct:   'Market Tax −2%',
-  enchant_task_hunger_cost_pct:      'Task Hunger −8%',
-  enchant_max_hunger_flat:           'Max Hunger +150',
-  enchant_cook_double_chance_pct:    'Cook Double +4%',
-  enchant_mine_yield_bonus_pct:      'Mine Yield +5%',
-  enchant_satiety_buff_duration_pct: 'Buff Duration +15%',
-  enchant_ingredient_save_extra_pct: 'Ingredient Save +5%',
-  enchant_work_speed_pct:            'Work Speed +4%',
+  0:  "rgba(255,255,255,0.3)",
+  1:  "#a3e635", 2:  "#a3e635", 3:  "#34d399",   // green
+  4:  "#38bdf8", 5:  "#38bdf8", 6:  "#818cf8",   // blue → indigo
+  7:  "#a78bfa", 8:  "#a78bfa", 9:  "#f472b6",   // violet → pink
+  10: "#fb923c", 11: "#fb923c", 12: "#facc15",   // orange → gold
 };
 ```
 
-### 8.2 New Component: `EnchantModal.tsx`
+### 10.2 `EnchantModal.tsx` — Single City-Themed Component
 
-Location: `client/src/components/workspaces/EnchantModal.tsx` (accessible from Textilis workspace)
-
-**UI Structure:**
-```
-┌──────────────────────────────────────────────┐
-│  ✨ Enchant Equipment                         │
-│                                              │
-│  [Item Icon] Fork (LEGENDARY) +5             │
-│  ──────────────────────────────────────────  │
-│  Base Effect:  Farm Time −40% → −53.2% (+5) │
-│  Special Stats: [SS-01: EXP +8%] [SS-03: ...]│
-│                                              │
-│  ── Attempt +6 ───────────────────────────── │
-│  Cost: 5× Enchant Stone + 300g               │
-│  Success Rate: 10%                           │
-│  Failure: Level drops to +5 (no stat loss)  │
-│                                              │
-│        [ ENCHANT ]   [ CANCEL ]              │
-└──────────────────────────────────────────────┘
-```
-
-**State:** loading, idle, animating (success/fail), result.
-**Animation:** `framer-motion` glow pulse on success; screen shake on failure at high levels.
-
-### 8.3 Update: `InventoryGrid.tsx`
-
-- Add `enchant_level` badge on item card (e.g., `+5` in the corner).
-- Color badge using `ENCHANT_LEVEL_COLOR[level]`.
-- Tooltip on hover shows special stats.
-
-### 8.4 Update: `DashboardPage.tsx` — `formatEquipmentEffect`
-
-Extend to also render enchant bonus and special stats in the equipment buff sidebar:
+The modal is **driven by `CityEnchantConfig`** — one component handles both Textilis and Ferrum.
 
 ```typescript
-// Enchantment base bonus
-const enchantBonus = ENCHANT_BONUS_MULTIPLIER[eq.enchant_level ?? 0] ?? 0;
-const effectiveV = rawV * (1 + enchantBonus);
-
-// Special stats display
-const specialStats = [eq.special_stat_1, eq.special_stat_2, eq.special_stat_3, eq.special_stat_4]
-  .filter(Boolean)
-  .map(s => SPECIAL_STAT_LABELS[s!])
-  .join(' | ');
+interface EnchantModalProps {
+  slot: InventorySlot;
+  config: CityEnchantConfig;   // injected — modal has zero city-specific logic
+  onClose: () => void;
+  onSuccess: (result: EnchantAttemptResult) => void;
+}
 ```
 
-### 8.5 Update: `MarketplacePage.tsx`
+**Textilis (purple) wireframe:**
+```
+┌──────────────────── ✨ Enchantment Loom ─────────────────────┐
+│  [Item Icon]  Cloth Hat (EPIC)  +5                          │
+│  ─────────────────────────────────────────────────────────  │
+│  Base Effect: Farm Time −30% → −39.9% at +5                │
+│  Special Stats: [T-01: EXP +8%] [T-04: +1 Harvest]        │
+│                                                             │
+│  ── Attempt +6 ──────────────────────────────────────────  │
+│  Material: 10× Rune Shard        (you have: 14)            │
+│  Gold:     12,000g               (you have: 45,200g)       │
+│  Success Rate: 10%                                         │
+│  ⚠ Failure: Drop to +5 or 50% DESTROY                     │
+│                                                             │
+│           [ ENCHANT ]         [ CANCEL ]                   │
+└──────────────────────────────────────────────────────────── ┘
+```
 
-- Show enchant level badge on market listing cards.
-- Add `enchant_level` filter (0 = unenchanted, 1–12).
-- Sort by enchant level option.
+**Ferrum (orange) wireframe:**
+```
+┌──────────────────── 🔥 Upgrade Forge ───────────────────────┐
+│  [Item Icon]  Iron Fork (LEGENDARY)  +3                     │
+│  ─────────────────────────────────────────────────────────  │
+│  Base Effect: Farm Time −40% → −47.2% at +3                │
+│  Special Stats: [F-01: Expedition −10%]                    │
+│                                                             │
+│  ── Attempt +4 ──────────────────────────────────────────  │
+│  Material: 15× Metal Dust        (you have: 32)            │
+│  Gold:     4,000g                (you have: 45,200g)       │
+│  Success Rate: 40%                                         │
+│  Failure: Drop to +3 (floor — safe zone)                   │
+│                                                             │
+│           [ FORGE UP ]        [ CANCEL ]                   │
+└──────────────────────────────────────────────────────────── ┘
+```
 
-### 8.6 Update: `gameStore.ts`
+**Animation:** purple glow pulse for Textilis success; orange forge spark for Ferrum success; screen shake for high-level failure in both themes.
 
-- Cache `enchantedEffects` as part of the player profile fetch.
-- Rehydrate on inventory equip/unequip changes.
-- Include `special_stat_1..4` and `enchant_level` in InventorySlot and UserEquipment interfaces.
+### 10.3 `TextilisWorkspace.tsx` — Enchantment Loom Section
 
-### 8.7 New Workspace Panel: `TextilisWorkspace.tsx` (if not yet existing)
+Add panel after SEW workspace:
+- Lists EQUIPMENT items filtered to Textilis `applicableSlots`.
+- Shows enchant level badge per item.
+- "Enchant" button opens `<EnchantModal config={CITY_ENCHANT_CONFIGS.textilis} ... />`.
+- Shows Enchant Stone / Rune Shard / Arcane Crystal stock counts.
 
-Add an **Enchantment Forge** section alongside the existing SEW workspace:
-- Lists all EQUIPMENT items in current inventory with their enchant state.
-- "Enchant" button opens `EnchantModal`.
-- Shows Enchant Stone / Rune Shard / Arcane Crystal stock from inventory.
+### 10.4 `BlacksmithWorkspace.tsx` — Upgrade Forge Section
+
+Add panel after SMELT workspace:
+- Lists ARM-slot EQUIPMENT items.
+- Shows enchant level badge.
+- "Forge Up" button opens `<EnchantModal config={CITY_ENCHANT_CONFIGS.ferrum} ... />`.
+- Shows Metal Dust / Rune Ingot / Chaos Core stock counts.
+
+### 10.5 Other Frontend Updates
+
+| File | Change |
+|:---|:---|
+| `InventoryGrid.tsx` | Enchant level badge (corner) colored by `ENCHANT_LEVEL_COLOR`; tooltip shows special stats |
+| `DashboardPage.tsx` | Apply `enchantBonus` in `formatEquipmentEffect`; render special stat labels from `SPECIAL_STAT_DEFINITIONS` |
+| `MarketplacePage.tsx` | Show enchant badge on listings; filter + sort by enchant level |
+| `gameStore.ts` | Add `enchant_level` + `special_stat_1..4` to `InventorySlot` and `UserEquipment` interfaces |
 
 ---
 
-## 9. Integration Summary
+## 11. Integration Summary
 
-### 9.1 How Enchant Stats Sync to Systems
-
-| System | Enchant Base Bonus | Special Stats Applied |
+| System | Enchant Base Bonus Applied To | Special Stats Applied |
 |:---|:---|:---|
-| **Farm Task** | `effectiveStat *= (1 + enchantBonus)` for `farm_time_reduction_pct`, `farm_double_yield_chance` | `enchantHarvestQtyBonus`, `enchantWorkSpeedPct`, `enchantTaskHungerCostPct`, `enchantRareDropPct` |
-| **Cook Task** | Applies to `cook_time_reduction_pct`, `cook_secondary_ingredient_save_chance` | `enchantCookDoubleChancePct`, `enchantWorkSpeedPct`, `enchantIngredientSaveExtraPct`, `enchantTaskHungerCostPct` |
-| **Mine Task** | Applies to `hunger_penalty_tier_reduction` | `enchantMineYieldBonusPct`, `enchantHarvestQtyBonus`, `enchantWorkSpeedPct`, `enchantRareDropPct` |
-| **Smelt Task** | Applies to base smelt stats | `enchantCookDoubleChancePct` (alloy bonus), `enchantWorkSpeedPct` |
-| **Hunger** | Applies to `max_hunger_bonus`, `hunger_decay_reduction_per_min` | `enchantMaxHungerFlat`, `enchantTaskHungerCostPct`, `enchantSatietyBuffDurationPct` |
-| **Inventory** | Display only | None (display enchant_level badge) |
-| **Market** | Carry `enchant_level` + `special_stat_*` on listing | `enchantMarketTaxDiscountPct` applied at purchase |
-| **Durability** | Enchant level does NOT affect durability decay (only protect special stat does) | `enchantDurabilityProtectPct` |
-| **EXP / Level** | No direct connection | `enchantExpGainPct` multiplied on EXP award |
+| **Farm Task** | `farm_time_reduction_pct`, `farm_double_yield_chance` | `enchantHarvestQtyBonus`, `enchantFarmYieldFlat`, `enchantWorkSpeedPct`, `enchantRareDropPct` |
+| **Cook Task** | `cook_time_reduction_pct`, `cook_secondary_ingredient_save_chance` | `enchantCookDoubleChancePct`, `enchantIngredientSaveExtraPct`, `enchantGourmetChancePct` |
+| **Mine Task** | `hunger_penalty_tier_reduction` | `enchantOreDoubleChancePct`, `enchantGemFindPct`, `enchantMineRareOrePct`, `enchantExpeditionSpeedPct` |
+| **Smelt Task** | base smelt stats | `enchantForgeDoubleChancePct`, `enchantAlloyBonusPct`, `enchantSmeltSpeedPct`, `enchantResourceSavePct` |
+| **Hunger** | `max_hunger_bonus`, `hunger_decay_reduction_per_min` | `enchantMaxHungerFlat`, `enchantTaskHungerCostPct`, `enchantDeepHungerReductionPct`, `enchantSatietyBuffDurationPct` |
+| **Durability** | — (no base bonus) | `enchantDurabilityProtectPct` (armor), `enchantToolDurabilityProtectPct` (tools) |
+| **EXP / Level** | — | `enchantExpGainPct` (all), `enchantCraftExpBonusPct` (MINE/SMELT) |
+| **Market** | — | `enchantMarketTaxDiscountPct` at purchase |
 
 ---
 
-## 10. Phased Rollout
+## 12. Phased Rollout
 
-### Phase 1 — Foundation (Week 1-2)
-- [ ] Add new items to `master-data.json` (Fiber Seed, Fiber Thread, Enchant Stone, Rune Shard, Arcane Crystal).
-- [ ] Add enchantment recipes to `master-data.json`.
-- [ ] Write and run schema migrations (`enchant_level`, `special_stat_1..4` on 3 tables).
+### Phase 1 — Foundation (Week 1–2)
+- [ ] Add Textilis items to `master-data.json` (Fiber Seed, Fiber Thread, Enchant Stone, Rune Shard, Arcane Crystal).
+- [ ] Add Ferrum items to `master-data.json` (Metal Dust, Rune Ingot, Chaos Core).
+- [ ] Add enchantment recipes for both cities to `master-data.json`.
+- [ ] Write schema migrations (3 tables × 5 new columns).
 - [ ] Update `schema.prisma` models.
-- [ ] Add constants to `shared/gameConfig.ts`.
+- [ ] Add all constants + `CITY_ENCHANT_CONFIGS` + `SPECIAL_STAT_DEFINITIONS` to `shared/gameConfig.ts`.
 
-### Phase 2 — Service + Controller (Week 2-3)
-- [ ] Implement `enchantment.service.ts` (`attemptEnchant`, `getEnchantCostPreview`, helper functions).
-- [ ] Implement `enchantment.controller.ts`.
+### Phase 2 — Service + Controller (Week 2–3)
+- [ ] Implement `enchantment.service.ts`.
+- [ ] Implement `enchantment.controller.ts` (3 endpoints).
 - [ ] Register routes in `game.routes.ts`.
-- [ ] Extend `EquipmentEffectSummary` + `getUserEquipmentEffects` in `equipmentEffects.service.ts`.
-- [ ] Unit tests for success/failure roll logic and milestone special-stat assignment.
+- [ ] Extend `EquipmentEffectSummary` with 24 new fields.
+- [ ] Unit tests: floor mechanic, destroy chance, milestone assignment, config resolution.
 
-### Phase 3 — Integration (Week 3-4)
-- [ ] `workspace.controller.ts`: Apply `enchantWorkSpeedPct`, `enchantHarvestQtyBonus`, `enchantMineYieldBonusPct`, `enchantCookDoubleChancePct`.
-- [ ] `hunger.service.ts`: Apply `enchantTaskHungerCostPct`, `enchantMaxHungerFlat`, `enchantSatietyBuffDurationPct`.
-- [ ] `durability.service.ts`: Apply `enchantDurabilityProtectPct`.
-- [ ] `level.service.ts`: Apply `enchantExpGainPct`.
-- [ ] `market.controller.ts`: Apply `enchantMarketTaxDiscountPct`; carry enchant fields on listings.
-- [ ] `inventory.controller.ts`: Persist enchant fields on equip/unequip; include in API response.
+### Phase 3 — Integration (Week 3–4)
+- [ ] `workspace.controller.ts`: 8 enchant special stat applications.
+- [ ] `hunger.service.ts`: 4 applications.
+- [ ] `durability.service.ts`: 2 applications.
+- [ ] `level.service.ts`: EXP multiplier.
+- [ ] `market.controller.ts`: tax discount + carry enchant fields.
+- [ ] `inventory.controller.ts`: persist + return enchant fields.
 
-### Phase 4 — Frontend (Week 4-5)
-- [ ] Create `client/src/lib/enchantment.ts` with all client-side constants/helpers.
+### Phase 4 — Frontend (Week 4–5)
+- [ ] Create `client/src/lib/enchantment.ts`.
+- [ ] Create `EnchantModal.tsx` (config-driven, handles both cities).
 - [ ] Update `InventoryGrid.tsx` with enchant badge.
-- [ ] Create `EnchantModal.tsx`.
-- [ ] Update `DashboardPage.tsx` equipment buff display.
-- [ ] Update `MarketplacePage.tsx` for enchant level display and filtering.
-- [ ] Update `gameStore.ts` interfaces and state.
-- [ ] Add Enchantment Forge section to `TextilisWorkspace.tsx`.
+- [ ] Add Enchantment Loom section to `TextilisWorkspace.tsx`.
+- [ ] Add Upgrade Forge section to `BlacksmithWorkspace.tsx`.
+- [ ] Update `DashboardPage.tsx`, `MarketplacePage.tsx`, `gameStore.ts`.
 
-### Phase 5 — Polish & Balance (Week 5-6)
-- [ ] Add i18n strings for all new enchantment UI text.
-- [ ] Animate `EnchantModal` (success glow, failure shake with `framer-motion`).
-- [ ] Soft-cap review: verify cumulative enchant bonuses don't exceed existing clamp limits.
-- [ ] Economy balance: tune gold costs and material recipe times based on playtest.
-- [ ] Add `enchant_level` and `special_stat_*` to `RepairEquipmentModal.tsx` display.
-- [ ] Admin endpoint to reset enchant level (for moderation).
+### Phase 5 — Polish (Week 5–6)
+- [ ] i18n strings for all enchantment UI text.
+- [ ] `framer-motion` animations (purple glow, orange spark, shake on failure).
+- [ ] Soft-cap review: cumulative special stats within existing clamp limits.
+- [ ] Economy balance: tune gold costs and craft times from playtest data.
+- [ ] Add enchant info to `RepairEquipmentModal.tsx`.
+- [ ] Admin endpoint to reset enchant level.
 
 ---
 
-## 11. Key Design Decisions & Constraints
+## 13. Extensibility Guide
+
+To add a **new enchanting city** (e.g., Agraria enchants harvesting headgear):
+
+1. **Add one entry to `CITY_ENCHANT_CONFIGS`** in `shared/gameConfig.ts`:
+   ```typescript
+   agraria: {
+     cityKey: "agraria",
+     workshopLabel: "Harvest Altar",
+     craftWorkType: "FARM",
+     uiTheme: { primaryColor: "#4ade80", icon: "Leaf", gradientFrom: "#14532d", gradientTo: "#16a34a" },
+     applicableSlots: ["HEAD"],
+     materialChain: [ /* 3 tiers */ ],
+     materialCost: { /* levels 1-11 */ },
+     specialStatPool: [ /* 12 agraria-specific stat keys */ ],
+   }
+   ```
+
+2. **Add 12 new entries to `SPECIAL_STAT_DEFINITIONS`** with `label`, `value`, `unit`.
+
+3. **Add a forge section** to the relevant `*Workspace.tsx` that opens `<EnchantModal config={CITY_ENCHANT_CONFIGS.agraria} ... />`.
+
+4. **Zero changes needed** to: `enchantment.service.ts`, controller, routes, DB schema, or `EnchantModal.tsx`.
+
+> `getCityEnchantConfigForSlot()` resolves the correct config at runtime — the service never hard-codes city names.
+
+---
+
+## 14. Key Design Decisions
 
 | Decision | Rationale |
 |:---|:---|
-| No item destruction on failure | Keeps high-level enchanting dangerous but not punishing to new players. Failure drop is enough loss. |
-| Materials consumed on failure | Ensures Textilis economy remains active; prevents trivial max-level enchanting. |
-| Special stats per-item, not per-slot | Stats travel with the item so market listings retain value. |
-| Enchant level carries through equip/unequip | DB columns on both `inventory_slots` and `user_equipments` to persist state across both locations. |
-| Soft caps on cumulative bonuses | Existing `clamp()` calls in `equipmentEffects.service.ts` prevent stat overflow. Special stat bonuses are additive but small per-piece and subject to the same caps. |
-| Textilis-only enchanting (suggested) | Drives cross-city travel and economic interdependence. Can be relaxed to global if needed. |
+| **Floor at +1 in safe zone** | Prevents players from dropping to +0 accidentally; preserves prior enchanting investment. |
+| **50% destroy chance at +6+** | High-stakes progression matching traditional MMO enchant systems. Item destruction is a known risk. |
+| **Materials consumed on failure** | Keeps city economies active; prevents trivial max-level grinding. |
+| **Two separate stat pools** | Armor stats (sustain, cooking, EXP) and tool stats (yields, speeds, forge) stay thematically appropriate. |
+| **Config registry pattern** | All city-specific data lives in one place; service/controller/UI are fully generic. |
+| **`getCityEnchantConfigForSlot()` helper** | Service never hard-codes city names — always resolves from item slot. |
+| **Special stats per-item, not per-slot** | Stats travel with the item so market listings retain full enchant value. |
+| **Single `EnchantModal` component** | `uiTheme` config drives colors, icons, labels — one component serves all cities. |
