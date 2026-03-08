@@ -611,10 +611,22 @@ async function placeOutputInInventory(
 
     const effects = await getUserEquipmentEffects(userId, db);
 
-    const slots = await db.inventorySlot.findMany({
-        where: { user_id: userId },
-        orderBy: { slot: "asc" },
-    });
+    // Use FOR UPDATE to lock inventory rows so concurrent requests see the committed
+    // state of the inventory instead of a stale snapshot, preventing over-stacking.
+    const slots = await db.$queryRaw<Array<{
+        id: number;
+        slot: number;
+        user_id: number;
+        item_id: number | null;
+        quantity: number;
+        equipment_rarity: string | null;
+    }>>`
+        SELECT id, slot, user_id, item_id, quantity, equipment_rarity
+        FROM inventory_slots
+        WHERE user_id = ${userId}
+        ORDER BY slot ASC
+        FOR UPDATE
+    `;
 
     const uniqueItemIds = Array.from(new Set(outputs.map((o) => o.outputItemId)));
     const itemMap = new Map<number, { id: number; type: string; max_stack: number }>();
@@ -852,9 +864,24 @@ async function collectSingleReadyOrder(userId: number, orderId: number) {
             getGameExpConfig(),
         ]);
 
-        const order = await tx.workOrder.findFirst({
-            where: { id: orderId, user_id: userId, collected: false },
-        });
+        // Use FOR UPDATE to lock the row so concurrent collect clicks are serialized.
+        // The second request will block until the first commits, then see collected=true
+        // and return not_found — preventing double-collect.
+        const orderRows = await tx.$queryRaw<Array<{
+            id: number;
+            type: WorkType;
+            item_id: number;
+            quantity: number;
+            recipe_id: number | null;
+            completes_at: Date;
+        }>>`
+            SELECT id, type, item_id, quantity, recipe_id, completes_at
+            FROM work_orders
+            WHERE id = ${orderId} AND user_id = ${userId} AND collected = false
+            LIMIT 1
+            FOR UPDATE
+        `;
+        const order = orderRows[0] ?? null;
 
         if (!order) {
             return { ok: false as const, reason: "not_found" as const };
@@ -1332,6 +1359,18 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             // other cities use 9 (3x3).
             const plotSize = (isTextilis || isMedico) ? 6 : 9;
             const branchOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
+
+            // Block adding if any items for this seed type are done (ready to collect) but not yet
+            // collected — enforces the collect-before-plant flow and prevents timer miscalculation.
+            const nowMs = Date.now();
+            if (branchOrders.some(o => new Date(o.completes_at).getTime() <= nowMs)) {
+                res.status(400).json({
+                    error: `Please collect your ready ${slot.item.name} items before adding new ones.`,
+                    code: 'COLLECT_FIRST',
+                });
+                return;
+            }
+
             const maxPlots = getFirstJobSkillPlotCount(branchSkillLevel);
             const maxOrders = maxPlots * plotSize;
             if (branchOrders.length >= maxOrders) {
@@ -1389,11 +1428,15 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             // times across every order in that plot (including the new one).
             // When the plot fills completely, also apply a -10% full-plot bonus.
             // Textilis: 6 tasks per plot, others: 9 tasks per plot.
-            const sameSeedFarmOrders = activeFarmOrders.filter((o) => o.item_id === itemId);
+            // Only count active (not-yet-done) orders for plot-position to ensure the recalculation
+            // only affects the current partial plot and not any previously-completed orders.
+            const sameSeedFarmOrders = activeFarmOrders.filter(
+                (o) => o.item_id === itemId && new Date(o.completes_at).getTime() > nowMs
+            );
             // positionInCurrentPlot: 0 = first task in a brand-new plot (no averaging needed)
             const positionInCurrentPlot = sameSeedFarmOrders.length % plotSize;
             if (positionInCurrentPlot > 0) {
-                const now = Date.now();
+                const now = nowMs;
                 // The last `positionInCurrentPlot` existing orders belong to the current partial plot
                 const ordersInCurrentPlot = sameSeedFarmOrders.slice(-positionInCurrentPlot);
                 const currentPlotOrders = [...ordersInCurrentPlot, order];

@@ -2101,6 +2101,36 @@
         "cityKey": "TEXTILIS",
         "matcherType": "RECIPE_NAME_LIKE",
         "matcherValue": "%Sew%"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Craft Enchant Stone"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Craft Rune Shard"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Craft Arcane Crystal"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Craft Metal Dust"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Craft Rune Ingot"
+      },
+      {
+        "cityKey": "FERRUM",
+        "matcherType": "RECIPE_NAME",
+        "matcherValue": "Craft Chaos Core"
       }
     ]
   },
