@@ -457,11 +457,16 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
         const unitPrice = listing.price;
         const tradeValue = unitPrice * requestedQty;
 
+        // enchant_market_tax_discount_pct: seller's equipped enchant reduces the tax they pay
+        const sellerEffects = await getUserEquipmentEffects(listing.seller_id);
+        const sellerTaxDiscount = Math.min(0.5, sellerEffects.enchantMarketTaxDiscountPct ?? 0);
+
         const taxPreview = await computeMarketTradeTaxTx(
             prisma,
             listing.seller_id,
             req.userId!,
             tradeValue,
+            sellerTaxDiscount,
         );
         const totalCost = taxPreview.buyerPays;
 
@@ -494,6 +499,7 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
                 listing.seller_id,
                 req.userId!,
                 tradeValue,
+                sellerTaxDiscount,
             );
 
             await tx.user.update({

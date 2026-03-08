@@ -1015,9 +1015,12 @@ export async function computeMarketTradeTaxTx(
     sellerUserId: number,
     buyerUserId: number,
     tradeValue: number,
+    sellerTaxDiscountPct: number = 0,
 ): Promise<MarketTaxComputation> {
     await ensureCitySchema(db);
     const value = Math.max(0, Math.floor(tradeValue));
+    // Cap seller tax discount at 50%
+    const discountFactor = Math.max(0, 1 - Math.min(0.5, sellerTaxDiscountPct));
 
     if (value <= 0) {
         return {
@@ -1050,7 +1053,7 @@ export async function computeMarketTradeTaxTx(
 
     if (sellerCityKey === buyerCityKey) {
         const taxBp = (await getCityTaxBpByKeyTx(db, sellerCityKey)).domestic_trade_tax_bp;
-        const domesticTax = Math.floor(value * (taxBp / 10_000));
+        const domesticTax = Math.floor(value * (taxBp / 10_000) * discountFactor);
 
         return {
             totalTax: domesticTax,
@@ -1066,7 +1069,7 @@ export async function computeMarketTradeTaxTx(
 
     const sellerTax = await getCityTaxBpByKeyTx(db, sellerCityKey);
     const buyerTax = await getCityTaxBpByKeyTx(db, buyerCityKey);
-    const exportTax = Math.floor(value * (sellerTax.export_tax_bp / 10_000));
+    const exportTax = Math.floor(value * (sellerTax.export_tax_bp / 10_000) * discountFactor);
     const importTax = Math.floor(value * (buyerTax.import_tax_bp / 10_000));
     const totalTax = exportTax + importTax;
 

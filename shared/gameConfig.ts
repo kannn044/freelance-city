@@ -212,3 +212,155 @@ export const DEFAULT_FERRUM_MINING_CONFIG: FerrumMiningConfig = {
         core: { ironOre: 0.3, copperOre: 0.35, steelOre: 0.35, stone: 0.45, coal: 0.7, gem: 0.09 },
     },
 };
+
+// ─── Enchantment System ──────────────────────────────────────────────────────
+
+export const ENCHANT_SUCCESS_RATES: Record<number, number> = {
+    1: 0.90, 2: 0.80, 3: 0.50, 4: 0.40, 5: 0.30,
+    6: 0.10, 7: 0.08, 8: 0.04, 9: 0.01,
+    10: 0.005, 11: 0.0001, 12: 0.00005,
+};
+
+export const ENCHANT_BONUS_MULTIPLIER: Record<number, number> = {
+    0: 0, 1: 0.05, 2: 0.10, 3: 0.18, 4: 0.25,
+    5: 0.33, 6: 0.44, 7: 0.55, 8: 0.68,
+    9: 0.83, 10: 1.00, 11: 1.20, 12: 1.50,
+};
+
+export const ENCHANT_MILESTONES = [3, 6, 9, 12] as const;
+
+export const ENCHANT_FAILURE_DROP: Record<number, number> = {
+    1: 1, 2: 1, 3: 1, 4: 1, 5: 1,
+    6: 1, 7: 1, 8: 1, 9: 1,
+    10: 2, 11: 2, 12: 2,
+};
+
+export const ENCHANT_LEVEL_FLOOR      = 1;
+export const ENCHANT_DESTROY_ZONE_MIN = 6;
+export const ENCHANT_DESTROY_CHANCE   = 0.50;
+export const ENCHANT_MAX_LEVEL        = 12;
+
+export type EquipmentSlotKey = "HEAD" | "UPPER_BODY" | "LOWER_BODY" | "ARM" | "GLOVE" | "SHOE";
+
+export interface EnchantMaterialTier {
+    itemName: string;
+    forLevels: [number, number];
+}
+
+export interface CityEnchantConfig {
+    cityKey: string;
+    workshopLabel: string;
+    craftWorkType: string;
+    uiTheme: {
+        primaryColor: string;
+        icon: string;
+        gradientFrom: string;
+        gradientTo: string;
+    };
+    applicableSlots: EquipmentSlotKey[];
+    materialChain: EnchantMaterialTier[];
+    materialCost: Record<number, { qty: number; gold: number }>;
+    specialStatPool: string[];
+}
+
+export const CITY_ENCHANT_CONFIGS: Record<string, CityEnchantConfig> = {
+
+    textilis: {
+        cityKey: "textilis",
+        workshopLabel: "Enchantment Loom",
+        craftWorkType: "SEW",
+        uiTheme: {
+            primaryColor: "#a78bfa",
+            icon: "Sparkles",
+            gradientFrom: "#4c1d95",
+            gradientTo: "#7c3aed",
+        },
+        applicableSlots: ["HEAD", "UPPER_BODY", "LOWER_BODY", "GLOVE", "SHOE"],
+        materialChain: [
+            { itemName: "Enchant Stone",  forLevels: [1, 5] },
+            { itemName: "Rune Shard",     forLevels: [6, 9] },
+            { itemName: "Arcane Crystal", forLevels: [10, 12] },
+        ],
+        materialCost: {
+            1:  { qty: 3,  gold: 500   },
+            2:  { qty: 5,  gold: 1000  },
+            3:  { qty: 10, gold: 2000  },
+            4:  { qty: 15, gold: 4000  },
+            5:  { qty: 30, gold: 8000  },
+            6:  { qty: 10, gold: 12000 },
+            7:  { qty: 20, gold: 18000 },
+            8:  { qty: 30, gold: 24000 },
+            9:  { qty: 10, gold: 28000 },
+            10: { qty: 20, gold: 40000 },
+            11: { qty: 30, gold: 90000 },
+        },
+        specialStatPool: [
+            "enchant_exp_gain_pct", "enchant_durability_protect_pct", "enchant_rare_drop_pct",
+            "enchant_first_job_qty_bonus", "enchant_market_tax_discount_pct", "enchant_task_hunger_cost_pct",
+            "enchant_max_hunger_flat", "enchant_secondary_job_double_chance_pct", "enchant_satiety_buff_duration_pct",
+            "enchant_ingredient_save_extra_pct", "enchant_work_speed_pct", "enchant_gourmet_chance_pct",
+        ],
+    },
+
+    ferrum: {
+        cityKey: "ferrum",
+        workshopLabel: "Upgrade Forge",
+        craftWorkType: "SMELT",
+        uiTheme: {
+            primaryColor: "#fb923c",
+            icon: "Flame",
+            gradientFrom: "#7c2d12",
+            gradientTo: "#c2410c",
+        },
+        applicableSlots: ["ARM"],
+        materialChain: [
+            { itemName: "Metal Dust",  forLevels: [1, 5] },
+            { itemName: "Rune Ingot",  forLevels: [6, 9] },
+            { itemName: "Chaos Core",  forLevels: [10, 12] },
+        ],
+        materialCost: {
+            1:  { qty: 3,  gold: 500   },
+            2:  { qty: 5,  gold: 1000  },
+            3:  { qty: 10, gold: 2000  },
+            4:  { qty: 15, gold: 4000  },
+            5:  { qty: 30, gold: 8000  },
+            6:  { qty: 10, gold: 12000 },
+            7:  { qty: 20, gold: 18000 },
+            8:  { qty: 30, gold: 24000 },
+            9:  { qty: 10, gold: 28000 },
+            10: { qty: 20, gold: 40000 },
+            11: { qty: 30, gold: 90000 },
+        },
+        specialStatPool: [
+            "enchant_first_job_speed_pct", "enchant_first_job_double_chance_pct", "enchant_rare_find_pct",
+            "enchant_secondary_job_speed_pct", "enchant_secondary_job_bonus_pct", "enchant_deep_hunger_reduction_pct",
+            "enchant_tool_durability_protect_pct", "enchant_first_job_yield_flat",
+        ],
+    },
+
+};
+
+export const SPECIAL_STAT_DEFINITIONS: Record<string, { label: string; value: number; unit: string }> = {
+    // Textilis (T-01 to T-12)
+    enchant_exp_gain_pct:                      { label: "EXP Gain",             value: 0.08,  unit: "+%" },
+    enchant_durability_protect_pct:            { label: "Durability Loss",      value: 0.12,  unit: "−%" },
+    enchant_rare_drop_pct:                     { label: "Rare Drop",             value: 0.03,  unit: "+%" },
+    enchant_first_job_qty_bonus:               { label: "Harvest Qty",           value: 1,     unit: "+qty" },
+    enchant_market_tax_discount_pct:           { label: "Market Tax",            value: 0.02,  unit: "−%" },
+    enchant_task_hunger_cost_pct:              { label: "Task Hunger Cost",      value: 0.08,  unit: "−%" },
+    enchant_max_hunger_flat:                   { label: "Max Hunger",            value: 150,   unit: "+Kcal" },
+    enchant_secondary_job_double_chance_pct:   { label: "Double Item",           value: 0.04,  unit: "+%" },
+    enchant_satiety_buff_duration_pct:         { label: "Buff Duration",         value: 0.15,  unit: "+%" },
+    enchant_ingredient_save_extra_pct:         { label: "Ingredient Save",       value: 0.05,  unit: "+%" },
+    enchant_work_speed_pct:                    { label: "Work Speed",            value: 0.04,  unit: "+%" },
+    enchant_gourmet_chance_pct:                { label: "Gourmet Chance",        value: 0.03,  unit: "+%" },
+    // Ferrum (F-01 to F-08)
+    enchant_first_job_speed_pct:               { label: "Expedition Speed",      value: 0.10,  unit: "−%" },
+    enchant_first_job_double_chance_pct:       { label: "Double Item",           value: 0.06,  unit: "+%" },
+    enchant_rare_find_pct:                     { label: "Rare Drop",             value: 0.04,  unit: "+%" },
+    enchant_secondary_job_speed_pct:           { label: "Secondary Job Speed",   value: 0.08,  unit: "−%" },
+    enchant_secondary_job_bonus_pct:           { label: "Double Item",           value: 0.05,  unit: "+%" },
+    enchant_deep_hunger_reduction_pct:         { label: "Deep Task Hunger",      value: 0.10,  unit: "−%" },
+    enchant_tool_durability_protect_pct:       { label: "Tool Durability Loss",  value: 0.15,  unit: "−%" },
+    enchant_first_job_yield_flat:              { label: "Farm Yield",            value: 2,     unit: "+qty" },
+};

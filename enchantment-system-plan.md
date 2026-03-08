@@ -135,13 +135,13 @@ effectiveStat = base_value × rarityMultiplier × (1 + enchantBonus)
 | T-01 | `enchant_exp_gain_pct` | Bonus EXP from all work orders | +8% |
 | T-02 | `enchant_durability_protect_pct` | Reduces equipment durability decay rate | −12% |
 | T-03 | `enchant_rare_drop_pct` | Increases chance of Rare/Epic/Legendary harvest | +3% |
-| T-04 | `enchant_harvest_qty_bonus` | Bonus item qty on FARM/EXTRACT/GATHER/FORAGE | +1 qty |
+| T-04 | `enchant_first_job_qty_bonus` | Bonus item qty on all first job FARM/EXTRACT/GATHER/FORAGE | +1 qty |
 | T-05 | `enchant_market_tax_discount_pct` | Reduces all market taxes | −2% |
 | T-06 | `enchant_task_hunger_cost_pct` | Reduces hunger burned per active task | −8% |
 | T-07 | `enchant_max_hunger_flat` | Flat max hunger capacity bonus | +150 Kcal |
-| T-08 | `enchant_cook_double_chance_pct` | Chance to produce double output on COOK | +4% |
+| T-08 | `enchant_secondary_job_double_chance_pct` | Chance to produce double output on secondary job COOK/SMELT/REFINE/SEW/BREW | +4% |
 | T-09 | `enchant_satiety_buff_duration_pct` | Extends meal satiety buff duration | +15% |
-| T-10 | `enchant_ingredient_save_extra_pct` | Extra chance to save all ingredients on COOK | +5% |
+| T-10 | `enchant_ingredient_save_extra_pct` | Extra chance to save all ingredients on secondary job | +5% |
 | T-11 | `enchant_work_speed_pct` | Universal work speed bonus (all task types) | +4% |
 | T-12 | `enchant_gourmet_chance_pct` | Bonus chance to produce Gourmet quality meals | +3% |
 
@@ -149,18 +149,14 @@ effectiveStat = base_value × rarityMultiplier × (1 + enchantBonus)
 
 | ID | Effect Key | Description | Value per Stack |
 |:---:|:---|:---|:---:|
-| F-01 | `enchant_expedition_speed_pct` | Reduces expedition travel time | −10% |
-| F-02 | `enchant_ore_double_chance_pct` | Chance to double ore yield on MINE | +6% |
-| F-03 | `enchant_gem_find_pct` | Extra chance to find gems during MINE | +4% |
-| F-04 | `enchant_smelt_speed_pct` | Reduces SMELT task completion time | −8% |
-| F-05 | `enchant_alloy_bonus_pct` | Bonus output qty on SMELT alloy recipes | +5% |
-| F-06 | `enchant_deep_hunger_reduction_pct` | Reduces hunger drain during MINE/SMELT | −10% |
+| F-01 | `enchant_first_job_speed_pct` | Reduces first job time | −10% |
+| F-02 | `enchant_first_job_double_chance_pct` | Bonus item qty on all first job FARM/EXTRACT/GATHER/FORAGE | +1 qty |
+| F-03 | `enchant_rare_find_pct` | Increases chance of Rare/Epic/Legendary collect | +3% |
+| F-04 | `enchant_secondary_job_speed_pct` | Reduces secondary job time | −10% |
+| F-05 | `enchant_secondary_job_bonus_pct` | Chance to produce double output on secondary job COOK/SMELT/REFINE/SEW/BREW | +4% |
+| F-06 | `enchant_deep_hunger_reduction_pct` | Reduces hunger drain during on all job FARM/EXTRACT/GATHER/FORAGE/COOK/SMELT/REFINE/SEW/BREW | −10% |
 | F-07 | `enchant_tool_durability_protect_pct` | ARM-slot tool durability decay reduction | −15% |
-| F-08 | `enchant_farm_yield_flat` | Flat bonus qty on FARM collect | +1 qty |
-| F-09 | `enchant_mine_rare_ore_pct` | Chance to find rare ore type during MINE | +3% |
-| F-10 | `enchant_craft_exp_bonus_pct` | Bonus EXP from SMELT/MINE work orders | +10% |
-| F-11 | `enchant_forge_double_chance_pct` | Chance to produce double output on SMELT | +5% |
-| F-12 | `enchant_resource_save_pct` | Chance to not consume input materials on SMELT | +4% |
+| F-08 | `enchant_first_job_yield_flat` | Flat bonus qty on all first job FARM/EXTRACT/GATHER/FORAGE collect | +2 qty |
 
 ### 5.3 Milestone → Special Stat Assignment
 
@@ -242,8 +238,8 @@ export const CITY_ENCHANT_CONFIGS: Record<string, CityEnchantConfig> = {
     },
     specialStatPool: [
       "enchant_exp_gain_pct", "enchant_durability_protect_pct", "enchant_rare_drop_pct",
-      "enchant_harvest_qty_bonus", "enchant_market_tax_discount_pct", "enchant_task_hunger_cost_pct",
-      "enchant_max_hunger_flat", "enchant_cook_double_chance_pct", "enchant_satiety_buff_duration_pct",
+      "enchant_first_job_qty_bonus", "enchant_market_tax_discount_pct", "enchant_task_hunger_cost_pct",
+      "enchant_max_hunger_flat", "enchant_secondary_job_double_chance_pct", "enchant_satiety_buff_duration_pct",
       "enchant_ingredient_save_extra_pct", "enchant_work_speed_pct", "enchant_gourmet_chance_pct",
     ],
   },
@@ -278,10 +274,9 @@ export const CITY_ENCHANT_CONFIGS: Record<string, CityEnchantConfig> = {
       11: { qty: 30, gold: 90000 },
     },
     specialStatPool: [
-      "enchant_expedition_speed_pct", "enchant_ore_double_chance_pct", "enchant_gem_find_pct",
-      "enchant_smelt_speed_pct", "enchant_alloy_bonus_pct", "enchant_deep_hunger_reduction_pct",
-      "enchant_tool_durability_protect_pct", "enchant_farm_yield_flat", "enchant_mine_rare_ore_pct",
-      "enchant_craft_exp_bonus_pct", "enchant_forge_double_chance_pct", "enchant_resource_save_pct",
+      "enchant_first_job_speed_pct", "enchant_first_job_double_chance_pct", "enchant_rare_find_pct",
+      "enchant_secondary_job_speed_pct", "enchant_secondary_job_bonus_pct", "enchant_deep_hunger_reduction_pct",
+      "enchant_tool_durability_protect_pct", "enchant_first_job_yield_flat"
     ],
   },
 
@@ -296,28 +291,24 @@ export const SPECIAL_STAT_DEFINITIONS: Record<string, { label: string; value: nu
   enchant_exp_gain_pct:               { label: "EXP Gain",             value: 0.08,  unit: "+%" },
   enchant_durability_protect_pct:     { label: "Durability Loss",      value: 0.12,  unit: "−%" },
   enchant_rare_drop_pct:              { label: "Rare Drop",            value: 0.03,  unit: "+%" },
-  enchant_harvest_qty_bonus:          { label: "Harvest Qty",          value: 1,     unit: "+qty" },
+  enchant_first_job_qty_bonus:          { label: "Harvest Qty",          value: 1,     unit: "+qty" },
   enchant_market_tax_discount_pct:    { label: "Market Tax",           value: 0.02,  unit: "−%" },
   enchant_task_hunger_cost_pct:       { label: "Task Hunger Cost",     value: 0.08,  unit: "−%" },
   enchant_max_hunger_flat:            { label: "Max Hunger",           value: 150,   unit: "+Kcal" },
-  enchant_cook_double_chance_pct:     { label: "Cook Double",          value: 0.04,  unit: "+%" },
+  enchant_secondary_job_double_chance_pct:     { label: "Double Item",          value: 0.04,  unit: "+%" },
   enchant_satiety_buff_duration_pct:  { label: "Buff Duration",        value: 0.15,  unit: "+%" },
   enchant_ingredient_save_extra_pct:  { label: "Ingredient Save",      value: 0.05,  unit: "+%" },
   enchant_work_speed_pct:             { label: "Work Speed",           value: 0.04,  unit: "+%" },
   enchant_gourmet_chance_pct:         { label: "Gourmet Chance",       value: 0.03,  unit: "+%" },
   // Ferrum (F-01 to F-12)
-  enchant_expedition_speed_pct:       { label: "Expedition Speed",     value: 0.10,  unit: "−%" },
-  enchant_ore_double_chance_pct:      { label: "Ore Double",           value: 0.06,  unit: "+%" },
-  enchant_gem_find_pct:               { label: "Gem Find",             value: 0.04,  unit: "+%" },
-  enchant_smelt_speed_pct:            { label: "Smelt Speed",          value: 0.08,  unit: "−%" },
-  enchant_alloy_bonus_pct:            { label: "Alloy Bonus",          value: 0.05,  unit: "+%" },
+  enchant_first_job_speed_pct:       { label: "Expedition Speed",     value: 0.10,  unit: "−%" },
+  enchant_first_job_double_chance_pct:      { label: "Double Item",           value: 0.06,  unit: "+%" },
+  enchant_rare_find_pct:               { label: "Rare Drop",             value: 0.04,  unit: "+%" },
+  enchant_secondary_job_speed_pct:            { label: "Secondary Job Speed",          value: 0.08,  unit: "−%" },
+  enchant_secondary_job_bonus_pct:            { label: "Double Item",          value: 0.05,  unit: "+%" },
   enchant_deep_hunger_reduction_pct:  { label: "Deep Task Hunger",     value: 0.10,  unit: "−%" },
   enchant_tool_durability_protect_pct:{ label: "Tool Durability Loss", value: 0.15,  unit: "−%" },
-  enchant_farm_yield_flat:            { label: "Farm Yield",           value: 1,     unit: "+qty" },
-  enchant_mine_rare_ore_pct:          { label: "Rare Ore Find",        value: 0.03,  unit: "+%" },
-  enchant_craft_exp_bonus_pct:        { label: "Craft EXP",            value: 0.10,  unit: "+%" },
-  enchant_forge_double_chance_pct:    { label: "Forge Double",         value: 0.05,  unit: "+%" },
-  enchant_resource_save_pct:          { label: "Resource Save",        value: 0.04,  unit: "+%" },
+  enchant_first_job_yield_flat:            { label: "Farm Yield",           value: 2,     unit: "+qty" },
 };
 ```
 
@@ -487,7 +478,7 @@ export interface EquipmentEffectSummary {
   enchantMarketTaxDiscountPct:    number;
   enchantTaskHungerCostPct:       number;
   enchantMaxHungerFlat:           number;
-  enchantCookDoubleChancePct:     number;
+  enchantItemDoubleChancePct:     number;
   enchantSatietyBuffDurationPct:  number;
   enchantIngredientSaveExtraPct:  number;
   enchantWorkSpeedPct:            number;
@@ -495,17 +486,13 @@ export interface EquipmentEffectSummary {
 
   // Ferrum special stats (F-01 to F-12)
   enchantExpeditionSpeedPct:       number;
-  enchantOreDoubleChancePct:       number;
-  enchantGemFindPct:               number;
-  enchantSmeltSpeedPct:            number;
-  enchantAlloyBonusPct:            number;
+  enchantDoubleChancePct:       number;
+  enchantRareFindPct:               number;
+  enchantSecondaryJobSpeedPct:            number;
+  enchantSecondaryJobBonusPct:            number;
   enchantDeepHungerReductionPct:   number;
   enchantToolDurabilityProtectPct: number;
   enchantFarmYieldFlat:            number;
-  enchantMineRareOrePct:           number;
-  enchantCraftExpBonusPct:         number;
-  enchantForgeDoubleChancePct:     number;
-  enchantResourceSavePct:          number;
 }
 ```
 
@@ -540,7 +527,7 @@ router.get("/enchant/configs",         authMiddleware, getEnchantConfigs);
 
 | File | Change |
 |:---|:---|
-| `workspace.controller.ts` | Apply `enchantWorkSpeedPct`, `enchantHarvestQtyBonus`, `enchantMineRareOrePct`, `enchantOreDoubleChancePct`, `enchantCookDoubleChancePct`, `enchantForgeDoubleChancePct`, `enchantResourceSavePct`, `enchantFarmYieldFlat` on collect |
+| `workspace.controller.ts` | Apply `enchantWorkSpeedPct`, `enchantHarvestQtyBonus`, `enchantMineRareOrePct`, `enchantDoubleChancePct`, `enchantItemDoubleChancePct`, `enchantForgeDoubleChancePct`, `enchantResourceSavePct`, `enchantFarmYieldFlat` on collect |
 | `hunger.service.ts` | Apply `enchantTaskHungerCostPct`, `enchantDeepHungerReductionPct`, `enchantMaxHungerFlat`, `enchantSatietyBuffDurationPct` |
 | `durability.service.ts` | `enchantDurabilityProtectPct` for armor; `enchantToolDurabilityProtectPct` for ARM-slot items |
 | `level.service.ts` | Multiply EXP by `(1 + enchantExpGainPct + enchantCraftExpBonusPct)` |
@@ -556,17 +543,17 @@ router.get("/enchant/configs",         authMiddleware, getEnchantConfigs);
 **Textilis:**
 ```json
 { "name": "Fiber Seed",     "type": "SEED",       "max_stack": 10, "buy_price": 30,  "yield_item": "Fiber Thread", "yield_qty": 3, "grow_mins": 8 },
-{ "name": "Fiber Thread",   "type": "RAW",        "max_stack": 99, "sell_price": 15 },
-{ "name": "Enchant Stone",  "type": "INGREDIENT", "max_stack": 99, "sell_price": 40 },
-{ "name": "Rune Shard",     "type": "INGREDIENT", "max_stack": 99, "sell_price": 120 },
-{ "name": "Arcane Crystal", "type": "INGREDIENT", "max_stack": 20, "sell_price": 600 }
+{ "name": "Fiber Thread",   "type": "RAW",        "max_stack": 30, "sell_price": 15 },
+{ "name": "Enchant Stone",  "type": "INGREDIENT", "max_stack": 30, "sell_price": 100 },
+{ "name": "Rune Shard",     "type": "INGREDIENT", "max_stack": 30, "sell_price": 600 },
+{ "name": "Arcane Crystal", "type": "INGREDIENT", "max_stack": 20, "sell_price": 1200 }
 ```
 
 **Ferrum:**
 ```json
-{ "name": "Metal Dust", "type": "INGREDIENT", "max_stack": 99, "sell_price": 40 },
-{ "name": "Rune Ingot", "type": "INGREDIENT", "max_stack": 99, "sell_price": 120 },
-{ "name": "Chaos Core", "type": "INGREDIENT", "max_stack": 20, "sell_price": 600 }
+{ "name": "Metal Dust", "type": "INGREDIENT", "max_stack": 30, "sell_price": 100 },
+{ "name": "Rune Ingot", "type": "INGREDIENT", "max_stack": 30, "sell_price": 600 },
+{ "name": "Chaos Core", "type": "INGREDIENT", "max_stack": 20, "sell_price": 1200 }
 ```
 
 ### 9.2 Schema Migrations (SQL)
@@ -724,9 +711,9 @@ Add panel after SMELT workspace:
 | System | Enchant Base Bonus Applied To | Special Stats Applied |
 |:---|:---|:---|
 | **Farm Task** | `farm_time_reduction_pct`, `farm_double_yield_chance` | `enchantHarvestQtyBonus`, `enchantFarmYieldFlat`, `enchantWorkSpeedPct`, `enchantRareDropPct` |
-| **Cook Task** | `cook_time_reduction_pct`, `cook_secondary_ingredient_save_chance` | `enchantCookDoubleChancePct`, `enchantIngredientSaveExtraPct`, `enchantGourmetChancePct` |
-| **Mine Task** | `hunger_penalty_tier_reduction` | `enchantOreDoubleChancePct`, `enchantGemFindPct`, `enchantMineRareOrePct`, `enchantExpeditionSpeedPct` |
-| **Smelt Task** | base smelt stats | `enchantForgeDoubleChancePct`, `enchantAlloyBonusPct`, `enchantSmeltSpeedPct`, `enchantResourceSavePct` |
+| **Cook Task** | `cook_time_reduction_pct`, `cook_secondary_ingredient_save_chance` | `enchantItemDoubleChancePct`, `enchantIngredientSaveExtraPct`, `enchantGourmetChancePct` |
+| **Mine Task** | `hunger_penalty_tier_reduction` | `enchantDoubleChancePct`, `enchantRareFindPct`, `enchantMineRareOrePct`, `enchantExpeditionSpeedPct` |
+| **Smelt Task** | base smelt stats | `enchantForgeDoubleChancePct`, `enchantSecondaryJobBonusPct`, `enchantSecondaryJobSpeedPct`, `enchantResourceSavePct` |
 | **Hunger** | `max_hunger_bonus`, `hunger_decay_reduction_per_min` | `enchantMaxHungerFlat`, `enchantTaskHungerCostPct`, `enchantDeepHungerReductionPct`, `enchantSatietyBuffDurationPct` |
 | **Durability** | — (no base bonus) | `enchantDurabilityProtectPct` (armor), `enchantToolDurabilityProtectPct` (tools) |
 | **EXP / Level** | — | `enchantExpGainPct` (all), `enchantCraftExpBonusPct` (MINE/SMELT) |

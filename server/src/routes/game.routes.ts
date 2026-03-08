@@ -40,6 +40,7 @@ import {
 	voteMayorController,
 } from "../controllers/city.controller";
 import { getDailyQuests, submitQuest } from "../controllers/quest.controller";
+import { attemptEnchantController, getEnchantPreviewController, getEnchantConfigsController } from "../controllers/enchantment.controller";
 
 const router = Router();
 
@@ -98,6 +99,11 @@ router.get("/shop/equipment-box", getEquipmentBoxInfo);
 router.post("/shop/equipment-box/open", openEquipmentBox);
 router.get("/shop/recipes", getRecipeShop);
 router.post("/shop/recipes/buy", buyRecipeUnlock);
+
+// ─── Enchantment ─────────────────────────────────────
+router.post("/enchant/attempt",         authMiddleware, attemptEnchantController);
+router.get("/enchant/preview/:slotId",  authMiddleware, getEnchantPreviewController);
+router.get("/enchant/configs",          authMiddleware, getEnchantConfigsController);
 router.get("/recipes", getRecipes);
 
 // ─── Daily Quests ────────────────────────────────────

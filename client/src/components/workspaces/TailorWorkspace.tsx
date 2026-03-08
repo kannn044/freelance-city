@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scissors } from 'lucide-react';
+import { Scissors, Sparkles } from 'lucide-react';
 import { renderItemIcon } from '../../lib/itemVisual';
 import { useTranslation } from 'react-i18next';
 import { useGameStore, type IngredientSelection, type WorkspaceActionResult } from '../../stores/gameStore';
@@ -9,6 +9,10 @@ import { createPortal } from 'react-dom';
 import { getEquipmentRarityColor, type EquipmentRarity } from '../../lib/equipmentRarity';
 import { getCookMixOutcomes, rarityRank } from '../../lib/cookMix';
 import { RequirementModal, type RequirementModalState } from './RequirementModal';
+import EnchantModal from '../EnchantModal';
+import { CITY_ENCHANT_CONFIGS } from '../../../../shared/gameConfig';
+import { getEnchantColor, getSlotEnchantLevel } from '../../lib/enchantment';
+import type { InventorySlot } from '../../stores/gameStore';
 
 const TailorWorkspace = () => {
     const { t } = useTranslation();
@@ -23,6 +27,9 @@ const TailorWorkspace = () => {
         title: '',
         description: '',
     });
+    const [enchantSlot, setEnchantSlot] = useState<InventorySlot | null>(null);
+
+    const enchantConfig = CITY_ENCHANT_CONFIGS['textilis'];
 
     const selectedRecipe = visibleRecipes.find((r) => r.id === selectedRecipeId) ?? null;
 
@@ -374,6 +381,61 @@ const TailorWorkspace = () => {
             )}
 
             <RequirementModal modalState={requirementModal} setModalState={setRequirementModal} />
+
+            {/* ─── Enchantment Loom Section ─── */}
+            {(() => {
+                const enchantableSlots = inventory.filter(
+                    (s) => s.item?.type === 'EQUIPMENT' && s.item.equipment_slot && enchantConfig.applicableSlots.includes(s.item.equipment_slot as any)
+                );
+                const materialNames = enchantConfig.materialChain.map((t) => t.itemName);
+                const materialCounts = materialNames.map((name) => ({
+                    name,
+                    qty: inventory.filter((s) => s.item?.name === name).reduce((sum, s) => sum + s.quantity, 0),
+                }));
+
+                return enchantableSlots.length > 0 ? (
+                    <div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(167,139,250,0.15)', paddingTop: '0.6rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.45rem', fontSize: '0.68rem', color: '#a78bfa', fontWeight: 700 }}>
+                            <Sparkles style={{ width: '0.7rem', height: '0.7rem' }} />
+                            Enchantment Loom
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.4rem' }}>
+                            {materialCounts.map((m) => (
+                                <span key={m.name} style={{ fontSize: '0.6rem', background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: '4px', padding: '2px 6px', color: '#c4b5fd' }}>
+                                    {m.name}: {m.qty}
+                                </span>
+                            ))}
+                        </div>
+                        {enchantableSlots.map((s) => {
+                            const lvl = getSlotEnchantLevel(s);
+                            return (
+                                <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.35rem 0.5rem', marginBottom: '0.3rem', borderRadius: '0.4rem', border: '1px solid rgba(167,139,250,0.15)', background: 'rgba(167,139,250,0.04)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        {renderItemIcon(s.item!, 16)}
+                                        <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.85)' }}>{s.item?.name}</span>
+                                        {lvl > 0 && (
+                                            <span style={{ fontSize: '0.58rem', fontWeight: 700, background: getEnchantColor(lvl), color: '#000', borderRadius: '3px', padding: '0 4px' }}>+{lvl}</span>
+                                        )}
+                                    </div>
+                                    <motion.button
+                                        whileHover={{ scale: 1.04 }}
+                                        whileTap={{ scale: 0.96 }}
+                                        onClick={() => setEnchantSlot(s)}
+                                        style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '4px', border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.15)', color: '#a78bfa', cursor: 'pointer' }}
+                                    >
+                                        ✨ Enchant
+                                    </motion.button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : null;
+            })()}
+
+            {enchantSlot && typeof document !== 'undefined' && createPortal(
+                <EnchantModal slot={enchantSlot} config={enchantConfig} onClose={() => setEnchantSlot(null)} />,
+                document.body,
+            )}
         </>
     );
 };

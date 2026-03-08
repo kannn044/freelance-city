@@ -194,7 +194,12 @@ exports.Prisma.InventorySlotScalarFieldEnum = {
   item_id: 'item_id',
   quantity: 'quantity',
   equipment_rarity: 'equipment_rarity',
-  equipment_durability: 'equipment_durability'
+  equipment_durability: 'equipment_durability',
+  enchant_level: 'enchant_level',
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
 };
 
 exports.Prisma.UserEquipmentScalarFieldEnum = {
@@ -205,7 +210,12 @@ exports.Prisma.UserEquipmentScalarFieldEnum = {
   item_rarity: 'item_rarity',
   durability: 'durability',
   durability_updated_at: 'durability_updated_at',
-  updated_at: 'updated_at'
+  updated_at: 'updated_at',
+  enchant_level: 'enchant_level',
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
 };
 
 exports.Prisma.WorkOrderScalarFieldEnum = {
@@ -232,7 +242,12 @@ exports.Prisma.MarketListingScalarFieldEnum = {
   equipment_rarity: 'equipment_rarity',
   status: 'status',
   created_at: 'created_at',
-  sold_at: 'sold_at'
+  sold_at: 'sold_at',
+  enchant_level: 'enchant_level',
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
 };
 
 exports.Prisma.OccupationCatalogScalarFieldEnum = {
@@ -413,6 +428,27 @@ exports.Prisma.ItemOrderByRelevanceFieldEnum = {
 
 exports.Prisma.RecipeOrderByRelevanceFieldEnum = {
   name: 'name'
+};
+
+exports.Prisma.InventorySlotOrderByRelevanceFieldEnum = {
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
+};
+
+exports.Prisma.UserEquipmentOrderByRelevanceFieldEnum = {
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
+};
+
+exports.Prisma.MarketListingOrderByRelevanceFieldEnum = {
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
 };
 
 exports.Prisma.OccupationCatalogOrderByRelevanceFieldEnum = {

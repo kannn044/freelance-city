@@ -246,6 +246,25 @@ function isTieredHarvestItem(item: { type: string; name: string }) {
     return item.type === "RAW" && TIERED_HARVEST_ITEM_NAMES.has(item.name);
 }
 
+/**
+ * Shifts some NORMAL probability to higher rarities based on a boost percentage.
+ * Called once per order to create adjusted drop rates for enchant rare-drop bonuses.
+ */
+function applyRareDropBoost(
+    rates: Record<EquipmentRarity, number>,
+    boostPct: number,         // combined enchant_rare_drop_pct + enchant_rare_find_pct
+): Record<EquipmentRarity, number> {
+    if (boostPct <= 0) return rates;
+    const cappedBoost = Math.min(0.5, boostPct);
+    const shift = rates.NORMAL * cappedBoost;
+    return {
+        NORMAL:    Math.max(0, rates.NORMAL - shift),
+        RARE:      rates.RARE + shift * 0.7,
+        EPIC:      rates.EPIC + shift * 0.2,
+        LEGENDARY: rates.LEGENDARY + shift * 0.1,
+    };
+}
+
 function rollHarvestRarity(dropRates: Record<EquipmentRarity, number>): EquipmentRarity {
     const entries = Object.entries(dropRates) as Array<[EquipmentRarity, number]>;
     const totalWeight = entries.reduce((sum, [, w]) => sum + Math.max(0, Number(w) || 0), 0);
@@ -466,7 +485,16 @@ async function getOrderOutput(
         }
 
         let outputQty = (seedItem.yield_qty ?? 1) * order.quantity;
-        if (effects.farmDoubleYieldChance > 0 && Math.random() < effects.farmDoubleYieldChance) {
+
+        // enchant_first_job_qty_bonus and enchant_first_job_yield_flat: add flat qty bonuses
+        const flatBonus = Math.floor((effects.enchantFirstJobQtyBonus ?? 0) + (effects.enchantFirstJobYieldFlat ?? 0));
+        if (flatBonus > 0) outputQty += flatBonus;
+
+        // Combine base farmDoubleYieldChance with enchant first-job double chance
+        const totalDoubleChance = Math.min(0.95,
+            (effects.farmDoubleYieldChance ?? 0) + (effects.enchantFirstJobDoubleChancePct ?? 0)
+        );
+        if (totalDoubleChance > 0 && Math.random() < totalDoubleChance) {
             outputQty *= 2;
         }
 
@@ -475,8 +503,12 @@ async function getOrderOutput(
             throw new Error("Output item not found");
         }
 
+        // Apply rare drop boost from enchant_rare_drop_pct + enchant_rare_find_pct
+        const rareBoostPct = (effects.enchantRareDropPct ?? 0) + (effects.enchantRareFindPct ?? 0);
+        const adjustedDropRates = applyRareDropBoost(harvestDropRates, rareBoostPct);
+
         if (isTieredHarvestItem(outputItem)) {
-            return splitByHarvestRarity(outputQty, harvestDropRates).map((entry) => ({
+            return splitByHarvestRarity(outputQty, adjustedDropRates).map((entry) => ({
                 outputItemId: outputItem.id,
                 outputQty: entry.qty,
                 outputRarity: entry.rarity,
@@ -517,8 +549,19 @@ async function getOrderOutput(
     }
 
     let outputQty = order.quantity;
-    if (effects.gourmetChance > 0 && Math.random() < effects.gourmetChance) {
+    // Combine base gourmetChance with enchant gourmet_chance_pct bonus
+    const totalGourmetChance = Math.min(0.95,
+        (effects.gourmetChance ?? 0) + (effects.enchantGourmetChancePct ?? 0)
+    );
+    if (totalGourmetChance > 0 && Math.random() < totalGourmetChance) {
         outputQty += 1;
+    }
+    // enchant_secondary_job_double_chance_pct and enchant_secondary_job_bonus_pct: chance to double secondary-job output
+    const totalSecondaryDoubleChance = Math.min(0.95,
+        (effects.enchantSecondaryJobDoubleChancePct ?? 0) + (effects.enchantSecondaryJobBonusPct ?? 0)
+    );
+    if (totalSecondaryDoubleChance > 0 && Math.random() < totalSecondaryDoubleChance) {
+        outputQty *= 2;
     }
 
     const city = await getUserCityProfile(userId);
@@ -709,7 +752,10 @@ async function awardOrderExp(
             return sum + expValue * qty;
         }, 0);
 
-        expGained = Math.floor(expBase * 10 * workExpMultiplier);
+        // enchant_exp_gain_pct: boost EXP gained by this %
+        const userEffects = await getUserEquipmentEffects(userId, db);
+        const expEnchantMultiplier = 1 + Math.max(0, userEffects.enchantExpGainPct ?? 0);
+        expGained = Math.floor(expBase * 10 * workExpMultiplier * expEnchantMultiplier);
         if (expGained > 0) {
             const newExp = currentExp + expGained;
             newLevel = getLevelFromExp(newExp);
@@ -1138,7 +1184,11 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 const minerTimeReduction = getSecondaryJobSkillCookTimeReduction(minerPrepLevel);
 
                 const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
-                const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.firstJobTaskTimeMultiplier;
+                // enchant_first_job_speed_pct (Ferrum ARM) and enchant_work_speed_pct both reduce first-job time
+                const enchantFirstJobSpeedMultiplier = 1 - Math.min(0.8,
+                    (equipmentEffects.enchantFirstJobSpeedPct ?? 0) + (equipmentEffects.enchantWorkSpeedPct ?? 0)
+                );
+                const growMins = baseMins * tier.multiplier * (1 - minerTimeReduction) * taskTimeConfig.firstJobTaskTimeMultiplier * enchantFirstJobSpeedMultiplier;
                 // Use Math.ceil to match the displayed effectiveLayerTimeMins shown in WorkspacePanel
                 const durationMs = Math.max(1000, Math.ceil(growMins) * 60 * 1000);
 
@@ -1296,10 +1346,15 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const skillReduction = getFirstJobSkillTimeReduction(branchSkillLevel);
             const equipmentTimeMultiplier = 1 - equipmentEffects.farmTimeReductionPct;
             const skillTimeMultiplier = 1 - skillReduction;
+            // enchant_first_job_speed_pct (Ferrum ARM) and enchant_work_speed_pct both reduce first-job time
+            const enchantFirstJobSpeedMultiplier = 1 - Math.min(0.8,
+                (equipmentEffects.enchantFirstJobSpeedPct ?? 0) + (equipmentEffects.enchantWorkSpeedPct ?? 0)
+            );
             const growMins = slot.item.grow_mins
                 * tier.multiplier
                 * skillTimeMultiplier
                 * equipmentTimeMultiplier
+                * enchantFirstJobSpeedMultiplier
                 * taskTimeConfig.firstJobTaskTimeMultiplier;
             const completesAt = new Date(Date.now() + growMins * 60 * 1000);
 
@@ -1527,9 +1582,10 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                     let consumeUnits = 0;
                     for (let i = 0; i < ingredient.quantity; i++) {
                         const isSecondary = recipe.ingredients.findIndex((x) => x.item_id === ingredient.item_id) > 0;
+                        // enchant_ingredient_save_extra_pct adds to both primary and secondary save chances
                         const saveChance = isSecondary
-                            ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + secondaryJobSecondarySaveChance))
-                            : Math.min(0.4, Math.max(0, secondaryJobPrimarySaveChance));
+                            ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + secondaryJobSecondarySaveChance + (equipmentEffects.enchantIngredientSaveExtraPct ?? 0)))
+                            : Math.min(0.4, Math.max(0, secondaryJobPrimarySaveChance + (equipmentEffects.enchantIngredientSaveExtraPct ?? 0)));
                         const saved = saveChance > 0 && Math.random() < saveChance;
                         if (!saved) consumeUnits += 1;
                     }
@@ -1572,9 +1628,10 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
                 for (let idx = 0; idx < recipe.ingredients.length; idx++) {
                     const ingredient = recipe.ingredients[idx];
                     const isSecondary = idx > 0;
+                    // enchant_ingredient_save_extra_pct adds to both primary and secondary save chances
                     const saveChance = isSecondary
-                        ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + secondaryJobSecondarySaveChance))
-                        : Math.min(0.4, Math.max(0, secondaryJobPrimarySaveChance));
+                        ? Math.min(0.7, Math.max(0, equipmentEffects.cookSecondaryIngredientSaveChance + secondaryJobSecondarySaveChance + (equipmentEffects.enchantIngredientSaveExtraPct ?? 0)))
+                        : Math.min(0.4, Math.max(0, secondaryJobPrimarySaveChance + (equipmentEffects.enchantIngredientSaveExtraPct ?? 0)));
 
                     let remaining = 0;
                     for (let i = 0; i < ingredient.quantity; i++) {
@@ -1620,10 +1677,15 @@ export const startWork = async (req: AuthRequest, res: Response): Promise<void> 
             const tier = applyTierReduction(user.hunger, equipmentEffects.hungerPenaltyTierReduction);
             const equipmentCookMultiplier = 1 - equipmentEffects.cookTimeReductionPct;
             const secondaryJobCookMultiplier = 1 - secondaryJobCookTimeReductionPct;
+            // enchant_secondary_job_speed_pct (Ferrum ARM) and enchant_work_speed_pct both reduce secondary-job time
+            const enchantSecondaryJobSpeedMultiplier = 1 - Math.min(0.8,
+                (equipmentEffects.enchantSecondaryJobSpeedPct ?? 0) + (equipmentEffects.enchantWorkSpeedPct ?? 0)
+            );
             const cookMins = recipe.cook_mins
                 * tier.multiplier
                 * equipmentCookMultiplier
                 * secondaryJobCookMultiplier
+                * enchantSecondaryJobSpeedMultiplier
                 * taskTimeConfig.secondaryJobTaskTimeMultiplier;
 
             // Secondary-job queue logic with PREP_MASTER parallel slots.

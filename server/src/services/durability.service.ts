@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { MAX_DURABILITY } from "../config/game.config";
 import { getGameDurabilityDecayConfig, type GameDurabilityDecayConfig } from "./gamePricing.service";
+import { getUserEquipmentEffects } from "./equipmentEffects.service";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
@@ -105,8 +106,16 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
           AND w.collected = false
     `;
 
-    // Load decay config
-    const decayConfig = await getGameDurabilityDecayConfig();
+    // Load decay config and equipment enchant effects (durability protection)
+    const [decayConfig, enchantEffects] = await Promise.all([
+        getGameDurabilityDecayConfig(),
+        getUserEquipmentEffects(userId, db),
+    ]);
+    // Cap combined durability protection at 90%
+    const durabilityProtectPct = Math.min(0.9,
+        (enchantEffects.enchantDurabilityProtectPct ?? 0) +
+        (enchantEffects.enchantToolDurabilityProtectPct ?? 0)
+    );
 
     for (const eq of equipRows) {
         if (Number(eq.durability) <= 0) {
@@ -170,7 +179,9 @@ export async function syncDurability(userId: number, db: DbClient = prisma): Pro
             continue;
         }
 
-        const newDurability = Math.max(0, Number(eq.durability) - totalDecay);
+        // Apply durability protection from enchant special stats
+        const protectedDecay = totalDecay * (1 - durabilityProtectPct);
+        const newDurability = Math.max(0, Number(eq.durability) - protectedDecay);
 
         await db.$executeRaw`
             UPDATE user_equipments

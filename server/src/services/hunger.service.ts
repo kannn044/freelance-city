@@ -178,7 +178,10 @@ export async function syncHunger(userId: number): Promise<any> {
 
         const isMining = String(o.item?.name ?? "") === "Ferrum Mining Permit";
         const isDeepOrCore = (o.recipe_id === 2 || o.recipe_id === 3);
-        const burnMultiplier = isMining && isDeepOrCore && !hasSafetyHelmet ? 2 : 1;
+        // enchant_deep_hunger_reduction_pct reduces the extra burn cost for deep/core mining
+        const deepHungerReductionPct = Math.min(1, effects.enchantDeepHungerReductionPct ?? 0);
+        const deepExtraBurn = isMining && isDeepOrCore && !hasSafetyHelmet ? (1 * (1 - deepHungerReductionPct)) : 0;
+        const burnMultiplier = 1 + deepExtraBurn;
 
         const key = `${o.item_id}:${o.recipe_id ?? 0}`;
         const arr = farmBySeed.get(key) ?? [];
@@ -246,6 +249,11 @@ export async function syncHunger(userId: number): Promise<any> {
 
     totalTaskDecay *= satietyRateMultiplier;
 
+    // enchant_task_hunger_cost_pct: reduce total task hunger cost by this %
+    if (effects.enchantTaskHungerCostPct > 0) {
+        totalTaskDecay *= (1 - Math.min(0.9, effects.enchantTaskHungerCostPct));
+    }
+
     // Flat decay reduction from equipment (legacy unit: per minute) adapted to elapsed wall time.
     const elapsedMinutes = Math.max(0, (toMs - fromMs) / 60000);
     if (effects.hungerDecayReductionPerMin > 0 && elapsedMinutes > 0) {
@@ -290,7 +298,8 @@ export async function applyMealEffect(
     const user = await syncHunger(userId);
     const effects = await getUserEquipmentEffects(userId);
 
-    const maxHunger = MAX_HUNGER + Math.max(0, effects.maxHungerBonus);
+    // enchant_max_hunger_flat adds a flat Kcal bonus on top of equipment max hunger bonus
+    const maxHunger = MAX_HUNGER + Math.max(0, effects.maxHungerBonus) + Math.max(0, effects.enchantMaxHungerFlat);
     const effectiveBuffPct = Math.max(0, Math.min(0.9, (buffPct ?? 0) + effects.extraSatietyBuffPct));
 
     const newHunger = Math.min(maxHunger, user.hunger + kcal);
@@ -303,8 +312,10 @@ export async function applyMealEffect(
 
     // Apply buff if meal has one
     if (effectiveBuffPct > 0 && buffMins && buffMins > 0) {
+        // enchant_satiety_buff_duration_pct extends buff duration by this %
+        const effectiveBuffMins = (buffMins ?? 0) * (1 + Math.max(0, effects.enchantSatietyBuffDurationPct));
         data.satiety_buff = effectiveBuffPct;
-        data.buff_expires_at = new Date(now.getTime() + buffMins * 60 * 1000);
+        data.buff_expires_at = new Date(now.getTime() + effectiveBuffMins * 60 * 1000);
     }
 
     return prisma.user.update({

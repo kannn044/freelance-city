@@ -33,6 +33,11 @@ export interface InventorySlot {
     quantity: number;
     equipment_rarity?: EquipmentRarity | null;
     equipment_durability?: number | null;
+    enchant_level?: number | null;
+    special_stat_1?: string | null;
+    special_stat_2?: string | null;
+    special_stat_3?: string | null;
+    special_stat_4?: string | null;
     item: Item | null;
 }
 
@@ -59,6 +64,11 @@ export interface EquipmentSlotState {
     effect_value?: number | null;
     effect_value2?: number | null;
     durability?: number | null;
+    enchant_level?: number | null;
+    special_stat_1?: string | null;
+    special_stat_2?: string | null;
+    special_stat_3?: string | null;
+    special_stat_4?: string | null;
 }
 
 export interface WorkOrder {
@@ -260,6 +270,7 @@ interface GameState {
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
     cancelListing: (listingId: number) => Promise<void>;
+    enchantAttempt: (inventorySlotId: number) => Promise<{ ok: boolean; success?: boolean; newLevel?: number; destroyed?: boolean; specialStatAdded?: string | null; error?: string }>;
 
     tickHunger: () => void;
     tickDurability: () => void;
@@ -789,6 +800,19 @@ export const useGameStore = create<GameState>((set, get) => ({
             get().fetchSalesHistory();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to cancel listing' });
+        }
+    },
+
+    enchantAttempt: async (inventorySlotId) => {
+        try {
+            const { data } = await api.post('/game/enchant/attempt', { inventorySlotId });
+            await get().fetchInventory();
+            useAuthStore.getState().fetchMe();
+            return { ok: true, success: data.success, newLevel: data.newLevel, destroyed: data.destroyed, specialStatAdded: data.specialStatAdded };
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.error || 'Enchant attempt failed';
+            set({ actionMessage: errorMessage });
+            return { ok: false, error: errorMessage };
         }
     },
 

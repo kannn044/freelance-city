@@ -9,6 +9,7 @@ import { INVENTORY_SLOTS } from '../lib/gameConstants';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/react/shallow';
 import RepairEquipmentModal from './RepairEquipmentModal';
+import { getEnchantColor, getSlotEnchantLevel, getSlotSpecialStats, SPECIAL_STAT_DEFINITIONS } from '../lib/enchantment';
 
 const InventoryGrid = () => {
     const { t } = useTranslation();
@@ -598,6 +599,26 @@ const InventoryGrid = () => {
                                             x{slot.quantity}
                                         </span>
                                     )}
+                                    {/* Enchant level badge */}
+                                    {slot && hasItem?.type === 'EQUIPMENT' && getSlotEnchantLevel(slot) > 0 && (
+                                        <span
+                                            style={{
+                                                position: 'absolute',
+                                                top: '0.15rem',
+                                                left: '0.15rem',
+                                                fontSize: '0.5rem',
+                                                fontWeight: 700,
+                                                background: getEnchantColor(getSlotEnchantLevel(slot)),
+                                                color: '#000',
+                                                borderRadius: '3px',
+                                                padding: '0 3px',
+                                                lineHeight: '1rem',
+                                                zIndex: 2,
+                                            }}
+                                        >
+                                            +{getSlotEnchantLevel(slot)}
+                                        </span>
+                                    )}
                                     {/* Eat indicator */}
                                     {canEat && (
                                         <div
@@ -698,6 +719,19 @@ const InventoryGrid = () => {
                                                                 {t('inventory.effect')}: {formatEquipmentEffect(slot)}
                                                             </>
                                                         ) : null}
+                                                        {getSlotEnchantLevel(slot) > 0 && (
+                                                            <>
+                                                                <br />
+                                                                <span style={{ color: getEnchantColor(getSlotEnchantLevel(slot)) }}>
+                                                                    Enchant: +{getSlotEnchantLevel(slot)}
+                                                                </span>
+                                                            </>
+                                                        )}
+                                                        {getSlotSpecialStats(slot).map((sk) => (
+                                                            <span key={sk} style={{ display: 'block', color: '#a78bfa', fontSize: '0.58rem' }}>
+                                                                ✦ {SPECIAL_STAT_DEFINITIONS[sk]?.label ?? sk}
+                                                            </span>
+                                                        ))}
                                                     </>
                                                 ) : slot.equipment_rarity ? (
                                                     <>

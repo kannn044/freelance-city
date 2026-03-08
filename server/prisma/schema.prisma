@@ -197,6 +197,11 @@ model InventorySlot {
   quantity Int @default(0)
   equipment_rarity EquipmentRarity?
   equipment_durability Float?
+  enchant_level  Int     @default(0)
+  special_stat_1 String?
+  special_stat_2 String?
+  special_stat_3 String?
+  special_stat_4 String?
 
   user User  @relation(fields: [user_id], references: [id])
   item Item? @relation(fields: [item_id], references: [id])
@@ -214,6 +219,11 @@ model UserEquipment {
   durability  Float        @default(100)
   durability_updated_at DateTime @default(now())
   updated_at DateTime      @updatedAt
+  enchant_level  Int     @default(0)
+  special_stat_1 String?
+  special_stat_2 String?
+  special_stat_3 String?
+  special_stat_4 String?
 
   user User  @relation(fields: [user_id], references: [id])
   item Item? @relation(fields: [item_id], references: [id])
@@ -256,6 +266,11 @@ model MarketListing {
   status     ListingStatus @default(ACTIVE)
   created_at DateTime      @default(now())
   sold_at    DateTime?
+  enchant_level  Int     @default(0)
+  special_stat_1 String?
+  special_stat_2 String?
+  special_stat_3 String?
+  special_stat_4 String?
 
   seller User  @relation("seller", fields: [seller_id], references: [id])
   buyer  User? @relation("buyer", fields: [buyer_id], references: [id])

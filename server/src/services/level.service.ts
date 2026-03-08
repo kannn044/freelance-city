@@ -4,6 +4,7 @@ import {
     getLevelFromExp,
 } from "../config/game.config";
 import { getGameExpConfig } from "./gamePricing.service";
+import { getUserEquipmentEffects } from "./equipmentEffects.service";
 
 type LegacyProgressUser = {
     first_job_level: number;
@@ -44,7 +45,12 @@ export async function awardSaleExp(
     const expMultiplier = occupation === "first_job"
         ? expConfig.firstJobMarketExpMultiplier
         : expConfig.secondaryJobMarketExpMultiplier;
-    const expGained = Math.floor(hungerRatio * item.exp_value * salePrice * expMultiplier);
+
+    // enchant_exp_gain_pct: boost EXP gained from market sales
+    const enchantEffects = await getUserEquipmentEffects(userId);
+    const enchantExpMultiplier = 1 + Math.max(0, enchantEffects.enchantExpGainPct ?? 0);
+
+    const expGained = Math.floor(hungerRatio * item.exp_value * salePrice * expMultiplier * enchantExpMultiplier);
 
     if (expGained <= 0) {
         return { expGained: 0, levelUp: false };

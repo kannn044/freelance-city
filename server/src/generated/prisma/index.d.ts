@@ -8929,6 +8929,7 @@ export namespace Prisma {
     item_id: number | null
     quantity: number | null
     equipment_durability: number | null
+    enchant_level: number | null
   }
 
   export type InventorySlotSumAggregateOutputType = {
@@ -8938,6 +8939,7 @@ export namespace Prisma {
     item_id: number | null
     quantity: number | null
     equipment_durability: number | null
+    enchant_level: number | null
   }
 
   export type InventorySlotMinAggregateOutputType = {
@@ -8948,6 +8950,11 @@ export namespace Prisma {
     quantity: number | null
     equipment_rarity: $Enums.EquipmentRarity | null
     equipment_durability: number | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
   }
 
   export type InventorySlotMaxAggregateOutputType = {
@@ -8958,6 +8965,11 @@ export namespace Prisma {
     quantity: number | null
     equipment_rarity: $Enums.EquipmentRarity | null
     equipment_durability: number | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
   }
 
   export type InventorySlotCountAggregateOutputType = {
@@ -8968,6 +8980,11 @@ export namespace Prisma {
     quantity: number
     equipment_rarity: number
     equipment_durability: number
+    enchant_level: number
+    special_stat_1: number
+    special_stat_2: number
+    special_stat_3: number
+    special_stat_4: number
     _all: number
   }
 
@@ -8979,6 +8996,7 @@ export namespace Prisma {
     item_id?: true
     quantity?: true
     equipment_durability?: true
+    enchant_level?: true
   }
 
   export type InventorySlotSumAggregateInputType = {
@@ -8988,6 +9006,7 @@ export namespace Prisma {
     item_id?: true
     quantity?: true
     equipment_durability?: true
+    enchant_level?: true
   }
 
   export type InventorySlotMinAggregateInputType = {
@@ -8998,6 +9017,11 @@ export namespace Prisma {
     quantity?: true
     equipment_rarity?: true
     equipment_durability?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
   }
 
   export type InventorySlotMaxAggregateInputType = {
@@ -9008,6 +9032,11 @@ export namespace Prisma {
     quantity?: true
     equipment_rarity?: true
     equipment_durability?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
   }
 
   export type InventorySlotCountAggregateInputType = {
@@ -9018,6 +9047,11 @@ export namespace Prisma {
     quantity?: true
     equipment_rarity?: true
     equipment_durability?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
     _all?: true
   }
 
@@ -9115,6 +9149,11 @@ export namespace Prisma {
     quantity: number
     equipment_rarity: $Enums.EquipmentRarity | null
     equipment_durability: number | null
+    enchant_level: number
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
     _count: InventorySlotCountAggregateOutputType | null
     _avg: InventorySlotAvgAggregateOutputType | null
     _sum: InventorySlotSumAggregateOutputType | null
@@ -9144,6 +9183,11 @@ export namespace Prisma {
     quantity?: boolean
     equipment_rarity?: boolean
     equipment_durability?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     item?: boolean | InventorySlot$itemArgs<ExtArgs>
   }, ExtArgs["result"]["inventorySlot"]>
@@ -9158,9 +9202,14 @@ export namespace Prisma {
     quantity?: boolean
     equipment_rarity?: boolean
     equipment_durability?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
   }
 
-  export type InventorySlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "slot" | "item_id" | "quantity" | "equipment_rarity" | "equipment_durability", ExtArgs["result"]["inventorySlot"]>
+  export type InventorySlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "slot" | "item_id" | "quantity" | "equipment_rarity" | "equipment_durability" | "enchant_level" | "special_stat_1" | "special_stat_2" | "special_stat_3" | "special_stat_4", ExtArgs["result"]["inventorySlot"]>
   export type InventorySlotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     item?: boolean | InventorySlot$itemArgs<ExtArgs>
@@ -9180,6 +9229,11 @@ export namespace Prisma {
       quantity: number
       equipment_rarity: $Enums.EquipmentRarity | null
       equipment_durability: number | null
+      enchant_level: number
+      special_stat_1: string | null
+      special_stat_2: string | null
+      special_stat_3: string | null
+      special_stat_4: string | null
     }, ExtArgs["result"]["inventorySlot"]>
     composites: {}
   }
@@ -9558,6 +9612,11 @@ export namespace Prisma {
     readonly quantity: FieldRef<"InventorySlot", 'Int'>
     readonly equipment_rarity: FieldRef<"InventorySlot", 'EquipmentRarity'>
     readonly equipment_durability: FieldRef<"InventorySlot", 'Float'>
+    readonly enchant_level: FieldRef<"InventorySlot", 'Int'>
+    readonly special_stat_1: FieldRef<"InventorySlot", 'String'>
+    readonly special_stat_2: FieldRef<"InventorySlot", 'String'>
+    readonly special_stat_3: FieldRef<"InventorySlot", 'String'>
+    readonly special_stat_4: FieldRef<"InventorySlot", 'String'>
   }
     
 
@@ -9955,6 +10014,7 @@ export namespace Prisma {
     user_id: number | null
     item_id: number | null
     durability: number | null
+    enchant_level: number | null
   }
 
   export type UserEquipmentSumAggregateOutputType = {
@@ -9962,6 +10022,7 @@ export namespace Prisma {
     user_id: number | null
     item_id: number | null
     durability: number | null
+    enchant_level: number | null
   }
 
   export type UserEquipmentMinAggregateOutputType = {
@@ -9973,6 +10034,11 @@ export namespace Prisma {
     durability: number | null
     durability_updated_at: Date | null
     updated_at: Date | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
   }
 
   export type UserEquipmentMaxAggregateOutputType = {
@@ -9984,6 +10050,11 @@ export namespace Prisma {
     durability: number | null
     durability_updated_at: Date | null
     updated_at: Date | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
   }
 
   export type UserEquipmentCountAggregateOutputType = {
@@ -9995,6 +10066,11 @@ export namespace Prisma {
     durability: number
     durability_updated_at: number
     updated_at: number
+    enchant_level: number
+    special_stat_1: number
+    special_stat_2: number
+    special_stat_3: number
+    special_stat_4: number
     _all: number
   }
 
@@ -10004,6 +10080,7 @@ export namespace Prisma {
     user_id?: true
     item_id?: true
     durability?: true
+    enchant_level?: true
   }
 
   export type UserEquipmentSumAggregateInputType = {
@@ -10011,6 +10088,7 @@ export namespace Prisma {
     user_id?: true
     item_id?: true
     durability?: true
+    enchant_level?: true
   }
 
   export type UserEquipmentMinAggregateInputType = {
@@ -10022,6 +10100,11 @@ export namespace Prisma {
     durability?: true
     durability_updated_at?: true
     updated_at?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
   }
 
   export type UserEquipmentMaxAggregateInputType = {
@@ -10033,6 +10116,11 @@ export namespace Prisma {
     durability?: true
     durability_updated_at?: true
     updated_at?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
   }
 
   export type UserEquipmentCountAggregateInputType = {
@@ -10044,6 +10132,11 @@ export namespace Prisma {
     durability?: true
     durability_updated_at?: true
     updated_at?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
     _all?: true
   }
 
@@ -10142,6 +10235,11 @@ export namespace Prisma {
     durability: number
     durability_updated_at: Date
     updated_at: Date
+    enchant_level: number
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
     _count: UserEquipmentCountAggregateOutputType | null
     _avg: UserEquipmentAvgAggregateOutputType | null
     _sum: UserEquipmentSumAggregateOutputType | null
@@ -10172,6 +10270,11 @@ export namespace Prisma {
     durability?: boolean
     durability_updated_at?: boolean
     updated_at?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     item?: boolean | UserEquipment$itemArgs<ExtArgs>
   }, ExtArgs["result"]["userEquipment"]>
@@ -10187,9 +10290,14 @@ export namespace Prisma {
     durability?: boolean
     durability_updated_at?: boolean
     updated_at?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
   }
 
-  export type UserEquipmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "slot" | "item_id" | "item_rarity" | "durability" | "durability_updated_at" | "updated_at", ExtArgs["result"]["userEquipment"]>
+  export type UserEquipmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "slot" | "item_id" | "item_rarity" | "durability" | "durability_updated_at" | "updated_at" | "enchant_level" | "special_stat_1" | "special_stat_2" | "special_stat_3" | "special_stat_4", ExtArgs["result"]["userEquipment"]>
   export type UserEquipmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     item?: boolean | UserEquipment$itemArgs<ExtArgs>
@@ -10210,6 +10318,11 @@ export namespace Prisma {
       durability: number
       durability_updated_at: Date
       updated_at: Date
+      enchant_level: number
+      special_stat_1: string | null
+      special_stat_2: string | null
+      special_stat_3: string | null
+      special_stat_4: string | null
     }, ExtArgs["result"]["userEquipment"]>
     composites: {}
   }
@@ -10589,6 +10702,11 @@ export namespace Prisma {
     readonly durability: FieldRef<"UserEquipment", 'Float'>
     readonly durability_updated_at: FieldRef<"UserEquipment", 'DateTime'>
     readonly updated_at: FieldRef<"UserEquipment", 'DateTime'>
+    readonly enchant_level: FieldRef<"UserEquipment", 'Int'>
+    readonly special_stat_1: FieldRef<"UserEquipment", 'String'>
+    readonly special_stat_2: FieldRef<"UserEquipment", 'String'>
+    readonly special_stat_3: FieldRef<"UserEquipment", 'String'>
+    readonly special_stat_4: FieldRef<"UserEquipment", 'String'>
   }
     
 
@@ -12037,6 +12155,7 @@ export namespace Prisma {
     item_id: number | null
     quantity: number | null
     price: number | null
+    enchant_level: number | null
   }
 
   export type MarketListingSumAggregateOutputType = {
@@ -12046,6 +12165,7 @@ export namespace Prisma {
     item_id: number | null
     quantity: number | null
     price: number | null
+    enchant_level: number | null
   }
 
   export type MarketListingMinAggregateOutputType = {
@@ -12059,6 +12179,11 @@ export namespace Prisma {
     status: $Enums.ListingStatus | null
     created_at: Date | null
     sold_at: Date | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
   }
 
   export type MarketListingMaxAggregateOutputType = {
@@ -12072,6 +12197,11 @@ export namespace Prisma {
     status: $Enums.ListingStatus | null
     created_at: Date | null
     sold_at: Date | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
   }
 
   export type MarketListingCountAggregateOutputType = {
@@ -12085,6 +12215,11 @@ export namespace Prisma {
     status: number
     created_at: number
     sold_at: number
+    enchant_level: number
+    special_stat_1: number
+    special_stat_2: number
+    special_stat_3: number
+    special_stat_4: number
     _all: number
   }
 
@@ -12096,6 +12231,7 @@ export namespace Prisma {
     item_id?: true
     quantity?: true
     price?: true
+    enchant_level?: true
   }
 
   export type MarketListingSumAggregateInputType = {
@@ -12105,6 +12241,7 @@ export namespace Prisma {
     item_id?: true
     quantity?: true
     price?: true
+    enchant_level?: true
   }
 
   export type MarketListingMinAggregateInputType = {
@@ -12118,6 +12255,11 @@ export namespace Prisma {
     status?: true
     created_at?: true
     sold_at?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
   }
 
   export type MarketListingMaxAggregateInputType = {
@@ -12131,6 +12273,11 @@ export namespace Prisma {
     status?: true
     created_at?: true
     sold_at?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
   }
 
   export type MarketListingCountAggregateInputType = {
@@ -12144,6 +12291,11 @@ export namespace Prisma {
     status?: true
     created_at?: true
     sold_at?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
     _all?: true
   }
 
@@ -12244,6 +12396,11 @@ export namespace Prisma {
     status: $Enums.ListingStatus
     created_at: Date
     sold_at: Date | null
+    enchant_level: number
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
     _count: MarketListingCountAggregateOutputType | null
     _avg: MarketListingAvgAggregateOutputType | null
     _sum: MarketListingSumAggregateOutputType | null
@@ -12276,6 +12433,11 @@ export namespace Prisma {
     status?: boolean
     created_at?: boolean
     sold_at?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
     seller?: boolean | UserDefaultArgs<ExtArgs>
     buyer?: boolean | MarketListing$buyerArgs<ExtArgs>
     item?: boolean | ItemDefaultArgs<ExtArgs>
@@ -12294,9 +12456,14 @@ export namespace Prisma {
     status?: boolean
     created_at?: boolean
     sold_at?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
   }
 
-  export type MarketListingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "seller_id" | "buyer_id" | "item_id" | "quantity" | "price" | "equipment_rarity" | "status" | "created_at" | "sold_at", ExtArgs["result"]["marketListing"]>
+  export type MarketListingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "seller_id" | "buyer_id" | "item_id" | "quantity" | "price" | "equipment_rarity" | "status" | "created_at" | "sold_at" | "enchant_level" | "special_stat_1" | "special_stat_2" | "special_stat_3" | "special_stat_4", ExtArgs["result"]["marketListing"]>
   export type MarketListingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     seller?: boolean | UserDefaultArgs<ExtArgs>
     buyer?: boolean | MarketListing$buyerArgs<ExtArgs>
@@ -12321,6 +12488,11 @@ export namespace Prisma {
       status: $Enums.ListingStatus
       created_at: Date
       sold_at: Date | null
+      enchant_level: number
+      special_stat_1: string | null
+      special_stat_2: string | null
+      special_stat_3: string | null
+      special_stat_4: string | null
     }, ExtArgs["result"]["marketListing"]>
     composites: {}
   }
@@ -12703,6 +12875,11 @@ export namespace Prisma {
     readonly status: FieldRef<"MarketListing", 'ListingStatus'>
     readonly created_at: FieldRef<"MarketListing", 'DateTime'>
     readonly sold_at: FieldRef<"MarketListing", 'DateTime'>
+    readonly enchant_level: FieldRef<"MarketListing", 'Int'>
+    readonly special_stat_1: FieldRef<"MarketListing", 'String'>
+    readonly special_stat_2: FieldRef<"MarketListing", 'String'>
+    readonly special_stat_3: FieldRef<"MarketListing", 'String'>
+    readonly special_stat_4: FieldRef<"MarketListing", 'String'>
   }
     
 
@@ -26924,7 +27101,12 @@ export namespace Prisma {
     item_id: 'item_id',
     quantity: 'quantity',
     equipment_rarity: 'equipment_rarity',
-    equipment_durability: 'equipment_durability'
+    equipment_durability: 'equipment_durability',
+    enchant_level: 'enchant_level',
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
   };
 
   export type InventorySlotScalarFieldEnum = (typeof InventorySlotScalarFieldEnum)[keyof typeof InventorySlotScalarFieldEnum]
@@ -26938,7 +27120,12 @@ export namespace Prisma {
     item_rarity: 'item_rarity',
     durability: 'durability',
     durability_updated_at: 'durability_updated_at',
-    updated_at: 'updated_at'
+    updated_at: 'updated_at',
+    enchant_level: 'enchant_level',
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
   };
 
   export type UserEquipmentScalarFieldEnum = (typeof UserEquipmentScalarFieldEnum)[keyof typeof UserEquipmentScalarFieldEnum]
@@ -26971,7 +27158,12 @@ export namespace Prisma {
     equipment_rarity: 'equipment_rarity',
     status: 'status',
     created_at: 'created_at',
-    sold_at: 'sold_at'
+    sold_at: 'sold_at',
+    enchant_level: 'enchant_level',
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
   };
 
   export type MarketListingScalarFieldEnum = (typeof MarketListingScalarFieldEnum)[keyof typeof MarketListingScalarFieldEnum]
@@ -27215,6 +27407,36 @@ export namespace Prisma {
   };
 
   export type RecipeOrderByRelevanceFieldEnum = (typeof RecipeOrderByRelevanceFieldEnum)[keyof typeof RecipeOrderByRelevanceFieldEnum]
+
+
+  export const InventorySlotOrderByRelevanceFieldEnum: {
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
+  };
+
+  export type InventorySlotOrderByRelevanceFieldEnum = (typeof InventorySlotOrderByRelevanceFieldEnum)[keyof typeof InventorySlotOrderByRelevanceFieldEnum]
+
+
+  export const UserEquipmentOrderByRelevanceFieldEnum: {
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
+  };
+
+  export type UserEquipmentOrderByRelevanceFieldEnum = (typeof UserEquipmentOrderByRelevanceFieldEnum)[keyof typeof UserEquipmentOrderByRelevanceFieldEnum]
+
+
+  export const MarketListingOrderByRelevanceFieldEnum: {
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
+  };
+
+  export type MarketListingOrderByRelevanceFieldEnum = (typeof MarketListingOrderByRelevanceFieldEnum)[keyof typeof MarketListingOrderByRelevanceFieldEnum]
 
 
   export const OccupationCatalogOrderByRelevanceFieldEnum: {
@@ -27951,6 +28173,11 @@ export namespace Prisma {
     quantity?: IntFilter<"InventorySlot"> | number
     equipment_rarity?: EnumEquipmentRarityNullableFilter<"InventorySlot"> | $Enums.EquipmentRarity | null
     equipment_durability?: FloatNullableFilter<"InventorySlot"> | number | null
+    enchant_level?: IntFilter<"InventorySlot"> | number
+    special_stat_1?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_2?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_3?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_4?: StringNullableFilter<"InventorySlot"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     item?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
   }
@@ -27963,8 +28190,14 @@ export namespace Prisma {
     quantity?: SortOrder
     equipment_rarity?: SortOrderInput | SortOrder
     equipment_durability?: SortOrderInput | SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     item?: ItemOrderByWithRelationInput
+    _relevance?: InventorySlotOrderByRelevanceInput
   }
 
   export type InventorySlotWhereUniqueInput = Prisma.AtLeast<{
@@ -27979,6 +28212,11 @@ export namespace Prisma {
     quantity?: IntFilter<"InventorySlot"> | number
     equipment_rarity?: EnumEquipmentRarityNullableFilter<"InventorySlot"> | $Enums.EquipmentRarity | null
     equipment_durability?: FloatNullableFilter<"InventorySlot"> | number | null
+    enchant_level?: IntFilter<"InventorySlot"> | number
+    special_stat_1?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_2?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_3?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_4?: StringNullableFilter<"InventorySlot"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     item?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
   }, "id" | "user_id_slot">
@@ -27991,6 +28229,11 @@ export namespace Prisma {
     quantity?: SortOrder
     equipment_rarity?: SortOrderInput | SortOrder
     equipment_durability?: SortOrderInput | SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
     _count?: InventorySlotCountOrderByAggregateInput
     _avg?: InventorySlotAvgOrderByAggregateInput
     _max?: InventorySlotMaxOrderByAggregateInput
@@ -28009,6 +28252,11 @@ export namespace Prisma {
     quantity?: IntWithAggregatesFilter<"InventorySlot"> | number
     equipment_rarity?: EnumEquipmentRarityNullableWithAggregatesFilter<"InventorySlot"> | $Enums.EquipmentRarity | null
     equipment_durability?: FloatNullableWithAggregatesFilter<"InventorySlot"> | number | null
+    enchant_level?: IntWithAggregatesFilter<"InventorySlot"> | number
+    special_stat_1?: StringNullableWithAggregatesFilter<"InventorySlot"> | string | null
+    special_stat_2?: StringNullableWithAggregatesFilter<"InventorySlot"> | string | null
+    special_stat_3?: StringNullableWithAggregatesFilter<"InventorySlot"> | string | null
+    special_stat_4?: StringNullableWithAggregatesFilter<"InventorySlot"> | string | null
   }
 
   export type UserEquipmentWhereInput = {
@@ -28023,6 +28271,11 @@ export namespace Prisma {
     durability?: FloatFilter<"UserEquipment"> | number
     durability_updated_at?: DateTimeFilter<"UserEquipment"> | Date | string
     updated_at?: DateTimeFilter<"UserEquipment"> | Date | string
+    enchant_level?: IntFilter<"UserEquipment"> | number
+    special_stat_1?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_2?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_3?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_4?: StringNullableFilter<"UserEquipment"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     item?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
   }
@@ -28036,8 +28289,14 @@ export namespace Prisma {
     durability?: SortOrder
     durability_updated_at?: SortOrder
     updated_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     item?: ItemOrderByWithRelationInput
+    _relevance?: UserEquipmentOrderByRelevanceInput
   }
 
   export type UserEquipmentWhereUniqueInput = Prisma.AtLeast<{
@@ -28053,6 +28312,11 @@ export namespace Prisma {
     durability?: FloatFilter<"UserEquipment"> | number
     durability_updated_at?: DateTimeFilter<"UserEquipment"> | Date | string
     updated_at?: DateTimeFilter<"UserEquipment"> | Date | string
+    enchant_level?: IntFilter<"UserEquipment"> | number
+    special_stat_1?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_2?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_3?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_4?: StringNullableFilter<"UserEquipment"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     item?: XOR<ItemNullableScalarRelationFilter, ItemWhereInput> | null
   }, "id" | "user_id_slot">
@@ -28066,6 +28330,11 @@ export namespace Prisma {
     durability?: SortOrder
     durability_updated_at?: SortOrder
     updated_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
     _count?: UserEquipmentCountOrderByAggregateInput
     _avg?: UserEquipmentAvgOrderByAggregateInput
     _max?: UserEquipmentMaxOrderByAggregateInput
@@ -28085,6 +28354,11 @@ export namespace Prisma {
     durability?: FloatWithAggregatesFilter<"UserEquipment"> | number
     durability_updated_at?: DateTimeWithAggregatesFilter<"UserEquipment"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"UserEquipment"> | Date | string
+    enchant_level?: IntWithAggregatesFilter<"UserEquipment"> | number
+    special_stat_1?: StringNullableWithAggregatesFilter<"UserEquipment"> | string | null
+    special_stat_2?: StringNullableWithAggregatesFilter<"UserEquipment"> | string | null
+    special_stat_3?: StringNullableWithAggregatesFilter<"UserEquipment"> | string | null
+    special_stat_4?: StringNullableWithAggregatesFilter<"UserEquipment"> | string | null
   }
 
   export type WorkOrderWhereInput = {
@@ -28191,6 +28465,11 @@ export namespace Prisma {
     status?: EnumListingStatusFilter<"MarketListing"> | $Enums.ListingStatus
     created_at?: DateTimeFilter<"MarketListing"> | Date | string
     sold_at?: DateTimeNullableFilter<"MarketListing"> | Date | string | null
+    enchant_level?: IntFilter<"MarketListing"> | number
+    special_stat_1?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_2?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_3?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_4?: StringNullableFilter<"MarketListing"> | string | null
     seller?: XOR<UserScalarRelationFilter, UserWhereInput>
     buyer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     item?: XOR<ItemScalarRelationFilter, ItemWhereInput>
@@ -28207,9 +28486,15 @@ export namespace Prisma {
     status?: SortOrder
     created_at?: SortOrder
     sold_at?: SortOrderInput | SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
     seller?: UserOrderByWithRelationInput
     buyer?: UserOrderByWithRelationInput
     item?: ItemOrderByWithRelationInput
+    _relevance?: MarketListingOrderByRelevanceInput
   }
 
   export type MarketListingWhereUniqueInput = Prisma.AtLeast<{
@@ -28226,6 +28511,11 @@ export namespace Prisma {
     status?: EnumListingStatusFilter<"MarketListing"> | $Enums.ListingStatus
     created_at?: DateTimeFilter<"MarketListing"> | Date | string
     sold_at?: DateTimeNullableFilter<"MarketListing"> | Date | string | null
+    enchant_level?: IntFilter<"MarketListing"> | number
+    special_stat_1?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_2?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_3?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_4?: StringNullableFilter<"MarketListing"> | string | null
     seller?: XOR<UserScalarRelationFilter, UserWhereInput>
     buyer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     item?: XOR<ItemScalarRelationFilter, ItemWhereInput>
@@ -28242,6 +28532,11 @@ export namespace Prisma {
     status?: SortOrder
     created_at?: SortOrder
     sold_at?: SortOrderInput | SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
     _count?: MarketListingCountOrderByAggregateInput
     _avg?: MarketListingAvgOrderByAggregateInput
     _max?: MarketListingMaxOrderByAggregateInput
@@ -28263,6 +28558,11 @@ export namespace Prisma {
     status?: EnumListingStatusWithAggregatesFilter<"MarketListing"> | $Enums.ListingStatus
     created_at?: DateTimeWithAggregatesFilter<"MarketListing"> | Date | string
     sold_at?: DateTimeNullableWithAggregatesFilter<"MarketListing"> | Date | string | null
+    enchant_level?: IntWithAggregatesFilter<"MarketListing"> | number
+    special_stat_1?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
+    special_stat_2?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
+    special_stat_3?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
+    special_stat_4?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
   }
 
   export type OccupationCatalogWhereInput = {
@@ -29794,6 +30094,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     user: UserCreateNestedOneWithoutInventoryInput
     item?: ItemCreateNestedOneWithoutInventory_slotsInput
   }
@@ -29806,6 +30111,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type InventorySlotUpdateInput = {
@@ -29813,6 +30123,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutInventoryNestedInput
     item?: ItemUpdateOneWithoutInventory_slotsNestedInput
   }
@@ -29825,6 +30140,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type InventorySlotCreateManyInput = {
@@ -29835,6 +30155,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type InventorySlotUpdateManyMutationInput = {
@@ -29842,6 +30167,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type InventorySlotUncheckedUpdateManyInput = {
@@ -29852,6 +30182,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentCreateInput = {
@@ -29860,6 +30195,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     user: UserCreateNestedOneWithoutEquipmentsInput
     item?: ItemCreateNestedOneWithoutEquipped_onInput
   }
@@ -29873,6 +30213,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserEquipmentUpdateInput = {
@@ -29881,6 +30226,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutEquipmentsNestedInput
     item?: ItemUpdateOneWithoutEquipped_onNestedInput
   }
@@ -29894,6 +30244,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentCreateManyInput = {
@@ -29905,6 +30260,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserEquipmentUpdateManyMutationInput = {
@@ -29913,6 +30273,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentUncheckedUpdateManyInput = {
@@ -29924,6 +30289,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WorkOrderCreateInput = {
@@ -30026,6 +30396,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     seller: UserCreateNestedOneWithoutSell_listingsInput
     buyer?: UserCreateNestedOneWithoutBuy_historyInput
     item: ItemCreateNestedOneWithoutMarket_listingsInput
@@ -30042,6 +30417,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type MarketListingUpdateInput = {
@@ -30051,6 +30431,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
     buyer?: UserUpdateOneWithoutBuy_historyNestedInput
     item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
@@ -30067,6 +30452,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingCreateManyInput = {
@@ -30080,6 +30470,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type MarketListingUpdateManyMutationInput = {
@@ -30089,6 +30484,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUncheckedUpdateManyInput = {
@@ -30102,6 +30502,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type OccupationCatalogCreateInput = {
@@ -31891,6 +32296,12 @@ export namespace Prisma {
     not?: NestedEnumEquipmentRarityNullableFilter<$PrismaModel> | $Enums.EquipmentRarity | null
   }
 
+  export type InventorySlotOrderByRelevanceInput = {
+    fields: InventorySlotOrderByRelevanceFieldEnum | InventorySlotOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
   export type InventorySlotUser_idSlotCompoundUniqueInput = {
     user_id: number
     slot: number
@@ -31904,6 +32315,11 @@ export namespace Prisma {
     quantity?: SortOrder
     equipment_rarity?: SortOrder
     equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type InventorySlotAvgOrderByAggregateInput = {
@@ -31913,6 +32329,7 @@ export namespace Prisma {
     item_id?: SortOrder
     quantity?: SortOrder
     equipment_durability?: SortOrder
+    enchant_level?: SortOrder
   }
 
   export type InventorySlotMaxOrderByAggregateInput = {
@@ -31923,6 +32340,11 @@ export namespace Prisma {
     quantity?: SortOrder
     equipment_rarity?: SortOrder
     equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type InventorySlotMinOrderByAggregateInput = {
@@ -31933,6 +32355,11 @@ export namespace Prisma {
     quantity?: SortOrder
     equipment_rarity?: SortOrder
     equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type InventorySlotSumOrderByAggregateInput = {
@@ -31942,6 +32369,7 @@ export namespace Prisma {
     item_id?: SortOrder
     quantity?: SortOrder
     equipment_durability?: SortOrder
+    enchant_level?: SortOrder
   }
 
   export type EnumEquipmentRarityNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -31961,6 +32389,12 @@ export namespace Prisma {
     not?: NestedEnumEquipmentSlotFilter<$PrismaModel> | $Enums.EquipmentSlot
   }
 
+  export type UserEquipmentOrderByRelevanceInput = {
+    fields: UserEquipmentOrderByRelevanceFieldEnum | UserEquipmentOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
   export type UserEquipmentUser_idSlotCompoundUniqueInput = {
     user_id: number
     slot: $Enums.EquipmentSlot
@@ -31975,6 +32409,11 @@ export namespace Prisma {
     durability?: SortOrder
     durability_updated_at?: SortOrder
     updated_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type UserEquipmentAvgOrderByAggregateInput = {
@@ -31982,6 +32421,7 @@ export namespace Prisma {
     user_id?: SortOrder
     item_id?: SortOrder
     durability?: SortOrder
+    enchant_level?: SortOrder
   }
 
   export type UserEquipmentMaxOrderByAggregateInput = {
@@ -31993,6 +32433,11 @@ export namespace Prisma {
     durability?: SortOrder
     durability_updated_at?: SortOrder
     updated_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type UserEquipmentMinOrderByAggregateInput = {
@@ -32004,6 +32449,11 @@ export namespace Prisma {
     durability?: SortOrder
     durability_updated_at?: SortOrder
     updated_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type UserEquipmentSumOrderByAggregateInput = {
@@ -32011,6 +32461,7 @@ export namespace Prisma {
     user_id?: SortOrder
     item_id?: SortOrder
     durability?: SortOrder
+    enchant_level?: SortOrder
   }
 
   export type EnumEquipmentSlotWithAggregatesFilter<$PrismaModel = never> = {
@@ -32123,6 +32574,12 @@ export namespace Prisma {
     isNot?: UserWhereInput | null
   }
 
+  export type MarketListingOrderByRelevanceInput = {
+    fields: MarketListingOrderByRelevanceFieldEnum | MarketListingOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
   export type MarketListingCountOrderByAggregateInput = {
     id?: SortOrder
     seller_id?: SortOrder
@@ -32134,6 +32591,11 @@ export namespace Prisma {
     status?: SortOrder
     created_at?: SortOrder
     sold_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type MarketListingAvgOrderByAggregateInput = {
@@ -32143,6 +32605,7 @@ export namespace Prisma {
     item_id?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    enchant_level?: SortOrder
   }
 
   export type MarketListingMaxOrderByAggregateInput = {
@@ -32156,6 +32619,11 @@ export namespace Prisma {
     status?: SortOrder
     created_at?: SortOrder
     sold_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type MarketListingMinOrderByAggregateInput = {
@@ -32169,6 +32637,11 @@ export namespace Prisma {
     status?: SortOrder
     created_at?: SortOrder
     sold_at?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
   }
 
   export type MarketListingSumOrderByAggregateInput = {
@@ -32178,6 +32651,7 @@ export namespace Prisma {
     item_id?: SortOrder
     quantity?: SortOrder
     price?: SortOrder
+    enchant_level?: SortOrder
   }
 
   export type EnumListingStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -34940,6 +35414,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     item?: ItemCreateNestedOneWithoutInventory_slotsInput
   }
 
@@ -34950,6 +35429,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type InventorySlotCreateOrConnectWithoutUserInput = {
@@ -35004,6 +35488,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     buyer?: UserCreateNestedOneWithoutBuy_historyInput
     item: ItemCreateNestedOneWithoutMarket_listingsInput
   }
@@ -35018,6 +35507,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type MarketListingCreateOrConnectWithoutSellerInput = {
@@ -35037,6 +35531,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     seller: UserCreateNestedOneWithoutSell_listingsInput
     item: ItemCreateNestedOneWithoutMarket_listingsInput
   }
@@ -35051,6 +35550,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type MarketListingCreateOrConnectWithoutBuyerInput = {
@@ -35090,6 +35594,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     item?: ItemCreateNestedOneWithoutEquipped_onInput
   }
 
@@ -35101,6 +35610,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserEquipmentCreateOrConnectWithoutUserInput = {
@@ -35225,6 +35739,11 @@ export namespace Prisma {
     quantity?: IntFilter<"InventorySlot"> | number
     equipment_rarity?: EnumEquipmentRarityNullableFilter<"InventorySlot"> | $Enums.EquipmentRarity | null
     equipment_durability?: FloatNullableFilter<"InventorySlot"> | number | null
+    enchant_level?: IntFilter<"InventorySlot"> | number
+    special_stat_1?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_2?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_3?: StringNullableFilter<"InventorySlot"> | string | null
+    special_stat_4?: StringNullableFilter<"InventorySlot"> | string | null
   }
 
   export type WorkOrderUpsertWithWhereUniqueWithoutUserInput = {
@@ -35290,6 +35809,11 @@ export namespace Prisma {
     status?: EnumListingStatusFilter<"MarketListing"> | $Enums.ListingStatus
     created_at?: DateTimeFilter<"MarketListing"> | Date | string
     sold_at?: DateTimeNullableFilter<"MarketListing"> | Date | string | null
+    enchant_level?: IntFilter<"MarketListing"> | number
+    special_stat_1?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_2?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_3?: StringNullableFilter<"MarketListing"> | string | null
+    special_stat_4?: StringNullableFilter<"MarketListing"> | string | null
   }
 
   export type MarketListingUpsertWithWhereUniqueWithoutBuyerInput = {
@@ -35362,6 +35886,11 @@ export namespace Prisma {
     durability?: FloatFilter<"UserEquipment"> | number
     durability_updated_at?: DateTimeFilter<"UserEquipment"> | Date | string
     updated_at?: DateTimeFilter<"UserEquipment"> | Date | string
+    enchant_level?: IntFilter<"UserEquipment"> | number
+    special_stat_1?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_2?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_3?: StringNullableFilter<"UserEquipment"> | string | null
+    special_stat_4?: StringNullableFilter<"UserEquipment"> | string | null
   }
 
   export type UserJobProgressUpsertWithWhereUniqueWithoutUserInput = {
@@ -35583,6 +36112,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     user: UserCreateNestedOneWithoutInventoryInput
   }
 
@@ -35593,6 +36127,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type InventorySlotCreateOrConnectWithoutItemInput = {
@@ -35697,6 +36236,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     seller: UserCreateNestedOneWithoutSell_listingsInput
     buyer?: UserCreateNestedOneWithoutBuy_historyInput
   }
@@ -35711,6 +36255,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type MarketListingCreateOrConnectWithoutItemInput = {
@@ -35729,6 +36278,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
     user: UserCreateNestedOneWithoutEquipmentsInput
   }
 
@@ -35740,6 +36294,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserEquipmentCreateOrConnectWithoutItemInput = {
@@ -38859,6 +39418,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type WorkOrderCreateManyUserInput = {
@@ -38884,6 +39448,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type MarketListingCreateManyBuyerInput = {
@@ -38896,6 +39465,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserRecipeUnlockCreateManyUserInput = {
@@ -38912,6 +39486,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserJobProgressCreateManyUserInput = {
@@ -38948,6 +39527,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     item?: ItemUpdateOneWithoutInventory_slotsNestedInput
   }
 
@@ -38958,6 +39542,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type InventorySlotUncheckedUpdateManyWithoutUserInput = {
@@ -38967,6 +39556,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WorkOrderUpdateWithoutUserInput = {
@@ -39014,6 +39608,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     buyer?: UserUpdateOneWithoutBuy_historyNestedInput
     item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
   }
@@ -39028,6 +39627,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUncheckedUpdateManyWithoutSellerInput = {
@@ -39040,6 +39644,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUpdateWithoutBuyerInput = {
@@ -39049,6 +39658,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
     item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
   }
@@ -39063,6 +39677,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUncheckedUpdateManyWithoutBuyerInput = {
@@ -39075,6 +39694,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserRecipeUnlockUpdateWithoutUserInput = {
@@ -39100,6 +39724,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     item?: ItemUpdateOneWithoutEquipped_onNestedInput
   }
 
@@ -39111,6 +39740,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentUncheckedUpdateManyWithoutUserInput = {
@@ -39121,6 +39755,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserJobProgressUpdateWithoutUserInput = {
@@ -39234,6 +39873,11 @@ export namespace Prisma {
     quantity?: number
     equipment_rarity?: $Enums.EquipmentRarity | null
     equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type WorkOrderCreateManyItemInput = {
@@ -39273,6 +39917,11 @@ export namespace Prisma {
     status?: $Enums.ListingStatus
     created_at?: Date | string
     sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type UserEquipmentCreateManyItemInput = {
@@ -39283,6 +39932,11 @@ export namespace Prisma {
     durability?: number
     durability_updated_at?: Date | string
     updated_at?: Date | string
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type DailyQuestRequirementCreateManyItemInput = {
@@ -39371,6 +40025,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutInventoryNestedInput
   }
 
@@ -39381,6 +40040,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type InventorySlotUncheckedUpdateManyWithoutItemInput = {
@@ -39390,6 +40054,11 @@ export namespace Prisma {
     quantity?: IntFieldUpdateOperationsInput | number
     equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
     equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WorkOrderUpdateWithoutItemInput = {
@@ -39481,6 +40150,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
     buyer?: UserUpdateOneWithoutBuy_historyNestedInput
   }
@@ -39495,6 +40169,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUncheckedUpdateManyWithoutItemInput = {
@@ -39507,6 +40186,11 @@ export namespace Prisma {
     status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentUpdateWithoutItemInput = {
@@ -39515,6 +40199,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutEquipmentsNestedInput
   }
 
@@ -39526,6 +40215,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentUncheckedUpdateManyWithoutItemInput = {
@@ -39536,6 +40230,11 @@ export namespace Prisma {
     durability?: FloatFieldUpdateOperationsInput | number
     durability_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type DailyQuestRequirementUpdateWithoutItemInput = {
