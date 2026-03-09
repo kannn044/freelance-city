@@ -10,6 +10,9 @@ import crystalGeodePng from '../assets/items/seeds/crystal_geode.png';
 import herbSeedPng from '../assets/items/seeds/herb_seed.png';
 import mushroomSporePng from '../assets/items/seeds/mushroom_spore.png';
 import mineralSamplePng from '../assets/items/seeds/mineral_sample.png';
+import cottonSeedPng from '../assets/items/seeds/cotton_seed.png';
+import sheepFleecePouchPng from '../assets/items/seeds/sheep_fleece_pouch.png';
+import fiberSeedPng from '../assets/items/seeds/fiber_seed.png';
 
 // Raw
 import chickenMeatPng from '../assets/items/raw/chicken_meat.png';
@@ -29,6 +32,9 @@ import medicinalHerbPng from '../assets/items/raw/medicinal_herb.png';
 import luminousMushroomPng from '../assets/items/raw/luminous_mushroom.png';
 import chemicalOrePng from '../assets/items/raw/chemical_ore.png';
 import pollenPng from '../assets/items/raw/pollen.png';
+import fiberThreadPng from '../assets/items/raw/fiber_thread.png';
+import rawCottonPng from '../assets/items/raw/raw_cotton.png';
+import sheepWoolPng from '../assets/items/raw/sheep_wool.png';
 
 // Ingredients
 import saltPng from '../assets/items/ingredients/salt.png';
@@ -44,6 +50,14 @@ import fertilizerPng from '../assets/items/ingredients/fertilizer.png';
 import catalystPng from '../assets/items/ingredients/catalyst.png';
 import distilledWaterPng from '../assets/items/ingredients/distilled_water.png';
 import sulfurPng from '../assets/items/ingredients/sulfur.png';
+import enchantStonePng from '../assets/items/ingredients/enchant_stone.png';
+import runeShardPng from '../assets/items/ingredients/rune_shard.png';
+import arcaneCrystalPng from '../assets/items/ingredients/arcane_crystal.png';
+import metalDustPng from '../assets/items/ingredients/metal_dust.png';
+import runeIngotPng from '../assets/items/ingredients/rune_ingot.png';
+import chaosCoreAng from '../assets/items/ingredients/chaos_core.png';
+import cottonThreadPng from '../assets/items/ingredients/cotton_thread.png';
+import woolThreadPng from '../assets/items/ingredients/wool_thread.png';
 
 // Meals
 import chickenSaladPng from '../assets/items/meals/chicken_salad.png';
@@ -57,6 +71,7 @@ import manaElixirPng from '../assets/items/meals/mana_elixir.png';
 
 // Permits
 import miningPermitPng from '../assets/items/permits/mining_permit.png';
+import drillPermitPng from '../assets/items/permits/drill_permit.png';
 
 // Equipment - Provider
 import sunHatPng from '../assets/items/equipment/provider/sun_hat.png';
@@ -94,6 +109,12 @@ import sicklePng from '../assets/items/equipment/agraria/sickle.png';
 // Equipment - Medico
 import mortarPestlePng from '../assets/items/equipment/medico/mortar_pestle.png';
 
+// Equipment - Weaver
+import loomPng from '../assets/items/equipment/weaver/loom.png';
+
+// Equipment - Tailor
+import sewingKitPng from '../assets/items/equipment/tailor/sewing_kit.png';
+
 const seedImageByName: Record<string, string> = {
     'Chicken Egg': chickenEggPng,
     'Beef Calf': beefCalfPng,
@@ -105,6 +126,10 @@ const seedImageByName: Record<string, string> = {
     'Herb Seed': herbSeedPng,
     'Mushroom Spore': mushroomSporePng,
     'Mineral Sample': mineralSamplePng,
+    'Cotton Seed': cottonSeedPng,
+    'Sheep Fleece Pouch': sheepFleecePouchPng,
+    'Fiber Seed': fiberSeedPng,
+    'Voltara Drill Permit': drillPermitPng,
 };
 
 const rawImageByName: Record<string, string> = {
@@ -125,6 +150,9 @@ const rawImageByName: Record<string, string> = {
     'Luminous Mushroom': luminousMushroomPng,
     'Chemical Ore': chemicalOrePng,
     Pollen: pollenPng,
+    'Fiber Thread': fiberThreadPng,
+    'Raw Cotton': rawCottonPng,
+    'Sheep Wool': sheepWoolPng,
 };
 
 const ingredientImageByName: Record<string, string> = {
@@ -141,6 +169,14 @@ const ingredientImageByName: Record<string, string> = {
     Catalyst: catalystPng,
     'Distilled Water': distilledWaterPng,
     Sulfur: sulfurPng,
+    'Enchant Stone': enchantStonePng,
+    'Rune Shard': runeShardPng,
+    'Arcane Crystal': arcaneCrystalPng,
+    'Metal Dust': metalDustPng,
+    'Rune Ingot': runeIngotPng,
+    'Chaos Core': chaosCoreAng,
+    'Cotton Thread': cottonThreadPng,
+    'Wool Thread': woolThreadPng,
 };
 
 const mealImageByName: Record<string, string> = {
@@ -175,6 +211,8 @@ const equipmentImageByName: Record<string, string> = {
     'Soldering Iron': solderingIronPng,
     Sickle: sicklePng,
     'Mortar & Pestle': mortarPestlePng,
+    Loom: loomPng,
+    'Sewing Kit': sewingKitPng,
 };
 
 export const getEquipmentImageByName = (name?: string | null): string | null => {
