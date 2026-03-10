@@ -139,6 +139,7 @@ exports.Prisma.UserScalarFieldEnum = {
   secondary_job_level: 'secondary_job_level',
   secondary_job_skill_level: 'secondary_job_skill_level',
   secondary_job_exp: 'secondary_job_exp',
+  locked_money: 'locked_money',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };
@@ -247,7 +248,10 @@ exports.Prisma.MarketListingScalarFieldEnum = {
   special_stat_1: 'special_stat_1',
   special_stat_2: 'special_stat_2',
   special_stat_3: 'special_stat_3',
-  special_stat_4: 'special_stat_4'
+  special_stat_4: 'special_stat_4',
+  cargo_box_id: 'cargo_box_id',
+  is_cross_city: 'is_cross_city',
+  origin_city: 'origin_city'
 };
 
 exports.Prisma.OccupationCatalogScalarFieldEnum = {
@@ -400,6 +404,117 @@ exports.Prisma.PlayerDailyQuestScalarFieldEnum = {
   created_at: 'created_at'
 };
 
+exports.Prisma.CargoBoxScalarFieldEnum = {
+  id: 'id',
+  owner_id: 'owner_id',
+  size: 'size',
+  status: 'status',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.CargoBoxItemScalarFieldEnum = {
+  id: 'id',
+  cargo_box_id: 'cargo_box_id',
+  item_id: 'item_id',
+  quantity: 'quantity',
+  equipment_rarity: 'equipment_rarity',
+  equipment_durability: 'equipment_durability',
+  enchant_level: 'enchant_level',
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
+};
+
+exports.Prisma.PurchaseOrderScalarFieldEnum = {
+  id: 'id',
+  cargo_box_id: 'cargo_box_id',
+  listing_id: 'listing_id',
+  buyer_id: 'buyer_id',
+  seller_id: 'seller_id',
+  price: 'price',
+  locked_amount: 'locked_amount',
+  export_tax: 'export_tax',
+  import_tax: 'import_tax',
+  status: 'status',
+  expires_at: 'expires_at',
+  created_at: 'created_at',
+  settled_at: 'settled_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ShipScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  size: 'size',
+  owner_id: 'owner_id',
+  origin_city: 'origin_city',
+  dest_city: 'dest_city',
+  status: 'status',
+  capacity: 'capacity',
+  departs_at: 'departs_at',
+  departed_at: 'departed_at',
+  arrives_at: 'arrives_at',
+  rps_sequence: 'rps_sequence',
+  is_bot_ship: 'is_bot_ship',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.ShipCargoScalarFieldEnum = {
+  id: 'id',
+  ship_id: 'ship_id',
+  order_id: 'order_id',
+  cargo_box_id: 'cargo_box_id',
+  loaded_at: 'loaded_at'
+};
+
+exports.Prisma.PirateAttackScalarFieldEnum = {
+  id: 'id',
+  attacker_id: 'attacker_id',
+  target_ship_id: 'target_ship_id',
+  attacker_ship_size: 'attacker_ship_size',
+  attacker_rps: 'attacker_rps',
+  defender_rps: 'defender_rps',
+  result_detail: 'result_detail',
+  attacker_wins: 'attacker_wins',
+  defender_wins: 'defender_wins',
+  draws: 'draws',
+  is_success: 'is_success',
+  fuel_cost: 'fuel_cost',
+  credit_cost: 'credit_cost',
+  status: 'status',
+  created_at: 'created_at',
+  resolved_at: 'resolved_at'
+};
+
+exports.Prisma.UserPortStorageScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  city_key: 'city_key',
+  max_slots: 'max_slots',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  type: 'type',
+  title: 'title',
+  body: 'body',
+  metadata: 'metadata',
+  is_read: 'is_read',
+  created_at: 'created_at'
+};
+
+exports.Prisma.PirateCooldownScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  last_attack_at: 'last_attack_at'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -448,7 +563,8 @@ exports.Prisma.MarketListingOrderByRelevanceFieldEnum = {
   special_stat_1: 'special_stat_1',
   special_stat_2: 'special_stat_2',
   special_stat_3: 'special_stat_3',
-  special_stat_4: 'special_stat_4'
+  special_stat_4: 'special_stat_4',
+  origin_city: 'origin_city'
 };
 
 exports.Prisma.OccupationCatalogOrderByRelevanceFieldEnum = {
@@ -531,6 +647,36 @@ exports.Prisma.DailyQuestTemplateOrderByRelevanceFieldEnum = {
   title: 'title',
   description: 'description'
 };
+
+exports.Prisma.CargoBoxItemOrderByRelevanceFieldEnum = {
+  special_stat_1: 'special_stat_1',
+  special_stat_2: 'special_stat_2',
+  special_stat_3: 'special_stat_3',
+  special_stat_4: 'special_stat_4'
+};
+
+exports.Prisma.ShipOrderByRelevanceFieldEnum = {
+  origin_city: 'origin_city',
+  dest_city: 'dest_city',
+  rps_sequence: 'rps_sequence'
+};
+
+exports.Prisma.PirateAttackOrderByRelevanceFieldEnum = {
+  attacker_rps: 'attacker_rps',
+  defender_rps: 'defender_rps',
+  result_detail: 'result_detail'
+};
+
+exports.Prisma.UserPortStorageOrderByRelevanceFieldEnum = {
+  city_key: 'city_key'
+};
+
+exports.Prisma.NotificationOrderByRelevanceFieldEnum = {
+  type: 'type',
+  title: 'title',
+  body: 'body',
+  metadata: 'metadata'
+};
 exports.UserRole = exports.$Enums.UserRole = {
   CITIZEN: 'CITIZEN',
   MAYOR: 'MAYOR'
@@ -594,6 +740,58 @@ exports.SkillEffectType = exports.$Enums.SkillEffectType = {
   CUSTOM: 'CUSTOM'
 };
 
+exports.CargoBoxSize = exports.$Enums.CargoBoxSize = {
+  S: 'S',
+  M: 'M',
+  L: 'L'
+};
+
+exports.CargoBoxStatus = exports.$Enums.CargoBoxStatus = {
+  EMPTY: 'EMPTY',
+  PACKING: 'PACKING',
+  PACKED: 'PACKED',
+  LISTED: 'LISTED',
+  SOLD: 'SOLD',
+  ON_SHIP: 'ON_SHIP',
+  AT_PORT: 'AT_PORT',
+  CLAIMED: 'CLAIMED',
+  CANCELLED: 'CANCELLED',
+  PIRATED: 'PIRATED'
+};
+
+exports.PurchaseOrderStatus = exports.$Enums.PurchaseOrderStatus = {
+  PENDING: 'PENDING',
+  CANCELLED_BUYER: 'CANCELLED_BUYER',
+  CANCELLED_TIMEOUT: 'CANCELLED_TIMEOUT',
+  SHIPPING: 'SHIPPING',
+  DELIVERED: 'DELIVERED',
+  CLAIMED: 'CLAIMED',
+  PIRATED: 'PIRATED'
+};
+
+exports.ShipType = exports.$Enums.ShipType = {
+  PUBLIC: 'PUBLIC',
+  PRIVATE: 'PRIVATE'
+};
+
+exports.ShipSize = exports.$Enums.ShipSize = {
+  S: 'S',
+  M: 'M',
+  L: 'L'
+};
+
+exports.ShipStatus = exports.$Enums.ShipStatus = {
+  DOCKED: 'DOCKED',
+  LOADING: 'LOADING',
+  SAILING: 'SAILING',
+  ARRIVED: 'ARRIVED'
+};
+
+exports.PirateAttackStatus = exports.$Enums.PirateAttackStatus = {
+  PENDING: 'PENDING',
+  RESOLVED: 'RESOLVED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Item: 'Item',
@@ -617,7 +815,16 @@ exports.Prisma.ModelName = {
   CityShopRecipeRule: 'CityShopRecipeRule',
   DailyQuestTemplate: 'DailyQuestTemplate',
   DailyQuestRequirement: 'DailyQuestRequirement',
-  PlayerDailyQuest: 'PlayerDailyQuest'
+  PlayerDailyQuest: 'PlayerDailyQuest',
+  CargoBox: 'CargoBox',
+  CargoBoxItem: 'CargoBoxItem',
+  PurchaseOrder: 'PurchaseOrder',
+  Ship: 'Ship',
+  ShipCargo: 'ShipCargo',
+  PirateAttack: 'PirateAttack',
+  UserPortStorage: 'UserPortStorage',
+  Notification: 'Notification',
+  PirateCooldown: 'PirateCooldown'
 };
 
 /**

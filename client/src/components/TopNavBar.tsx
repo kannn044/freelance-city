@@ -7,10 +7,14 @@ import {
     LogOut,
     ShoppingCart,
     ClipboardList,
+    Package,
+    Anchor,
+    Map,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
+import NotificationCenter from './NotificationCenter';
 import iconCityStatusPng from '../assets/items/ui/icon_city_status.png';
 
 interface TopNavBarProps {
@@ -64,6 +68,30 @@ const NAV_ITEMS: NavItem[] = [
         activeColor: '#fde68a',
         activeBorder: 'rgba(251, 191, 36, 0.55)',
         activeBg: 'rgba(251, 191, 36, 0.14)',
+    },
+    {
+        path: '/cargo',
+        labelKey: 'nav.cargo',
+        icon: <Package size={14} />,
+        activeColor: '#fbbf24',
+        activeBorder: 'rgba(245, 158, 11, 0.55)',
+        activeBg: 'rgba(245, 158, 11, 0.14)',
+    },
+    {
+        path: '/port',
+        labelKey: 'nav.port',
+        icon: <Anchor size={14} />,
+        activeColor: '#38bdf8',
+        activeBorder: 'rgba(56, 189, 248, 0.55)',
+        activeBg: 'rgba(56, 189, 248, 0.14)',
+    },
+    {
+        path: '/world-map',
+        labelKey: 'nav.worldMap',
+        icon: <Map size={14} />,
+        activeColor: '#38bdf8',
+        activeBorder: 'rgba(56, 189, 248, 0.55)',
+        activeBg: 'rgba(56, 189, 248, 0.14)',
     },
 ];
 
@@ -245,6 +273,9 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ rightExtra }) => {
 
                     {/* Language switcher */}
                     <LanguageSwitcher compact={isMobile} />
+
+                    {/* Notifications */}
+                    <NotificationCenter />
 
                     {/* User info + logout */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>

@@ -41,6 +41,10 @@ export interface InventorySlot {
     item: Item | null;
 }
 
+export interface ShopItem extends Item {
+    source_city_keys?: string[];
+}
+
 export interface RepairCostResult {
     ingredients: {
         item_id: number;
@@ -216,7 +220,7 @@ interface GameState {
     workOrders: WorkOrder[];
     marketListings: MarketListing[];
     salesHistory: SaleHistoryEntry[];
-    shopItems: Item[];
+    shopItems: ShopItem[];
     shopUserCityKey: string;
     shopBrowsingCityKey: string;
     recipes: Recipe[];
@@ -252,6 +256,7 @@ interface GameState {
     fetchAll: () => Promise<void>;
 
     eatItem: (slotId: number) => Promise<void>;
+    sellToShop: (slotId: number, quantity: number) => Promise<void>;
     buyFromShop: (itemId: number, quantity: number) => Promise<void>;
     buyRecipeUnlock: (recipeId: number) => Promise<void>;
     openEquipmentBox: () => Promise<EquipmentBoxOpenResult>;
@@ -284,7 +289,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     workOrders: [],
     marketListings: [],
     salesHistory: [],
-    shopItems: [],
+    shopItems: [] as ShopItem[],
     shopUserCityKey: '',
     shopBrowsingCityKey: '',
     recipes: [],
@@ -364,7 +369,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             const params = city ? `?city=${encodeURIComponent(city)}` : '';
             const { data } = await api.get(`/game/shop${params}`);
             set({
-                shopItems: data.items,
+                shopItems: data.items as ShopItem[],
                 shopUserCityKey: data.userCityKey ?? '',
                 shopBrowsingCityKey: data.browsingCityKey ?? '',
             });
@@ -477,6 +482,19 @@ export const useGameStore = create<GameState>((set, get) => ({
             useAuthStore.getState().fetchMe();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to eat' });
+        }
+    },
+
+    sellToShop: async (slotId, quantity) => {
+        try {
+            const { data } = await api.post('/game/shop/sell', { slotId, quantity });
+            set({
+                inventory: data.slots,
+                actionMessage: data.message,
+            });
+            mergeAuthUser(data.user);
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to sell' });
         }
     },
 

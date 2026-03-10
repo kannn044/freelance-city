@@ -73,6 +73,66 @@ enum SkillEffectType {
   CUSTOM
 }
 
+// ─── Shipment System Enums ──────────────────────────────
+
+enum CargoBoxSize {
+  S
+  M
+  L
+}
+
+enum CargoBoxStatus {
+  EMPTY
+  PACKING
+  PACKED
+  LISTED
+  SOLD
+  ON_SHIP
+  AT_PORT
+  CLAIMED
+  CANCELLED
+  PIRATED
+}
+
+enum ShipType {
+  PUBLIC
+  PRIVATE
+}
+
+enum ShipSize {
+  S
+  M
+  L
+}
+
+enum ShipStatus {
+  DOCKED
+  LOADING
+  SAILING
+  ARRIVED
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  CANCELLED_BUYER
+  CANCELLED_TIMEOUT
+  SHIPPING
+  DELIVERED
+  CLAIMED
+  PIRATED
+}
+
+enum PirateAttackStatus {
+  PENDING
+  RESOLVED
+}
+
+enum RPSChoice {
+  ROCK
+  PAPER
+  SCISSORS
+}
+
 // ─── User ────────────────────────────────────────────────
 
 model User {
@@ -93,6 +153,7 @@ model User {
   secondary_job_level Int    @default(0)
   secondary_job_skill_level Int @default(0)
   secondary_job_exp Int      @default(0)
+  locked_money      Int      @default(0)
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
@@ -105,6 +166,16 @@ model User {
   job_progress   UserJobProgress[]
   skill_progress UserSkillProgress[]
   daily_quests   PlayerDailyQuest[]
+
+  // Shipment system relations
+  cargo_boxes              CargoBox[]        @relation("cargo_boxes")
+  purchase_orders_as_buyer PurchaseOrder[]   @relation("purchase_orders_buyer")
+  purchase_orders_as_seller PurchaseOrder[]  @relation("purchase_orders_seller")
+  owned_ships              Ship[]            @relation("owned_ships")
+  port_storage             UserPortStorage[] @relation("port_storage")
+  notifications            Notification[]    @relation("notifications")
+  pirate_attacks           PirateAttack[]    @relation("pirate_attacks")
+  pirate_cooldown          PirateCooldown?   @relation("pirate_cooldown")
 
   @@map("users")
 }
@@ -140,6 +211,7 @@ model Item {
   market_listings    MarketListing[]
   equipped_on        UserEquipment[]
   quest_requirements DailyQuestRequirement[]
+  cargo_box_items    CargoBoxItem[]
 
   @@map("items")
 }
@@ -272,9 +344,18 @@ model MarketListing {
   special_stat_3 String?
   special_stat_4 String?
 
+  // Shipment system fields
+  cargo_box_id  Int?          @unique
+  is_cross_city Boolean       @default(false)
+  origin_city   String?
+
   seller User  @relation("seller", fields: [seller_id], references: [id])
   buyer  User? @relation("buyer", fields: [buyer_id], references: [id])
   item   Item  @relation(fields: [item_id], references: [id])
+
+  // Shipment relations
+  cargo_box       CargoBox?       @relation("cargo_listing", fields: [cargo_box_id], references: [id])
+  purchase_order  PurchaseOrder?  @relation("order_listing")
 
   @@map("market_listings")
 }
@@ -398,6 +479,8 @@ model CityState {
   created_at             DateTime @default(now())
   updated_at             DateTime @updatedAt
 
+  // Shipment relations
+
   @@map("city_states")
 }
 
@@ -499,4 +582,192 @@ model PlayerDailyQuest {
   @@unique([user_id, template_id, quest_date])
   @@index([user_id, quest_date])
   @@map("player_daily_quests")
+}
+
+// ─── Cargo Box ───────────────────────────────────────────
+
+model CargoBox {
+  id          Int             @id @default(autoincrement())
+  owner_id    Int
+  size        CargoBoxSize
+  status      CargoBoxStatus  @default(EMPTY)
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  owner       User            @relation("cargo_boxes", fields: [owner_id], references: [id])
+  items       CargoBoxItem[]
+  listing     MarketListing?  @relation("cargo_listing")
+  order       PurchaseOrder?  @relation("cargo_order")
+  ship_cargo  ShipCargo[]
+
+  @@index([owner_id, status])
+  @@map("cargo_boxes")
+}
+
+model CargoBoxItem {
+  id                   Int              @id @default(autoincrement())
+  cargo_box_id         Int
+  item_id              Int
+  quantity             Int
+  equipment_rarity     EquipmentRarity?
+  equipment_durability Float?
+  enchant_level        Int              @default(0)
+  special_stat_1       String?
+  special_stat_2       String?
+  special_stat_3       String?
+  special_stat_4       String?
+
+  cargo_box            CargoBox         @relation(fields: [cargo_box_id], references: [id], onDelete: Cascade)
+  item                 Item             @relation(fields: [item_id], references: [id])
+
+  @@index([cargo_box_id])
+  @@map("cargo_box_items")
+}
+
+// ─── Purchase Order ──────────────────────────────────────
+
+model PurchaseOrder {
+  id              Int                   @id @default(autoincrement())
+  cargo_box_id    Int                   @unique
+  listing_id      Int                   @unique
+  buyer_id        Int
+  seller_id       Int
+  price           Int
+  locked_amount   Int
+  export_tax      Int                   @default(0)
+  import_tax      Int                   @default(0)
+  status          PurchaseOrderStatus   @default(PENDING)
+  expires_at      DateTime
+  created_at      DateTime              @default(now())
+  settled_at      DateTime?
+  updated_at      DateTime              @updatedAt
+
+  cargo_box       CargoBox              @relation("cargo_order", fields: [cargo_box_id], references: [id])
+  listing         MarketListing         @relation("order_listing", fields: [listing_id], references: [id])
+  buyer           User                  @relation("purchase_orders_buyer", fields: [buyer_id], references: [id])
+  seller          User                  @relation("purchase_orders_seller", fields: [seller_id], references: [id])
+  shipment        ShipCargo?
+
+  @@index([buyer_id, status])
+  @@index([seller_id, status])
+  @@index([expires_at, status])
+  @@map("purchase_orders")
+}
+
+// ─── Ship ────────────────────────────────────────────────
+
+model Ship {
+  id              Int           @id @default(autoincrement())
+  type            ShipType
+  size            ShipSize?
+  owner_id        Int?
+  origin_city     String
+  dest_city       String
+  status          ShipStatus    @default(DOCKED)
+  capacity        Int
+  departs_at      DateTime?
+  departed_at     DateTime?
+  arrives_at      DateTime?
+  rps_sequence    String?       @db.Text
+  is_bot_ship     Boolean       @default(false)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+
+  owner           User?         @relation("owned_ships", fields: [owner_id], references: [id])
+  cargo           ShipCargo[]
+  attacks         PirateAttack[] @relation("target_ship")
+
+  @@index([origin_city, status])
+  @@index([dest_city, status])
+  @@index([status, arrives_at])
+  @@map("ships")
+}
+
+model ShipCargo {
+  id              Int           @id @default(autoincrement())
+  ship_id         Int
+  order_id        Int           @unique
+  cargo_box_id    Int
+  loaded_at       DateTime      @default(now())
+
+  ship            Ship          @relation(fields: [ship_id], references: [id])
+  order           PurchaseOrder @relation(fields: [order_id], references: [id])
+  cargo_box       CargoBox      @relation(fields: [cargo_box_id], references: [id])
+
+  @@index([ship_id])
+  @@map("ship_cargo")
+}
+
+// ─── Pirate Attack ───────────────────────────────────────
+
+model PirateAttack {
+  id                 Int                @id @default(autoincrement())
+  attacker_id        Int
+  target_ship_id     Int
+  attacker_ship_size ShipSize
+  attacker_rps       String             @db.Text
+  defender_rps       String?            @db.Text
+  result_detail      String?            @db.Text
+  attacker_wins      Int?
+  defender_wins      Int?
+  draws              Int?
+  is_success         Boolean?
+  fuel_cost          Int
+  credit_cost        Int
+  status             PirateAttackStatus @default(PENDING)
+  created_at         DateTime           @default(now())
+  resolved_at        DateTime?
+
+  attacker           User               @relation("pirate_attacks", fields: [attacker_id], references: [id])
+  target_ship        Ship               @relation("target_ship", fields: [target_ship_id], references: [id])
+
+  @@index([attacker_id])
+  @@index([target_ship_id, status])
+  @@map("pirate_attacks")
+}
+
+// ─── Port Storage ────────────────────────────────────────
+
+model UserPortStorage {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  city_key        String
+  max_slots       Int      @default(5)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  user            User      @relation("port_storage", fields: [user_id], references: [id])
+
+  @@unique([user_id, city_key])
+  @@map("user_port_storage")
+}
+
+// ─── Notification ────────────────────────────────────────
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  type        String
+  title       String
+  body        String   @db.Text
+  metadata    String?  @db.Text
+  is_read     Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  user        User     @relation("notifications", fields: [user_id], references: [id])
+
+  @@index([user_id, is_read, created_at])
+  @@map("notifications")
+}
+
+// ─── Pirate Cooldown ─────────────────────────────────────
+
+model PirateCooldown {
+  id             Int      @id @default(autoincrement())
+  user_id        Int      @unique
+  last_attack_at DateTime
+
+  user           User     @relation("pirate_cooldown", fields: [user_id], references: [id])
+
+  @@map("pirate_cooldowns")
 }

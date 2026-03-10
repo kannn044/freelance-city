@@ -7,6 +7,9 @@ import ClassSelection from './pages/ClassSelection';
 import DashboardPage from './pages/DashboardPage';
 import MarketplacePage from './pages/MarketplacePage';
 import QuestPage from './pages/QuestPage';
+import CargoPage from './pages/CargoPage';
+import PortPage from './pages/PortPage';
+import WorldMapPage from './pages/WorldMapPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuthStore();
@@ -65,6 +68,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <QuestPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cargo"
+            element={
+              <ProtectedRoute>
+                <CargoPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/port"
+            element={
+              <ProtectedRoute>
+                <PortPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/world-map"
+            element={
+              <ProtectedRoute>
+                <WorldMapPage />
               </ProtectedRoute>
             }
           />

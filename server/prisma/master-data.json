@@ -1989,6 +1989,11 @@
         "cityKey": "TEXTILIS",
         "matcherType": "ITEM_NAME",
         "matcherValue": "Sewing Kit"
+      },
+      {
+        "cityKey": "TEXTILIS",
+        "matcherType": "ITEM_NAME",
+        "matcherValue": "Fiber Seed"
       }
     ],
     "recipeRules": [

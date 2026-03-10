@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import gameRoutes from "./routes/game.routes";
 import { marketBotService } from "./services/marketBot.service";
+import { initPublicShips, startShipmentCrons } from "./services/shipment.service";
 
 dotenv.config();
 
@@ -41,9 +42,11 @@ app.get("/health", (_req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
     marketBotService.start();
+    await initPublicShips();
+    startShipmentCrons();
 });
 
 export default app;

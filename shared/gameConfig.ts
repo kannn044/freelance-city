@@ -364,3 +364,41 @@ export const SPECIAL_STAT_DEFINITIONS: Record<string, { label: string; value: nu
     enchant_tool_durability_protect_pct:       { label: "Tool Durability Loss",  value: 0.15,  unit: "−%" },
     enchant_first_job_yield_flat:              { label: "Farm Yield",            value: 2,     unit: "+qty" },
 };
+
+// ─── Shipment System ────────────────────────────────────
+
+export const CARGO_BOX_CONFIG = {
+    sizes: {
+        S: { capacity: 5,  price: 50  },
+        M: { capacity: 10, price: 100 },
+        L: { capacity: 15, price: 200 },
+    },
+    maxBoxesPerPlayer: 5,
+} as const;
+
+export const SHIP_CONFIG = {
+    public: {
+        capacity: 10,
+        departureIntervalMin: 5,
+    },
+    private: {
+        sizes: {
+            S: { capacity: 3,  fuelCost: 1, rpsSlots: 3 },
+            M: { capacity: 5,  fuelCost: 2, rpsSlots: 5 },
+            L: { capacity: 10, fuelCost: 3, rpsSlots: 7 },
+        },
+    },
+    pirate: {
+        sizes: {
+            S: { fuelCost: 1, creditCost: 500,  rpsSlots: 3 },
+            M: { fuelCost: 2, creditCost: 1000, rpsSlots: 5 },
+            L: { fuelCost: 3, creditCost: 2000, rpsSlots: 7 },
+        },
+        cooldownMinutes: 30,
+    },
+} as const;
+
+export const PURCHASE_ORDER_TIMEOUT_MIN = 10;
+
+export type CargoBoxSizeKey = keyof typeof CARGO_BOX_CONFIG.sizes;
+export type ShipSizeKey = keyof typeof SHIP_CONFIG.private.sizes;

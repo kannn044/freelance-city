@@ -377,9 +377,26 @@ async function getAllowedRecipeCatalogForUser(
 
 const VALID_CITY_KEYS = ["AGRARIA", "FERRUM", "VOLTARA", "TEXTILIS", "MEDICO"] as const;
 
+async function getAllCitiesShopItems(user: { first_job_level: number; secondary_job_level: number }) {
+    const allItems = new Map<number, any>();
+    for (const ck of VALID_CITY_KEYS) {
+        const items = await getAllowedShopItemsForUser(ck, user);
+        for (const item of items) {
+            const existing = allItems.get((item as any).id);
+            if (!existing) {
+                allItems.set((item as any).id, { ...item, source_city_keys: [ck] });
+            } else {
+                existing.source_city_keys.push(ck);
+            }
+        }
+    }
+    return Array.from(allItems.values());
+}
+
 /**
  * GET /game/shop — List items available for purchase from NPC shop
  * Supports optional ?city=AGRARIA query param to browse another city's shop.
+ * Use ?city=ALL to see items from all cities merged.
  * Buying is only allowed from the user's own city.
  */
 export const getShop = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -395,8 +412,23 @@ export const getShop = async (req: AuthRequest, res: Response): Promise<void> =>
         }
 
         const userCityKey = normalizeCityKey(city.city_key);
-        // Allow browsing another city's shop via ?city= query param
         const queriedCity = String(req.query.city ?? "").trim().toUpperCase();
+
+        // Special case: ALL returns merged items from all cities
+        if (queriedCity === "ALL") {
+            const items = await getAllCitiesShopItems({
+                first_job_level: Number(user.first_job_level ?? 0),
+                secondary_job_level: Number(user.secondary_job_level ?? 0),
+            });
+            const pricedItems = items.map((item) => ({
+                ...item,
+                buy_price: getEffectiveNpcBuyPrice(item.buy_price, pricing.npcShopMultiplier),
+            }));
+            res.json({ items: pricedItems, userCityKey, browsingCityKey: "ALL" });
+            return;
+        }
+
+        // Allow browsing another city's shop via ?city= query param
         const browsingCityKey = (VALID_CITY_KEYS as readonly string[]).includes(queriedCity)
             ? queriedCity
             : userCityKey;
@@ -520,6 +552,92 @@ export const buyFromShop = async (req: AuthRequest, res: Response): Promise<void
     } catch (error) {
         console.error("buyFromShop error:", error);
         res.status(500).json({ error: "Failed to buy from shop" });
+    }
+};
+
+/**
+ * POST /game/shop/sell — Sell items from inventory to NPC at sell_price
+ * Body: { slotId: number, quantity: number }
+ */
+export const sellToShop = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const { slotId, quantity = 1 } = req.body;
+
+        if (!slotId || quantity <= 0 || !Number.isInteger(Number(slotId)) || !Number.isInteger(Number(quantity))) {
+            res.status(400).json({ error: "Invalid sell parameters" });
+            return;
+        }
+
+        const slot = await prisma.inventorySlot.findFirst({
+            where: { id: Number(slotId), user_id: req.userId! },
+            include: { item: true },
+        });
+
+        if (!slot || slot.item_id === null || !slot.item) {
+            res.status(404).json({ error: "Inventory slot not found or empty" });
+            return;
+        }
+
+        const sellQty = Number(quantity);
+        if (slot.quantity < sellQty) {
+            res.status(400).json({ error: "Not enough items in slot" });
+            return;
+        }
+
+        const sellPrice = (slot.item as any).sell_price as number | null;
+        if (!sellPrice || sellPrice <= 0) {
+            res.status(400).json({ error: "This item cannot be sold to NPC" });
+            return;
+        }
+
+        const totalRevenue = sellPrice * sellQty;
+
+        await prisma.$transaction(async (tx) => {
+            const newQty = slot.quantity - sellQty;
+            if (newQty === 0) {
+                await tx.inventorySlot.update({
+                    where: { id: slot.id },
+                    data: { item_id: null, quantity: 0 },
+                });
+                await tx.$executeRaw`UPDATE inventory_slots SET equipment_rarity = NULL WHERE id = ${slot.id}`;
+            } else {
+                await tx.inventorySlot.update({
+                    where: { id: slot.id },
+                    data: { quantity: newQty },
+                });
+            }
+            await tx.user.update({
+                where: { id: req.userId! },
+                data: { money: { increment: totalRevenue } },
+            });
+        });
+
+        const updatedUser = await prisma.user.findUnique({ where: { id: req.userId! } }) as any;
+        const slots = await prisma.inventorySlot.findMany({
+            where: { user_id: req.userId! },
+            include: { item: true },
+            orderBy: { slot: "asc" },
+        });
+
+        res.json({
+            message: `Sold ${sellQty}x ${slot.item.name} for ${totalRevenue} credits`,
+            totalRevenue,
+            user: toJobPayload({
+                id: updatedUser.id,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                money: updatedUser.money,
+                hunger: updatedUser.hunger,
+                first_job_level: updatedUser.first_job_level,
+                first_job_exp: updatedUser.first_job_exp,
+                secondary_job_level: updatedUser.secondary_job_level,
+                secondary_job_exp: updatedUser.secondary_job_exp,
+            }),
+            slots,
+        });
+    } catch (error) {
+        console.error("sellToShop error:", error);
+        res.status(500).json({ error: "Failed to sell item" });
     }
 };
 

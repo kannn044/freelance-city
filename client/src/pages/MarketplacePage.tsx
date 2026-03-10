@@ -44,6 +44,7 @@ const MarketplacePage = () => {
         fetchRecipeShop,
         buyListing,
         buyFromShop,
+        sellToShop,
         buyRecipeUnlock,
         createListing,
         cancelListing,
@@ -62,6 +63,8 @@ const MarketplacePage = () => {
 
     const [marketBuyQty, setMarketBuyQty] = useState<Record<number, number>>({});
     const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
+    const [npcSellSlotId, setNpcSellSlotId] = useState<number | null>(null);
+    const [npcSellQtyInput, setNpcSellQtyInput] = useState('1');
     const [sellSlotId, setSellSlotId] = useState<number | null>(null);
     const [sellQtyInput, setSellQtyInput] = useState('1');
     const [sellPriceInput, setSellPriceInput] = useState('100');
@@ -174,6 +177,13 @@ const MarketplacePage = () => {
 
         return sorted;
     }, [cityFilter, marketBuyQty, marketListings, maxPrice, minPrice, rarityFilter, search, showAffordableOnly, sortMode, typeFilter, user]);
+
+    const npcSellableSlots = useMemo(
+        () => inventory.filter((s) => s.item && s.quantity > 0 && (s.item.sell_price ?? 0) > 0).sort((a, b) => a.slot - b.slot),
+        [inventory]
+    );
+    const selectedNpcSellSlot = npcSellSlotId === null ? null : npcSellableSlots.find((s) => s.id === npcSellSlotId) ?? null;
+    const npcSellQty = Math.max(1, Math.min(selectedNpcSellSlot?.quantity ?? 1, Math.floor(Number(npcSellQtyInput || 1))));
 
     const sellableSlots = useMemo(
         () => inventory.filter((s) => s.item && s.quantity > 0).sort((a, b) => a.slot - b.slot),
@@ -789,6 +799,7 @@ const MarketplacePage = () => {
                         <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                             {[
                                 { key: '', label: t('marketplace.my_city') },
+                                { key: 'ALL', label: t('common.all') },
                                 { key: 'AGRARIA', label: 'Agraria' },
                                 { key: 'FERRUM', label: 'Ferrum' },
                                 { key: 'VOLTARA', label: 'Voltara' },
@@ -828,7 +839,9 @@ const MarketplacePage = () => {
                                 const unitPrice = Math.max(0, Number(item.buy_price ?? 0));
                                 const qty = Math.max(1, Math.floor(shopBuyQty[item.id] ?? 1));
                                 const total = unitPrice * qty;
-                                const isSameCity = !shopBrowsingCityKey || !shopUserCityKey || shopBrowsingCityKey === shopUserCityKey;
+                                const isSameCity = shopBrowsingCityKey === 'ALL'
+                                    ? ((item as any).source_city_keys ?? []).includes(shopUserCityKey)
+                                    : (!shopBrowsingCityKey || !shopUserCityKey || shopBrowsingCityKey === shopUserCityKey);
                                 const canBuy = unitPrice > 0 && !!user && user.money >= total && isSameCity;
 
                                 return (
@@ -911,6 +924,102 @@ const MarketplacePage = () => {
                             {shopItems.length === 0 && (
                                 <div style={{ border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '0.85rem', padding: '1.1rem', color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontSize: '0.8rem', background: 'rgba(5,2,0,0.45)' }}>
                                     {t('marketplace.no_npc_items')}
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,19,10,0.65)' }}>
+                        <h3 style={{ margin: 0, marginBottom: '0.7rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
+                            <Tag size={15} /> {t('marketplace.sell_to_npc', { count: npcSellableSlots.length })}
+                        </h3>
+
+                        <div style={{ display: 'grid', gap: '0.45rem' }}>
+                            <select
+                                value={npcSellSlotId ?? ''}
+                                onChange={(e) => { setNpcSellSlotId(e.target.value ? Number(e.target.value) : null); setNpcSellQtyInput('1'); }}
+                                style={inputStyle}
+                            >
+                                <option value="">{t('marketplace.select_item')}</option>
+                                {npcSellableSlots.map((slot) => (
+                                    <option key={slot.id} value={slot.id}>
+                                        {slot.item?.name} x{slot.quantity} ({t('marketplace.unit')}: {slot.item?.sell_price})
+                                    </option>
+                                ))}
+                            </select>
+
+                            {selectedNpcSellSlot?.item && (
+                                <div style={{ display: 'grid', alignItems: 'center', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.76rem', fontWeight: 700, color: '#f8fafc' }}>
+                                        {renderItemIcon(selectedNpcSellSlot.item, 18)}
+                                        {selectedNpcSellSlot.item.name}
+                                    </div>
+                                    <div style={{ fontSize: '0.68rem', color: '#fbbf24' }}>
+                                        {t('marketplace.unit')}: {selectedNpcSellSlot.item.sell_price} • {t('marketplace.in_bag')}: {selectedNpcSellSlot.quantity}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.45rem', alignItems: 'center' }}>
+                                <input
+                                    value={npcSellQtyInput}
+                                    onChange={(e) => setNpcSellQtyInput(e.target.value)}
+                                    type="number"
+                                    min={1}
+                                    max={selectedNpcSellSlot?.quantity ?? 1}
+                                    placeholder={t('common.qty')}
+                                    style={inputStyle}
+                                />
+                                <button
+                                    disabled={!selectedNpcSellSlot?.item || npcSellQty < 1}
+                                    onClick={() => {
+                                        if (!selectedNpcSellSlot?.item) return;
+                                        const totalRevenue = npcSellQty * (selectedNpcSellSlot.item.sell_price ?? 0);
+                                        askConfirm(
+                                            t('marketplace.confirm_sell_npc_title'),
+                                            `${t('marketplace.item')}: ${selectedNpcSellSlot.item.name}\n` +
+                                            `${t('marketplace.quantity')}: ${npcSellQty.toLocaleString()}\n` +
+                                            `${t('marketplace.unit_price')}: ${formatCredits(selectedNpcSellSlot.item.sell_price ?? 0)}\n` +
+                                            `${t('marketplace.total_revenue')}: ${formatCredits(totalRevenue)}\n\n` +
+                                            `${t('marketplace.current_money')}: ${formatCredits(user?.money ?? 0)}\n` +
+                                            `${t('marketplace.money_after_sell')}: ${formatCredits((user?.money ?? 0) + totalRevenue)}`,
+                                            t('marketplace.sell'),
+                                            () => {
+                                                void sellToShop(selectedNpcSellSlot.id, npcSellQty);
+                                                setNpcSellSlotId(null);
+                                                setNpcSellQtyInput('1');
+                                            }
+                                        );
+                                    }}
+                                    style={{
+                                        border: '1px solid rgba(248,113,113,0.35)',
+                                        background: selectedNpcSellSlot?.item ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(248,113,113,0.12))' : 'rgba(100,116,139,0.18)',
+                                        color: selectedNpcSellSlot?.item ? '#fecaca' : '#94a3b8',
+                                        borderRadius: '0.65rem',
+                                        padding: '0.45rem 0.65rem',
+                                        cursor: selectedNpcSellSlot?.item ? 'pointer' : 'not-allowed',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 700,
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                >
+                                    {t('marketplace.sell')}
+                                </button>
+                            </div>
+
+                            {selectedNpcSellSlot?.item && (
+                                <div style={{ fontSize: '0.7rem', color: '#fde68a' }}>
+                                    {t('marketplace.listing_preview', {
+                                        item: selectedNpcSellSlot.item.name,
+                                        qty: npcSellQty,
+                                        total: (npcSellQty * (selectedNpcSellSlot.item.sell_price ?? 0)).toLocaleString()
+                                    })}
+                                </div>
+                            )}
+
+                            {npcSellableSlots.length === 0 && (
+                                <div style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.55)' }}>
+                                    {t('marketplace.no_sellable_items')}
                                 </div>
                             )}
                         </div>

@@ -15,6 +15,7 @@ import {
 import {
 	getShop,
 	buyFromShop,
+	sellToShop,
 	getRecipes,
 	getRecipeShop,
 	buyRecipeUnlock,
@@ -41,6 +42,38 @@ import {
 } from "../controllers/city.controller";
 import { getDailyQuests, submitQuest } from "../controllers/quest.controller";
 import { attemptEnchantController, getEnchantPreviewController, getEnchantConfigsController } from "../controllers/enchantment.controller";
+import {
+	getCargoBoxes,
+	buyCargoBox,
+	packCargoBox,
+	unpackCargoBox,
+	finalizeCargoBox,
+	discardCargoBox,
+} from "../controllers/cargo.controller";
+import {
+	sellCargoListing,
+	buyCargoListing,
+	getOrders,
+	cancelOrder,
+	getPublicShipSchedule,
+	loadPublicShip,
+	rentPrivateShip,
+	loadPrivateShip,
+	dispatchPrivateShip,
+	getWorldMapShips,
+} from "../controllers/shipment.controller";
+import { getPort, claimCargo } from "../controllers/port.controller";
+import {
+	launchPirateAttack,
+	getPirateCooldown,
+	getPirateHistory,
+} from "../controllers/pirate.controller";
+import {
+	getNotifications,
+	getUnreadCount,
+	markAsRead,
+	markAllAsRead,
+} from "../controllers/notification.controller";
 
 const router = Router();
 
@@ -95,6 +128,7 @@ router.post("/city/taxes", setCityTaxesController);
 // ─── Shop & Recipes ──────────────────────────────────
 router.get("/shop", getShop);
 router.post("/shop/buy", buyFromShop);
+router.post("/shop/sell", sellToShop);
 router.get("/shop/equipment-box", getEquipmentBoxInfo);
 router.post("/shop/equipment-box/open", openEquipmentBox);
 router.get("/shop/recipes", getRecipeShop);
@@ -109,5 +143,42 @@ router.get("/recipes", getRecipes);
 // ─── Daily Quests ────────────────────────────────────
 router.get("/quests", getDailyQuests);
 router.post("/quests/submit/:questId", submitQuest);
+
+// ─── Cargo Box ───────────────────────────────────────
+router.get("/cargo", getCargoBoxes);
+router.post("/cargo/buy", buyCargoBox);
+router.post("/cargo/pack", packCargoBox);
+router.post("/cargo/unpack", unpackCargoBox);
+router.post("/cargo/finalize/:boxId", finalizeCargoBox);
+router.delete("/cargo/:boxId", discardCargoBox);
+
+// ─── Shipment / Orders ──────────────────────────────
+router.post("/market/sell-cargo", sellCargoListing);
+router.post("/market/buy-cargo/:listingId", buyCargoListing);
+router.get("/orders", getOrders);
+router.post("/orders/cancel/:orderId", cancelOrder);
+
+// ─── Ships ───────────────────────────────────────────
+router.get("/ship/public-schedule", getPublicShipSchedule);
+router.post("/ship/public/load", loadPublicShip);
+router.post("/ship/private/rent", rentPrivateShip);
+router.post("/ship/private/load", loadPrivateShip);
+router.post("/ship/private/dispatch", dispatchPrivateShip);
+router.get("/world-map/ships", getWorldMapShips);
+
+// ─── Port ────────────────────────────────────────────
+router.get("/port", getPort);
+router.post("/port/claim/:boxId", claimCargo);
+
+// ─── Pirate ──────────────────────────────────────────
+router.post("/pirate/attack", launchPirateAttack);
+router.get("/pirate/cooldown", getPirateCooldown);
+router.get("/pirate/history", getPirateHistory);
+
+// ─── Notifications ───────────────────────────────────
+router.get("/notifications", getNotifications);
+router.get("/notifications/unread-count", getUnreadCount);
+router.post("/notifications/read/:id", markAsRead);
+router.post("/notifications/read-all", markAllAsRead);
 
 export default router;

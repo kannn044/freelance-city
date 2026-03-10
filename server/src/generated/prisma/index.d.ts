@@ -128,6 +128,51 @@ export type DailyQuestRequirement = $Result.DefaultSelection<Prisma.$DailyQuestR
  * 
  */
 export type PlayerDailyQuest = $Result.DefaultSelection<Prisma.$PlayerDailyQuestPayload>
+/**
+ * Model CargoBox
+ * 
+ */
+export type CargoBox = $Result.DefaultSelection<Prisma.$CargoBoxPayload>
+/**
+ * Model CargoBoxItem
+ * 
+ */
+export type CargoBoxItem = $Result.DefaultSelection<Prisma.$CargoBoxItemPayload>
+/**
+ * Model PurchaseOrder
+ * 
+ */
+export type PurchaseOrder = $Result.DefaultSelection<Prisma.$PurchaseOrderPayload>
+/**
+ * Model Ship
+ * 
+ */
+export type Ship = $Result.DefaultSelection<Prisma.$ShipPayload>
+/**
+ * Model ShipCargo
+ * 
+ */
+export type ShipCargo = $Result.DefaultSelection<Prisma.$ShipCargoPayload>
+/**
+ * Model PirateAttack
+ * 
+ */
+export type PirateAttack = $Result.DefaultSelection<Prisma.$PirateAttackPayload>
+/**
+ * Model UserPortStorage
+ * 
+ */
+export type UserPortStorage = $Result.DefaultSelection<Prisma.$UserPortStoragePayload>
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
+/**
+ * Model PirateCooldown
+ * 
+ */
+export type PirateCooldown = $Result.DefaultSelection<Prisma.$PirateCooldownPayload>
 
 /**
  * Enums
@@ -219,6 +264,88 @@ export const SkillEffectType: {
 
 export type SkillEffectType = (typeof SkillEffectType)[keyof typeof SkillEffectType]
 
+
+export const CargoBoxSize: {
+  S: 'S',
+  M: 'M',
+  L: 'L'
+};
+
+export type CargoBoxSize = (typeof CargoBoxSize)[keyof typeof CargoBoxSize]
+
+
+export const CargoBoxStatus: {
+  EMPTY: 'EMPTY',
+  PACKING: 'PACKING',
+  PACKED: 'PACKED',
+  LISTED: 'LISTED',
+  SOLD: 'SOLD',
+  ON_SHIP: 'ON_SHIP',
+  AT_PORT: 'AT_PORT',
+  CLAIMED: 'CLAIMED',
+  CANCELLED: 'CANCELLED',
+  PIRATED: 'PIRATED'
+};
+
+export type CargoBoxStatus = (typeof CargoBoxStatus)[keyof typeof CargoBoxStatus]
+
+
+export const ShipType: {
+  PUBLIC: 'PUBLIC',
+  PRIVATE: 'PRIVATE'
+};
+
+export type ShipType = (typeof ShipType)[keyof typeof ShipType]
+
+
+export const ShipSize: {
+  S: 'S',
+  M: 'M',
+  L: 'L'
+};
+
+export type ShipSize = (typeof ShipSize)[keyof typeof ShipSize]
+
+
+export const ShipStatus: {
+  DOCKED: 'DOCKED',
+  LOADING: 'LOADING',
+  SAILING: 'SAILING',
+  ARRIVED: 'ARRIVED'
+};
+
+export type ShipStatus = (typeof ShipStatus)[keyof typeof ShipStatus]
+
+
+export const PurchaseOrderStatus: {
+  PENDING: 'PENDING',
+  CANCELLED_BUYER: 'CANCELLED_BUYER',
+  CANCELLED_TIMEOUT: 'CANCELLED_TIMEOUT',
+  SHIPPING: 'SHIPPING',
+  DELIVERED: 'DELIVERED',
+  CLAIMED: 'CLAIMED',
+  PIRATED: 'PIRATED'
+};
+
+export type PurchaseOrderStatus = (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus]
+
+
+export const PirateAttackStatus: {
+  PENDING: 'PENDING',
+  RESOLVED: 'RESOLVED'
+};
+
+export type PirateAttackStatus = (typeof PirateAttackStatus)[keyof typeof PirateAttackStatus]
+
+
+export const RPSChoice: {
+  ROCK: 'ROCK',
+  PAPER: 'PAPER',
+  SCISSORS: 'SCISSORS'
+};
+
+export type RPSChoice = (typeof RPSChoice)[keyof typeof RPSChoice]
+
 }
 
 export type UserRole = $Enums.UserRole
@@ -252,6 +379,38 @@ export const JobSlot: typeof $Enums.JobSlot
 export type SkillEffectType = $Enums.SkillEffectType
 
 export const SkillEffectType: typeof $Enums.SkillEffectType
+
+export type CargoBoxSize = $Enums.CargoBoxSize
+
+export const CargoBoxSize: typeof $Enums.CargoBoxSize
+
+export type CargoBoxStatus = $Enums.CargoBoxStatus
+
+export const CargoBoxStatus: typeof $Enums.CargoBoxStatus
+
+export type ShipType = $Enums.ShipType
+
+export const ShipType: typeof $Enums.ShipType
+
+export type ShipSize = $Enums.ShipSize
+
+export const ShipSize: typeof $Enums.ShipSize
+
+export type ShipStatus = $Enums.ShipStatus
+
+export const ShipStatus: typeof $Enums.ShipStatus
+
+export type PurchaseOrderStatus = $Enums.PurchaseOrderStatus
+
+export const PurchaseOrderStatus: typeof $Enums.PurchaseOrderStatus
+
+export type PirateAttackStatus = $Enums.PirateAttackStatus
+
+export const PirateAttackStatus: typeof $Enums.PirateAttackStatus
+
+export type RPSChoice = $Enums.RPSChoice
+
+export const RPSChoice: typeof $Enums.RPSChoice
 
 /**
  * ##  Prisma Client ʲˢ
@@ -600,6 +759,96 @@ export class PrismaClient<
     * ```
     */
   get playerDailyQuest(): Prisma.PlayerDailyQuestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cargoBox`: Exposes CRUD operations for the **CargoBox** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CargoBoxes
+    * const cargoBoxes = await prisma.cargoBox.findMany()
+    * ```
+    */
+  get cargoBox(): Prisma.CargoBoxDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cargoBoxItem`: Exposes CRUD operations for the **CargoBoxItem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CargoBoxItems
+    * const cargoBoxItems = await prisma.cargoBoxItem.findMany()
+    * ```
+    */
+  get cargoBoxItem(): Prisma.CargoBoxItemDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.purchaseOrder`: Exposes CRUD operations for the **PurchaseOrder** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PurchaseOrders
+    * const purchaseOrders = await prisma.purchaseOrder.findMany()
+    * ```
+    */
+  get purchaseOrder(): Prisma.PurchaseOrderDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.ship`: Exposes CRUD operations for the **Ship** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Ships
+    * const ships = await prisma.ship.findMany()
+    * ```
+    */
+  get ship(): Prisma.ShipDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.shipCargo`: Exposes CRUD operations for the **ShipCargo** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ShipCargos
+    * const shipCargos = await prisma.shipCargo.findMany()
+    * ```
+    */
+  get shipCargo(): Prisma.ShipCargoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pirateAttack`: Exposes CRUD operations for the **PirateAttack** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PirateAttacks
+    * const pirateAttacks = await prisma.pirateAttack.findMany()
+    * ```
+    */
+  get pirateAttack(): Prisma.PirateAttackDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userPortStorage`: Exposes CRUD operations for the **UserPortStorage** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserPortStorages
+    * const userPortStorages = await prisma.userPortStorage.findMany()
+    * ```
+    */
+  get userPortStorage(): Prisma.UserPortStorageDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Notifications
+    * const notifications = await prisma.notification.findMany()
+    * ```
+    */
+  get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pirateCooldown`: Exposes CRUD operations for the **PirateCooldown** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PirateCooldowns
+    * const pirateCooldowns = await prisma.pirateCooldown.findMany()
+    * ```
+    */
+  get pirateCooldown(): Prisma.PirateCooldownDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1063,7 +1312,16 @@ export namespace Prisma {
     CityShopRecipeRule: 'CityShopRecipeRule',
     DailyQuestTemplate: 'DailyQuestTemplate',
     DailyQuestRequirement: 'DailyQuestRequirement',
-    PlayerDailyQuest: 'PlayerDailyQuest'
+    PlayerDailyQuest: 'PlayerDailyQuest',
+    CargoBox: 'CargoBox',
+    CargoBoxItem: 'CargoBoxItem',
+    PurchaseOrder: 'PurchaseOrder',
+    Ship: 'Ship',
+    ShipCargo: 'ShipCargo',
+    PirateAttack: 'PirateAttack',
+    UserPortStorage: 'UserPortStorage',
+    Notification: 'Notification',
+    PirateCooldown: 'PirateCooldown'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1082,7 +1340,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "item" | "recipe" | "recipeIngredient" | "userRecipeUnlock" | "inventorySlot" | "userEquipment" | "workOrder" | "marketListing" | "occupationCatalog" | "occupationSkillBranchCatalog" | "userJobProgress" | "userSkillProgress" | "cityWorkspaceRule" | "gameSetting" | "cityState" | "userCityTransferCycle" | "cityMayorVote" | "cityShopItemRule" | "cityShopRecipeRule" | "dailyQuestTemplate" | "dailyQuestRequirement" | "playerDailyQuest"
+      modelProps: "user" | "item" | "recipe" | "recipeIngredient" | "userRecipeUnlock" | "inventorySlot" | "userEquipment" | "workOrder" | "marketListing" | "occupationCatalog" | "occupationSkillBranchCatalog" | "userJobProgress" | "userSkillProgress" | "cityWorkspaceRule" | "gameSetting" | "cityState" | "userCityTransferCycle" | "cityMayorVote" | "cityShopItemRule" | "cityShopRecipeRule" | "dailyQuestTemplate" | "dailyQuestRequirement" | "playerDailyQuest" | "cargoBox" | "cargoBoxItem" | "purchaseOrder" | "ship" | "shipCargo" | "pirateAttack" | "userPortStorage" | "notification" | "pirateCooldown"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2604,6 +2862,600 @@ export namespace Prisma {
           }
         }
       }
+      CargoBox: {
+        payload: Prisma.$CargoBoxPayload<ExtArgs>
+        fields: Prisma.CargoBoxFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CargoBoxFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CargoBoxFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>
+          }
+          findFirst: {
+            args: Prisma.CargoBoxFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CargoBoxFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>
+          }
+          findMany: {
+            args: Prisma.CargoBoxFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>[]
+          }
+          create: {
+            args: Prisma.CargoBoxCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>
+          }
+          createMany: {
+            args: Prisma.CargoBoxCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.CargoBoxDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>
+          }
+          update: {
+            args: Prisma.CargoBoxUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>
+          }
+          deleteMany: {
+            args: Prisma.CargoBoxDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CargoBoxUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CargoBoxUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxPayload>
+          }
+          aggregate: {
+            args: Prisma.CargoBoxAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCargoBox>
+          }
+          groupBy: {
+            args: Prisma.CargoBoxGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CargoBoxGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CargoBoxCountArgs<ExtArgs>
+            result: $Utils.Optional<CargoBoxCountAggregateOutputType> | number
+          }
+        }
+      }
+      CargoBoxItem: {
+        payload: Prisma.$CargoBoxItemPayload<ExtArgs>
+        fields: Prisma.CargoBoxItemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CargoBoxItemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CargoBoxItemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>
+          }
+          findFirst: {
+            args: Prisma.CargoBoxItemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CargoBoxItemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>
+          }
+          findMany: {
+            args: Prisma.CargoBoxItemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>[]
+          }
+          create: {
+            args: Prisma.CargoBoxItemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>
+          }
+          createMany: {
+            args: Prisma.CargoBoxItemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.CargoBoxItemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>
+          }
+          update: {
+            args: Prisma.CargoBoxItemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>
+          }
+          deleteMany: {
+            args: Prisma.CargoBoxItemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CargoBoxItemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CargoBoxItemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CargoBoxItemPayload>
+          }
+          aggregate: {
+            args: Prisma.CargoBoxItemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCargoBoxItem>
+          }
+          groupBy: {
+            args: Prisma.CargoBoxItemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CargoBoxItemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CargoBoxItemCountArgs<ExtArgs>
+            result: $Utils.Optional<CargoBoxItemCountAggregateOutputType> | number
+          }
+        }
+      }
+      PurchaseOrder: {
+        payload: Prisma.$PurchaseOrderPayload<ExtArgs>
+        fields: Prisma.PurchaseOrderFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PurchaseOrderFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PurchaseOrderFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>
+          }
+          findFirst: {
+            args: Prisma.PurchaseOrderFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PurchaseOrderFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>
+          }
+          findMany: {
+            args: Prisma.PurchaseOrderFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>[]
+          }
+          create: {
+            args: Prisma.PurchaseOrderCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>
+          }
+          createMany: {
+            args: Prisma.PurchaseOrderCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PurchaseOrderDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>
+          }
+          update: {
+            args: Prisma.PurchaseOrderUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>
+          }
+          deleteMany: {
+            args: Prisma.PurchaseOrderDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PurchaseOrderUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PurchaseOrderUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PurchaseOrderPayload>
+          }
+          aggregate: {
+            args: Prisma.PurchaseOrderAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePurchaseOrder>
+          }
+          groupBy: {
+            args: Prisma.PurchaseOrderGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PurchaseOrderGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PurchaseOrderCountArgs<ExtArgs>
+            result: $Utils.Optional<PurchaseOrderCountAggregateOutputType> | number
+          }
+        }
+      }
+      Ship: {
+        payload: Prisma.$ShipPayload<ExtArgs>
+        fields: Prisma.ShipFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ShipFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ShipFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>
+          }
+          findFirst: {
+            args: Prisma.ShipFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ShipFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>
+          }
+          findMany: {
+            args: Prisma.ShipFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>[]
+          }
+          create: {
+            args: Prisma.ShipCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>
+          }
+          createMany: {
+            args: Prisma.ShipCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ShipDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>
+          }
+          update: {
+            args: Prisma.ShipUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>
+          }
+          deleteMany: {
+            args: Prisma.ShipDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ShipUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ShipUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipPayload>
+          }
+          aggregate: {
+            args: Prisma.ShipAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateShip>
+          }
+          groupBy: {
+            args: Prisma.ShipGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ShipGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ShipCountArgs<ExtArgs>
+            result: $Utils.Optional<ShipCountAggregateOutputType> | number
+          }
+        }
+      }
+      ShipCargo: {
+        payload: Prisma.$ShipCargoPayload<ExtArgs>
+        fields: Prisma.ShipCargoFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ShipCargoFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ShipCargoFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>
+          }
+          findFirst: {
+            args: Prisma.ShipCargoFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ShipCargoFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>
+          }
+          findMany: {
+            args: Prisma.ShipCargoFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>[]
+          }
+          create: {
+            args: Prisma.ShipCargoCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>
+          }
+          createMany: {
+            args: Prisma.ShipCargoCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ShipCargoDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>
+          }
+          update: {
+            args: Prisma.ShipCargoUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>
+          }
+          deleteMany: {
+            args: Prisma.ShipCargoDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ShipCargoUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ShipCargoUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ShipCargoPayload>
+          }
+          aggregate: {
+            args: Prisma.ShipCargoAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateShipCargo>
+          }
+          groupBy: {
+            args: Prisma.ShipCargoGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ShipCargoGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ShipCargoCountArgs<ExtArgs>
+            result: $Utils.Optional<ShipCargoCountAggregateOutputType> | number
+          }
+        }
+      }
+      PirateAttack: {
+        payload: Prisma.$PirateAttackPayload<ExtArgs>
+        fields: Prisma.PirateAttackFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PirateAttackFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PirateAttackFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>
+          }
+          findFirst: {
+            args: Prisma.PirateAttackFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PirateAttackFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>
+          }
+          findMany: {
+            args: Prisma.PirateAttackFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>[]
+          }
+          create: {
+            args: Prisma.PirateAttackCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>
+          }
+          createMany: {
+            args: Prisma.PirateAttackCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PirateAttackDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>
+          }
+          update: {
+            args: Prisma.PirateAttackUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>
+          }
+          deleteMany: {
+            args: Prisma.PirateAttackDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PirateAttackUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PirateAttackUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateAttackPayload>
+          }
+          aggregate: {
+            args: Prisma.PirateAttackAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePirateAttack>
+          }
+          groupBy: {
+            args: Prisma.PirateAttackGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PirateAttackGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PirateAttackCountArgs<ExtArgs>
+            result: $Utils.Optional<PirateAttackCountAggregateOutputType> | number
+          }
+        }
+      }
+      UserPortStorage: {
+        payload: Prisma.$UserPortStoragePayload<ExtArgs>
+        fields: Prisma.UserPortStorageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserPortStorageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserPortStorageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>
+          }
+          findFirst: {
+            args: Prisma.UserPortStorageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserPortStorageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>
+          }
+          findMany: {
+            args: Prisma.UserPortStorageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>[]
+          }
+          create: {
+            args: Prisma.UserPortStorageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>
+          }
+          createMany: {
+            args: Prisma.UserPortStorageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.UserPortStorageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>
+          }
+          update: {
+            args: Prisma.UserPortStorageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>
+          }
+          deleteMany: {
+            args: Prisma.UserPortStorageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserPortStorageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.UserPortStorageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserPortStoragePayload>
+          }
+          aggregate: {
+            args: Prisma.UserPortStorageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserPortStorage>
+          }
+          groupBy: {
+            args: Prisma.UserPortStorageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserPortStorageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserPortStorageCountArgs<ExtArgs>
+            result: $Utils.Optional<UserPortStorageCountAggregateOutputType> | number
+          }
+        }
+      }
+      Notification: {
+        payload: Prisma.$NotificationPayload<ExtArgs>
+        fields: Prisma.NotificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NotificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NotificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findFirst: {
+            args: Prisma.NotificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NotificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findMany: {
+            args: Prisma.NotificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          create: {
+            args: Prisma.NotificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          createMany: {
+            args: Prisma.NotificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.NotificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          update: {
+            args: Prisma.NotificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.NotificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NotificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.NotificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          aggregate: {
+            args: Prisma.NotificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNotification>
+          }
+          groupBy: {
+            args: Prisma.NotificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NotificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NotificationCountArgs<ExtArgs>
+            result: $Utils.Optional<NotificationCountAggregateOutputType> | number
+          }
+        }
+      }
+      PirateCooldown: {
+        payload: Prisma.$PirateCooldownPayload<ExtArgs>
+        fields: Prisma.PirateCooldownFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PirateCooldownFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PirateCooldownFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>
+          }
+          findFirst: {
+            args: Prisma.PirateCooldownFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PirateCooldownFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>
+          }
+          findMany: {
+            args: Prisma.PirateCooldownFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>[]
+          }
+          create: {
+            args: Prisma.PirateCooldownCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>
+          }
+          createMany: {
+            args: Prisma.PirateCooldownCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PirateCooldownDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>
+          }
+          update: {
+            args: Prisma.PirateCooldownUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>
+          }
+          deleteMany: {
+            args: Prisma.PirateCooldownDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PirateCooldownUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PirateCooldownUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PirateCooldownPayload>
+          }
+          aggregate: {
+            args: Prisma.PirateCooldownAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePirateCooldown>
+          }
+          groupBy: {
+            args: Prisma.PirateCooldownGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PirateCooldownGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PirateCooldownCountArgs<ExtArgs>
+            result: $Utils.Optional<PirateCooldownCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2723,6 +3575,15 @@ export namespace Prisma {
     dailyQuestTemplate?: DailyQuestTemplateOmit
     dailyQuestRequirement?: DailyQuestRequirementOmit
     playerDailyQuest?: PlayerDailyQuestOmit
+    cargoBox?: CargoBoxOmit
+    cargoBoxItem?: CargoBoxItemOmit
+    purchaseOrder?: PurchaseOrderOmit
+    ship?: ShipOmit
+    shipCargo?: ShipCargoOmit
+    pirateAttack?: PirateAttackOmit
+    userPortStorage?: UserPortStorageOmit
+    notification?: NotificationOmit
+    pirateCooldown?: PirateCooldownOmit
   }
 
   /* Types for Logging */
@@ -2812,6 +3673,13 @@ export namespace Prisma {
     job_progress: number
     skill_progress: number
     daily_quests: number
+    cargo_boxes: number
+    purchase_orders_as_buyer: number
+    purchase_orders_as_seller: number
+    owned_ships: number
+    port_storage: number
+    notifications: number
+    pirate_attacks: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2824,6 +3692,13 @@ export namespace Prisma {
     job_progress?: boolean | UserCountOutputTypeCountJob_progressArgs
     skill_progress?: boolean | UserCountOutputTypeCountSkill_progressArgs
     daily_quests?: boolean | UserCountOutputTypeCountDaily_questsArgs
+    cargo_boxes?: boolean | UserCountOutputTypeCountCargo_boxesArgs
+    purchase_orders_as_buyer?: boolean | UserCountOutputTypeCountPurchase_orders_as_buyerArgs
+    purchase_orders_as_seller?: boolean | UserCountOutputTypeCountPurchase_orders_as_sellerArgs
+    owned_ships?: boolean | UserCountOutputTypeCountOwned_shipsArgs
+    port_storage?: boolean | UserCountOutputTypeCountPort_storageArgs
+    notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+    pirate_attacks?: boolean | UserCountOutputTypeCountPirate_attacksArgs
   }
 
   // Custom InputTypes
@@ -2900,6 +3775,55 @@ export namespace Prisma {
     where?: PlayerDailyQuestWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCargo_boxesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CargoBoxWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPurchase_orders_as_buyerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PurchaseOrderWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPurchase_orders_as_sellerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PurchaseOrderWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountOwned_shipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ShipWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPort_storageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserPortStorageWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPirate_attacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PirateAttackWhereInput
+  }
+
 
   /**
    * Count Type ItemCountOutputType
@@ -2914,6 +3838,7 @@ export namespace Prisma {
     market_listings: number
     equipped_on: number
     quest_requirements: number
+    cargo_box_items: number
   }
 
   export type ItemCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2925,6 +3850,7 @@ export namespace Prisma {
     market_listings?: boolean | ItemCountOutputTypeCountMarket_listingsArgs
     equipped_on?: boolean | ItemCountOutputTypeCountEquipped_onArgs
     quest_requirements?: boolean | ItemCountOutputTypeCountQuest_requirementsArgs
+    cargo_box_items?: boolean | ItemCountOutputTypeCountCargo_box_itemsArgs
   }
 
   // Custom InputTypes
@@ -2992,6 +3918,13 @@ export namespace Prisma {
    */
   export type ItemCountOutputTypeCountQuest_requirementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DailyQuestRequirementWhereInput
+  }
+
+  /**
+   * ItemCountOutputType without action
+   */
+  export type ItemCountOutputTypeCountCargo_box_itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CargoBoxItemWhereInput
   }
 
 
@@ -3125,6 +4058,86 @@ export namespace Prisma {
 
 
   /**
+   * Count Type CargoBoxCountOutputType
+   */
+
+  export type CargoBoxCountOutputType = {
+    items: number
+    ship_cargo: number
+  }
+
+  export type CargoBoxCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    items?: boolean | CargoBoxCountOutputTypeCountItemsArgs
+    ship_cargo?: boolean | CargoBoxCountOutputTypeCountShip_cargoArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * CargoBoxCountOutputType without action
+   */
+  export type CargoBoxCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxCountOutputType
+     */
+    select?: CargoBoxCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * CargoBoxCountOutputType without action
+   */
+  export type CargoBoxCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CargoBoxItemWhereInput
+  }
+
+  /**
+   * CargoBoxCountOutputType without action
+   */
+  export type CargoBoxCountOutputTypeCountShip_cargoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ShipCargoWhereInput
+  }
+
+
+  /**
+   * Count Type ShipCountOutputType
+   */
+
+  export type ShipCountOutputType = {
+    cargo: number
+    attacks: number
+  }
+
+  export type ShipCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cargo?: boolean | ShipCountOutputTypeCountCargoArgs
+    attacks?: boolean | ShipCountOutputTypeCountAttacksArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * ShipCountOutputType without action
+   */
+  export type ShipCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCountOutputType
+     */
+    select?: ShipCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ShipCountOutputType without action
+   */
+  export type ShipCountOutputTypeCountCargoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ShipCargoWhereInput
+  }
+
+  /**
+   * ShipCountOutputType without action
+   */
+  export type ShipCountOutputTypeCountAttacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PirateAttackWhereInput
+  }
+
+
+  /**
    * Models
    */
 
@@ -3151,6 +4164,7 @@ export namespace Prisma {
     secondary_job_level: number | null
     secondary_job_skill_level: number | null
     secondary_job_exp: number | null
+    locked_money: number | null
   }
 
   export type UserSumAggregateOutputType = {
@@ -3164,6 +4178,7 @@ export namespace Prisma {
     secondary_job_level: number | null
     secondary_job_skill_level: number | null
     secondary_job_exp: number | null
+    locked_money: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -3184,6 +4199,7 @@ export namespace Prisma {
     secondary_job_level: number | null
     secondary_job_skill_level: number | null
     secondary_job_exp: number | null
+    locked_money: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -3206,6 +4222,7 @@ export namespace Prisma {
     secondary_job_level: number | null
     secondary_job_skill_level: number | null
     secondary_job_exp: number | null
+    locked_money: number | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -3228,6 +4245,7 @@ export namespace Prisma {
     secondary_job_level: number
     secondary_job_skill_level: number
     secondary_job_exp: number
+    locked_money: number
     created_at: number
     updated_at: number
     _all: number
@@ -3245,6 +4263,7 @@ export namespace Prisma {
     secondary_job_level?: true
     secondary_job_skill_level?: true
     secondary_job_exp?: true
+    locked_money?: true
   }
 
   export type UserSumAggregateInputType = {
@@ -3258,6 +4277,7 @@ export namespace Prisma {
     secondary_job_level?: true
     secondary_job_skill_level?: true
     secondary_job_exp?: true
+    locked_money?: true
   }
 
   export type UserMinAggregateInputType = {
@@ -3278,6 +4298,7 @@ export namespace Prisma {
     secondary_job_level?: true
     secondary_job_skill_level?: true
     secondary_job_exp?: true
+    locked_money?: true
     created_at?: true
     updated_at?: true
   }
@@ -3300,6 +4321,7 @@ export namespace Prisma {
     secondary_job_level?: true
     secondary_job_skill_level?: true
     secondary_job_exp?: true
+    locked_money?: true
     created_at?: true
     updated_at?: true
   }
@@ -3322,6 +4344,7 @@ export namespace Prisma {
     secondary_job_level?: true
     secondary_job_skill_level?: true
     secondary_job_exp?: true
+    locked_money?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -3431,6 +4454,7 @@ export namespace Prisma {
     secondary_job_level: number
     secondary_job_skill_level: number
     secondary_job_exp: number
+    locked_money: number
     created_at: Date
     updated_at: Date
     _count: UserCountAggregateOutputType | null
@@ -3472,6 +4496,7 @@ export namespace Prisma {
     secondary_job_level?: boolean
     secondary_job_skill_level?: boolean
     secondary_job_exp?: boolean
+    locked_money?: boolean
     created_at?: boolean
     updated_at?: boolean
     inventory?: boolean | User$inventoryArgs<ExtArgs>
@@ -3483,6 +4508,14 @@ export namespace Prisma {
     job_progress?: boolean | User$job_progressArgs<ExtArgs>
     skill_progress?: boolean | User$skill_progressArgs<ExtArgs>
     daily_quests?: boolean | User$daily_questsArgs<ExtArgs>
+    cargo_boxes?: boolean | User$cargo_boxesArgs<ExtArgs>
+    purchase_orders_as_buyer?: boolean | User$purchase_orders_as_buyerArgs<ExtArgs>
+    purchase_orders_as_seller?: boolean | User$purchase_orders_as_sellerArgs<ExtArgs>
+    owned_ships?: boolean | User$owned_shipsArgs<ExtArgs>
+    port_storage?: boolean | User$port_storageArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
+    pirate_attacks?: boolean | User$pirate_attacksArgs<ExtArgs>
+    pirate_cooldown?: boolean | User$pirate_cooldownArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3506,11 +4539,12 @@ export namespace Prisma {
     secondary_job_level?: boolean
     secondary_job_skill_level?: boolean
     secondary_job_exp?: boolean
+    locked_money?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password_hash" | "role" | "money" | "hunger" | "hunger_updated_at" | "satiety_buff" | "buff_expires_at" | "city_key" | "city_selected_at" | "first_job_level" | "first_job_skill_level" | "first_job_exp" | "secondary_job_level" | "secondary_job_skill_level" | "secondary_job_exp" | "created_at" | "updated_at", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password_hash" | "role" | "money" | "hunger" | "hunger_updated_at" | "satiety_buff" | "buff_expires_at" | "city_key" | "city_selected_at" | "first_job_level" | "first_job_skill_level" | "first_job_exp" | "secondary_job_level" | "secondary_job_skill_level" | "secondary_job_exp" | "locked_money" | "created_at" | "updated_at", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     inventory?: boolean | User$inventoryArgs<ExtArgs>
     work_orders?: boolean | User$work_ordersArgs<ExtArgs>
@@ -3521,6 +4555,14 @@ export namespace Prisma {
     job_progress?: boolean | User$job_progressArgs<ExtArgs>
     skill_progress?: boolean | User$skill_progressArgs<ExtArgs>
     daily_quests?: boolean | User$daily_questsArgs<ExtArgs>
+    cargo_boxes?: boolean | User$cargo_boxesArgs<ExtArgs>
+    purchase_orders_as_buyer?: boolean | User$purchase_orders_as_buyerArgs<ExtArgs>
+    purchase_orders_as_seller?: boolean | User$purchase_orders_as_sellerArgs<ExtArgs>
+    owned_ships?: boolean | User$owned_shipsArgs<ExtArgs>
+    port_storage?: boolean | User$port_storageArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
+    pirate_attacks?: boolean | User$pirate_attacksArgs<ExtArgs>
+    pirate_cooldown?: boolean | User$pirate_cooldownArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3536,6 +4578,14 @@ export namespace Prisma {
       job_progress: Prisma.$UserJobProgressPayload<ExtArgs>[]
       skill_progress: Prisma.$UserSkillProgressPayload<ExtArgs>[]
       daily_quests: Prisma.$PlayerDailyQuestPayload<ExtArgs>[]
+      cargo_boxes: Prisma.$CargoBoxPayload<ExtArgs>[]
+      purchase_orders_as_buyer: Prisma.$PurchaseOrderPayload<ExtArgs>[]
+      purchase_orders_as_seller: Prisma.$PurchaseOrderPayload<ExtArgs>[]
+      owned_ships: Prisma.$ShipPayload<ExtArgs>[]
+      port_storage: Prisma.$UserPortStoragePayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      pirate_attacks: Prisma.$PirateAttackPayload<ExtArgs>[]
+      pirate_cooldown: Prisma.$PirateCooldownPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -3555,6 +4605,7 @@ export namespace Prisma {
       secondary_job_level: number
       secondary_job_skill_level: number
       secondary_job_exp: number
+      locked_money: number
       created_at: Date
       updated_at: Date
     }, ExtArgs["result"]["user"]>
@@ -3906,6 +4957,14 @@ export namespace Prisma {
     job_progress<T extends User$job_progressArgs<ExtArgs> = {}>(args?: Subset<T, User$job_progressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserJobProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     skill_progress<T extends User$skill_progressArgs<ExtArgs> = {}>(args?: Subset<T, User$skill_progressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserSkillProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     daily_quests<T extends User$daily_questsArgs<ExtArgs> = {}>(args?: Subset<T, User$daily_questsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlayerDailyQuestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    cargo_boxes<T extends User$cargo_boxesArgs<ExtArgs> = {}>(args?: Subset<T, User$cargo_boxesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    purchase_orders_as_buyer<T extends User$purchase_orders_as_buyerArgs<ExtArgs> = {}>(args?: Subset<T, User$purchase_orders_as_buyerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    purchase_orders_as_seller<T extends User$purchase_orders_as_sellerArgs<ExtArgs> = {}>(args?: Subset<T, User$purchase_orders_as_sellerArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    owned_ships<T extends User$owned_shipsArgs<ExtArgs> = {}>(args?: Subset<T, User$owned_shipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    port_storage<T extends User$port_storageArgs<ExtArgs> = {}>(args?: Subset<T, User$port_storageArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pirate_attacks<T extends User$pirate_attacksArgs<ExtArgs> = {}>(args?: Subset<T, User$pirate_attacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pirate_cooldown<T extends User$pirate_cooldownArgs<ExtArgs> = {}>(args?: Subset<T, User$pirate_cooldownArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3952,6 +5011,7 @@ export namespace Prisma {
     readonly secondary_job_level: FieldRef<"User", 'Int'>
     readonly secondary_job_skill_level: FieldRef<"User", 'Int'>
     readonly secondary_job_exp: FieldRef<"User", 'Int'>
+    readonly locked_money: FieldRef<"User", 'Int'>
     readonly created_at: FieldRef<"User", 'DateTime'>
     readonly updated_at: FieldRef<"User", 'DateTime'>
   }
@@ -4513,6 +5573,193 @@ export namespace Prisma {
   }
 
   /**
+   * User.cargo_boxes
+   */
+  export type User$cargo_boxesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    where?: CargoBoxWhereInput
+    orderBy?: CargoBoxOrderByWithRelationInput | CargoBoxOrderByWithRelationInput[]
+    cursor?: CargoBoxWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CargoBoxScalarFieldEnum | CargoBoxScalarFieldEnum[]
+  }
+
+  /**
+   * User.purchase_orders_as_buyer
+   */
+  export type User$purchase_orders_as_buyerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    where?: PurchaseOrderWhereInput
+    orderBy?: PurchaseOrderOrderByWithRelationInput | PurchaseOrderOrderByWithRelationInput[]
+    cursor?: PurchaseOrderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PurchaseOrderScalarFieldEnum | PurchaseOrderScalarFieldEnum[]
+  }
+
+  /**
+   * User.purchase_orders_as_seller
+   */
+  export type User$purchase_orders_as_sellerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    where?: PurchaseOrderWhereInput
+    orderBy?: PurchaseOrderOrderByWithRelationInput | PurchaseOrderOrderByWithRelationInput[]
+    cursor?: PurchaseOrderWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PurchaseOrderScalarFieldEnum | PurchaseOrderScalarFieldEnum[]
+  }
+
+  /**
+   * User.owned_ships
+   */
+  export type User$owned_shipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    where?: ShipWhereInput
+    orderBy?: ShipOrderByWithRelationInput | ShipOrderByWithRelationInput[]
+    cursor?: ShipWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ShipScalarFieldEnum | ShipScalarFieldEnum[]
+  }
+
+  /**
+   * User.port_storage
+   */
+  export type User$port_storageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    where?: UserPortStorageWhereInput
+    orderBy?: UserPortStorageOrderByWithRelationInput | UserPortStorageOrderByWithRelationInput[]
+    cursor?: UserPortStorageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserPortStorageScalarFieldEnum | UserPortStorageScalarFieldEnum[]
+  }
+
+  /**
+   * User.notifications
+   */
+  export type User$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * User.pirate_attacks
+   */
+  export type User$pirate_attacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    where?: PirateAttackWhereInput
+    orderBy?: PirateAttackOrderByWithRelationInput | PirateAttackOrderByWithRelationInput[]
+    cursor?: PirateAttackWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PirateAttackScalarFieldEnum | PirateAttackScalarFieldEnum[]
+  }
+
+  /**
+   * User.pirate_cooldown
+   */
+  export type User$pirate_cooldownArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    where?: PirateCooldownWhereInput
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4890,6 +6137,7 @@ export namespace Prisma {
     market_listings?: boolean | Item$market_listingsArgs<ExtArgs>
     equipped_on?: boolean | Item$equipped_onArgs<ExtArgs>
     quest_requirements?: boolean | Item$quest_requirementsArgs<ExtArgs>
+    cargo_box_items?: boolean | Item$cargo_box_itemsArgs<ExtArgs>
     _count?: boolean | ItemCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["item"]>
 
@@ -4927,6 +6175,7 @@ export namespace Prisma {
     market_listings?: boolean | Item$market_listingsArgs<ExtArgs>
     equipped_on?: boolean | Item$equipped_onArgs<ExtArgs>
     quest_requirements?: boolean | Item$quest_requirementsArgs<ExtArgs>
+    cargo_box_items?: boolean | Item$cargo_box_itemsArgs<ExtArgs>
     _count?: boolean | ItemCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -4942,6 +6191,7 @@ export namespace Prisma {
       market_listings: Prisma.$MarketListingPayload<ExtArgs>[]
       equipped_on: Prisma.$UserEquipmentPayload<ExtArgs>[]
       quest_requirements: Prisma.$DailyQuestRequirementPayload<ExtArgs>[]
+      cargo_box_items: Prisma.$CargoBoxItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -5311,6 +6561,7 @@ export namespace Prisma {
     market_listings<T extends Item$market_listingsArgs<ExtArgs> = {}>(args?: Subset<T, Item$market_listingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MarketListingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     equipped_on<T extends Item$equipped_onArgs<ExtArgs> = {}>(args?: Subset<T, Item$equipped_onArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserEquipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     quest_requirements<T extends Item$quest_requirementsArgs<ExtArgs> = {}>(args?: Subset<T, Item$quest_requirementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyQuestRequirementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    cargo_box_items<T extends Item$cargo_box_itemsArgs<ExtArgs> = {}>(args?: Subset<T, Item$cargo_box_itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5909,6 +7160,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DailyQuestRequirementScalarFieldEnum | DailyQuestRequirementScalarFieldEnum[]
+  }
+
+  /**
+   * Item.cargo_box_items
+   */
+  export type Item$cargo_box_itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    where?: CargoBoxItemWhereInput
+    orderBy?: CargoBoxItemOrderByWithRelationInput | CargoBoxItemOrderByWithRelationInput[]
+    cursor?: CargoBoxItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CargoBoxItemScalarFieldEnum | CargoBoxItemScalarFieldEnum[]
   }
 
   /**
@@ -12156,6 +13431,7 @@ export namespace Prisma {
     quantity: number | null
     price: number | null
     enchant_level: number | null
+    cargo_box_id: number | null
   }
 
   export type MarketListingSumAggregateOutputType = {
@@ -12166,6 +13442,7 @@ export namespace Prisma {
     quantity: number | null
     price: number | null
     enchant_level: number | null
+    cargo_box_id: number | null
   }
 
   export type MarketListingMinAggregateOutputType = {
@@ -12184,6 +13461,9 @@ export namespace Prisma {
     special_stat_2: string | null
     special_stat_3: string | null
     special_stat_4: string | null
+    cargo_box_id: number | null
+    is_cross_city: boolean | null
+    origin_city: string | null
   }
 
   export type MarketListingMaxAggregateOutputType = {
@@ -12202,6 +13482,9 @@ export namespace Prisma {
     special_stat_2: string | null
     special_stat_3: string | null
     special_stat_4: string | null
+    cargo_box_id: number | null
+    is_cross_city: boolean | null
+    origin_city: string | null
   }
 
   export type MarketListingCountAggregateOutputType = {
@@ -12220,6 +13503,9 @@ export namespace Prisma {
     special_stat_2: number
     special_stat_3: number
     special_stat_4: number
+    cargo_box_id: number
+    is_cross_city: number
+    origin_city: number
     _all: number
   }
 
@@ -12232,6 +13518,7 @@ export namespace Prisma {
     quantity?: true
     price?: true
     enchant_level?: true
+    cargo_box_id?: true
   }
 
   export type MarketListingSumAggregateInputType = {
@@ -12242,6 +13529,7 @@ export namespace Prisma {
     quantity?: true
     price?: true
     enchant_level?: true
+    cargo_box_id?: true
   }
 
   export type MarketListingMinAggregateInputType = {
@@ -12260,6 +13548,9 @@ export namespace Prisma {
     special_stat_2?: true
     special_stat_3?: true
     special_stat_4?: true
+    cargo_box_id?: true
+    is_cross_city?: true
+    origin_city?: true
   }
 
   export type MarketListingMaxAggregateInputType = {
@@ -12278,6 +13569,9 @@ export namespace Prisma {
     special_stat_2?: true
     special_stat_3?: true
     special_stat_4?: true
+    cargo_box_id?: true
+    is_cross_city?: true
+    origin_city?: true
   }
 
   export type MarketListingCountAggregateInputType = {
@@ -12296,6 +13590,9 @@ export namespace Prisma {
     special_stat_2?: true
     special_stat_3?: true
     special_stat_4?: true
+    cargo_box_id?: true
+    is_cross_city?: true
+    origin_city?: true
     _all?: true
   }
 
@@ -12401,6 +13698,9 @@ export namespace Prisma {
     special_stat_2: string | null
     special_stat_3: string | null
     special_stat_4: string | null
+    cargo_box_id: number | null
+    is_cross_city: boolean
+    origin_city: string | null
     _count: MarketListingCountAggregateOutputType | null
     _avg: MarketListingAvgAggregateOutputType | null
     _sum: MarketListingSumAggregateOutputType | null
@@ -12438,9 +13738,14 @@ export namespace Prisma {
     special_stat_2?: boolean
     special_stat_3?: boolean
     special_stat_4?: boolean
+    cargo_box_id?: boolean
+    is_cross_city?: boolean
+    origin_city?: boolean
     seller?: boolean | UserDefaultArgs<ExtArgs>
     buyer?: boolean | MarketListing$buyerArgs<ExtArgs>
     item?: boolean | ItemDefaultArgs<ExtArgs>
+    cargo_box?: boolean | MarketListing$cargo_boxArgs<ExtArgs>
+    purchase_order?: boolean | MarketListing$purchase_orderArgs<ExtArgs>
   }, ExtArgs["result"]["marketListing"]>
 
 
@@ -12461,13 +13766,18 @@ export namespace Prisma {
     special_stat_2?: boolean
     special_stat_3?: boolean
     special_stat_4?: boolean
+    cargo_box_id?: boolean
+    is_cross_city?: boolean
+    origin_city?: boolean
   }
 
-  export type MarketListingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "seller_id" | "buyer_id" | "item_id" | "quantity" | "price" | "equipment_rarity" | "status" | "created_at" | "sold_at" | "enchant_level" | "special_stat_1" | "special_stat_2" | "special_stat_3" | "special_stat_4", ExtArgs["result"]["marketListing"]>
+  export type MarketListingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "seller_id" | "buyer_id" | "item_id" | "quantity" | "price" | "equipment_rarity" | "status" | "created_at" | "sold_at" | "enchant_level" | "special_stat_1" | "special_stat_2" | "special_stat_3" | "special_stat_4" | "cargo_box_id" | "is_cross_city" | "origin_city", ExtArgs["result"]["marketListing"]>
   export type MarketListingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     seller?: boolean | UserDefaultArgs<ExtArgs>
     buyer?: boolean | MarketListing$buyerArgs<ExtArgs>
     item?: boolean | ItemDefaultArgs<ExtArgs>
+    cargo_box?: boolean | MarketListing$cargo_boxArgs<ExtArgs>
+    purchase_order?: boolean | MarketListing$purchase_orderArgs<ExtArgs>
   }
 
   export type $MarketListingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12476,6 +13786,8 @@ export namespace Prisma {
       seller: Prisma.$UserPayload<ExtArgs>
       buyer: Prisma.$UserPayload<ExtArgs> | null
       item: Prisma.$ItemPayload<ExtArgs>
+      cargo_box: Prisma.$CargoBoxPayload<ExtArgs> | null
+      purchase_order: Prisma.$PurchaseOrderPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -12493,6 +13805,9 @@ export namespace Prisma {
       special_stat_2: string | null
       special_stat_3: string | null
       special_stat_4: string | null
+      cargo_box_id: number | null
+      is_cross_city: boolean
+      origin_city: string | null
     }, ExtArgs["result"]["marketListing"]>
     composites: {}
   }
@@ -12836,6 +14151,8 @@ export namespace Prisma {
     seller<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     buyer<T extends MarketListing$buyerArgs<ExtArgs> = {}>(args?: Subset<T, MarketListing$buyerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     item<T extends ItemDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ItemDefaultArgs<ExtArgs>>): Prisma__ItemClient<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    cargo_box<T extends MarketListing$cargo_boxArgs<ExtArgs> = {}>(args?: Subset<T, MarketListing$cargo_boxArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    purchase_order<T extends MarketListing$purchase_orderArgs<ExtArgs> = {}>(args?: Subset<T, MarketListing$purchase_orderArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12880,6 +14197,9 @@ export namespace Prisma {
     readonly special_stat_2: FieldRef<"MarketListing", 'String'>
     readonly special_stat_3: FieldRef<"MarketListing", 'String'>
     readonly special_stat_4: FieldRef<"MarketListing", 'String'>
+    readonly cargo_box_id: FieldRef<"MarketListing", 'Int'>
+    readonly is_cross_city: FieldRef<"MarketListing", 'Boolean'>
+    readonly origin_city: FieldRef<"MarketListing", 'String'>
   }
     
 
@@ -13239,6 +14559,44 @@ export namespace Prisma {
      */
     include?: UserInclude<ExtArgs> | null
     where?: UserWhereInput
+  }
+
+  /**
+   * MarketListing.cargo_box
+   */
+  export type MarketListing$cargo_boxArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    where?: CargoBoxWhereInput
+  }
+
+  /**
+   * MarketListing.purchase_order
+   */
+  export type MarketListing$purchase_orderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    where?: PurchaseOrderWhereInput
   }
 
   /**
@@ -27000,6 +28358,9454 @@ export namespace Prisma {
 
 
   /**
+   * Model CargoBox
+   */
+
+  export type AggregateCargoBox = {
+    _count: CargoBoxCountAggregateOutputType | null
+    _avg: CargoBoxAvgAggregateOutputType | null
+    _sum: CargoBoxSumAggregateOutputType | null
+    _min: CargoBoxMinAggregateOutputType | null
+    _max: CargoBoxMaxAggregateOutputType | null
+  }
+
+  export type CargoBoxAvgAggregateOutputType = {
+    id: number | null
+    owner_id: number | null
+  }
+
+  export type CargoBoxSumAggregateOutputType = {
+    id: number | null
+    owner_id: number | null
+  }
+
+  export type CargoBoxMinAggregateOutputType = {
+    id: number | null
+    owner_id: number | null
+    size: $Enums.CargoBoxSize | null
+    status: $Enums.CargoBoxStatus | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type CargoBoxMaxAggregateOutputType = {
+    id: number | null
+    owner_id: number | null
+    size: $Enums.CargoBoxSize | null
+    status: $Enums.CargoBoxStatus | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type CargoBoxCountAggregateOutputType = {
+    id: number
+    owner_id: number
+    size: number
+    status: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type CargoBoxAvgAggregateInputType = {
+    id?: true
+    owner_id?: true
+  }
+
+  export type CargoBoxSumAggregateInputType = {
+    id?: true
+    owner_id?: true
+  }
+
+  export type CargoBoxMinAggregateInputType = {
+    id?: true
+    owner_id?: true
+    size?: true
+    status?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type CargoBoxMaxAggregateInputType = {
+    id?: true
+    owner_id?: true
+    size?: true
+    status?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type CargoBoxCountAggregateInputType = {
+    id?: true
+    owner_id?: true
+    size?: true
+    status?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type CargoBoxAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CargoBox to aggregate.
+     */
+    where?: CargoBoxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxes to fetch.
+     */
+    orderBy?: CargoBoxOrderByWithRelationInput | CargoBoxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CargoBoxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CargoBoxes
+    **/
+    _count?: true | CargoBoxCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CargoBoxAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CargoBoxSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CargoBoxMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CargoBoxMaxAggregateInputType
+  }
+
+  export type GetCargoBoxAggregateType<T extends CargoBoxAggregateArgs> = {
+        [P in keyof T & keyof AggregateCargoBox]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCargoBox[P]>
+      : GetScalarType<T[P], AggregateCargoBox[P]>
+  }
+
+
+
+
+  export type CargoBoxGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CargoBoxWhereInput
+    orderBy?: CargoBoxOrderByWithAggregationInput | CargoBoxOrderByWithAggregationInput[]
+    by: CargoBoxScalarFieldEnum[] | CargoBoxScalarFieldEnum
+    having?: CargoBoxScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CargoBoxCountAggregateInputType | true
+    _avg?: CargoBoxAvgAggregateInputType
+    _sum?: CargoBoxSumAggregateInputType
+    _min?: CargoBoxMinAggregateInputType
+    _max?: CargoBoxMaxAggregateInputType
+  }
+
+  export type CargoBoxGroupByOutputType = {
+    id: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status: $Enums.CargoBoxStatus
+    created_at: Date
+    updated_at: Date
+    _count: CargoBoxCountAggregateOutputType | null
+    _avg: CargoBoxAvgAggregateOutputType | null
+    _sum: CargoBoxSumAggregateOutputType | null
+    _min: CargoBoxMinAggregateOutputType | null
+    _max: CargoBoxMaxAggregateOutputType | null
+  }
+
+  type GetCargoBoxGroupByPayload<T extends CargoBoxGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CargoBoxGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CargoBoxGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CargoBoxGroupByOutputType[P]>
+            : GetScalarType<T[P], CargoBoxGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CargoBoxSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    owner_id?: boolean
+    size?: boolean
+    status?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    owner?: boolean | UserDefaultArgs<ExtArgs>
+    items?: boolean | CargoBox$itemsArgs<ExtArgs>
+    listing?: boolean | CargoBox$listingArgs<ExtArgs>
+    order?: boolean | CargoBox$orderArgs<ExtArgs>
+    ship_cargo?: boolean | CargoBox$ship_cargoArgs<ExtArgs>
+    _count?: boolean | CargoBoxCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cargoBox"]>
+
+
+
+  export type CargoBoxSelectScalar = {
+    id?: boolean
+    owner_id?: boolean
+    size?: boolean
+    status?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type CargoBoxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "owner_id" | "size" | "status" | "created_at" | "updated_at", ExtArgs["result"]["cargoBox"]>
+  export type CargoBoxInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    owner?: boolean | UserDefaultArgs<ExtArgs>
+    items?: boolean | CargoBox$itemsArgs<ExtArgs>
+    listing?: boolean | CargoBox$listingArgs<ExtArgs>
+    order?: boolean | CargoBox$orderArgs<ExtArgs>
+    ship_cargo?: boolean | CargoBox$ship_cargoArgs<ExtArgs>
+    _count?: boolean | CargoBoxCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $CargoBoxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CargoBox"
+    objects: {
+      owner: Prisma.$UserPayload<ExtArgs>
+      items: Prisma.$CargoBoxItemPayload<ExtArgs>[]
+      listing: Prisma.$MarketListingPayload<ExtArgs> | null
+      order: Prisma.$PurchaseOrderPayload<ExtArgs> | null
+      ship_cargo: Prisma.$ShipCargoPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      owner_id: number
+      size: $Enums.CargoBoxSize
+      status: $Enums.CargoBoxStatus
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["cargoBox"]>
+    composites: {}
+  }
+
+  type CargoBoxGetPayload<S extends boolean | null | undefined | CargoBoxDefaultArgs> = $Result.GetResult<Prisma.$CargoBoxPayload, S>
+
+  type CargoBoxCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CargoBoxFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CargoBoxCountAggregateInputType | true
+    }
+
+  export interface CargoBoxDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CargoBox'], meta: { name: 'CargoBox' } }
+    /**
+     * Find zero or one CargoBox that matches the filter.
+     * @param {CargoBoxFindUniqueArgs} args - Arguments to find a CargoBox
+     * @example
+     * // Get one CargoBox
+     * const cargoBox = await prisma.cargoBox.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CargoBoxFindUniqueArgs>(args: SelectSubset<T, CargoBoxFindUniqueArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CargoBox that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CargoBoxFindUniqueOrThrowArgs} args - Arguments to find a CargoBox
+     * @example
+     * // Get one CargoBox
+     * const cargoBox = await prisma.cargoBox.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CargoBoxFindUniqueOrThrowArgs>(args: SelectSubset<T, CargoBoxFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CargoBox that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxFindFirstArgs} args - Arguments to find a CargoBox
+     * @example
+     * // Get one CargoBox
+     * const cargoBox = await prisma.cargoBox.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CargoBoxFindFirstArgs>(args?: SelectSubset<T, CargoBoxFindFirstArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CargoBox that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxFindFirstOrThrowArgs} args - Arguments to find a CargoBox
+     * @example
+     * // Get one CargoBox
+     * const cargoBox = await prisma.cargoBox.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CargoBoxFindFirstOrThrowArgs>(args?: SelectSubset<T, CargoBoxFindFirstOrThrowArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CargoBoxes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CargoBoxes
+     * const cargoBoxes = await prisma.cargoBox.findMany()
+     * 
+     * // Get first 10 CargoBoxes
+     * const cargoBoxes = await prisma.cargoBox.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const cargoBoxWithIdOnly = await prisma.cargoBox.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CargoBoxFindManyArgs>(args?: SelectSubset<T, CargoBoxFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CargoBox.
+     * @param {CargoBoxCreateArgs} args - Arguments to create a CargoBox.
+     * @example
+     * // Create one CargoBox
+     * const CargoBox = await prisma.cargoBox.create({
+     *   data: {
+     *     // ... data to create a CargoBox
+     *   }
+     * })
+     * 
+     */
+    create<T extends CargoBoxCreateArgs>(args: SelectSubset<T, CargoBoxCreateArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CargoBoxes.
+     * @param {CargoBoxCreateManyArgs} args - Arguments to create many CargoBoxes.
+     * @example
+     * // Create many CargoBoxes
+     * const cargoBox = await prisma.cargoBox.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CargoBoxCreateManyArgs>(args?: SelectSubset<T, CargoBoxCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a CargoBox.
+     * @param {CargoBoxDeleteArgs} args - Arguments to delete one CargoBox.
+     * @example
+     * // Delete one CargoBox
+     * const CargoBox = await prisma.cargoBox.delete({
+     *   where: {
+     *     // ... filter to delete one CargoBox
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CargoBoxDeleteArgs>(args: SelectSubset<T, CargoBoxDeleteArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CargoBox.
+     * @param {CargoBoxUpdateArgs} args - Arguments to update one CargoBox.
+     * @example
+     * // Update one CargoBox
+     * const cargoBox = await prisma.cargoBox.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CargoBoxUpdateArgs>(args: SelectSubset<T, CargoBoxUpdateArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CargoBoxes.
+     * @param {CargoBoxDeleteManyArgs} args - Arguments to filter CargoBoxes to delete.
+     * @example
+     * // Delete a few CargoBoxes
+     * const { count } = await prisma.cargoBox.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CargoBoxDeleteManyArgs>(args?: SelectSubset<T, CargoBoxDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CargoBoxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CargoBoxes
+     * const cargoBox = await prisma.cargoBox.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CargoBoxUpdateManyArgs>(args: SelectSubset<T, CargoBoxUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one CargoBox.
+     * @param {CargoBoxUpsertArgs} args - Arguments to update or create a CargoBox.
+     * @example
+     * // Update or create a CargoBox
+     * const cargoBox = await prisma.cargoBox.upsert({
+     *   create: {
+     *     // ... data to create a CargoBox
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CargoBox we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CargoBoxUpsertArgs>(args: SelectSubset<T, CargoBoxUpsertArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CargoBoxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxCountArgs} args - Arguments to filter CargoBoxes to count.
+     * @example
+     * // Count the number of CargoBoxes
+     * const count = await prisma.cargoBox.count({
+     *   where: {
+     *     // ... the filter for the CargoBoxes we want to count
+     *   }
+     * })
+    **/
+    count<T extends CargoBoxCountArgs>(
+      args?: Subset<T, CargoBoxCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CargoBoxCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CargoBox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CargoBoxAggregateArgs>(args: Subset<T, CargoBoxAggregateArgs>): Prisma.PrismaPromise<GetCargoBoxAggregateType<T>>
+
+    /**
+     * Group by CargoBox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CargoBoxGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CargoBoxGroupByArgs['orderBy'] }
+        : { orderBy?: CargoBoxGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CargoBoxGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCargoBoxGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CargoBox model
+   */
+  readonly fields: CargoBoxFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CargoBox.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CargoBoxClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    owner<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    items<T extends CargoBox$itemsArgs<ExtArgs> = {}>(args?: Subset<T, CargoBox$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    listing<T extends CargoBox$listingArgs<ExtArgs> = {}>(args?: Subset<T, CargoBox$listingArgs<ExtArgs>>): Prisma__MarketListingClient<$Result.GetResult<Prisma.$MarketListingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    order<T extends CargoBox$orderArgs<ExtArgs> = {}>(args?: Subset<T, CargoBox$orderArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    ship_cargo<T extends CargoBox$ship_cargoArgs<ExtArgs> = {}>(args?: Subset<T, CargoBox$ship_cargoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CargoBox model
+   */
+  interface CargoBoxFieldRefs {
+    readonly id: FieldRef<"CargoBox", 'Int'>
+    readonly owner_id: FieldRef<"CargoBox", 'Int'>
+    readonly size: FieldRef<"CargoBox", 'CargoBoxSize'>
+    readonly status: FieldRef<"CargoBox", 'CargoBoxStatus'>
+    readonly created_at: FieldRef<"CargoBox", 'DateTime'>
+    readonly updated_at: FieldRef<"CargoBox", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CargoBox findUnique
+   */
+  export type CargoBoxFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBox to fetch.
+     */
+    where: CargoBoxWhereUniqueInput
+  }
+
+  /**
+   * CargoBox findUniqueOrThrow
+   */
+  export type CargoBoxFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBox to fetch.
+     */
+    where: CargoBoxWhereUniqueInput
+  }
+
+  /**
+   * CargoBox findFirst
+   */
+  export type CargoBoxFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBox to fetch.
+     */
+    where?: CargoBoxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxes to fetch.
+     */
+    orderBy?: CargoBoxOrderByWithRelationInput | CargoBoxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CargoBoxes.
+     */
+    cursor?: CargoBoxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CargoBoxes.
+     */
+    distinct?: CargoBoxScalarFieldEnum | CargoBoxScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBox findFirstOrThrow
+   */
+  export type CargoBoxFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBox to fetch.
+     */
+    where?: CargoBoxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxes to fetch.
+     */
+    orderBy?: CargoBoxOrderByWithRelationInput | CargoBoxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CargoBoxes.
+     */
+    cursor?: CargoBoxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CargoBoxes.
+     */
+    distinct?: CargoBoxScalarFieldEnum | CargoBoxScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBox findMany
+   */
+  export type CargoBoxFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBoxes to fetch.
+     */
+    where?: CargoBoxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxes to fetch.
+     */
+    orderBy?: CargoBoxOrderByWithRelationInput | CargoBoxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CargoBoxes.
+     */
+    cursor?: CargoBoxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxes.
+     */
+    skip?: number
+    distinct?: CargoBoxScalarFieldEnum | CargoBoxScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBox create
+   */
+  export type CargoBoxCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CargoBox.
+     */
+    data: XOR<CargoBoxCreateInput, CargoBoxUncheckedCreateInput>
+  }
+
+  /**
+   * CargoBox createMany
+   */
+  export type CargoBoxCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CargoBoxes.
+     */
+    data: CargoBoxCreateManyInput | CargoBoxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CargoBox update
+   */
+  export type CargoBoxUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CargoBox.
+     */
+    data: XOR<CargoBoxUpdateInput, CargoBoxUncheckedUpdateInput>
+    /**
+     * Choose, which CargoBox to update.
+     */
+    where: CargoBoxWhereUniqueInput
+  }
+
+  /**
+   * CargoBox updateMany
+   */
+  export type CargoBoxUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CargoBoxes.
+     */
+    data: XOR<CargoBoxUpdateManyMutationInput, CargoBoxUncheckedUpdateManyInput>
+    /**
+     * Filter which CargoBoxes to update
+     */
+    where?: CargoBoxWhereInput
+    /**
+     * Limit how many CargoBoxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CargoBox upsert
+   */
+  export type CargoBoxUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CargoBox to update in case it exists.
+     */
+    where: CargoBoxWhereUniqueInput
+    /**
+     * In case the CargoBox found by the `where` argument doesn't exist, create a new CargoBox with this data.
+     */
+    create: XOR<CargoBoxCreateInput, CargoBoxUncheckedCreateInput>
+    /**
+     * In case the CargoBox was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CargoBoxUpdateInput, CargoBoxUncheckedUpdateInput>
+  }
+
+  /**
+   * CargoBox delete
+   */
+  export type CargoBoxDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+    /**
+     * Filter which CargoBox to delete.
+     */
+    where: CargoBoxWhereUniqueInput
+  }
+
+  /**
+   * CargoBox deleteMany
+   */
+  export type CargoBoxDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CargoBoxes to delete
+     */
+    where?: CargoBoxWhereInput
+    /**
+     * Limit how many CargoBoxes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CargoBox.items
+   */
+  export type CargoBox$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    where?: CargoBoxItemWhereInput
+    orderBy?: CargoBoxItemOrderByWithRelationInput | CargoBoxItemOrderByWithRelationInput[]
+    cursor?: CargoBoxItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CargoBoxItemScalarFieldEnum | CargoBoxItemScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBox.listing
+   */
+  export type CargoBox$listingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MarketListing
+     */
+    select?: MarketListingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MarketListing
+     */
+    omit?: MarketListingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MarketListingInclude<ExtArgs> | null
+    where?: MarketListingWhereInput
+  }
+
+  /**
+   * CargoBox.order
+   */
+  export type CargoBox$orderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    where?: PurchaseOrderWhereInput
+  }
+
+  /**
+   * CargoBox.ship_cargo
+   */
+  export type CargoBox$ship_cargoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    where?: ShipCargoWhereInput
+    orderBy?: ShipCargoOrderByWithRelationInput | ShipCargoOrderByWithRelationInput[]
+    cursor?: ShipCargoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ShipCargoScalarFieldEnum | ShipCargoScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBox without action
+   */
+  export type CargoBoxDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBox
+     */
+    select?: CargoBoxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBox
+     */
+    omit?: CargoBoxOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CargoBoxItem
+   */
+
+  export type AggregateCargoBoxItem = {
+    _count: CargoBoxItemCountAggregateOutputType | null
+    _avg: CargoBoxItemAvgAggregateOutputType | null
+    _sum: CargoBoxItemSumAggregateOutputType | null
+    _min: CargoBoxItemMinAggregateOutputType | null
+    _max: CargoBoxItemMaxAggregateOutputType | null
+  }
+
+  export type CargoBoxItemAvgAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    item_id: number | null
+    quantity: number | null
+    equipment_durability: number | null
+    enchant_level: number | null
+  }
+
+  export type CargoBoxItemSumAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    item_id: number | null
+    quantity: number | null
+    equipment_durability: number | null
+    enchant_level: number | null
+  }
+
+  export type CargoBoxItemMinAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    item_id: number | null
+    quantity: number | null
+    equipment_rarity: $Enums.EquipmentRarity | null
+    equipment_durability: number | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
+  }
+
+  export type CargoBoxItemMaxAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    item_id: number | null
+    quantity: number | null
+    equipment_rarity: $Enums.EquipmentRarity | null
+    equipment_durability: number | null
+    enchant_level: number | null
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
+  }
+
+  export type CargoBoxItemCountAggregateOutputType = {
+    id: number
+    cargo_box_id: number
+    item_id: number
+    quantity: number
+    equipment_rarity: number
+    equipment_durability: number
+    enchant_level: number
+    special_stat_1: number
+    special_stat_2: number
+    special_stat_3: number
+    special_stat_4: number
+    _all: number
+  }
+
+
+  export type CargoBoxItemAvgAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    item_id?: true
+    quantity?: true
+    equipment_durability?: true
+    enchant_level?: true
+  }
+
+  export type CargoBoxItemSumAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    item_id?: true
+    quantity?: true
+    equipment_durability?: true
+    enchant_level?: true
+  }
+
+  export type CargoBoxItemMinAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    item_id?: true
+    quantity?: true
+    equipment_rarity?: true
+    equipment_durability?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
+  }
+
+  export type CargoBoxItemMaxAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    item_id?: true
+    quantity?: true
+    equipment_rarity?: true
+    equipment_durability?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
+  }
+
+  export type CargoBoxItemCountAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    item_id?: true
+    quantity?: true
+    equipment_rarity?: true
+    equipment_durability?: true
+    enchant_level?: true
+    special_stat_1?: true
+    special_stat_2?: true
+    special_stat_3?: true
+    special_stat_4?: true
+    _all?: true
+  }
+
+  export type CargoBoxItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CargoBoxItem to aggregate.
+     */
+    where?: CargoBoxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxItems to fetch.
+     */
+    orderBy?: CargoBoxItemOrderByWithRelationInput | CargoBoxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CargoBoxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CargoBoxItems
+    **/
+    _count?: true | CargoBoxItemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CargoBoxItemAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CargoBoxItemSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CargoBoxItemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CargoBoxItemMaxAggregateInputType
+  }
+
+  export type GetCargoBoxItemAggregateType<T extends CargoBoxItemAggregateArgs> = {
+        [P in keyof T & keyof AggregateCargoBoxItem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCargoBoxItem[P]>
+      : GetScalarType<T[P], AggregateCargoBoxItem[P]>
+  }
+
+
+
+
+  export type CargoBoxItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CargoBoxItemWhereInput
+    orderBy?: CargoBoxItemOrderByWithAggregationInput | CargoBoxItemOrderByWithAggregationInput[]
+    by: CargoBoxItemScalarFieldEnum[] | CargoBoxItemScalarFieldEnum
+    having?: CargoBoxItemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CargoBoxItemCountAggregateInputType | true
+    _avg?: CargoBoxItemAvgAggregateInputType
+    _sum?: CargoBoxItemSumAggregateInputType
+    _min?: CargoBoxItemMinAggregateInputType
+    _max?: CargoBoxItemMaxAggregateInputType
+  }
+
+  export type CargoBoxItemGroupByOutputType = {
+    id: number
+    cargo_box_id: number
+    item_id: number
+    quantity: number
+    equipment_rarity: $Enums.EquipmentRarity | null
+    equipment_durability: number | null
+    enchant_level: number
+    special_stat_1: string | null
+    special_stat_2: string | null
+    special_stat_3: string | null
+    special_stat_4: string | null
+    _count: CargoBoxItemCountAggregateOutputType | null
+    _avg: CargoBoxItemAvgAggregateOutputType | null
+    _sum: CargoBoxItemSumAggregateOutputType | null
+    _min: CargoBoxItemMinAggregateOutputType | null
+    _max: CargoBoxItemMaxAggregateOutputType | null
+  }
+
+  type GetCargoBoxItemGroupByPayload<T extends CargoBoxItemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CargoBoxItemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CargoBoxItemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CargoBoxItemGroupByOutputType[P]>
+            : GetScalarType<T[P], CargoBoxItemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CargoBoxItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cargo_box_id?: boolean
+    item_id?: boolean
+    quantity?: boolean
+    equipment_rarity?: boolean
+    equipment_durability?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
+    cargo_box?: boolean | CargoBoxDefaultArgs<ExtArgs>
+    item?: boolean | ItemDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["cargoBoxItem"]>
+
+
+
+  export type CargoBoxItemSelectScalar = {
+    id?: boolean
+    cargo_box_id?: boolean
+    item_id?: boolean
+    quantity?: boolean
+    equipment_rarity?: boolean
+    equipment_durability?: boolean
+    enchant_level?: boolean
+    special_stat_1?: boolean
+    special_stat_2?: boolean
+    special_stat_3?: boolean
+    special_stat_4?: boolean
+  }
+
+  export type CargoBoxItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cargo_box_id" | "item_id" | "quantity" | "equipment_rarity" | "equipment_durability" | "enchant_level" | "special_stat_1" | "special_stat_2" | "special_stat_3" | "special_stat_4", ExtArgs["result"]["cargoBoxItem"]>
+  export type CargoBoxItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cargo_box?: boolean | CargoBoxDefaultArgs<ExtArgs>
+    item?: boolean | ItemDefaultArgs<ExtArgs>
+  }
+
+  export type $CargoBoxItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CargoBoxItem"
+    objects: {
+      cargo_box: Prisma.$CargoBoxPayload<ExtArgs>
+      item: Prisma.$ItemPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      cargo_box_id: number
+      item_id: number
+      quantity: number
+      equipment_rarity: $Enums.EquipmentRarity | null
+      equipment_durability: number | null
+      enchant_level: number
+      special_stat_1: string | null
+      special_stat_2: string | null
+      special_stat_3: string | null
+      special_stat_4: string | null
+    }, ExtArgs["result"]["cargoBoxItem"]>
+    composites: {}
+  }
+
+  type CargoBoxItemGetPayload<S extends boolean | null | undefined | CargoBoxItemDefaultArgs> = $Result.GetResult<Prisma.$CargoBoxItemPayload, S>
+
+  type CargoBoxItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CargoBoxItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CargoBoxItemCountAggregateInputType | true
+    }
+
+  export interface CargoBoxItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CargoBoxItem'], meta: { name: 'CargoBoxItem' } }
+    /**
+     * Find zero or one CargoBoxItem that matches the filter.
+     * @param {CargoBoxItemFindUniqueArgs} args - Arguments to find a CargoBoxItem
+     * @example
+     * // Get one CargoBoxItem
+     * const cargoBoxItem = await prisma.cargoBoxItem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CargoBoxItemFindUniqueArgs>(args: SelectSubset<T, CargoBoxItemFindUniqueArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CargoBoxItem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CargoBoxItemFindUniqueOrThrowArgs} args - Arguments to find a CargoBoxItem
+     * @example
+     * // Get one CargoBoxItem
+     * const cargoBoxItem = await prisma.cargoBoxItem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CargoBoxItemFindUniqueOrThrowArgs>(args: SelectSubset<T, CargoBoxItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CargoBoxItem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemFindFirstArgs} args - Arguments to find a CargoBoxItem
+     * @example
+     * // Get one CargoBoxItem
+     * const cargoBoxItem = await prisma.cargoBoxItem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CargoBoxItemFindFirstArgs>(args?: SelectSubset<T, CargoBoxItemFindFirstArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CargoBoxItem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemFindFirstOrThrowArgs} args - Arguments to find a CargoBoxItem
+     * @example
+     * // Get one CargoBoxItem
+     * const cargoBoxItem = await prisma.cargoBoxItem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CargoBoxItemFindFirstOrThrowArgs>(args?: SelectSubset<T, CargoBoxItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CargoBoxItems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CargoBoxItems
+     * const cargoBoxItems = await prisma.cargoBoxItem.findMany()
+     * 
+     * // Get first 10 CargoBoxItems
+     * const cargoBoxItems = await prisma.cargoBoxItem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const cargoBoxItemWithIdOnly = await prisma.cargoBoxItem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CargoBoxItemFindManyArgs>(args?: SelectSubset<T, CargoBoxItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CargoBoxItem.
+     * @param {CargoBoxItemCreateArgs} args - Arguments to create a CargoBoxItem.
+     * @example
+     * // Create one CargoBoxItem
+     * const CargoBoxItem = await prisma.cargoBoxItem.create({
+     *   data: {
+     *     // ... data to create a CargoBoxItem
+     *   }
+     * })
+     * 
+     */
+    create<T extends CargoBoxItemCreateArgs>(args: SelectSubset<T, CargoBoxItemCreateArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CargoBoxItems.
+     * @param {CargoBoxItemCreateManyArgs} args - Arguments to create many CargoBoxItems.
+     * @example
+     * // Create many CargoBoxItems
+     * const cargoBoxItem = await prisma.cargoBoxItem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CargoBoxItemCreateManyArgs>(args?: SelectSubset<T, CargoBoxItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a CargoBoxItem.
+     * @param {CargoBoxItemDeleteArgs} args - Arguments to delete one CargoBoxItem.
+     * @example
+     * // Delete one CargoBoxItem
+     * const CargoBoxItem = await prisma.cargoBoxItem.delete({
+     *   where: {
+     *     // ... filter to delete one CargoBoxItem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CargoBoxItemDeleteArgs>(args: SelectSubset<T, CargoBoxItemDeleteArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CargoBoxItem.
+     * @param {CargoBoxItemUpdateArgs} args - Arguments to update one CargoBoxItem.
+     * @example
+     * // Update one CargoBoxItem
+     * const cargoBoxItem = await prisma.cargoBoxItem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CargoBoxItemUpdateArgs>(args: SelectSubset<T, CargoBoxItemUpdateArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CargoBoxItems.
+     * @param {CargoBoxItemDeleteManyArgs} args - Arguments to filter CargoBoxItems to delete.
+     * @example
+     * // Delete a few CargoBoxItems
+     * const { count } = await prisma.cargoBoxItem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CargoBoxItemDeleteManyArgs>(args?: SelectSubset<T, CargoBoxItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CargoBoxItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CargoBoxItems
+     * const cargoBoxItem = await prisma.cargoBoxItem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CargoBoxItemUpdateManyArgs>(args: SelectSubset<T, CargoBoxItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one CargoBoxItem.
+     * @param {CargoBoxItemUpsertArgs} args - Arguments to update or create a CargoBoxItem.
+     * @example
+     * // Update or create a CargoBoxItem
+     * const cargoBoxItem = await prisma.cargoBoxItem.upsert({
+     *   create: {
+     *     // ... data to create a CargoBoxItem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CargoBoxItem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CargoBoxItemUpsertArgs>(args: SelectSubset<T, CargoBoxItemUpsertArgs<ExtArgs>>): Prisma__CargoBoxItemClient<$Result.GetResult<Prisma.$CargoBoxItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CargoBoxItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemCountArgs} args - Arguments to filter CargoBoxItems to count.
+     * @example
+     * // Count the number of CargoBoxItems
+     * const count = await prisma.cargoBoxItem.count({
+     *   where: {
+     *     // ... the filter for the CargoBoxItems we want to count
+     *   }
+     * })
+    **/
+    count<T extends CargoBoxItemCountArgs>(
+      args?: Subset<T, CargoBoxItemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CargoBoxItemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CargoBoxItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CargoBoxItemAggregateArgs>(args: Subset<T, CargoBoxItemAggregateArgs>): Prisma.PrismaPromise<GetCargoBoxItemAggregateType<T>>
+
+    /**
+     * Group by CargoBoxItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CargoBoxItemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CargoBoxItemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CargoBoxItemGroupByArgs['orderBy'] }
+        : { orderBy?: CargoBoxItemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CargoBoxItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCargoBoxItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CargoBoxItem model
+   */
+  readonly fields: CargoBoxItemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CargoBoxItem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CargoBoxItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    cargo_box<T extends CargoBoxDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CargoBoxDefaultArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    item<T extends ItemDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ItemDefaultArgs<ExtArgs>>): Prisma__ItemClient<$Result.GetResult<Prisma.$ItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CargoBoxItem model
+   */
+  interface CargoBoxItemFieldRefs {
+    readonly id: FieldRef<"CargoBoxItem", 'Int'>
+    readonly cargo_box_id: FieldRef<"CargoBoxItem", 'Int'>
+    readonly item_id: FieldRef<"CargoBoxItem", 'Int'>
+    readonly quantity: FieldRef<"CargoBoxItem", 'Int'>
+    readonly equipment_rarity: FieldRef<"CargoBoxItem", 'EquipmentRarity'>
+    readonly equipment_durability: FieldRef<"CargoBoxItem", 'Float'>
+    readonly enchant_level: FieldRef<"CargoBoxItem", 'Int'>
+    readonly special_stat_1: FieldRef<"CargoBoxItem", 'String'>
+    readonly special_stat_2: FieldRef<"CargoBoxItem", 'String'>
+    readonly special_stat_3: FieldRef<"CargoBoxItem", 'String'>
+    readonly special_stat_4: FieldRef<"CargoBoxItem", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CargoBoxItem findUnique
+   */
+  export type CargoBoxItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBoxItem to fetch.
+     */
+    where: CargoBoxItemWhereUniqueInput
+  }
+
+  /**
+   * CargoBoxItem findUniqueOrThrow
+   */
+  export type CargoBoxItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBoxItem to fetch.
+     */
+    where: CargoBoxItemWhereUniqueInput
+  }
+
+  /**
+   * CargoBoxItem findFirst
+   */
+  export type CargoBoxItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBoxItem to fetch.
+     */
+    where?: CargoBoxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxItems to fetch.
+     */
+    orderBy?: CargoBoxItemOrderByWithRelationInput | CargoBoxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CargoBoxItems.
+     */
+    cursor?: CargoBoxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CargoBoxItems.
+     */
+    distinct?: CargoBoxItemScalarFieldEnum | CargoBoxItemScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBoxItem findFirstOrThrow
+   */
+  export type CargoBoxItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBoxItem to fetch.
+     */
+    where?: CargoBoxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxItems to fetch.
+     */
+    orderBy?: CargoBoxItemOrderByWithRelationInput | CargoBoxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CargoBoxItems.
+     */
+    cursor?: CargoBoxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CargoBoxItems.
+     */
+    distinct?: CargoBoxItemScalarFieldEnum | CargoBoxItemScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBoxItem findMany
+   */
+  export type CargoBoxItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which CargoBoxItems to fetch.
+     */
+    where?: CargoBoxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CargoBoxItems to fetch.
+     */
+    orderBy?: CargoBoxItemOrderByWithRelationInput | CargoBoxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CargoBoxItems.
+     */
+    cursor?: CargoBoxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CargoBoxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CargoBoxItems.
+     */
+    skip?: number
+    distinct?: CargoBoxItemScalarFieldEnum | CargoBoxItemScalarFieldEnum[]
+  }
+
+  /**
+   * CargoBoxItem create
+   */
+  export type CargoBoxItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CargoBoxItem.
+     */
+    data: XOR<CargoBoxItemCreateInput, CargoBoxItemUncheckedCreateInput>
+  }
+
+  /**
+   * CargoBoxItem createMany
+   */
+  export type CargoBoxItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CargoBoxItems.
+     */
+    data: CargoBoxItemCreateManyInput | CargoBoxItemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CargoBoxItem update
+   */
+  export type CargoBoxItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CargoBoxItem.
+     */
+    data: XOR<CargoBoxItemUpdateInput, CargoBoxItemUncheckedUpdateInput>
+    /**
+     * Choose, which CargoBoxItem to update.
+     */
+    where: CargoBoxItemWhereUniqueInput
+  }
+
+  /**
+   * CargoBoxItem updateMany
+   */
+  export type CargoBoxItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CargoBoxItems.
+     */
+    data: XOR<CargoBoxItemUpdateManyMutationInput, CargoBoxItemUncheckedUpdateManyInput>
+    /**
+     * Filter which CargoBoxItems to update
+     */
+    where?: CargoBoxItemWhereInput
+    /**
+     * Limit how many CargoBoxItems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CargoBoxItem upsert
+   */
+  export type CargoBoxItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CargoBoxItem to update in case it exists.
+     */
+    where: CargoBoxItemWhereUniqueInput
+    /**
+     * In case the CargoBoxItem found by the `where` argument doesn't exist, create a new CargoBoxItem with this data.
+     */
+    create: XOR<CargoBoxItemCreateInput, CargoBoxItemUncheckedCreateInput>
+    /**
+     * In case the CargoBoxItem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CargoBoxItemUpdateInput, CargoBoxItemUncheckedUpdateInput>
+  }
+
+  /**
+   * CargoBoxItem delete
+   */
+  export type CargoBoxItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+    /**
+     * Filter which CargoBoxItem to delete.
+     */
+    where: CargoBoxItemWhereUniqueInput
+  }
+
+  /**
+   * CargoBoxItem deleteMany
+   */
+  export type CargoBoxItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CargoBoxItems to delete
+     */
+    where?: CargoBoxItemWhereInput
+    /**
+     * Limit how many CargoBoxItems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CargoBoxItem without action
+   */
+  export type CargoBoxItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CargoBoxItem
+     */
+    select?: CargoBoxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CargoBoxItem
+     */
+    omit?: CargoBoxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CargoBoxItemInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PurchaseOrder
+   */
+
+  export type AggregatePurchaseOrder = {
+    _count: PurchaseOrderCountAggregateOutputType | null
+    _avg: PurchaseOrderAvgAggregateOutputType | null
+    _sum: PurchaseOrderSumAggregateOutputType | null
+    _min: PurchaseOrderMinAggregateOutputType | null
+    _max: PurchaseOrderMaxAggregateOutputType | null
+  }
+
+  export type PurchaseOrderAvgAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    listing_id: number | null
+    buyer_id: number | null
+    seller_id: number | null
+    price: number | null
+    locked_amount: number | null
+    export_tax: number | null
+    import_tax: number | null
+  }
+
+  export type PurchaseOrderSumAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    listing_id: number | null
+    buyer_id: number | null
+    seller_id: number | null
+    price: number | null
+    locked_amount: number | null
+    export_tax: number | null
+    import_tax: number | null
+  }
+
+  export type PurchaseOrderMinAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    listing_id: number | null
+    buyer_id: number | null
+    seller_id: number | null
+    price: number | null
+    locked_amount: number | null
+    export_tax: number | null
+    import_tax: number | null
+    status: $Enums.PurchaseOrderStatus | null
+    expires_at: Date | null
+    created_at: Date | null
+    settled_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type PurchaseOrderMaxAggregateOutputType = {
+    id: number | null
+    cargo_box_id: number | null
+    listing_id: number | null
+    buyer_id: number | null
+    seller_id: number | null
+    price: number | null
+    locked_amount: number | null
+    export_tax: number | null
+    import_tax: number | null
+    status: $Enums.PurchaseOrderStatus | null
+    expires_at: Date | null
+    created_at: Date | null
+    settled_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type PurchaseOrderCountAggregateOutputType = {
+    id: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax: number
+    import_tax: number
+    status: number
+    expires_at: number
+    created_at: number
+    settled_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type PurchaseOrderAvgAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    listing_id?: true
+    buyer_id?: true
+    seller_id?: true
+    price?: true
+    locked_amount?: true
+    export_tax?: true
+    import_tax?: true
+  }
+
+  export type PurchaseOrderSumAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    listing_id?: true
+    buyer_id?: true
+    seller_id?: true
+    price?: true
+    locked_amount?: true
+    export_tax?: true
+    import_tax?: true
+  }
+
+  export type PurchaseOrderMinAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    listing_id?: true
+    buyer_id?: true
+    seller_id?: true
+    price?: true
+    locked_amount?: true
+    export_tax?: true
+    import_tax?: true
+    status?: true
+    expires_at?: true
+    created_at?: true
+    settled_at?: true
+    updated_at?: true
+  }
+
+  export type PurchaseOrderMaxAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    listing_id?: true
+    buyer_id?: true
+    seller_id?: true
+    price?: true
+    locked_amount?: true
+    export_tax?: true
+    import_tax?: true
+    status?: true
+    expires_at?: true
+    created_at?: true
+    settled_at?: true
+    updated_at?: true
+  }
+
+  export type PurchaseOrderCountAggregateInputType = {
+    id?: true
+    cargo_box_id?: true
+    listing_id?: true
+    buyer_id?: true
+    seller_id?: true
+    price?: true
+    locked_amount?: true
+    export_tax?: true
+    import_tax?: true
+    status?: true
+    expires_at?: true
+    created_at?: true
+    settled_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type PurchaseOrderAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PurchaseOrder to aggregate.
+     */
+    where?: PurchaseOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PurchaseOrders to fetch.
+     */
+    orderBy?: PurchaseOrderOrderByWithRelationInput | PurchaseOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PurchaseOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PurchaseOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PurchaseOrders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PurchaseOrders
+    **/
+    _count?: true | PurchaseOrderCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PurchaseOrderAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PurchaseOrderSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PurchaseOrderMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PurchaseOrderMaxAggregateInputType
+  }
+
+  export type GetPurchaseOrderAggregateType<T extends PurchaseOrderAggregateArgs> = {
+        [P in keyof T & keyof AggregatePurchaseOrder]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePurchaseOrder[P]>
+      : GetScalarType<T[P], AggregatePurchaseOrder[P]>
+  }
+
+
+
+
+  export type PurchaseOrderGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PurchaseOrderWhereInput
+    orderBy?: PurchaseOrderOrderByWithAggregationInput | PurchaseOrderOrderByWithAggregationInput[]
+    by: PurchaseOrderScalarFieldEnum[] | PurchaseOrderScalarFieldEnum
+    having?: PurchaseOrderScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PurchaseOrderCountAggregateInputType | true
+    _avg?: PurchaseOrderAvgAggregateInputType
+    _sum?: PurchaseOrderSumAggregateInputType
+    _min?: PurchaseOrderMinAggregateInputType
+    _max?: PurchaseOrderMaxAggregateInputType
+  }
+
+  export type PurchaseOrderGroupByOutputType = {
+    id: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax: number
+    import_tax: number
+    status: $Enums.PurchaseOrderStatus
+    expires_at: Date
+    created_at: Date
+    settled_at: Date | null
+    updated_at: Date
+    _count: PurchaseOrderCountAggregateOutputType | null
+    _avg: PurchaseOrderAvgAggregateOutputType | null
+    _sum: PurchaseOrderSumAggregateOutputType | null
+    _min: PurchaseOrderMinAggregateOutputType | null
+    _max: PurchaseOrderMaxAggregateOutputType | null
+  }
+
+  type GetPurchaseOrderGroupByPayload<T extends PurchaseOrderGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PurchaseOrderGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PurchaseOrderGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PurchaseOrderGroupByOutputType[P]>
+            : GetScalarType<T[P], PurchaseOrderGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PurchaseOrderSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cargo_box_id?: boolean
+    listing_id?: boolean
+    buyer_id?: boolean
+    seller_id?: boolean
+    price?: boolean
+    locked_amount?: boolean
+    export_tax?: boolean
+    import_tax?: boolean
+    status?: boolean
+    expires_at?: boolean
+    created_at?: boolean
+    settled_at?: boolean
+    updated_at?: boolean
+    cargo_box?: boolean | CargoBoxDefaultArgs<ExtArgs>
+    listing?: boolean | MarketListingDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+    shipment?: boolean | PurchaseOrder$shipmentArgs<ExtArgs>
+  }, ExtArgs["result"]["purchaseOrder"]>
+
+
+
+  export type PurchaseOrderSelectScalar = {
+    id?: boolean
+    cargo_box_id?: boolean
+    listing_id?: boolean
+    buyer_id?: boolean
+    seller_id?: boolean
+    price?: boolean
+    locked_amount?: boolean
+    export_tax?: boolean
+    import_tax?: boolean
+    status?: boolean
+    expires_at?: boolean
+    created_at?: boolean
+    settled_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type PurchaseOrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cargo_box_id" | "listing_id" | "buyer_id" | "seller_id" | "price" | "locked_amount" | "export_tax" | "import_tax" | "status" | "expires_at" | "created_at" | "settled_at" | "updated_at", ExtArgs["result"]["purchaseOrder"]>
+  export type PurchaseOrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cargo_box?: boolean | CargoBoxDefaultArgs<ExtArgs>
+    listing?: boolean | MarketListingDefaultArgs<ExtArgs>
+    buyer?: boolean | UserDefaultArgs<ExtArgs>
+    seller?: boolean | UserDefaultArgs<ExtArgs>
+    shipment?: boolean | PurchaseOrder$shipmentArgs<ExtArgs>
+  }
+
+  export type $PurchaseOrderPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PurchaseOrder"
+    objects: {
+      cargo_box: Prisma.$CargoBoxPayload<ExtArgs>
+      listing: Prisma.$MarketListingPayload<ExtArgs>
+      buyer: Prisma.$UserPayload<ExtArgs>
+      seller: Prisma.$UserPayload<ExtArgs>
+      shipment: Prisma.$ShipCargoPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      cargo_box_id: number
+      listing_id: number
+      buyer_id: number
+      seller_id: number
+      price: number
+      locked_amount: number
+      export_tax: number
+      import_tax: number
+      status: $Enums.PurchaseOrderStatus
+      expires_at: Date
+      created_at: Date
+      settled_at: Date | null
+      updated_at: Date
+    }, ExtArgs["result"]["purchaseOrder"]>
+    composites: {}
+  }
+
+  type PurchaseOrderGetPayload<S extends boolean | null | undefined | PurchaseOrderDefaultArgs> = $Result.GetResult<Prisma.$PurchaseOrderPayload, S>
+
+  type PurchaseOrderCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PurchaseOrderFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PurchaseOrderCountAggregateInputType | true
+    }
+
+  export interface PurchaseOrderDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PurchaseOrder'], meta: { name: 'PurchaseOrder' } }
+    /**
+     * Find zero or one PurchaseOrder that matches the filter.
+     * @param {PurchaseOrderFindUniqueArgs} args - Arguments to find a PurchaseOrder
+     * @example
+     * // Get one PurchaseOrder
+     * const purchaseOrder = await prisma.purchaseOrder.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PurchaseOrderFindUniqueArgs>(args: SelectSubset<T, PurchaseOrderFindUniqueArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PurchaseOrder that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PurchaseOrderFindUniqueOrThrowArgs} args - Arguments to find a PurchaseOrder
+     * @example
+     * // Get one PurchaseOrder
+     * const purchaseOrder = await prisma.purchaseOrder.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PurchaseOrderFindUniqueOrThrowArgs>(args: SelectSubset<T, PurchaseOrderFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PurchaseOrder that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderFindFirstArgs} args - Arguments to find a PurchaseOrder
+     * @example
+     * // Get one PurchaseOrder
+     * const purchaseOrder = await prisma.purchaseOrder.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PurchaseOrderFindFirstArgs>(args?: SelectSubset<T, PurchaseOrderFindFirstArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PurchaseOrder that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderFindFirstOrThrowArgs} args - Arguments to find a PurchaseOrder
+     * @example
+     * // Get one PurchaseOrder
+     * const purchaseOrder = await prisma.purchaseOrder.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PurchaseOrderFindFirstOrThrowArgs>(args?: SelectSubset<T, PurchaseOrderFindFirstOrThrowArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PurchaseOrders that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PurchaseOrders
+     * const purchaseOrders = await prisma.purchaseOrder.findMany()
+     * 
+     * // Get first 10 PurchaseOrders
+     * const purchaseOrders = await prisma.purchaseOrder.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const purchaseOrderWithIdOnly = await prisma.purchaseOrder.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PurchaseOrderFindManyArgs>(args?: SelectSubset<T, PurchaseOrderFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PurchaseOrder.
+     * @param {PurchaseOrderCreateArgs} args - Arguments to create a PurchaseOrder.
+     * @example
+     * // Create one PurchaseOrder
+     * const PurchaseOrder = await prisma.purchaseOrder.create({
+     *   data: {
+     *     // ... data to create a PurchaseOrder
+     *   }
+     * })
+     * 
+     */
+    create<T extends PurchaseOrderCreateArgs>(args: SelectSubset<T, PurchaseOrderCreateArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PurchaseOrders.
+     * @param {PurchaseOrderCreateManyArgs} args - Arguments to create many PurchaseOrders.
+     * @example
+     * // Create many PurchaseOrders
+     * const purchaseOrder = await prisma.purchaseOrder.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PurchaseOrderCreateManyArgs>(args?: SelectSubset<T, PurchaseOrderCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PurchaseOrder.
+     * @param {PurchaseOrderDeleteArgs} args - Arguments to delete one PurchaseOrder.
+     * @example
+     * // Delete one PurchaseOrder
+     * const PurchaseOrder = await prisma.purchaseOrder.delete({
+     *   where: {
+     *     // ... filter to delete one PurchaseOrder
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PurchaseOrderDeleteArgs>(args: SelectSubset<T, PurchaseOrderDeleteArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PurchaseOrder.
+     * @param {PurchaseOrderUpdateArgs} args - Arguments to update one PurchaseOrder.
+     * @example
+     * // Update one PurchaseOrder
+     * const purchaseOrder = await prisma.purchaseOrder.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PurchaseOrderUpdateArgs>(args: SelectSubset<T, PurchaseOrderUpdateArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PurchaseOrders.
+     * @param {PurchaseOrderDeleteManyArgs} args - Arguments to filter PurchaseOrders to delete.
+     * @example
+     * // Delete a few PurchaseOrders
+     * const { count } = await prisma.purchaseOrder.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PurchaseOrderDeleteManyArgs>(args?: SelectSubset<T, PurchaseOrderDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PurchaseOrders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PurchaseOrders
+     * const purchaseOrder = await prisma.purchaseOrder.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PurchaseOrderUpdateManyArgs>(args: SelectSubset<T, PurchaseOrderUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PurchaseOrder.
+     * @param {PurchaseOrderUpsertArgs} args - Arguments to update or create a PurchaseOrder.
+     * @example
+     * // Update or create a PurchaseOrder
+     * const purchaseOrder = await prisma.purchaseOrder.upsert({
+     *   create: {
+     *     // ... data to create a PurchaseOrder
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PurchaseOrder we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PurchaseOrderUpsertArgs>(args: SelectSubset<T, PurchaseOrderUpsertArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PurchaseOrders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderCountArgs} args - Arguments to filter PurchaseOrders to count.
+     * @example
+     * // Count the number of PurchaseOrders
+     * const count = await prisma.purchaseOrder.count({
+     *   where: {
+     *     // ... the filter for the PurchaseOrders we want to count
+     *   }
+     * })
+    **/
+    count<T extends PurchaseOrderCountArgs>(
+      args?: Subset<T, PurchaseOrderCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PurchaseOrderCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PurchaseOrder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PurchaseOrderAggregateArgs>(args: Subset<T, PurchaseOrderAggregateArgs>): Prisma.PrismaPromise<GetPurchaseOrderAggregateType<T>>
+
+    /**
+     * Group by PurchaseOrder.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PurchaseOrderGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PurchaseOrderGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PurchaseOrderGroupByArgs['orderBy'] }
+        : { orderBy?: PurchaseOrderGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PurchaseOrderGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPurchaseOrderGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PurchaseOrder model
+   */
+  readonly fields: PurchaseOrderFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PurchaseOrder.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PurchaseOrderClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    cargo_box<T extends CargoBoxDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CargoBoxDefaultArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    listing<T extends MarketListingDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MarketListingDefaultArgs<ExtArgs>>): Prisma__MarketListingClient<$Result.GetResult<Prisma.$MarketListingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    buyer<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    seller<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    shipment<T extends PurchaseOrder$shipmentArgs<ExtArgs> = {}>(args?: Subset<T, PurchaseOrder$shipmentArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PurchaseOrder model
+   */
+  interface PurchaseOrderFieldRefs {
+    readonly id: FieldRef<"PurchaseOrder", 'Int'>
+    readonly cargo_box_id: FieldRef<"PurchaseOrder", 'Int'>
+    readonly listing_id: FieldRef<"PurchaseOrder", 'Int'>
+    readonly buyer_id: FieldRef<"PurchaseOrder", 'Int'>
+    readonly seller_id: FieldRef<"PurchaseOrder", 'Int'>
+    readonly price: FieldRef<"PurchaseOrder", 'Int'>
+    readonly locked_amount: FieldRef<"PurchaseOrder", 'Int'>
+    readonly export_tax: FieldRef<"PurchaseOrder", 'Int'>
+    readonly import_tax: FieldRef<"PurchaseOrder", 'Int'>
+    readonly status: FieldRef<"PurchaseOrder", 'PurchaseOrderStatus'>
+    readonly expires_at: FieldRef<"PurchaseOrder", 'DateTime'>
+    readonly created_at: FieldRef<"PurchaseOrder", 'DateTime'>
+    readonly settled_at: FieldRef<"PurchaseOrder", 'DateTime'>
+    readonly updated_at: FieldRef<"PurchaseOrder", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PurchaseOrder findUnique
+   */
+  export type PurchaseOrderFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which PurchaseOrder to fetch.
+     */
+    where: PurchaseOrderWhereUniqueInput
+  }
+
+  /**
+   * PurchaseOrder findUniqueOrThrow
+   */
+  export type PurchaseOrderFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which PurchaseOrder to fetch.
+     */
+    where: PurchaseOrderWhereUniqueInput
+  }
+
+  /**
+   * PurchaseOrder findFirst
+   */
+  export type PurchaseOrderFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which PurchaseOrder to fetch.
+     */
+    where?: PurchaseOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PurchaseOrders to fetch.
+     */
+    orderBy?: PurchaseOrderOrderByWithRelationInput | PurchaseOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PurchaseOrders.
+     */
+    cursor?: PurchaseOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PurchaseOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PurchaseOrders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PurchaseOrders.
+     */
+    distinct?: PurchaseOrderScalarFieldEnum | PurchaseOrderScalarFieldEnum[]
+  }
+
+  /**
+   * PurchaseOrder findFirstOrThrow
+   */
+  export type PurchaseOrderFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which PurchaseOrder to fetch.
+     */
+    where?: PurchaseOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PurchaseOrders to fetch.
+     */
+    orderBy?: PurchaseOrderOrderByWithRelationInput | PurchaseOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PurchaseOrders.
+     */
+    cursor?: PurchaseOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PurchaseOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PurchaseOrders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PurchaseOrders.
+     */
+    distinct?: PurchaseOrderScalarFieldEnum | PurchaseOrderScalarFieldEnum[]
+  }
+
+  /**
+   * PurchaseOrder findMany
+   */
+  export type PurchaseOrderFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * Filter, which PurchaseOrders to fetch.
+     */
+    where?: PurchaseOrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PurchaseOrders to fetch.
+     */
+    orderBy?: PurchaseOrderOrderByWithRelationInput | PurchaseOrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PurchaseOrders.
+     */
+    cursor?: PurchaseOrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PurchaseOrders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PurchaseOrders.
+     */
+    skip?: number
+    distinct?: PurchaseOrderScalarFieldEnum | PurchaseOrderScalarFieldEnum[]
+  }
+
+  /**
+   * PurchaseOrder create
+   */
+  export type PurchaseOrderCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PurchaseOrder.
+     */
+    data: XOR<PurchaseOrderCreateInput, PurchaseOrderUncheckedCreateInput>
+  }
+
+  /**
+   * PurchaseOrder createMany
+   */
+  export type PurchaseOrderCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PurchaseOrders.
+     */
+    data: PurchaseOrderCreateManyInput | PurchaseOrderCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PurchaseOrder update
+   */
+  export type PurchaseOrderUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PurchaseOrder.
+     */
+    data: XOR<PurchaseOrderUpdateInput, PurchaseOrderUncheckedUpdateInput>
+    /**
+     * Choose, which PurchaseOrder to update.
+     */
+    where: PurchaseOrderWhereUniqueInput
+  }
+
+  /**
+   * PurchaseOrder updateMany
+   */
+  export type PurchaseOrderUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PurchaseOrders.
+     */
+    data: XOR<PurchaseOrderUpdateManyMutationInput, PurchaseOrderUncheckedUpdateManyInput>
+    /**
+     * Filter which PurchaseOrders to update
+     */
+    where?: PurchaseOrderWhereInput
+    /**
+     * Limit how many PurchaseOrders to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PurchaseOrder upsert
+   */
+  export type PurchaseOrderUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PurchaseOrder to update in case it exists.
+     */
+    where: PurchaseOrderWhereUniqueInput
+    /**
+     * In case the PurchaseOrder found by the `where` argument doesn't exist, create a new PurchaseOrder with this data.
+     */
+    create: XOR<PurchaseOrderCreateInput, PurchaseOrderUncheckedCreateInput>
+    /**
+     * In case the PurchaseOrder was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PurchaseOrderUpdateInput, PurchaseOrderUncheckedUpdateInput>
+  }
+
+  /**
+   * PurchaseOrder delete
+   */
+  export type PurchaseOrderDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+    /**
+     * Filter which PurchaseOrder to delete.
+     */
+    where: PurchaseOrderWhereUniqueInput
+  }
+
+  /**
+   * PurchaseOrder deleteMany
+   */
+  export type PurchaseOrderDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PurchaseOrders to delete
+     */
+    where?: PurchaseOrderWhereInput
+    /**
+     * Limit how many PurchaseOrders to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PurchaseOrder.shipment
+   */
+  export type PurchaseOrder$shipmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    where?: ShipCargoWhereInput
+  }
+
+  /**
+   * PurchaseOrder without action
+   */
+  export type PurchaseOrderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PurchaseOrder
+     */
+    select?: PurchaseOrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PurchaseOrder
+     */
+    omit?: PurchaseOrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PurchaseOrderInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Ship
+   */
+
+  export type AggregateShip = {
+    _count: ShipCountAggregateOutputType | null
+    _avg: ShipAvgAggregateOutputType | null
+    _sum: ShipSumAggregateOutputType | null
+    _min: ShipMinAggregateOutputType | null
+    _max: ShipMaxAggregateOutputType | null
+  }
+
+  export type ShipAvgAggregateOutputType = {
+    id: number | null
+    owner_id: number | null
+    capacity: number | null
+  }
+
+  export type ShipSumAggregateOutputType = {
+    id: number | null
+    owner_id: number | null
+    capacity: number | null
+  }
+
+  export type ShipMinAggregateOutputType = {
+    id: number | null
+    type: $Enums.ShipType | null
+    size: $Enums.ShipSize | null
+    owner_id: number | null
+    origin_city: string | null
+    dest_city: string | null
+    status: $Enums.ShipStatus | null
+    capacity: number | null
+    departs_at: Date | null
+    departed_at: Date | null
+    arrives_at: Date | null
+    rps_sequence: string | null
+    is_bot_ship: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ShipMaxAggregateOutputType = {
+    id: number | null
+    type: $Enums.ShipType | null
+    size: $Enums.ShipSize | null
+    owner_id: number | null
+    origin_city: string | null
+    dest_city: string | null
+    status: $Enums.ShipStatus | null
+    capacity: number | null
+    departs_at: Date | null
+    departed_at: Date | null
+    arrives_at: Date | null
+    rps_sequence: string | null
+    is_bot_ship: boolean | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type ShipCountAggregateOutputType = {
+    id: number
+    type: number
+    size: number
+    owner_id: number
+    origin_city: number
+    dest_city: number
+    status: number
+    capacity: number
+    departs_at: number
+    departed_at: number
+    arrives_at: number
+    rps_sequence: number
+    is_bot_ship: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type ShipAvgAggregateInputType = {
+    id?: true
+    owner_id?: true
+    capacity?: true
+  }
+
+  export type ShipSumAggregateInputType = {
+    id?: true
+    owner_id?: true
+    capacity?: true
+  }
+
+  export type ShipMinAggregateInputType = {
+    id?: true
+    type?: true
+    size?: true
+    owner_id?: true
+    origin_city?: true
+    dest_city?: true
+    status?: true
+    capacity?: true
+    departs_at?: true
+    departed_at?: true
+    arrives_at?: true
+    rps_sequence?: true
+    is_bot_ship?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ShipMaxAggregateInputType = {
+    id?: true
+    type?: true
+    size?: true
+    owner_id?: true
+    origin_city?: true
+    dest_city?: true
+    status?: true
+    capacity?: true
+    departs_at?: true
+    departed_at?: true
+    arrives_at?: true
+    rps_sequence?: true
+    is_bot_ship?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type ShipCountAggregateInputType = {
+    id?: true
+    type?: true
+    size?: true
+    owner_id?: true
+    origin_city?: true
+    dest_city?: true
+    status?: true
+    capacity?: true
+    departs_at?: true
+    departed_at?: true
+    arrives_at?: true
+    rps_sequence?: true
+    is_bot_ship?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type ShipAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Ship to aggregate.
+     */
+    where?: ShipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Ships to fetch.
+     */
+    orderBy?: ShipOrderByWithRelationInput | ShipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ShipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Ships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Ships.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Ships
+    **/
+    _count?: true | ShipCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ShipAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ShipSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ShipMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ShipMaxAggregateInputType
+  }
+
+  export type GetShipAggregateType<T extends ShipAggregateArgs> = {
+        [P in keyof T & keyof AggregateShip]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateShip[P]>
+      : GetScalarType<T[P], AggregateShip[P]>
+  }
+
+
+
+
+  export type ShipGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ShipWhereInput
+    orderBy?: ShipOrderByWithAggregationInput | ShipOrderByWithAggregationInput[]
+    by: ShipScalarFieldEnum[] | ShipScalarFieldEnum
+    having?: ShipScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ShipCountAggregateInputType | true
+    _avg?: ShipAvgAggregateInputType
+    _sum?: ShipSumAggregateInputType
+    _min?: ShipMinAggregateInputType
+    _max?: ShipMaxAggregateInputType
+  }
+
+  export type ShipGroupByOutputType = {
+    id: number
+    type: $Enums.ShipType
+    size: $Enums.ShipSize | null
+    owner_id: number | null
+    origin_city: string
+    dest_city: string
+    status: $Enums.ShipStatus
+    capacity: number
+    departs_at: Date | null
+    departed_at: Date | null
+    arrives_at: Date | null
+    rps_sequence: string | null
+    is_bot_ship: boolean
+    created_at: Date
+    updated_at: Date
+    _count: ShipCountAggregateOutputType | null
+    _avg: ShipAvgAggregateOutputType | null
+    _sum: ShipSumAggregateOutputType | null
+    _min: ShipMinAggregateOutputType | null
+    _max: ShipMaxAggregateOutputType | null
+  }
+
+  type GetShipGroupByPayload<T extends ShipGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ShipGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ShipGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ShipGroupByOutputType[P]>
+            : GetScalarType<T[P], ShipGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ShipSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    size?: boolean
+    owner_id?: boolean
+    origin_city?: boolean
+    dest_city?: boolean
+    status?: boolean
+    capacity?: boolean
+    departs_at?: boolean
+    departed_at?: boolean
+    arrives_at?: boolean
+    rps_sequence?: boolean
+    is_bot_ship?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    owner?: boolean | Ship$ownerArgs<ExtArgs>
+    cargo?: boolean | Ship$cargoArgs<ExtArgs>
+    attacks?: boolean | Ship$attacksArgs<ExtArgs>
+    _count?: boolean | ShipCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["ship"]>
+
+
+
+  export type ShipSelectScalar = {
+    id?: boolean
+    type?: boolean
+    size?: boolean
+    owner_id?: boolean
+    origin_city?: boolean
+    dest_city?: boolean
+    status?: boolean
+    capacity?: boolean
+    departs_at?: boolean
+    departed_at?: boolean
+    arrives_at?: boolean
+    rps_sequence?: boolean
+    is_bot_ship?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type ShipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "size" | "owner_id" | "origin_city" | "dest_city" | "status" | "capacity" | "departs_at" | "departed_at" | "arrives_at" | "rps_sequence" | "is_bot_ship" | "created_at" | "updated_at", ExtArgs["result"]["ship"]>
+  export type ShipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    owner?: boolean | Ship$ownerArgs<ExtArgs>
+    cargo?: boolean | Ship$cargoArgs<ExtArgs>
+    attacks?: boolean | Ship$attacksArgs<ExtArgs>
+    _count?: boolean | ShipCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $ShipPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Ship"
+    objects: {
+      owner: Prisma.$UserPayload<ExtArgs> | null
+      cargo: Prisma.$ShipCargoPayload<ExtArgs>[]
+      attacks: Prisma.$PirateAttackPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      type: $Enums.ShipType
+      size: $Enums.ShipSize | null
+      owner_id: number | null
+      origin_city: string
+      dest_city: string
+      status: $Enums.ShipStatus
+      capacity: number
+      departs_at: Date | null
+      departed_at: Date | null
+      arrives_at: Date | null
+      rps_sequence: string | null
+      is_bot_ship: boolean
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["ship"]>
+    composites: {}
+  }
+
+  type ShipGetPayload<S extends boolean | null | undefined | ShipDefaultArgs> = $Result.GetResult<Prisma.$ShipPayload, S>
+
+  type ShipCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ShipFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ShipCountAggregateInputType | true
+    }
+
+  export interface ShipDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Ship'], meta: { name: 'Ship' } }
+    /**
+     * Find zero or one Ship that matches the filter.
+     * @param {ShipFindUniqueArgs} args - Arguments to find a Ship
+     * @example
+     * // Get one Ship
+     * const ship = await prisma.ship.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ShipFindUniqueArgs>(args: SelectSubset<T, ShipFindUniqueArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Ship that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ShipFindUniqueOrThrowArgs} args - Arguments to find a Ship
+     * @example
+     * // Get one Ship
+     * const ship = await prisma.ship.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ShipFindUniqueOrThrowArgs>(args: SelectSubset<T, ShipFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Ship that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipFindFirstArgs} args - Arguments to find a Ship
+     * @example
+     * // Get one Ship
+     * const ship = await prisma.ship.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ShipFindFirstArgs>(args?: SelectSubset<T, ShipFindFirstArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Ship that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipFindFirstOrThrowArgs} args - Arguments to find a Ship
+     * @example
+     * // Get one Ship
+     * const ship = await prisma.ship.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ShipFindFirstOrThrowArgs>(args?: SelectSubset<T, ShipFindFirstOrThrowArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Ships that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Ships
+     * const ships = await prisma.ship.findMany()
+     * 
+     * // Get first 10 Ships
+     * const ships = await prisma.ship.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const shipWithIdOnly = await prisma.ship.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ShipFindManyArgs>(args?: SelectSubset<T, ShipFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Ship.
+     * @param {ShipCreateArgs} args - Arguments to create a Ship.
+     * @example
+     * // Create one Ship
+     * const Ship = await prisma.ship.create({
+     *   data: {
+     *     // ... data to create a Ship
+     *   }
+     * })
+     * 
+     */
+    create<T extends ShipCreateArgs>(args: SelectSubset<T, ShipCreateArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Ships.
+     * @param {ShipCreateManyArgs} args - Arguments to create many Ships.
+     * @example
+     * // Create many Ships
+     * const ship = await prisma.ship.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ShipCreateManyArgs>(args?: SelectSubset<T, ShipCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Ship.
+     * @param {ShipDeleteArgs} args - Arguments to delete one Ship.
+     * @example
+     * // Delete one Ship
+     * const Ship = await prisma.ship.delete({
+     *   where: {
+     *     // ... filter to delete one Ship
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ShipDeleteArgs>(args: SelectSubset<T, ShipDeleteArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Ship.
+     * @param {ShipUpdateArgs} args - Arguments to update one Ship.
+     * @example
+     * // Update one Ship
+     * const ship = await prisma.ship.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ShipUpdateArgs>(args: SelectSubset<T, ShipUpdateArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Ships.
+     * @param {ShipDeleteManyArgs} args - Arguments to filter Ships to delete.
+     * @example
+     * // Delete a few Ships
+     * const { count } = await prisma.ship.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ShipDeleteManyArgs>(args?: SelectSubset<T, ShipDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Ships.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Ships
+     * const ship = await prisma.ship.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ShipUpdateManyArgs>(args: SelectSubset<T, ShipUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Ship.
+     * @param {ShipUpsertArgs} args - Arguments to update or create a Ship.
+     * @example
+     * // Update or create a Ship
+     * const ship = await prisma.ship.upsert({
+     *   create: {
+     *     // ... data to create a Ship
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Ship we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ShipUpsertArgs>(args: SelectSubset<T, ShipUpsertArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Ships.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCountArgs} args - Arguments to filter Ships to count.
+     * @example
+     * // Count the number of Ships
+     * const count = await prisma.ship.count({
+     *   where: {
+     *     // ... the filter for the Ships we want to count
+     *   }
+     * })
+    **/
+    count<T extends ShipCountArgs>(
+      args?: Subset<T, ShipCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ShipCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Ship.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ShipAggregateArgs>(args: Subset<T, ShipAggregateArgs>): Prisma.PrismaPromise<GetShipAggregateType<T>>
+
+    /**
+     * Group by Ship.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ShipGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ShipGroupByArgs['orderBy'] }
+        : { orderBy?: ShipGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ShipGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetShipGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Ship model
+   */
+  readonly fields: ShipFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Ship.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ShipClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    owner<T extends Ship$ownerArgs<ExtArgs> = {}>(args?: Subset<T, Ship$ownerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    cargo<T extends Ship$cargoArgs<ExtArgs> = {}>(args?: Subset<T, Ship$cargoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    attacks<T extends Ship$attacksArgs<ExtArgs> = {}>(args?: Subset<T, Ship$attacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Ship model
+   */
+  interface ShipFieldRefs {
+    readonly id: FieldRef<"Ship", 'Int'>
+    readonly type: FieldRef<"Ship", 'ShipType'>
+    readonly size: FieldRef<"Ship", 'ShipSize'>
+    readonly owner_id: FieldRef<"Ship", 'Int'>
+    readonly origin_city: FieldRef<"Ship", 'String'>
+    readonly dest_city: FieldRef<"Ship", 'String'>
+    readonly status: FieldRef<"Ship", 'ShipStatus'>
+    readonly capacity: FieldRef<"Ship", 'Int'>
+    readonly departs_at: FieldRef<"Ship", 'DateTime'>
+    readonly departed_at: FieldRef<"Ship", 'DateTime'>
+    readonly arrives_at: FieldRef<"Ship", 'DateTime'>
+    readonly rps_sequence: FieldRef<"Ship", 'String'>
+    readonly is_bot_ship: FieldRef<"Ship", 'Boolean'>
+    readonly created_at: FieldRef<"Ship", 'DateTime'>
+    readonly updated_at: FieldRef<"Ship", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Ship findUnique
+   */
+  export type ShipFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * Filter, which Ship to fetch.
+     */
+    where: ShipWhereUniqueInput
+  }
+
+  /**
+   * Ship findUniqueOrThrow
+   */
+  export type ShipFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * Filter, which Ship to fetch.
+     */
+    where: ShipWhereUniqueInput
+  }
+
+  /**
+   * Ship findFirst
+   */
+  export type ShipFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * Filter, which Ship to fetch.
+     */
+    where?: ShipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Ships to fetch.
+     */
+    orderBy?: ShipOrderByWithRelationInput | ShipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Ships.
+     */
+    cursor?: ShipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Ships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Ships.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Ships.
+     */
+    distinct?: ShipScalarFieldEnum | ShipScalarFieldEnum[]
+  }
+
+  /**
+   * Ship findFirstOrThrow
+   */
+  export type ShipFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * Filter, which Ship to fetch.
+     */
+    where?: ShipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Ships to fetch.
+     */
+    orderBy?: ShipOrderByWithRelationInput | ShipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Ships.
+     */
+    cursor?: ShipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Ships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Ships.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Ships.
+     */
+    distinct?: ShipScalarFieldEnum | ShipScalarFieldEnum[]
+  }
+
+  /**
+   * Ship findMany
+   */
+  export type ShipFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * Filter, which Ships to fetch.
+     */
+    where?: ShipWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Ships to fetch.
+     */
+    orderBy?: ShipOrderByWithRelationInput | ShipOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Ships.
+     */
+    cursor?: ShipWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Ships from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Ships.
+     */
+    skip?: number
+    distinct?: ShipScalarFieldEnum | ShipScalarFieldEnum[]
+  }
+
+  /**
+   * Ship create
+   */
+  export type ShipCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Ship.
+     */
+    data: XOR<ShipCreateInput, ShipUncheckedCreateInput>
+  }
+
+  /**
+   * Ship createMany
+   */
+  export type ShipCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Ships.
+     */
+    data: ShipCreateManyInput | ShipCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Ship update
+   */
+  export type ShipUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Ship.
+     */
+    data: XOR<ShipUpdateInput, ShipUncheckedUpdateInput>
+    /**
+     * Choose, which Ship to update.
+     */
+    where: ShipWhereUniqueInput
+  }
+
+  /**
+   * Ship updateMany
+   */
+  export type ShipUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Ships.
+     */
+    data: XOR<ShipUpdateManyMutationInput, ShipUncheckedUpdateManyInput>
+    /**
+     * Filter which Ships to update
+     */
+    where?: ShipWhereInput
+    /**
+     * Limit how many Ships to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Ship upsert
+   */
+  export type ShipUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Ship to update in case it exists.
+     */
+    where: ShipWhereUniqueInput
+    /**
+     * In case the Ship found by the `where` argument doesn't exist, create a new Ship with this data.
+     */
+    create: XOR<ShipCreateInput, ShipUncheckedCreateInput>
+    /**
+     * In case the Ship was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ShipUpdateInput, ShipUncheckedUpdateInput>
+  }
+
+  /**
+   * Ship delete
+   */
+  export type ShipDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+    /**
+     * Filter which Ship to delete.
+     */
+    where: ShipWhereUniqueInput
+  }
+
+  /**
+   * Ship deleteMany
+   */
+  export type ShipDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Ships to delete
+     */
+    where?: ShipWhereInput
+    /**
+     * Limit how many Ships to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Ship.owner
+   */
+  export type Ship$ownerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Ship.cargo
+   */
+  export type Ship$cargoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    where?: ShipCargoWhereInput
+    orderBy?: ShipCargoOrderByWithRelationInput | ShipCargoOrderByWithRelationInput[]
+    cursor?: ShipCargoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ShipCargoScalarFieldEnum | ShipCargoScalarFieldEnum[]
+  }
+
+  /**
+   * Ship.attacks
+   */
+  export type Ship$attacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    where?: PirateAttackWhereInput
+    orderBy?: PirateAttackOrderByWithRelationInput | PirateAttackOrderByWithRelationInput[]
+    cursor?: PirateAttackWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PirateAttackScalarFieldEnum | PirateAttackScalarFieldEnum[]
+  }
+
+  /**
+   * Ship without action
+   */
+  export type ShipDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ship
+     */
+    select?: ShipSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ship
+     */
+    omit?: ShipOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ShipCargo
+   */
+
+  export type AggregateShipCargo = {
+    _count: ShipCargoCountAggregateOutputType | null
+    _avg: ShipCargoAvgAggregateOutputType | null
+    _sum: ShipCargoSumAggregateOutputType | null
+    _min: ShipCargoMinAggregateOutputType | null
+    _max: ShipCargoMaxAggregateOutputType | null
+  }
+
+  export type ShipCargoAvgAggregateOutputType = {
+    id: number | null
+    ship_id: number | null
+    order_id: number | null
+    cargo_box_id: number | null
+  }
+
+  export type ShipCargoSumAggregateOutputType = {
+    id: number | null
+    ship_id: number | null
+    order_id: number | null
+    cargo_box_id: number | null
+  }
+
+  export type ShipCargoMinAggregateOutputType = {
+    id: number | null
+    ship_id: number | null
+    order_id: number | null
+    cargo_box_id: number | null
+    loaded_at: Date | null
+  }
+
+  export type ShipCargoMaxAggregateOutputType = {
+    id: number | null
+    ship_id: number | null
+    order_id: number | null
+    cargo_box_id: number | null
+    loaded_at: Date | null
+  }
+
+  export type ShipCargoCountAggregateOutputType = {
+    id: number
+    ship_id: number
+    order_id: number
+    cargo_box_id: number
+    loaded_at: number
+    _all: number
+  }
+
+
+  export type ShipCargoAvgAggregateInputType = {
+    id?: true
+    ship_id?: true
+    order_id?: true
+    cargo_box_id?: true
+  }
+
+  export type ShipCargoSumAggregateInputType = {
+    id?: true
+    ship_id?: true
+    order_id?: true
+    cargo_box_id?: true
+  }
+
+  export type ShipCargoMinAggregateInputType = {
+    id?: true
+    ship_id?: true
+    order_id?: true
+    cargo_box_id?: true
+    loaded_at?: true
+  }
+
+  export type ShipCargoMaxAggregateInputType = {
+    id?: true
+    ship_id?: true
+    order_id?: true
+    cargo_box_id?: true
+    loaded_at?: true
+  }
+
+  export type ShipCargoCountAggregateInputType = {
+    id?: true
+    ship_id?: true
+    order_id?: true
+    cargo_box_id?: true
+    loaded_at?: true
+    _all?: true
+  }
+
+  export type ShipCargoAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ShipCargo to aggregate.
+     */
+    where?: ShipCargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ShipCargos to fetch.
+     */
+    orderBy?: ShipCargoOrderByWithRelationInput | ShipCargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ShipCargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ShipCargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ShipCargos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ShipCargos
+    **/
+    _count?: true | ShipCargoCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ShipCargoAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ShipCargoSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ShipCargoMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ShipCargoMaxAggregateInputType
+  }
+
+  export type GetShipCargoAggregateType<T extends ShipCargoAggregateArgs> = {
+        [P in keyof T & keyof AggregateShipCargo]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateShipCargo[P]>
+      : GetScalarType<T[P], AggregateShipCargo[P]>
+  }
+
+
+
+
+  export type ShipCargoGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ShipCargoWhereInput
+    orderBy?: ShipCargoOrderByWithAggregationInput | ShipCargoOrderByWithAggregationInput[]
+    by: ShipCargoScalarFieldEnum[] | ShipCargoScalarFieldEnum
+    having?: ShipCargoScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ShipCargoCountAggregateInputType | true
+    _avg?: ShipCargoAvgAggregateInputType
+    _sum?: ShipCargoSumAggregateInputType
+    _min?: ShipCargoMinAggregateInputType
+    _max?: ShipCargoMaxAggregateInputType
+  }
+
+  export type ShipCargoGroupByOutputType = {
+    id: number
+    ship_id: number
+    order_id: number
+    cargo_box_id: number
+    loaded_at: Date
+    _count: ShipCargoCountAggregateOutputType | null
+    _avg: ShipCargoAvgAggregateOutputType | null
+    _sum: ShipCargoSumAggregateOutputType | null
+    _min: ShipCargoMinAggregateOutputType | null
+    _max: ShipCargoMaxAggregateOutputType | null
+  }
+
+  type GetShipCargoGroupByPayload<T extends ShipCargoGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ShipCargoGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ShipCargoGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ShipCargoGroupByOutputType[P]>
+            : GetScalarType<T[P], ShipCargoGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ShipCargoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    ship_id?: boolean
+    order_id?: boolean
+    cargo_box_id?: boolean
+    loaded_at?: boolean
+    ship?: boolean | ShipDefaultArgs<ExtArgs>
+    order?: boolean | PurchaseOrderDefaultArgs<ExtArgs>
+    cargo_box?: boolean | CargoBoxDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["shipCargo"]>
+
+
+
+  export type ShipCargoSelectScalar = {
+    id?: boolean
+    ship_id?: boolean
+    order_id?: boolean
+    cargo_box_id?: boolean
+    loaded_at?: boolean
+  }
+
+  export type ShipCargoOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "ship_id" | "order_id" | "cargo_box_id" | "loaded_at", ExtArgs["result"]["shipCargo"]>
+  export type ShipCargoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    ship?: boolean | ShipDefaultArgs<ExtArgs>
+    order?: boolean | PurchaseOrderDefaultArgs<ExtArgs>
+    cargo_box?: boolean | CargoBoxDefaultArgs<ExtArgs>
+  }
+
+  export type $ShipCargoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ShipCargo"
+    objects: {
+      ship: Prisma.$ShipPayload<ExtArgs>
+      order: Prisma.$PurchaseOrderPayload<ExtArgs>
+      cargo_box: Prisma.$CargoBoxPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      ship_id: number
+      order_id: number
+      cargo_box_id: number
+      loaded_at: Date
+    }, ExtArgs["result"]["shipCargo"]>
+    composites: {}
+  }
+
+  type ShipCargoGetPayload<S extends boolean | null | undefined | ShipCargoDefaultArgs> = $Result.GetResult<Prisma.$ShipCargoPayload, S>
+
+  type ShipCargoCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ShipCargoFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ShipCargoCountAggregateInputType | true
+    }
+
+  export interface ShipCargoDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ShipCargo'], meta: { name: 'ShipCargo' } }
+    /**
+     * Find zero or one ShipCargo that matches the filter.
+     * @param {ShipCargoFindUniqueArgs} args - Arguments to find a ShipCargo
+     * @example
+     * // Get one ShipCargo
+     * const shipCargo = await prisma.shipCargo.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ShipCargoFindUniqueArgs>(args: SelectSubset<T, ShipCargoFindUniqueArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ShipCargo that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ShipCargoFindUniqueOrThrowArgs} args - Arguments to find a ShipCargo
+     * @example
+     * // Get one ShipCargo
+     * const shipCargo = await prisma.shipCargo.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ShipCargoFindUniqueOrThrowArgs>(args: SelectSubset<T, ShipCargoFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ShipCargo that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoFindFirstArgs} args - Arguments to find a ShipCargo
+     * @example
+     * // Get one ShipCargo
+     * const shipCargo = await prisma.shipCargo.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ShipCargoFindFirstArgs>(args?: SelectSubset<T, ShipCargoFindFirstArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ShipCargo that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoFindFirstOrThrowArgs} args - Arguments to find a ShipCargo
+     * @example
+     * // Get one ShipCargo
+     * const shipCargo = await prisma.shipCargo.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ShipCargoFindFirstOrThrowArgs>(args?: SelectSubset<T, ShipCargoFindFirstOrThrowArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ShipCargos that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ShipCargos
+     * const shipCargos = await prisma.shipCargo.findMany()
+     * 
+     * // Get first 10 ShipCargos
+     * const shipCargos = await prisma.shipCargo.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const shipCargoWithIdOnly = await prisma.shipCargo.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ShipCargoFindManyArgs>(args?: SelectSubset<T, ShipCargoFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ShipCargo.
+     * @param {ShipCargoCreateArgs} args - Arguments to create a ShipCargo.
+     * @example
+     * // Create one ShipCargo
+     * const ShipCargo = await prisma.shipCargo.create({
+     *   data: {
+     *     // ... data to create a ShipCargo
+     *   }
+     * })
+     * 
+     */
+    create<T extends ShipCargoCreateArgs>(args: SelectSubset<T, ShipCargoCreateArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ShipCargos.
+     * @param {ShipCargoCreateManyArgs} args - Arguments to create many ShipCargos.
+     * @example
+     * // Create many ShipCargos
+     * const shipCargo = await prisma.shipCargo.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ShipCargoCreateManyArgs>(args?: SelectSubset<T, ShipCargoCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ShipCargo.
+     * @param {ShipCargoDeleteArgs} args - Arguments to delete one ShipCargo.
+     * @example
+     * // Delete one ShipCargo
+     * const ShipCargo = await prisma.shipCargo.delete({
+     *   where: {
+     *     // ... filter to delete one ShipCargo
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ShipCargoDeleteArgs>(args: SelectSubset<T, ShipCargoDeleteArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ShipCargo.
+     * @param {ShipCargoUpdateArgs} args - Arguments to update one ShipCargo.
+     * @example
+     * // Update one ShipCargo
+     * const shipCargo = await prisma.shipCargo.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ShipCargoUpdateArgs>(args: SelectSubset<T, ShipCargoUpdateArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ShipCargos.
+     * @param {ShipCargoDeleteManyArgs} args - Arguments to filter ShipCargos to delete.
+     * @example
+     * // Delete a few ShipCargos
+     * const { count } = await prisma.shipCargo.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ShipCargoDeleteManyArgs>(args?: SelectSubset<T, ShipCargoDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ShipCargos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ShipCargos
+     * const shipCargo = await prisma.shipCargo.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ShipCargoUpdateManyArgs>(args: SelectSubset<T, ShipCargoUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ShipCargo.
+     * @param {ShipCargoUpsertArgs} args - Arguments to update or create a ShipCargo.
+     * @example
+     * // Update or create a ShipCargo
+     * const shipCargo = await prisma.shipCargo.upsert({
+     *   create: {
+     *     // ... data to create a ShipCargo
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ShipCargo we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ShipCargoUpsertArgs>(args: SelectSubset<T, ShipCargoUpsertArgs<ExtArgs>>): Prisma__ShipCargoClient<$Result.GetResult<Prisma.$ShipCargoPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ShipCargos.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoCountArgs} args - Arguments to filter ShipCargos to count.
+     * @example
+     * // Count the number of ShipCargos
+     * const count = await prisma.shipCargo.count({
+     *   where: {
+     *     // ... the filter for the ShipCargos we want to count
+     *   }
+     * })
+    **/
+    count<T extends ShipCargoCountArgs>(
+      args?: Subset<T, ShipCargoCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ShipCargoCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ShipCargo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ShipCargoAggregateArgs>(args: Subset<T, ShipCargoAggregateArgs>): Prisma.PrismaPromise<GetShipCargoAggregateType<T>>
+
+    /**
+     * Group by ShipCargo.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ShipCargoGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ShipCargoGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ShipCargoGroupByArgs['orderBy'] }
+        : { orderBy?: ShipCargoGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ShipCargoGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetShipCargoGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ShipCargo model
+   */
+  readonly fields: ShipCargoFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ShipCargo.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ShipCargoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    ship<T extends ShipDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ShipDefaultArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    order<T extends PurchaseOrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PurchaseOrderDefaultArgs<ExtArgs>>): Prisma__PurchaseOrderClient<$Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    cargo_box<T extends CargoBoxDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CargoBoxDefaultArgs<ExtArgs>>): Prisma__CargoBoxClient<$Result.GetResult<Prisma.$CargoBoxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ShipCargo model
+   */
+  interface ShipCargoFieldRefs {
+    readonly id: FieldRef<"ShipCargo", 'Int'>
+    readonly ship_id: FieldRef<"ShipCargo", 'Int'>
+    readonly order_id: FieldRef<"ShipCargo", 'Int'>
+    readonly cargo_box_id: FieldRef<"ShipCargo", 'Int'>
+    readonly loaded_at: FieldRef<"ShipCargo", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ShipCargo findUnique
+   */
+  export type ShipCargoFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * Filter, which ShipCargo to fetch.
+     */
+    where: ShipCargoWhereUniqueInput
+  }
+
+  /**
+   * ShipCargo findUniqueOrThrow
+   */
+  export type ShipCargoFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * Filter, which ShipCargo to fetch.
+     */
+    where: ShipCargoWhereUniqueInput
+  }
+
+  /**
+   * ShipCargo findFirst
+   */
+  export type ShipCargoFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * Filter, which ShipCargo to fetch.
+     */
+    where?: ShipCargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ShipCargos to fetch.
+     */
+    orderBy?: ShipCargoOrderByWithRelationInput | ShipCargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ShipCargos.
+     */
+    cursor?: ShipCargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ShipCargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ShipCargos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ShipCargos.
+     */
+    distinct?: ShipCargoScalarFieldEnum | ShipCargoScalarFieldEnum[]
+  }
+
+  /**
+   * ShipCargo findFirstOrThrow
+   */
+  export type ShipCargoFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * Filter, which ShipCargo to fetch.
+     */
+    where?: ShipCargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ShipCargos to fetch.
+     */
+    orderBy?: ShipCargoOrderByWithRelationInput | ShipCargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ShipCargos.
+     */
+    cursor?: ShipCargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ShipCargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ShipCargos.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ShipCargos.
+     */
+    distinct?: ShipCargoScalarFieldEnum | ShipCargoScalarFieldEnum[]
+  }
+
+  /**
+   * ShipCargo findMany
+   */
+  export type ShipCargoFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * Filter, which ShipCargos to fetch.
+     */
+    where?: ShipCargoWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ShipCargos to fetch.
+     */
+    orderBy?: ShipCargoOrderByWithRelationInput | ShipCargoOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ShipCargos.
+     */
+    cursor?: ShipCargoWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ShipCargos from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ShipCargos.
+     */
+    skip?: number
+    distinct?: ShipCargoScalarFieldEnum | ShipCargoScalarFieldEnum[]
+  }
+
+  /**
+   * ShipCargo create
+   */
+  export type ShipCargoCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ShipCargo.
+     */
+    data: XOR<ShipCargoCreateInput, ShipCargoUncheckedCreateInput>
+  }
+
+  /**
+   * ShipCargo createMany
+   */
+  export type ShipCargoCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ShipCargos.
+     */
+    data: ShipCargoCreateManyInput | ShipCargoCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ShipCargo update
+   */
+  export type ShipCargoUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ShipCargo.
+     */
+    data: XOR<ShipCargoUpdateInput, ShipCargoUncheckedUpdateInput>
+    /**
+     * Choose, which ShipCargo to update.
+     */
+    where: ShipCargoWhereUniqueInput
+  }
+
+  /**
+   * ShipCargo updateMany
+   */
+  export type ShipCargoUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ShipCargos.
+     */
+    data: XOR<ShipCargoUpdateManyMutationInput, ShipCargoUncheckedUpdateManyInput>
+    /**
+     * Filter which ShipCargos to update
+     */
+    where?: ShipCargoWhereInput
+    /**
+     * Limit how many ShipCargos to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ShipCargo upsert
+   */
+  export type ShipCargoUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ShipCargo to update in case it exists.
+     */
+    where: ShipCargoWhereUniqueInput
+    /**
+     * In case the ShipCargo found by the `where` argument doesn't exist, create a new ShipCargo with this data.
+     */
+    create: XOR<ShipCargoCreateInput, ShipCargoUncheckedCreateInput>
+    /**
+     * In case the ShipCargo was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ShipCargoUpdateInput, ShipCargoUncheckedUpdateInput>
+  }
+
+  /**
+   * ShipCargo delete
+   */
+  export type ShipCargoDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+    /**
+     * Filter which ShipCargo to delete.
+     */
+    where: ShipCargoWhereUniqueInput
+  }
+
+  /**
+   * ShipCargo deleteMany
+   */
+  export type ShipCargoDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ShipCargos to delete
+     */
+    where?: ShipCargoWhereInput
+    /**
+     * Limit how many ShipCargos to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ShipCargo without action
+   */
+  export type ShipCargoDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ShipCargo
+     */
+    select?: ShipCargoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ShipCargo
+     */
+    omit?: ShipCargoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ShipCargoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PirateAttack
+   */
+
+  export type AggregatePirateAttack = {
+    _count: PirateAttackCountAggregateOutputType | null
+    _avg: PirateAttackAvgAggregateOutputType | null
+    _sum: PirateAttackSumAggregateOutputType | null
+    _min: PirateAttackMinAggregateOutputType | null
+    _max: PirateAttackMaxAggregateOutputType | null
+  }
+
+  export type PirateAttackAvgAggregateOutputType = {
+    id: number | null
+    attacker_id: number | null
+    target_ship_id: number | null
+    attacker_wins: number | null
+    defender_wins: number | null
+    draws: number | null
+    fuel_cost: number | null
+    credit_cost: number | null
+  }
+
+  export type PirateAttackSumAggregateOutputType = {
+    id: number | null
+    attacker_id: number | null
+    target_ship_id: number | null
+    attacker_wins: number | null
+    defender_wins: number | null
+    draws: number | null
+    fuel_cost: number | null
+    credit_cost: number | null
+  }
+
+  export type PirateAttackMinAggregateOutputType = {
+    id: number | null
+    attacker_id: number | null
+    target_ship_id: number | null
+    attacker_ship_size: $Enums.ShipSize | null
+    attacker_rps: string | null
+    defender_rps: string | null
+    result_detail: string | null
+    attacker_wins: number | null
+    defender_wins: number | null
+    draws: number | null
+    is_success: boolean | null
+    fuel_cost: number | null
+    credit_cost: number | null
+    status: $Enums.PirateAttackStatus | null
+    created_at: Date | null
+    resolved_at: Date | null
+  }
+
+  export type PirateAttackMaxAggregateOutputType = {
+    id: number | null
+    attacker_id: number | null
+    target_ship_id: number | null
+    attacker_ship_size: $Enums.ShipSize | null
+    attacker_rps: string | null
+    defender_rps: string | null
+    result_detail: string | null
+    attacker_wins: number | null
+    defender_wins: number | null
+    draws: number | null
+    is_success: boolean | null
+    fuel_cost: number | null
+    credit_cost: number | null
+    status: $Enums.PirateAttackStatus | null
+    created_at: Date | null
+    resolved_at: Date | null
+  }
+
+  export type PirateAttackCountAggregateOutputType = {
+    id: number
+    attacker_id: number
+    target_ship_id: number
+    attacker_ship_size: number
+    attacker_rps: number
+    defender_rps: number
+    result_detail: number
+    attacker_wins: number
+    defender_wins: number
+    draws: number
+    is_success: number
+    fuel_cost: number
+    credit_cost: number
+    status: number
+    created_at: number
+    resolved_at: number
+    _all: number
+  }
+
+
+  export type PirateAttackAvgAggregateInputType = {
+    id?: true
+    attacker_id?: true
+    target_ship_id?: true
+    attacker_wins?: true
+    defender_wins?: true
+    draws?: true
+    fuel_cost?: true
+    credit_cost?: true
+  }
+
+  export type PirateAttackSumAggregateInputType = {
+    id?: true
+    attacker_id?: true
+    target_ship_id?: true
+    attacker_wins?: true
+    defender_wins?: true
+    draws?: true
+    fuel_cost?: true
+    credit_cost?: true
+  }
+
+  export type PirateAttackMinAggregateInputType = {
+    id?: true
+    attacker_id?: true
+    target_ship_id?: true
+    attacker_ship_size?: true
+    attacker_rps?: true
+    defender_rps?: true
+    result_detail?: true
+    attacker_wins?: true
+    defender_wins?: true
+    draws?: true
+    is_success?: true
+    fuel_cost?: true
+    credit_cost?: true
+    status?: true
+    created_at?: true
+    resolved_at?: true
+  }
+
+  export type PirateAttackMaxAggregateInputType = {
+    id?: true
+    attacker_id?: true
+    target_ship_id?: true
+    attacker_ship_size?: true
+    attacker_rps?: true
+    defender_rps?: true
+    result_detail?: true
+    attacker_wins?: true
+    defender_wins?: true
+    draws?: true
+    is_success?: true
+    fuel_cost?: true
+    credit_cost?: true
+    status?: true
+    created_at?: true
+    resolved_at?: true
+  }
+
+  export type PirateAttackCountAggregateInputType = {
+    id?: true
+    attacker_id?: true
+    target_ship_id?: true
+    attacker_ship_size?: true
+    attacker_rps?: true
+    defender_rps?: true
+    result_detail?: true
+    attacker_wins?: true
+    defender_wins?: true
+    draws?: true
+    is_success?: true
+    fuel_cost?: true
+    credit_cost?: true
+    status?: true
+    created_at?: true
+    resolved_at?: true
+    _all?: true
+  }
+
+  export type PirateAttackAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PirateAttack to aggregate.
+     */
+    where?: PirateAttackWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateAttacks to fetch.
+     */
+    orderBy?: PirateAttackOrderByWithRelationInput | PirateAttackOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PirateAttackWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateAttacks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateAttacks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PirateAttacks
+    **/
+    _count?: true | PirateAttackCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PirateAttackAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PirateAttackSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PirateAttackMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PirateAttackMaxAggregateInputType
+  }
+
+  export type GetPirateAttackAggregateType<T extends PirateAttackAggregateArgs> = {
+        [P in keyof T & keyof AggregatePirateAttack]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePirateAttack[P]>
+      : GetScalarType<T[P], AggregatePirateAttack[P]>
+  }
+
+
+
+
+  export type PirateAttackGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PirateAttackWhereInput
+    orderBy?: PirateAttackOrderByWithAggregationInput | PirateAttackOrderByWithAggregationInput[]
+    by: PirateAttackScalarFieldEnum[] | PirateAttackScalarFieldEnum
+    having?: PirateAttackScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PirateAttackCountAggregateInputType | true
+    _avg?: PirateAttackAvgAggregateInputType
+    _sum?: PirateAttackSumAggregateInputType
+    _min?: PirateAttackMinAggregateInputType
+    _max?: PirateAttackMaxAggregateInputType
+  }
+
+  export type PirateAttackGroupByOutputType = {
+    id: number
+    attacker_id: number
+    target_ship_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps: string | null
+    result_detail: string | null
+    attacker_wins: number | null
+    defender_wins: number | null
+    draws: number | null
+    is_success: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status: $Enums.PirateAttackStatus
+    created_at: Date
+    resolved_at: Date | null
+    _count: PirateAttackCountAggregateOutputType | null
+    _avg: PirateAttackAvgAggregateOutputType | null
+    _sum: PirateAttackSumAggregateOutputType | null
+    _min: PirateAttackMinAggregateOutputType | null
+    _max: PirateAttackMaxAggregateOutputType | null
+  }
+
+  type GetPirateAttackGroupByPayload<T extends PirateAttackGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PirateAttackGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PirateAttackGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PirateAttackGroupByOutputType[P]>
+            : GetScalarType<T[P], PirateAttackGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PirateAttackSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    attacker_id?: boolean
+    target_ship_id?: boolean
+    attacker_ship_size?: boolean
+    attacker_rps?: boolean
+    defender_rps?: boolean
+    result_detail?: boolean
+    attacker_wins?: boolean
+    defender_wins?: boolean
+    draws?: boolean
+    is_success?: boolean
+    fuel_cost?: boolean
+    credit_cost?: boolean
+    status?: boolean
+    created_at?: boolean
+    resolved_at?: boolean
+    attacker?: boolean | UserDefaultArgs<ExtArgs>
+    target_ship?: boolean | ShipDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pirateAttack"]>
+
+
+
+  export type PirateAttackSelectScalar = {
+    id?: boolean
+    attacker_id?: boolean
+    target_ship_id?: boolean
+    attacker_ship_size?: boolean
+    attacker_rps?: boolean
+    defender_rps?: boolean
+    result_detail?: boolean
+    attacker_wins?: boolean
+    defender_wins?: boolean
+    draws?: boolean
+    is_success?: boolean
+    fuel_cost?: boolean
+    credit_cost?: boolean
+    status?: boolean
+    created_at?: boolean
+    resolved_at?: boolean
+  }
+
+  export type PirateAttackOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "attacker_id" | "target_ship_id" | "attacker_ship_size" | "attacker_rps" | "defender_rps" | "result_detail" | "attacker_wins" | "defender_wins" | "draws" | "is_success" | "fuel_cost" | "credit_cost" | "status" | "created_at" | "resolved_at", ExtArgs["result"]["pirateAttack"]>
+  export type PirateAttackInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    attacker?: boolean | UserDefaultArgs<ExtArgs>
+    target_ship?: boolean | ShipDefaultArgs<ExtArgs>
+  }
+
+  export type $PirateAttackPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PirateAttack"
+    objects: {
+      attacker: Prisma.$UserPayload<ExtArgs>
+      target_ship: Prisma.$ShipPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      attacker_id: number
+      target_ship_id: number
+      attacker_ship_size: $Enums.ShipSize
+      attacker_rps: string
+      defender_rps: string | null
+      result_detail: string | null
+      attacker_wins: number | null
+      defender_wins: number | null
+      draws: number | null
+      is_success: boolean | null
+      fuel_cost: number
+      credit_cost: number
+      status: $Enums.PirateAttackStatus
+      created_at: Date
+      resolved_at: Date | null
+    }, ExtArgs["result"]["pirateAttack"]>
+    composites: {}
+  }
+
+  type PirateAttackGetPayload<S extends boolean | null | undefined | PirateAttackDefaultArgs> = $Result.GetResult<Prisma.$PirateAttackPayload, S>
+
+  type PirateAttackCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PirateAttackFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PirateAttackCountAggregateInputType | true
+    }
+
+  export interface PirateAttackDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PirateAttack'], meta: { name: 'PirateAttack' } }
+    /**
+     * Find zero or one PirateAttack that matches the filter.
+     * @param {PirateAttackFindUniqueArgs} args - Arguments to find a PirateAttack
+     * @example
+     * // Get one PirateAttack
+     * const pirateAttack = await prisma.pirateAttack.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PirateAttackFindUniqueArgs>(args: SelectSubset<T, PirateAttackFindUniqueArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PirateAttack that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PirateAttackFindUniqueOrThrowArgs} args - Arguments to find a PirateAttack
+     * @example
+     * // Get one PirateAttack
+     * const pirateAttack = await prisma.pirateAttack.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PirateAttackFindUniqueOrThrowArgs>(args: SelectSubset<T, PirateAttackFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PirateAttack that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackFindFirstArgs} args - Arguments to find a PirateAttack
+     * @example
+     * // Get one PirateAttack
+     * const pirateAttack = await prisma.pirateAttack.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PirateAttackFindFirstArgs>(args?: SelectSubset<T, PirateAttackFindFirstArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PirateAttack that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackFindFirstOrThrowArgs} args - Arguments to find a PirateAttack
+     * @example
+     * // Get one PirateAttack
+     * const pirateAttack = await prisma.pirateAttack.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PirateAttackFindFirstOrThrowArgs>(args?: SelectSubset<T, PirateAttackFindFirstOrThrowArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PirateAttacks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PirateAttacks
+     * const pirateAttacks = await prisma.pirateAttack.findMany()
+     * 
+     * // Get first 10 PirateAttacks
+     * const pirateAttacks = await prisma.pirateAttack.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pirateAttackWithIdOnly = await prisma.pirateAttack.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PirateAttackFindManyArgs>(args?: SelectSubset<T, PirateAttackFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PirateAttack.
+     * @param {PirateAttackCreateArgs} args - Arguments to create a PirateAttack.
+     * @example
+     * // Create one PirateAttack
+     * const PirateAttack = await prisma.pirateAttack.create({
+     *   data: {
+     *     // ... data to create a PirateAttack
+     *   }
+     * })
+     * 
+     */
+    create<T extends PirateAttackCreateArgs>(args: SelectSubset<T, PirateAttackCreateArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PirateAttacks.
+     * @param {PirateAttackCreateManyArgs} args - Arguments to create many PirateAttacks.
+     * @example
+     * // Create many PirateAttacks
+     * const pirateAttack = await prisma.pirateAttack.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PirateAttackCreateManyArgs>(args?: SelectSubset<T, PirateAttackCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PirateAttack.
+     * @param {PirateAttackDeleteArgs} args - Arguments to delete one PirateAttack.
+     * @example
+     * // Delete one PirateAttack
+     * const PirateAttack = await prisma.pirateAttack.delete({
+     *   where: {
+     *     // ... filter to delete one PirateAttack
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PirateAttackDeleteArgs>(args: SelectSubset<T, PirateAttackDeleteArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PirateAttack.
+     * @param {PirateAttackUpdateArgs} args - Arguments to update one PirateAttack.
+     * @example
+     * // Update one PirateAttack
+     * const pirateAttack = await prisma.pirateAttack.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PirateAttackUpdateArgs>(args: SelectSubset<T, PirateAttackUpdateArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PirateAttacks.
+     * @param {PirateAttackDeleteManyArgs} args - Arguments to filter PirateAttacks to delete.
+     * @example
+     * // Delete a few PirateAttacks
+     * const { count } = await prisma.pirateAttack.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PirateAttackDeleteManyArgs>(args?: SelectSubset<T, PirateAttackDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PirateAttacks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PirateAttacks
+     * const pirateAttack = await prisma.pirateAttack.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PirateAttackUpdateManyArgs>(args: SelectSubset<T, PirateAttackUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PirateAttack.
+     * @param {PirateAttackUpsertArgs} args - Arguments to update or create a PirateAttack.
+     * @example
+     * // Update or create a PirateAttack
+     * const pirateAttack = await prisma.pirateAttack.upsert({
+     *   create: {
+     *     // ... data to create a PirateAttack
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PirateAttack we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PirateAttackUpsertArgs>(args: SelectSubset<T, PirateAttackUpsertArgs<ExtArgs>>): Prisma__PirateAttackClient<$Result.GetResult<Prisma.$PirateAttackPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PirateAttacks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackCountArgs} args - Arguments to filter PirateAttacks to count.
+     * @example
+     * // Count the number of PirateAttacks
+     * const count = await prisma.pirateAttack.count({
+     *   where: {
+     *     // ... the filter for the PirateAttacks we want to count
+     *   }
+     * })
+    **/
+    count<T extends PirateAttackCountArgs>(
+      args?: Subset<T, PirateAttackCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PirateAttackCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PirateAttack.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PirateAttackAggregateArgs>(args: Subset<T, PirateAttackAggregateArgs>): Prisma.PrismaPromise<GetPirateAttackAggregateType<T>>
+
+    /**
+     * Group by PirateAttack.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateAttackGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PirateAttackGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PirateAttackGroupByArgs['orderBy'] }
+        : { orderBy?: PirateAttackGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PirateAttackGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPirateAttackGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PirateAttack model
+   */
+  readonly fields: PirateAttackFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PirateAttack.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PirateAttackClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    attacker<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    target_ship<T extends ShipDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ShipDefaultArgs<ExtArgs>>): Prisma__ShipClient<$Result.GetResult<Prisma.$ShipPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PirateAttack model
+   */
+  interface PirateAttackFieldRefs {
+    readonly id: FieldRef<"PirateAttack", 'Int'>
+    readonly attacker_id: FieldRef<"PirateAttack", 'Int'>
+    readonly target_ship_id: FieldRef<"PirateAttack", 'Int'>
+    readonly attacker_ship_size: FieldRef<"PirateAttack", 'ShipSize'>
+    readonly attacker_rps: FieldRef<"PirateAttack", 'String'>
+    readonly defender_rps: FieldRef<"PirateAttack", 'String'>
+    readonly result_detail: FieldRef<"PirateAttack", 'String'>
+    readonly attacker_wins: FieldRef<"PirateAttack", 'Int'>
+    readonly defender_wins: FieldRef<"PirateAttack", 'Int'>
+    readonly draws: FieldRef<"PirateAttack", 'Int'>
+    readonly is_success: FieldRef<"PirateAttack", 'Boolean'>
+    readonly fuel_cost: FieldRef<"PirateAttack", 'Int'>
+    readonly credit_cost: FieldRef<"PirateAttack", 'Int'>
+    readonly status: FieldRef<"PirateAttack", 'PirateAttackStatus'>
+    readonly created_at: FieldRef<"PirateAttack", 'DateTime'>
+    readonly resolved_at: FieldRef<"PirateAttack", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PirateAttack findUnique
+   */
+  export type PirateAttackFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateAttack to fetch.
+     */
+    where: PirateAttackWhereUniqueInput
+  }
+
+  /**
+   * PirateAttack findUniqueOrThrow
+   */
+  export type PirateAttackFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateAttack to fetch.
+     */
+    where: PirateAttackWhereUniqueInput
+  }
+
+  /**
+   * PirateAttack findFirst
+   */
+  export type PirateAttackFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateAttack to fetch.
+     */
+    where?: PirateAttackWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateAttacks to fetch.
+     */
+    orderBy?: PirateAttackOrderByWithRelationInput | PirateAttackOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PirateAttacks.
+     */
+    cursor?: PirateAttackWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateAttacks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateAttacks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PirateAttacks.
+     */
+    distinct?: PirateAttackScalarFieldEnum | PirateAttackScalarFieldEnum[]
+  }
+
+  /**
+   * PirateAttack findFirstOrThrow
+   */
+  export type PirateAttackFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateAttack to fetch.
+     */
+    where?: PirateAttackWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateAttacks to fetch.
+     */
+    orderBy?: PirateAttackOrderByWithRelationInput | PirateAttackOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PirateAttacks.
+     */
+    cursor?: PirateAttackWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateAttacks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateAttacks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PirateAttacks.
+     */
+    distinct?: PirateAttackScalarFieldEnum | PirateAttackScalarFieldEnum[]
+  }
+
+  /**
+   * PirateAttack findMany
+   */
+  export type PirateAttackFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateAttacks to fetch.
+     */
+    where?: PirateAttackWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateAttacks to fetch.
+     */
+    orderBy?: PirateAttackOrderByWithRelationInput | PirateAttackOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PirateAttacks.
+     */
+    cursor?: PirateAttackWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateAttacks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateAttacks.
+     */
+    skip?: number
+    distinct?: PirateAttackScalarFieldEnum | PirateAttackScalarFieldEnum[]
+  }
+
+  /**
+   * PirateAttack create
+   */
+  export type PirateAttackCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PirateAttack.
+     */
+    data: XOR<PirateAttackCreateInput, PirateAttackUncheckedCreateInput>
+  }
+
+  /**
+   * PirateAttack createMany
+   */
+  export type PirateAttackCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PirateAttacks.
+     */
+    data: PirateAttackCreateManyInput | PirateAttackCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PirateAttack update
+   */
+  export type PirateAttackUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PirateAttack.
+     */
+    data: XOR<PirateAttackUpdateInput, PirateAttackUncheckedUpdateInput>
+    /**
+     * Choose, which PirateAttack to update.
+     */
+    where: PirateAttackWhereUniqueInput
+  }
+
+  /**
+   * PirateAttack updateMany
+   */
+  export type PirateAttackUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PirateAttacks.
+     */
+    data: XOR<PirateAttackUpdateManyMutationInput, PirateAttackUncheckedUpdateManyInput>
+    /**
+     * Filter which PirateAttacks to update
+     */
+    where?: PirateAttackWhereInput
+    /**
+     * Limit how many PirateAttacks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PirateAttack upsert
+   */
+  export type PirateAttackUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PirateAttack to update in case it exists.
+     */
+    where: PirateAttackWhereUniqueInput
+    /**
+     * In case the PirateAttack found by the `where` argument doesn't exist, create a new PirateAttack with this data.
+     */
+    create: XOR<PirateAttackCreateInput, PirateAttackUncheckedCreateInput>
+    /**
+     * In case the PirateAttack was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PirateAttackUpdateInput, PirateAttackUncheckedUpdateInput>
+  }
+
+  /**
+   * PirateAttack delete
+   */
+  export type PirateAttackDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+    /**
+     * Filter which PirateAttack to delete.
+     */
+    where: PirateAttackWhereUniqueInput
+  }
+
+  /**
+   * PirateAttack deleteMany
+   */
+  export type PirateAttackDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PirateAttacks to delete
+     */
+    where?: PirateAttackWhereInput
+    /**
+     * Limit how many PirateAttacks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PirateAttack without action
+   */
+  export type PirateAttackDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateAttack
+     */
+    select?: PirateAttackSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateAttack
+     */
+    omit?: PirateAttackOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateAttackInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model UserPortStorage
+   */
+
+  export type AggregateUserPortStorage = {
+    _count: UserPortStorageCountAggregateOutputType | null
+    _avg: UserPortStorageAvgAggregateOutputType | null
+    _sum: UserPortStorageSumAggregateOutputType | null
+    _min: UserPortStorageMinAggregateOutputType | null
+    _max: UserPortStorageMaxAggregateOutputType | null
+  }
+
+  export type UserPortStorageAvgAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    max_slots: number | null
+  }
+
+  export type UserPortStorageSumAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    max_slots: number | null
+  }
+
+  export type UserPortStorageMinAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    city_key: string | null
+    max_slots: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type UserPortStorageMaxAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    city_key: string | null
+    max_slots: number | null
+    created_at: Date | null
+    updated_at: Date | null
+  }
+
+  export type UserPortStorageCountAggregateOutputType = {
+    id: number
+    user_id: number
+    city_key: number
+    max_slots: number
+    created_at: number
+    updated_at: number
+    _all: number
+  }
+
+
+  export type UserPortStorageAvgAggregateInputType = {
+    id?: true
+    user_id?: true
+    max_slots?: true
+  }
+
+  export type UserPortStorageSumAggregateInputType = {
+    id?: true
+    user_id?: true
+    max_slots?: true
+  }
+
+  export type UserPortStorageMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    city_key?: true
+    max_slots?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type UserPortStorageMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    city_key?: true
+    max_slots?: true
+    created_at?: true
+    updated_at?: true
+  }
+
+  export type UserPortStorageCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    city_key?: true
+    max_slots?: true
+    created_at?: true
+    updated_at?: true
+    _all?: true
+  }
+
+  export type UserPortStorageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserPortStorage to aggregate.
+     */
+    where?: UserPortStorageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPortStorages to fetch.
+     */
+    orderBy?: UserPortStorageOrderByWithRelationInput | UserPortStorageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserPortStorageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPortStorages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPortStorages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserPortStorages
+    **/
+    _count?: true | UserPortStorageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: UserPortStorageAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserPortStorageSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserPortStorageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserPortStorageMaxAggregateInputType
+  }
+
+  export type GetUserPortStorageAggregateType<T extends UserPortStorageAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserPortStorage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserPortStorage[P]>
+      : GetScalarType<T[P], AggregateUserPortStorage[P]>
+  }
+
+
+
+
+  export type UserPortStorageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserPortStorageWhereInput
+    orderBy?: UserPortStorageOrderByWithAggregationInput | UserPortStorageOrderByWithAggregationInput[]
+    by: UserPortStorageScalarFieldEnum[] | UserPortStorageScalarFieldEnum
+    having?: UserPortStorageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserPortStorageCountAggregateInputType | true
+    _avg?: UserPortStorageAvgAggregateInputType
+    _sum?: UserPortStorageSumAggregateInputType
+    _min?: UserPortStorageMinAggregateInputType
+    _max?: UserPortStorageMaxAggregateInputType
+  }
+
+  export type UserPortStorageGroupByOutputType = {
+    id: number
+    user_id: number
+    city_key: string
+    max_slots: number
+    created_at: Date
+    updated_at: Date
+    _count: UserPortStorageCountAggregateOutputType | null
+    _avg: UserPortStorageAvgAggregateOutputType | null
+    _sum: UserPortStorageSumAggregateOutputType | null
+    _min: UserPortStorageMinAggregateOutputType | null
+    _max: UserPortStorageMaxAggregateOutputType | null
+  }
+
+  type GetUserPortStorageGroupByPayload<T extends UserPortStorageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserPortStorageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserPortStorageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserPortStorageGroupByOutputType[P]>
+            : GetScalarType<T[P], UserPortStorageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserPortStorageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    city_key?: boolean
+    max_slots?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userPortStorage"]>
+
+
+
+  export type UserPortStorageSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    city_key?: boolean
+    max_slots?: boolean
+    created_at?: boolean
+    updated_at?: boolean
+  }
+
+  export type UserPortStorageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "city_key" | "max_slots" | "created_at" | "updated_at", ExtArgs["result"]["userPortStorage"]>
+  export type UserPortStorageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $UserPortStoragePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserPortStorage"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      user_id: number
+      city_key: string
+      max_slots: number
+      created_at: Date
+      updated_at: Date
+    }, ExtArgs["result"]["userPortStorage"]>
+    composites: {}
+  }
+
+  type UserPortStorageGetPayload<S extends boolean | null | undefined | UserPortStorageDefaultArgs> = $Result.GetResult<Prisma.$UserPortStoragePayload, S>
+
+  type UserPortStorageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserPortStorageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserPortStorageCountAggregateInputType | true
+    }
+
+  export interface UserPortStorageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserPortStorage'], meta: { name: 'UserPortStorage' } }
+    /**
+     * Find zero or one UserPortStorage that matches the filter.
+     * @param {UserPortStorageFindUniqueArgs} args - Arguments to find a UserPortStorage
+     * @example
+     * // Get one UserPortStorage
+     * const userPortStorage = await prisma.userPortStorage.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserPortStorageFindUniqueArgs>(args: SelectSubset<T, UserPortStorageFindUniqueArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserPortStorage that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserPortStorageFindUniqueOrThrowArgs} args - Arguments to find a UserPortStorage
+     * @example
+     * // Get one UserPortStorage
+     * const userPortStorage = await prisma.userPortStorage.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserPortStorageFindUniqueOrThrowArgs>(args: SelectSubset<T, UserPortStorageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserPortStorage that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageFindFirstArgs} args - Arguments to find a UserPortStorage
+     * @example
+     * // Get one UserPortStorage
+     * const userPortStorage = await prisma.userPortStorage.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserPortStorageFindFirstArgs>(args?: SelectSubset<T, UserPortStorageFindFirstArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserPortStorage that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageFindFirstOrThrowArgs} args - Arguments to find a UserPortStorage
+     * @example
+     * // Get one UserPortStorage
+     * const userPortStorage = await prisma.userPortStorage.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserPortStorageFindFirstOrThrowArgs>(args?: SelectSubset<T, UserPortStorageFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserPortStorages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserPortStorages
+     * const userPortStorages = await prisma.userPortStorage.findMany()
+     * 
+     * // Get first 10 UserPortStorages
+     * const userPortStorages = await prisma.userPortStorage.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userPortStorageWithIdOnly = await prisma.userPortStorage.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserPortStorageFindManyArgs>(args?: SelectSubset<T, UserPortStorageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserPortStorage.
+     * @param {UserPortStorageCreateArgs} args - Arguments to create a UserPortStorage.
+     * @example
+     * // Create one UserPortStorage
+     * const UserPortStorage = await prisma.userPortStorage.create({
+     *   data: {
+     *     // ... data to create a UserPortStorage
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserPortStorageCreateArgs>(args: SelectSubset<T, UserPortStorageCreateArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserPortStorages.
+     * @param {UserPortStorageCreateManyArgs} args - Arguments to create many UserPortStorages.
+     * @example
+     * // Create many UserPortStorages
+     * const userPortStorage = await prisma.userPortStorage.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserPortStorageCreateManyArgs>(args?: SelectSubset<T, UserPortStorageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a UserPortStorage.
+     * @param {UserPortStorageDeleteArgs} args - Arguments to delete one UserPortStorage.
+     * @example
+     * // Delete one UserPortStorage
+     * const UserPortStorage = await prisma.userPortStorage.delete({
+     *   where: {
+     *     // ... filter to delete one UserPortStorage
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserPortStorageDeleteArgs>(args: SelectSubset<T, UserPortStorageDeleteArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserPortStorage.
+     * @param {UserPortStorageUpdateArgs} args - Arguments to update one UserPortStorage.
+     * @example
+     * // Update one UserPortStorage
+     * const userPortStorage = await prisma.userPortStorage.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserPortStorageUpdateArgs>(args: SelectSubset<T, UserPortStorageUpdateArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserPortStorages.
+     * @param {UserPortStorageDeleteManyArgs} args - Arguments to filter UserPortStorages to delete.
+     * @example
+     * // Delete a few UserPortStorages
+     * const { count } = await prisma.userPortStorage.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserPortStorageDeleteManyArgs>(args?: SelectSubset<T, UserPortStorageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserPortStorages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserPortStorages
+     * const userPortStorage = await prisma.userPortStorage.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserPortStorageUpdateManyArgs>(args: SelectSubset<T, UserPortStorageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one UserPortStorage.
+     * @param {UserPortStorageUpsertArgs} args - Arguments to update or create a UserPortStorage.
+     * @example
+     * // Update or create a UserPortStorage
+     * const userPortStorage = await prisma.userPortStorage.upsert({
+     *   create: {
+     *     // ... data to create a UserPortStorage
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserPortStorage we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserPortStorageUpsertArgs>(args: SelectSubset<T, UserPortStorageUpsertArgs<ExtArgs>>): Prisma__UserPortStorageClient<$Result.GetResult<Prisma.$UserPortStoragePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserPortStorages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageCountArgs} args - Arguments to filter UserPortStorages to count.
+     * @example
+     * // Count the number of UserPortStorages
+     * const count = await prisma.userPortStorage.count({
+     *   where: {
+     *     // ... the filter for the UserPortStorages we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserPortStorageCountArgs>(
+      args?: Subset<T, UserPortStorageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserPortStorageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserPortStorage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserPortStorageAggregateArgs>(args: Subset<T, UserPortStorageAggregateArgs>): Prisma.PrismaPromise<GetUserPortStorageAggregateType<T>>
+
+    /**
+     * Group by UserPortStorage.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserPortStorageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserPortStorageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserPortStorageGroupByArgs['orderBy'] }
+        : { orderBy?: UserPortStorageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserPortStorageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserPortStorageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserPortStorage model
+   */
+  readonly fields: UserPortStorageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserPortStorage.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserPortStorageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserPortStorage model
+   */
+  interface UserPortStorageFieldRefs {
+    readonly id: FieldRef<"UserPortStorage", 'Int'>
+    readonly user_id: FieldRef<"UserPortStorage", 'Int'>
+    readonly city_key: FieldRef<"UserPortStorage", 'String'>
+    readonly max_slots: FieldRef<"UserPortStorage", 'Int'>
+    readonly created_at: FieldRef<"UserPortStorage", 'DateTime'>
+    readonly updated_at: FieldRef<"UserPortStorage", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserPortStorage findUnique
+   */
+  export type UserPortStorageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPortStorage to fetch.
+     */
+    where: UserPortStorageWhereUniqueInput
+  }
+
+  /**
+   * UserPortStorage findUniqueOrThrow
+   */
+  export type UserPortStorageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPortStorage to fetch.
+     */
+    where: UserPortStorageWhereUniqueInput
+  }
+
+  /**
+   * UserPortStorage findFirst
+   */
+  export type UserPortStorageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPortStorage to fetch.
+     */
+    where?: UserPortStorageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPortStorages to fetch.
+     */
+    orderBy?: UserPortStorageOrderByWithRelationInput | UserPortStorageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserPortStorages.
+     */
+    cursor?: UserPortStorageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPortStorages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPortStorages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserPortStorages.
+     */
+    distinct?: UserPortStorageScalarFieldEnum | UserPortStorageScalarFieldEnum[]
+  }
+
+  /**
+   * UserPortStorage findFirstOrThrow
+   */
+  export type UserPortStorageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPortStorage to fetch.
+     */
+    where?: UserPortStorageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPortStorages to fetch.
+     */
+    orderBy?: UserPortStorageOrderByWithRelationInput | UserPortStorageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserPortStorages.
+     */
+    cursor?: UserPortStorageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPortStorages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPortStorages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserPortStorages.
+     */
+    distinct?: UserPortStorageScalarFieldEnum | UserPortStorageScalarFieldEnum[]
+  }
+
+  /**
+   * UserPortStorage findMany
+   */
+  export type UserPortStorageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * Filter, which UserPortStorages to fetch.
+     */
+    where?: UserPortStorageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserPortStorages to fetch.
+     */
+    orderBy?: UserPortStorageOrderByWithRelationInput | UserPortStorageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserPortStorages.
+     */
+    cursor?: UserPortStorageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserPortStorages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserPortStorages.
+     */
+    skip?: number
+    distinct?: UserPortStorageScalarFieldEnum | UserPortStorageScalarFieldEnum[]
+  }
+
+  /**
+   * UserPortStorage create
+   */
+  export type UserPortStorageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserPortStorage.
+     */
+    data: XOR<UserPortStorageCreateInput, UserPortStorageUncheckedCreateInput>
+  }
+
+  /**
+   * UserPortStorage createMany
+   */
+  export type UserPortStorageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserPortStorages.
+     */
+    data: UserPortStorageCreateManyInput | UserPortStorageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserPortStorage update
+   */
+  export type UserPortStorageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserPortStorage.
+     */
+    data: XOR<UserPortStorageUpdateInput, UserPortStorageUncheckedUpdateInput>
+    /**
+     * Choose, which UserPortStorage to update.
+     */
+    where: UserPortStorageWhereUniqueInput
+  }
+
+  /**
+   * UserPortStorage updateMany
+   */
+  export type UserPortStorageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserPortStorages.
+     */
+    data: XOR<UserPortStorageUpdateManyMutationInput, UserPortStorageUncheckedUpdateManyInput>
+    /**
+     * Filter which UserPortStorages to update
+     */
+    where?: UserPortStorageWhereInput
+    /**
+     * Limit how many UserPortStorages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserPortStorage upsert
+   */
+  export type UserPortStorageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserPortStorage to update in case it exists.
+     */
+    where: UserPortStorageWhereUniqueInput
+    /**
+     * In case the UserPortStorage found by the `where` argument doesn't exist, create a new UserPortStorage with this data.
+     */
+    create: XOR<UserPortStorageCreateInput, UserPortStorageUncheckedCreateInput>
+    /**
+     * In case the UserPortStorage was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserPortStorageUpdateInput, UserPortStorageUncheckedUpdateInput>
+  }
+
+  /**
+   * UserPortStorage delete
+   */
+  export type UserPortStorageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+    /**
+     * Filter which UserPortStorage to delete.
+     */
+    where: UserPortStorageWhereUniqueInput
+  }
+
+  /**
+   * UserPortStorage deleteMany
+   */
+  export type UserPortStorageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserPortStorages to delete
+     */
+    where?: UserPortStorageWhereInput
+    /**
+     * Limit how many UserPortStorages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserPortStorage without action
+   */
+  export type UserPortStorageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserPortStorage
+     */
+    select?: UserPortStorageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserPortStorage
+     */
+    omit?: UserPortStorageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserPortStorageInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Notification
+   */
+
+  export type AggregateNotification = {
+    _count: NotificationCountAggregateOutputType | null
+    _avg: NotificationAvgAggregateOutputType | null
+    _sum: NotificationSumAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  export type NotificationAvgAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+  }
+
+  export type NotificationSumAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+  }
+
+  export type NotificationMinAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    type: string | null
+    title: string | null
+    body: string | null
+    metadata: string | null
+    is_read: boolean | null
+    created_at: Date | null
+  }
+
+  export type NotificationMaxAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    type: string | null
+    title: string | null
+    body: string | null
+    metadata: string | null
+    is_read: boolean | null
+    created_at: Date | null
+  }
+
+  export type NotificationCountAggregateOutputType = {
+    id: number
+    user_id: number
+    type: number
+    title: number
+    body: number
+    metadata: number
+    is_read: number
+    created_at: number
+    _all: number
+  }
+
+
+  export type NotificationAvgAggregateInputType = {
+    id?: true
+    user_id?: true
+  }
+
+  export type NotificationSumAggregateInputType = {
+    id?: true
+    user_id?: true
+  }
+
+  export type NotificationMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    type?: true
+    title?: true
+    body?: true
+    metadata?: true
+    is_read?: true
+    created_at?: true
+  }
+
+  export type NotificationMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    type?: true
+    title?: true
+    body?: true
+    metadata?: true
+    is_read?: true
+    created_at?: true
+  }
+
+  export type NotificationCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    type?: true
+    title?: true
+    body?: true
+    metadata?: true
+    is_read?: true
+    created_at?: true
+    _all?: true
+  }
+
+  export type NotificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notification to aggregate.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Notifications
+    **/
+    _count?: true | NotificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: NotificationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: NotificationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NotificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type GetNotificationAggregateType<T extends NotificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateNotification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNotification[P]>
+      : GetScalarType<T[P], AggregateNotification[P]>
+  }
+
+
+
+
+  export type NotificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithAggregationInput | NotificationOrderByWithAggregationInput[]
+    by: NotificationScalarFieldEnum[] | NotificationScalarFieldEnum
+    having?: NotificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NotificationCountAggregateInputType | true
+    _avg?: NotificationAvgAggregateInputType
+    _sum?: NotificationSumAggregateInputType
+    _min?: NotificationMinAggregateInputType
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type NotificationGroupByOutputType = {
+    id: number
+    user_id: number
+    type: string
+    title: string
+    body: string
+    metadata: string | null
+    is_read: boolean
+    created_at: Date
+    _count: NotificationCountAggregateOutputType | null
+    _avg: NotificationAvgAggregateOutputType | null
+    _sum: NotificationSumAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  type GetNotificationGroupByPayload<T extends NotificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NotificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NotificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+            : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    type?: boolean
+    title?: boolean
+    body?: boolean
+    metadata?: boolean
+    is_read?: boolean
+    created_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+
+
+  export type NotificationSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    type?: boolean
+    title?: boolean
+    body?: boolean
+    metadata?: boolean
+    is_read?: boolean
+    created_at?: boolean
+  }
+
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "type" | "title" | "body" | "metadata" | "is_read" | "created_at", ExtArgs["result"]["notification"]>
+  export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Notification"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      user_id: number
+      type: string
+      title: string
+      body: string
+      metadata: string | null
+      is_read: boolean
+      created_at: Date
+    }, ExtArgs["result"]["notification"]>
+    composites: {}
+  }
+
+  type NotificationGetPayload<S extends boolean | null | undefined | NotificationDefaultArgs> = $Result.GetResult<Prisma.$NotificationPayload, S>
+
+  type NotificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NotificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NotificationCountAggregateInputType | true
+    }
+
+  export interface NotificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Notification'], meta: { name: 'Notification' } }
+    /**
+     * Find zero or one Notification that matches the filter.
+     * @param {NotificationFindUniqueArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NotificationFindUniqueArgs>(args: SelectSubset<T, NotificationFindUniqueArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Notification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NotificationFindUniqueOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NotificationFindUniqueOrThrowArgs>(args: SelectSubset<T, NotificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Notification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NotificationFindFirstArgs>(args?: SelectSubset<T, NotificationFindFirstArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Notification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NotificationFindFirstOrThrowArgs>(args?: SelectSubset<T, NotificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Notifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Notifications
+     * const notifications = await prisma.notification.findMany()
+     * 
+     * // Get first 10 Notifications
+     * const notifications = await prisma.notification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const notificationWithIdOnly = await prisma.notification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NotificationFindManyArgs>(args?: SelectSubset<T, NotificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Notification.
+     * @param {NotificationCreateArgs} args - Arguments to create a Notification.
+     * @example
+     * // Create one Notification
+     * const Notification = await prisma.notification.create({
+     *   data: {
+     *     // ... data to create a Notification
+     *   }
+     * })
+     * 
+     */
+    create<T extends NotificationCreateArgs>(args: SelectSubset<T, NotificationCreateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Notifications.
+     * @param {NotificationCreateManyArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NotificationCreateManyArgs>(args?: SelectSubset<T, NotificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Notification.
+     * @param {NotificationDeleteArgs} args - Arguments to delete one Notification.
+     * @example
+     * // Delete one Notification
+     * const Notification = await prisma.notification.delete({
+     *   where: {
+     *     // ... filter to delete one Notification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NotificationDeleteArgs>(args: SelectSubset<T, NotificationDeleteArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Notification.
+     * @param {NotificationUpdateArgs} args - Arguments to update one Notification.
+     * @example
+     * // Update one Notification
+     * const notification = await prisma.notification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NotificationUpdateArgs>(args: SelectSubset<T, NotificationUpdateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Notifications.
+     * @param {NotificationDeleteManyArgs} args - Arguments to filter Notifications to delete.
+     * @example
+     * // Delete a few Notifications
+     * const { count } = await prisma.notification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NotificationDeleteManyArgs>(args?: SelectSubset<T, NotificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Notifications
+     * const notification = await prisma.notification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NotificationUpdateManyArgs>(args: SelectSubset<T, NotificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Notification.
+     * @param {NotificationUpsertArgs} args - Arguments to update or create a Notification.
+     * @example
+     * // Update or create a Notification
+     * const notification = await prisma.notification.upsert({
+     *   create: {
+     *     // ... data to create a Notification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Notification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NotificationUpsertArgs>(args: SelectSubset<T, NotificationUpsertArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationCountArgs} args - Arguments to filter Notifications to count.
+     * @example
+     * // Count the number of Notifications
+     * const count = await prisma.notification.count({
+     *   where: {
+     *     // ... the filter for the Notifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends NotificationCountArgs>(
+      args?: Subset<T, NotificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NotificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NotificationAggregateArgs>(args: Subset<T, NotificationAggregateArgs>): Prisma.PrismaPromise<GetNotificationAggregateType<T>>
+
+    /**
+     * Group by Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NotificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NotificationGroupByArgs['orderBy'] }
+        : { orderBy?: NotificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Notification model
+   */
+  readonly fields: NotificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Notification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Notification model
+   */
+  interface NotificationFieldRefs {
+    readonly id: FieldRef<"Notification", 'Int'>
+    readonly user_id: FieldRef<"Notification", 'Int'>
+    readonly type: FieldRef<"Notification", 'String'>
+    readonly title: FieldRef<"Notification", 'String'>
+    readonly body: FieldRef<"Notification", 'String'>
+    readonly metadata: FieldRef<"Notification", 'String'>
+    readonly is_read: FieldRef<"Notification", 'Boolean'>
+    readonly created_at: FieldRef<"Notification", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Notification findUnique
+   */
+  export type NotificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findUniqueOrThrow
+   */
+  export type NotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findFirst
+   */
+  export type NotificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findFirstOrThrow
+   */
+  export type NotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findMany
+   */
+  export type NotificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notifications to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification create
+   */
+  export type NotificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Notification.
+     */
+    data: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+  }
+
+  /**
+   * Notification createMany
+   */
+  export type NotificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Notification update
+   */
+  export type NotificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Notification.
+     */
+    data: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+    /**
+     * Choose, which Notification to update.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification updateMany
+   */
+  export type NotificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Notifications.
+     */
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which Notifications to update
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Notification upsert
+   */
+  export type NotificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Notification to update in case it exists.
+     */
+    where: NotificationWhereUniqueInput
+    /**
+     * In case the Notification found by the `where` argument doesn't exist, create a new Notification with this data.
+     */
+    create: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+    /**
+     * In case the Notification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+  }
+
+  /**
+   * Notification delete
+   */
+  export type NotificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter which Notification to delete.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification deleteMany
+   */
+  export type NotificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notifications to delete
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Notification without action
+   */
+  export type NotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PirateCooldown
+   */
+
+  export type AggregatePirateCooldown = {
+    _count: PirateCooldownCountAggregateOutputType | null
+    _avg: PirateCooldownAvgAggregateOutputType | null
+    _sum: PirateCooldownSumAggregateOutputType | null
+    _min: PirateCooldownMinAggregateOutputType | null
+    _max: PirateCooldownMaxAggregateOutputType | null
+  }
+
+  export type PirateCooldownAvgAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+  }
+
+  export type PirateCooldownSumAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+  }
+
+  export type PirateCooldownMinAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    last_attack_at: Date | null
+  }
+
+  export type PirateCooldownMaxAggregateOutputType = {
+    id: number | null
+    user_id: number | null
+    last_attack_at: Date | null
+  }
+
+  export type PirateCooldownCountAggregateOutputType = {
+    id: number
+    user_id: number
+    last_attack_at: number
+    _all: number
+  }
+
+
+  export type PirateCooldownAvgAggregateInputType = {
+    id?: true
+    user_id?: true
+  }
+
+  export type PirateCooldownSumAggregateInputType = {
+    id?: true
+    user_id?: true
+  }
+
+  export type PirateCooldownMinAggregateInputType = {
+    id?: true
+    user_id?: true
+    last_attack_at?: true
+  }
+
+  export type PirateCooldownMaxAggregateInputType = {
+    id?: true
+    user_id?: true
+    last_attack_at?: true
+  }
+
+  export type PirateCooldownCountAggregateInputType = {
+    id?: true
+    user_id?: true
+    last_attack_at?: true
+    _all?: true
+  }
+
+  export type PirateCooldownAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PirateCooldown to aggregate.
+     */
+    where?: PirateCooldownWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateCooldowns to fetch.
+     */
+    orderBy?: PirateCooldownOrderByWithRelationInput | PirateCooldownOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PirateCooldownWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateCooldowns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateCooldowns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PirateCooldowns
+    **/
+    _count?: true | PirateCooldownCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PirateCooldownAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PirateCooldownSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PirateCooldownMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PirateCooldownMaxAggregateInputType
+  }
+
+  export type GetPirateCooldownAggregateType<T extends PirateCooldownAggregateArgs> = {
+        [P in keyof T & keyof AggregatePirateCooldown]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePirateCooldown[P]>
+      : GetScalarType<T[P], AggregatePirateCooldown[P]>
+  }
+
+
+
+
+  export type PirateCooldownGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PirateCooldownWhereInput
+    orderBy?: PirateCooldownOrderByWithAggregationInput | PirateCooldownOrderByWithAggregationInput[]
+    by: PirateCooldownScalarFieldEnum[] | PirateCooldownScalarFieldEnum
+    having?: PirateCooldownScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PirateCooldownCountAggregateInputType | true
+    _avg?: PirateCooldownAvgAggregateInputType
+    _sum?: PirateCooldownSumAggregateInputType
+    _min?: PirateCooldownMinAggregateInputType
+    _max?: PirateCooldownMaxAggregateInputType
+  }
+
+  export type PirateCooldownGroupByOutputType = {
+    id: number
+    user_id: number
+    last_attack_at: Date
+    _count: PirateCooldownCountAggregateOutputType | null
+    _avg: PirateCooldownAvgAggregateOutputType | null
+    _sum: PirateCooldownSumAggregateOutputType | null
+    _min: PirateCooldownMinAggregateOutputType | null
+    _max: PirateCooldownMaxAggregateOutputType | null
+  }
+
+  type GetPirateCooldownGroupByPayload<T extends PirateCooldownGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PirateCooldownGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PirateCooldownGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PirateCooldownGroupByOutputType[P]>
+            : GetScalarType<T[P], PirateCooldownGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PirateCooldownSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    user_id?: boolean
+    last_attack_at?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pirateCooldown"]>
+
+
+
+  export type PirateCooldownSelectScalar = {
+    id?: boolean
+    user_id?: boolean
+    last_attack_at?: boolean
+  }
+
+  export type PirateCooldownOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "user_id" | "last_attack_at", ExtArgs["result"]["pirateCooldown"]>
+  export type PirateCooldownInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PirateCooldownPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PirateCooldown"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      user_id: number
+      last_attack_at: Date
+    }, ExtArgs["result"]["pirateCooldown"]>
+    composites: {}
+  }
+
+  type PirateCooldownGetPayload<S extends boolean | null | undefined | PirateCooldownDefaultArgs> = $Result.GetResult<Prisma.$PirateCooldownPayload, S>
+
+  type PirateCooldownCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PirateCooldownFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PirateCooldownCountAggregateInputType | true
+    }
+
+  export interface PirateCooldownDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PirateCooldown'], meta: { name: 'PirateCooldown' } }
+    /**
+     * Find zero or one PirateCooldown that matches the filter.
+     * @param {PirateCooldownFindUniqueArgs} args - Arguments to find a PirateCooldown
+     * @example
+     * // Get one PirateCooldown
+     * const pirateCooldown = await prisma.pirateCooldown.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PirateCooldownFindUniqueArgs>(args: SelectSubset<T, PirateCooldownFindUniqueArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PirateCooldown that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PirateCooldownFindUniqueOrThrowArgs} args - Arguments to find a PirateCooldown
+     * @example
+     * // Get one PirateCooldown
+     * const pirateCooldown = await prisma.pirateCooldown.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PirateCooldownFindUniqueOrThrowArgs>(args: SelectSubset<T, PirateCooldownFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PirateCooldown that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownFindFirstArgs} args - Arguments to find a PirateCooldown
+     * @example
+     * // Get one PirateCooldown
+     * const pirateCooldown = await prisma.pirateCooldown.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PirateCooldownFindFirstArgs>(args?: SelectSubset<T, PirateCooldownFindFirstArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PirateCooldown that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownFindFirstOrThrowArgs} args - Arguments to find a PirateCooldown
+     * @example
+     * // Get one PirateCooldown
+     * const pirateCooldown = await prisma.pirateCooldown.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PirateCooldownFindFirstOrThrowArgs>(args?: SelectSubset<T, PirateCooldownFindFirstOrThrowArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PirateCooldowns that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PirateCooldowns
+     * const pirateCooldowns = await prisma.pirateCooldown.findMany()
+     * 
+     * // Get first 10 PirateCooldowns
+     * const pirateCooldowns = await prisma.pirateCooldown.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pirateCooldownWithIdOnly = await prisma.pirateCooldown.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PirateCooldownFindManyArgs>(args?: SelectSubset<T, PirateCooldownFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PirateCooldown.
+     * @param {PirateCooldownCreateArgs} args - Arguments to create a PirateCooldown.
+     * @example
+     * // Create one PirateCooldown
+     * const PirateCooldown = await prisma.pirateCooldown.create({
+     *   data: {
+     *     // ... data to create a PirateCooldown
+     *   }
+     * })
+     * 
+     */
+    create<T extends PirateCooldownCreateArgs>(args: SelectSubset<T, PirateCooldownCreateArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PirateCooldowns.
+     * @param {PirateCooldownCreateManyArgs} args - Arguments to create many PirateCooldowns.
+     * @example
+     * // Create many PirateCooldowns
+     * const pirateCooldown = await prisma.pirateCooldown.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PirateCooldownCreateManyArgs>(args?: SelectSubset<T, PirateCooldownCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PirateCooldown.
+     * @param {PirateCooldownDeleteArgs} args - Arguments to delete one PirateCooldown.
+     * @example
+     * // Delete one PirateCooldown
+     * const PirateCooldown = await prisma.pirateCooldown.delete({
+     *   where: {
+     *     // ... filter to delete one PirateCooldown
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PirateCooldownDeleteArgs>(args: SelectSubset<T, PirateCooldownDeleteArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PirateCooldown.
+     * @param {PirateCooldownUpdateArgs} args - Arguments to update one PirateCooldown.
+     * @example
+     * // Update one PirateCooldown
+     * const pirateCooldown = await prisma.pirateCooldown.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PirateCooldownUpdateArgs>(args: SelectSubset<T, PirateCooldownUpdateArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PirateCooldowns.
+     * @param {PirateCooldownDeleteManyArgs} args - Arguments to filter PirateCooldowns to delete.
+     * @example
+     * // Delete a few PirateCooldowns
+     * const { count } = await prisma.pirateCooldown.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PirateCooldownDeleteManyArgs>(args?: SelectSubset<T, PirateCooldownDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PirateCooldowns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PirateCooldowns
+     * const pirateCooldown = await prisma.pirateCooldown.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PirateCooldownUpdateManyArgs>(args: SelectSubset<T, PirateCooldownUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PirateCooldown.
+     * @param {PirateCooldownUpsertArgs} args - Arguments to update or create a PirateCooldown.
+     * @example
+     * // Update or create a PirateCooldown
+     * const pirateCooldown = await prisma.pirateCooldown.upsert({
+     *   create: {
+     *     // ... data to create a PirateCooldown
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PirateCooldown we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PirateCooldownUpsertArgs>(args: SelectSubset<T, PirateCooldownUpsertArgs<ExtArgs>>): Prisma__PirateCooldownClient<$Result.GetResult<Prisma.$PirateCooldownPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PirateCooldowns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownCountArgs} args - Arguments to filter PirateCooldowns to count.
+     * @example
+     * // Count the number of PirateCooldowns
+     * const count = await prisma.pirateCooldown.count({
+     *   where: {
+     *     // ... the filter for the PirateCooldowns we want to count
+     *   }
+     * })
+    **/
+    count<T extends PirateCooldownCountArgs>(
+      args?: Subset<T, PirateCooldownCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PirateCooldownCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PirateCooldown.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PirateCooldownAggregateArgs>(args: Subset<T, PirateCooldownAggregateArgs>): Prisma.PrismaPromise<GetPirateCooldownAggregateType<T>>
+
+    /**
+     * Group by PirateCooldown.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PirateCooldownGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PirateCooldownGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PirateCooldownGroupByArgs['orderBy'] }
+        : { orderBy?: PirateCooldownGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PirateCooldownGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPirateCooldownGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PirateCooldown model
+   */
+  readonly fields: PirateCooldownFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PirateCooldown.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PirateCooldownClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PirateCooldown model
+   */
+  interface PirateCooldownFieldRefs {
+    readonly id: FieldRef<"PirateCooldown", 'Int'>
+    readonly user_id: FieldRef<"PirateCooldown", 'Int'>
+    readonly last_attack_at: FieldRef<"PirateCooldown", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PirateCooldown findUnique
+   */
+  export type PirateCooldownFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateCooldown to fetch.
+     */
+    where: PirateCooldownWhereUniqueInput
+  }
+
+  /**
+   * PirateCooldown findUniqueOrThrow
+   */
+  export type PirateCooldownFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateCooldown to fetch.
+     */
+    where: PirateCooldownWhereUniqueInput
+  }
+
+  /**
+   * PirateCooldown findFirst
+   */
+  export type PirateCooldownFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateCooldown to fetch.
+     */
+    where?: PirateCooldownWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateCooldowns to fetch.
+     */
+    orderBy?: PirateCooldownOrderByWithRelationInput | PirateCooldownOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PirateCooldowns.
+     */
+    cursor?: PirateCooldownWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateCooldowns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateCooldowns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PirateCooldowns.
+     */
+    distinct?: PirateCooldownScalarFieldEnum | PirateCooldownScalarFieldEnum[]
+  }
+
+  /**
+   * PirateCooldown findFirstOrThrow
+   */
+  export type PirateCooldownFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateCooldown to fetch.
+     */
+    where?: PirateCooldownWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateCooldowns to fetch.
+     */
+    orderBy?: PirateCooldownOrderByWithRelationInput | PirateCooldownOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PirateCooldowns.
+     */
+    cursor?: PirateCooldownWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateCooldowns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateCooldowns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PirateCooldowns.
+     */
+    distinct?: PirateCooldownScalarFieldEnum | PirateCooldownScalarFieldEnum[]
+  }
+
+  /**
+   * PirateCooldown findMany
+   */
+  export type PirateCooldownFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * Filter, which PirateCooldowns to fetch.
+     */
+    where?: PirateCooldownWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PirateCooldowns to fetch.
+     */
+    orderBy?: PirateCooldownOrderByWithRelationInput | PirateCooldownOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PirateCooldowns.
+     */
+    cursor?: PirateCooldownWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PirateCooldowns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PirateCooldowns.
+     */
+    skip?: number
+    distinct?: PirateCooldownScalarFieldEnum | PirateCooldownScalarFieldEnum[]
+  }
+
+  /**
+   * PirateCooldown create
+   */
+  export type PirateCooldownCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PirateCooldown.
+     */
+    data: XOR<PirateCooldownCreateInput, PirateCooldownUncheckedCreateInput>
+  }
+
+  /**
+   * PirateCooldown createMany
+   */
+  export type PirateCooldownCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PirateCooldowns.
+     */
+    data: PirateCooldownCreateManyInput | PirateCooldownCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PirateCooldown update
+   */
+  export type PirateCooldownUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PirateCooldown.
+     */
+    data: XOR<PirateCooldownUpdateInput, PirateCooldownUncheckedUpdateInput>
+    /**
+     * Choose, which PirateCooldown to update.
+     */
+    where: PirateCooldownWhereUniqueInput
+  }
+
+  /**
+   * PirateCooldown updateMany
+   */
+  export type PirateCooldownUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PirateCooldowns.
+     */
+    data: XOR<PirateCooldownUpdateManyMutationInput, PirateCooldownUncheckedUpdateManyInput>
+    /**
+     * Filter which PirateCooldowns to update
+     */
+    where?: PirateCooldownWhereInput
+    /**
+     * Limit how many PirateCooldowns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PirateCooldown upsert
+   */
+  export type PirateCooldownUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PirateCooldown to update in case it exists.
+     */
+    where: PirateCooldownWhereUniqueInput
+    /**
+     * In case the PirateCooldown found by the `where` argument doesn't exist, create a new PirateCooldown with this data.
+     */
+    create: XOR<PirateCooldownCreateInput, PirateCooldownUncheckedCreateInput>
+    /**
+     * In case the PirateCooldown was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PirateCooldownUpdateInput, PirateCooldownUncheckedUpdateInput>
+  }
+
+  /**
+   * PirateCooldown delete
+   */
+  export type PirateCooldownDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+    /**
+     * Filter which PirateCooldown to delete.
+     */
+    where: PirateCooldownWhereUniqueInput
+  }
+
+  /**
+   * PirateCooldown deleteMany
+   */
+  export type PirateCooldownDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PirateCooldowns to delete
+     */
+    where?: PirateCooldownWhereInput
+    /**
+     * Limit how many PirateCooldowns to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PirateCooldown without action
+   */
+  export type PirateCooldownDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PirateCooldown
+     */
+    select?: PirateCooldownSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PirateCooldown
+     */
+    omit?: PirateCooldownOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PirateCooldownInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -27031,6 +37837,7 @@ export namespace Prisma {
     secondary_job_level: 'secondary_job_level',
     secondary_job_skill_level: 'secondary_job_skill_level',
     secondary_job_exp: 'secondary_job_exp',
+    locked_money: 'locked_money',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -27163,7 +37970,10 @@ export namespace Prisma {
     special_stat_1: 'special_stat_1',
     special_stat_2: 'special_stat_2',
     special_stat_3: 'special_stat_3',
-    special_stat_4: 'special_stat_4'
+    special_stat_4: 'special_stat_4',
+    cargo_box_id: 'cargo_box_id',
+    is_cross_city: 'is_cross_city',
+    origin_city: 'origin_city'
   };
 
   export type MarketListingScalarFieldEnum = (typeof MarketListingScalarFieldEnum)[keyof typeof MarketListingScalarFieldEnum]
@@ -27361,6 +38171,144 @@ export namespace Prisma {
   export type PlayerDailyQuestScalarFieldEnum = (typeof PlayerDailyQuestScalarFieldEnum)[keyof typeof PlayerDailyQuestScalarFieldEnum]
 
 
+  export const CargoBoxScalarFieldEnum: {
+    id: 'id',
+    owner_id: 'owner_id',
+    size: 'size',
+    status: 'status',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type CargoBoxScalarFieldEnum = (typeof CargoBoxScalarFieldEnum)[keyof typeof CargoBoxScalarFieldEnum]
+
+
+  export const CargoBoxItemScalarFieldEnum: {
+    id: 'id',
+    cargo_box_id: 'cargo_box_id',
+    item_id: 'item_id',
+    quantity: 'quantity',
+    equipment_rarity: 'equipment_rarity',
+    equipment_durability: 'equipment_durability',
+    enchant_level: 'enchant_level',
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
+  };
+
+  export type CargoBoxItemScalarFieldEnum = (typeof CargoBoxItemScalarFieldEnum)[keyof typeof CargoBoxItemScalarFieldEnum]
+
+
+  export const PurchaseOrderScalarFieldEnum: {
+    id: 'id',
+    cargo_box_id: 'cargo_box_id',
+    listing_id: 'listing_id',
+    buyer_id: 'buyer_id',
+    seller_id: 'seller_id',
+    price: 'price',
+    locked_amount: 'locked_amount',
+    export_tax: 'export_tax',
+    import_tax: 'import_tax',
+    status: 'status',
+    expires_at: 'expires_at',
+    created_at: 'created_at',
+    settled_at: 'settled_at',
+    updated_at: 'updated_at'
+  };
+
+  export type PurchaseOrderScalarFieldEnum = (typeof PurchaseOrderScalarFieldEnum)[keyof typeof PurchaseOrderScalarFieldEnum]
+
+
+  export const ShipScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    size: 'size',
+    owner_id: 'owner_id',
+    origin_city: 'origin_city',
+    dest_city: 'dest_city',
+    status: 'status',
+    capacity: 'capacity',
+    departs_at: 'departs_at',
+    departed_at: 'departed_at',
+    arrives_at: 'arrives_at',
+    rps_sequence: 'rps_sequence',
+    is_bot_ship: 'is_bot_ship',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type ShipScalarFieldEnum = (typeof ShipScalarFieldEnum)[keyof typeof ShipScalarFieldEnum]
+
+
+  export const ShipCargoScalarFieldEnum: {
+    id: 'id',
+    ship_id: 'ship_id',
+    order_id: 'order_id',
+    cargo_box_id: 'cargo_box_id',
+    loaded_at: 'loaded_at'
+  };
+
+  export type ShipCargoScalarFieldEnum = (typeof ShipCargoScalarFieldEnum)[keyof typeof ShipCargoScalarFieldEnum]
+
+
+  export const PirateAttackScalarFieldEnum: {
+    id: 'id',
+    attacker_id: 'attacker_id',
+    target_ship_id: 'target_ship_id',
+    attacker_ship_size: 'attacker_ship_size',
+    attacker_rps: 'attacker_rps',
+    defender_rps: 'defender_rps',
+    result_detail: 'result_detail',
+    attacker_wins: 'attacker_wins',
+    defender_wins: 'defender_wins',
+    draws: 'draws',
+    is_success: 'is_success',
+    fuel_cost: 'fuel_cost',
+    credit_cost: 'credit_cost',
+    status: 'status',
+    created_at: 'created_at',
+    resolved_at: 'resolved_at'
+  };
+
+  export type PirateAttackScalarFieldEnum = (typeof PirateAttackScalarFieldEnum)[keyof typeof PirateAttackScalarFieldEnum]
+
+
+  export const UserPortStorageScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    city_key: 'city_key',
+    max_slots: 'max_slots',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  };
+
+  export type UserPortStorageScalarFieldEnum = (typeof UserPortStorageScalarFieldEnum)[keyof typeof UserPortStorageScalarFieldEnum]
+
+
+  export const NotificationScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    type: 'type',
+    title: 'title',
+    body: 'body',
+    metadata: 'metadata',
+    is_read: 'is_read',
+    created_at: 'created_at'
+  };
+
+  export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+  export const PirateCooldownScalarFieldEnum: {
+    id: 'id',
+    user_id: 'user_id',
+    last_attack_at: 'last_attack_at'
+  };
+
+  export type PirateCooldownScalarFieldEnum = (typeof PirateCooldownScalarFieldEnum)[keyof typeof PirateCooldownScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -27433,7 +38381,8 @@ export namespace Prisma {
     special_stat_1: 'special_stat_1',
     special_stat_2: 'special_stat_2',
     special_stat_3: 'special_stat_3',
-    special_stat_4: 'special_stat_4'
+    special_stat_4: 'special_stat_4',
+    origin_city: 'origin_city'
   };
 
   export type MarketListingOrderByRelevanceFieldEnum = (typeof MarketListingOrderByRelevanceFieldEnum)[keyof typeof MarketListingOrderByRelevanceFieldEnum]
@@ -27562,6 +38511,51 @@ export namespace Prisma {
   export type DailyQuestTemplateOrderByRelevanceFieldEnum = (typeof DailyQuestTemplateOrderByRelevanceFieldEnum)[keyof typeof DailyQuestTemplateOrderByRelevanceFieldEnum]
 
 
+  export const CargoBoxItemOrderByRelevanceFieldEnum: {
+    special_stat_1: 'special_stat_1',
+    special_stat_2: 'special_stat_2',
+    special_stat_3: 'special_stat_3',
+    special_stat_4: 'special_stat_4'
+  };
+
+  export type CargoBoxItemOrderByRelevanceFieldEnum = (typeof CargoBoxItemOrderByRelevanceFieldEnum)[keyof typeof CargoBoxItemOrderByRelevanceFieldEnum]
+
+
+  export const ShipOrderByRelevanceFieldEnum: {
+    origin_city: 'origin_city',
+    dest_city: 'dest_city',
+    rps_sequence: 'rps_sequence'
+  };
+
+  export type ShipOrderByRelevanceFieldEnum = (typeof ShipOrderByRelevanceFieldEnum)[keyof typeof ShipOrderByRelevanceFieldEnum]
+
+
+  export const PirateAttackOrderByRelevanceFieldEnum: {
+    attacker_rps: 'attacker_rps',
+    defender_rps: 'defender_rps',
+    result_detail: 'result_detail'
+  };
+
+  export type PirateAttackOrderByRelevanceFieldEnum = (typeof PirateAttackOrderByRelevanceFieldEnum)[keyof typeof PirateAttackOrderByRelevanceFieldEnum]
+
+
+  export const UserPortStorageOrderByRelevanceFieldEnum: {
+    city_key: 'city_key'
+  };
+
+  export type UserPortStorageOrderByRelevanceFieldEnum = (typeof UserPortStorageOrderByRelevanceFieldEnum)[keyof typeof UserPortStorageOrderByRelevanceFieldEnum]
+
+
+  export const NotificationOrderByRelevanceFieldEnum: {
+    type: 'type',
+    title: 'title',
+    body: 'body',
+    metadata: 'metadata'
+  };
+
+  export type NotificationOrderByRelevanceFieldEnum = (typeof NotificationOrderByRelevanceFieldEnum)[keyof typeof NotificationOrderByRelevanceFieldEnum]
+
+
   /**
    * Field references
    */
@@ -27677,6 +38671,55 @@ export namespace Prisma {
    */
   export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
     
+
+
+  /**
+   * Reference to a field of type 'CargoBoxSize'
+   */
+  export type EnumCargoBoxSizeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CargoBoxSize'>
+    
+
+
+  /**
+   * Reference to a field of type 'CargoBoxStatus'
+   */
+  export type EnumCargoBoxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CargoBoxStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'PurchaseOrderStatus'
+   */
+  export type EnumPurchaseOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PurchaseOrderStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ShipType'
+   */
+  export type EnumShipTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShipType'>
+    
+
+
+  /**
+   * Reference to a field of type 'ShipSize'
+   */
+  export type EnumShipSizeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShipSize'>
+    
+
+
+  /**
+   * Reference to a field of type 'ShipStatus'
+   */
+  export type EnumShipStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShipStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'PirateAttackStatus'
+   */
+  export type EnumPirateAttackStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PirateAttackStatus'>
+    
   /**
    * Deep Input Types
    */
@@ -27703,6 +38746,7 @@ export namespace Prisma {
     secondary_job_level?: IntFilter<"User"> | number
     secondary_job_skill_level?: IntFilter<"User"> | number
     secondary_job_exp?: IntFilter<"User"> | number
+    locked_money?: IntFilter<"User"> | number
     created_at?: DateTimeFilter<"User"> | Date | string
     updated_at?: DateTimeFilter<"User"> | Date | string
     inventory?: InventorySlotListRelationFilter
@@ -27714,6 +38758,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressListRelationFilter
     skill_progress?: UserSkillProgressListRelationFilter
     daily_quests?: PlayerDailyQuestListRelationFilter
+    cargo_boxes?: CargoBoxListRelationFilter
+    purchase_orders_as_buyer?: PurchaseOrderListRelationFilter
+    purchase_orders_as_seller?: PurchaseOrderListRelationFilter
+    owned_ships?: ShipListRelationFilter
+    port_storage?: UserPortStorageListRelationFilter
+    notifications?: NotificationListRelationFilter
+    pirate_attacks?: PirateAttackListRelationFilter
+    pirate_cooldown?: XOR<PirateCooldownNullableScalarRelationFilter, PirateCooldownWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -27734,6 +38786,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     inventory?: InventorySlotOrderByRelationAggregateInput
@@ -27745,6 +38798,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressOrderByRelationAggregateInput
     skill_progress?: UserSkillProgressOrderByRelationAggregateInput
     daily_quests?: PlayerDailyQuestOrderByRelationAggregateInput
+    cargo_boxes?: CargoBoxOrderByRelationAggregateInput
+    purchase_orders_as_buyer?: PurchaseOrderOrderByRelationAggregateInput
+    purchase_orders_as_seller?: PurchaseOrderOrderByRelationAggregateInput
+    owned_ships?: ShipOrderByRelationAggregateInput
+    port_storage?: UserPortStorageOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
+    pirate_attacks?: PirateAttackOrderByRelationAggregateInput
+    pirate_cooldown?: PirateCooldownOrderByWithRelationInput
     _relevance?: UserOrderByRelevanceInput
   }
 
@@ -27769,6 +38830,7 @@ export namespace Prisma {
     secondary_job_level?: IntFilter<"User"> | number
     secondary_job_skill_level?: IntFilter<"User"> | number
     secondary_job_exp?: IntFilter<"User"> | number
+    locked_money?: IntFilter<"User"> | number
     created_at?: DateTimeFilter<"User"> | Date | string
     updated_at?: DateTimeFilter<"User"> | Date | string
     inventory?: InventorySlotListRelationFilter
@@ -27780,6 +38842,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressListRelationFilter
     skill_progress?: UserSkillProgressListRelationFilter
     daily_quests?: PlayerDailyQuestListRelationFilter
+    cargo_boxes?: CargoBoxListRelationFilter
+    purchase_orders_as_buyer?: PurchaseOrderListRelationFilter
+    purchase_orders_as_seller?: PurchaseOrderListRelationFilter
+    owned_ships?: ShipListRelationFilter
+    port_storage?: UserPortStorageListRelationFilter
+    notifications?: NotificationListRelationFilter
+    pirate_attacks?: PirateAttackListRelationFilter
+    pirate_cooldown?: XOR<PirateCooldownNullableScalarRelationFilter, PirateCooldownWhereInput> | null
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -27800,6 +38870,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -27830,6 +38901,7 @@ export namespace Prisma {
     secondary_job_level?: IntWithAggregatesFilter<"User"> | number
     secondary_job_skill_level?: IntWithAggregatesFilter<"User"> | number
     secondary_job_exp?: IntWithAggregatesFilter<"User"> | number
+    locked_money?: IntWithAggregatesFilter<"User"> | number
     created_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -27865,6 +38937,7 @@ export namespace Prisma {
     market_listings?: MarketListingListRelationFilter
     equipped_on?: UserEquipmentListRelationFilter
     quest_requirements?: DailyQuestRequirementListRelationFilter
+    cargo_box_items?: CargoBoxItemListRelationFilter
   }
 
   export type ItemOrderByWithRelationInput = {
@@ -27895,6 +38968,7 @@ export namespace Prisma {
     market_listings?: MarketListingOrderByRelationAggregateInput
     equipped_on?: UserEquipmentOrderByRelationAggregateInput
     quest_requirements?: DailyQuestRequirementOrderByRelationAggregateInput
+    cargo_box_items?: CargoBoxItemOrderByRelationAggregateInput
     _relevance?: ItemOrderByRelevanceInput
   }
 
@@ -27929,6 +39003,7 @@ export namespace Prisma {
     market_listings?: MarketListingListRelationFilter
     equipped_on?: UserEquipmentListRelationFilter
     quest_requirements?: DailyQuestRequirementListRelationFilter
+    cargo_box_items?: CargoBoxItemListRelationFilter
   }, "id" | "name">
 
   export type ItemOrderByWithAggregationInput = {
@@ -28470,9 +39545,14 @@ export namespace Prisma {
     special_stat_2?: StringNullableFilter<"MarketListing"> | string | null
     special_stat_3?: StringNullableFilter<"MarketListing"> | string | null
     special_stat_4?: StringNullableFilter<"MarketListing"> | string | null
+    cargo_box_id?: IntNullableFilter<"MarketListing"> | number | null
+    is_cross_city?: BoolFilter<"MarketListing"> | boolean
+    origin_city?: StringNullableFilter<"MarketListing"> | string | null
     seller?: XOR<UserScalarRelationFilter, UserWhereInput>
     buyer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     item?: XOR<ItemScalarRelationFilter, ItemWhereInput>
+    cargo_box?: XOR<CargoBoxNullableScalarRelationFilter, CargoBoxWhereInput> | null
+    purchase_order?: XOR<PurchaseOrderNullableScalarRelationFilter, PurchaseOrderWhereInput> | null
   }
 
   export type MarketListingOrderByWithRelationInput = {
@@ -28491,14 +39571,20 @@ export namespace Prisma {
     special_stat_2?: SortOrderInput | SortOrder
     special_stat_3?: SortOrderInput | SortOrder
     special_stat_4?: SortOrderInput | SortOrder
+    cargo_box_id?: SortOrderInput | SortOrder
+    is_cross_city?: SortOrder
+    origin_city?: SortOrderInput | SortOrder
     seller?: UserOrderByWithRelationInput
     buyer?: UserOrderByWithRelationInput
     item?: ItemOrderByWithRelationInput
+    cargo_box?: CargoBoxOrderByWithRelationInput
+    purchase_order?: PurchaseOrderOrderByWithRelationInput
     _relevance?: MarketListingOrderByRelevanceInput
   }
 
   export type MarketListingWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    cargo_box_id?: number
     AND?: MarketListingWhereInput | MarketListingWhereInput[]
     OR?: MarketListingWhereInput[]
     NOT?: MarketListingWhereInput | MarketListingWhereInput[]
@@ -28516,10 +39602,14 @@ export namespace Prisma {
     special_stat_2?: StringNullableFilter<"MarketListing"> | string | null
     special_stat_3?: StringNullableFilter<"MarketListing"> | string | null
     special_stat_4?: StringNullableFilter<"MarketListing"> | string | null
+    is_cross_city?: BoolFilter<"MarketListing"> | boolean
+    origin_city?: StringNullableFilter<"MarketListing"> | string | null
     seller?: XOR<UserScalarRelationFilter, UserWhereInput>
     buyer?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     item?: XOR<ItemScalarRelationFilter, ItemWhereInput>
-  }, "id">
+    cargo_box?: XOR<CargoBoxNullableScalarRelationFilter, CargoBoxWhereInput> | null
+    purchase_order?: XOR<PurchaseOrderNullableScalarRelationFilter, PurchaseOrderWhereInput> | null
+  }, "id" | "cargo_box_id">
 
   export type MarketListingOrderByWithAggregationInput = {
     id?: SortOrder
@@ -28537,6 +39627,9 @@ export namespace Prisma {
     special_stat_2?: SortOrderInput | SortOrder
     special_stat_3?: SortOrderInput | SortOrder
     special_stat_4?: SortOrderInput | SortOrder
+    cargo_box_id?: SortOrderInput | SortOrder
+    is_cross_city?: SortOrder
+    origin_city?: SortOrderInput | SortOrder
     _count?: MarketListingCountOrderByAggregateInput
     _avg?: MarketListingAvgOrderByAggregateInput
     _max?: MarketListingMaxOrderByAggregateInput
@@ -28563,6 +39656,9 @@ export namespace Prisma {
     special_stat_2?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
     special_stat_3?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
     special_stat_4?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
+    cargo_box_id?: IntNullableWithAggregatesFilter<"MarketListing"> | number | null
+    is_cross_city?: BoolWithAggregatesFilter<"MarketListing"> | boolean
+    origin_city?: StringNullableWithAggregatesFilter<"MarketListing"> | string | null
   }
 
   export type OccupationCatalogWhereInput = {
@@ -29572,6 +40668,762 @@ export namespace Prisma {
     created_at?: DateTimeWithAggregatesFilter<"PlayerDailyQuest"> | Date | string
   }
 
+  export type CargoBoxWhereInput = {
+    AND?: CargoBoxWhereInput | CargoBoxWhereInput[]
+    OR?: CargoBoxWhereInput[]
+    NOT?: CargoBoxWhereInput | CargoBoxWhereInput[]
+    id?: IntFilter<"CargoBox"> | number
+    owner_id?: IntFilter<"CargoBox"> | number
+    size?: EnumCargoBoxSizeFilter<"CargoBox"> | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFilter<"CargoBox"> | $Enums.CargoBoxStatus
+    created_at?: DateTimeFilter<"CargoBox"> | Date | string
+    updated_at?: DateTimeFilter<"CargoBox"> | Date | string
+    owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    items?: CargoBoxItemListRelationFilter
+    listing?: XOR<MarketListingNullableScalarRelationFilter, MarketListingWhereInput> | null
+    order?: XOR<PurchaseOrderNullableScalarRelationFilter, PurchaseOrderWhereInput> | null
+    ship_cargo?: ShipCargoListRelationFilter
+  }
+
+  export type CargoBoxOrderByWithRelationInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    size?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    owner?: UserOrderByWithRelationInput
+    items?: CargoBoxItemOrderByRelationAggregateInput
+    listing?: MarketListingOrderByWithRelationInput
+    order?: PurchaseOrderOrderByWithRelationInput
+    ship_cargo?: ShipCargoOrderByRelationAggregateInput
+  }
+
+  export type CargoBoxWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: CargoBoxWhereInput | CargoBoxWhereInput[]
+    OR?: CargoBoxWhereInput[]
+    NOT?: CargoBoxWhereInput | CargoBoxWhereInput[]
+    owner_id?: IntFilter<"CargoBox"> | number
+    size?: EnumCargoBoxSizeFilter<"CargoBox"> | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFilter<"CargoBox"> | $Enums.CargoBoxStatus
+    created_at?: DateTimeFilter<"CargoBox"> | Date | string
+    updated_at?: DateTimeFilter<"CargoBox"> | Date | string
+    owner?: XOR<UserScalarRelationFilter, UserWhereInput>
+    items?: CargoBoxItemListRelationFilter
+    listing?: XOR<MarketListingNullableScalarRelationFilter, MarketListingWhereInput> | null
+    order?: XOR<PurchaseOrderNullableScalarRelationFilter, PurchaseOrderWhereInput> | null
+    ship_cargo?: ShipCargoListRelationFilter
+  }, "id">
+
+  export type CargoBoxOrderByWithAggregationInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    size?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: CargoBoxCountOrderByAggregateInput
+    _avg?: CargoBoxAvgOrderByAggregateInput
+    _max?: CargoBoxMaxOrderByAggregateInput
+    _min?: CargoBoxMinOrderByAggregateInput
+    _sum?: CargoBoxSumOrderByAggregateInput
+  }
+
+  export type CargoBoxScalarWhereWithAggregatesInput = {
+    AND?: CargoBoxScalarWhereWithAggregatesInput | CargoBoxScalarWhereWithAggregatesInput[]
+    OR?: CargoBoxScalarWhereWithAggregatesInput[]
+    NOT?: CargoBoxScalarWhereWithAggregatesInput | CargoBoxScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"CargoBox"> | number
+    owner_id?: IntWithAggregatesFilter<"CargoBox"> | number
+    size?: EnumCargoBoxSizeWithAggregatesFilter<"CargoBox"> | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusWithAggregatesFilter<"CargoBox"> | $Enums.CargoBoxStatus
+    created_at?: DateTimeWithAggregatesFilter<"CargoBox"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"CargoBox"> | Date | string
+  }
+
+  export type CargoBoxItemWhereInput = {
+    AND?: CargoBoxItemWhereInput | CargoBoxItemWhereInput[]
+    OR?: CargoBoxItemWhereInput[]
+    NOT?: CargoBoxItemWhereInput | CargoBoxItemWhereInput[]
+    id?: IntFilter<"CargoBoxItem"> | number
+    cargo_box_id?: IntFilter<"CargoBoxItem"> | number
+    item_id?: IntFilter<"CargoBoxItem"> | number
+    quantity?: IntFilter<"CargoBoxItem"> | number
+    equipment_rarity?: EnumEquipmentRarityNullableFilter<"CargoBoxItem"> | $Enums.EquipmentRarity | null
+    equipment_durability?: FloatNullableFilter<"CargoBoxItem"> | number | null
+    enchant_level?: IntFilter<"CargoBoxItem"> | number
+    special_stat_1?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_2?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_3?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_4?: StringNullableFilter<"CargoBoxItem"> | string | null
+    cargo_box?: XOR<CargoBoxScalarRelationFilter, CargoBoxWhereInput>
+    item?: XOR<ItemScalarRelationFilter, ItemWhereInput>
+  }
+
+  export type CargoBoxItemOrderByWithRelationInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_rarity?: SortOrderInput | SortOrder
+    equipment_durability?: SortOrderInput | SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
+    cargo_box?: CargoBoxOrderByWithRelationInput
+    item?: ItemOrderByWithRelationInput
+    _relevance?: CargoBoxItemOrderByRelevanceInput
+  }
+
+  export type CargoBoxItemWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: CargoBoxItemWhereInput | CargoBoxItemWhereInput[]
+    OR?: CargoBoxItemWhereInput[]
+    NOT?: CargoBoxItemWhereInput | CargoBoxItemWhereInput[]
+    cargo_box_id?: IntFilter<"CargoBoxItem"> | number
+    item_id?: IntFilter<"CargoBoxItem"> | number
+    quantity?: IntFilter<"CargoBoxItem"> | number
+    equipment_rarity?: EnumEquipmentRarityNullableFilter<"CargoBoxItem"> | $Enums.EquipmentRarity | null
+    equipment_durability?: FloatNullableFilter<"CargoBoxItem"> | number | null
+    enchant_level?: IntFilter<"CargoBoxItem"> | number
+    special_stat_1?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_2?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_3?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_4?: StringNullableFilter<"CargoBoxItem"> | string | null
+    cargo_box?: XOR<CargoBoxScalarRelationFilter, CargoBoxWhereInput>
+    item?: XOR<ItemScalarRelationFilter, ItemWhereInput>
+  }, "id">
+
+  export type CargoBoxItemOrderByWithAggregationInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_rarity?: SortOrderInput | SortOrder
+    equipment_durability?: SortOrderInput | SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrderInput | SortOrder
+    special_stat_2?: SortOrderInput | SortOrder
+    special_stat_3?: SortOrderInput | SortOrder
+    special_stat_4?: SortOrderInput | SortOrder
+    _count?: CargoBoxItemCountOrderByAggregateInput
+    _avg?: CargoBoxItemAvgOrderByAggregateInput
+    _max?: CargoBoxItemMaxOrderByAggregateInput
+    _min?: CargoBoxItemMinOrderByAggregateInput
+    _sum?: CargoBoxItemSumOrderByAggregateInput
+  }
+
+  export type CargoBoxItemScalarWhereWithAggregatesInput = {
+    AND?: CargoBoxItemScalarWhereWithAggregatesInput | CargoBoxItemScalarWhereWithAggregatesInput[]
+    OR?: CargoBoxItemScalarWhereWithAggregatesInput[]
+    NOT?: CargoBoxItemScalarWhereWithAggregatesInput | CargoBoxItemScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"CargoBoxItem"> | number
+    cargo_box_id?: IntWithAggregatesFilter<"CargoBoxItem"> | number
+    item_id?: IntWithAggregatesFilter<"CargoBoxItem"> | number
+    quantity?: IntWithAggregatesFilter<"CargoBoxItem"> | number
+    equipment_rarity?: EnumEquipmentRarityNullableWithAggregatesFilter<"CargoBoxItem"> | $Enums.EquipmentRarity | null
+    equipment_durability?: FloatNullableWithAggregatesFilter<"CargoBoxItem"> | number | null
+    enchant_level?: IntWithAggregatesFilter<"CargoBoxItem"> | number
+    special_stat_1?: StringNullableWithAggregatesFilter<"CargoBoxItem"> | string | null
+    special_stat_2?: StringNullableWithAggregatesFilter<"CargoBoxItem"> | string | null
+    special_stat_3?: StringNullableWithAggregatesFilter<"CargoBoxItem"> | string | null
+    special_stat_4?: StringNullableWithAggregatesFilter<"CargoBoxItem"> | string | null
+  }
+
+  export type PurchaseOrderWhereInput = {
+    AND?: PurchaseOrderWhereInput | PurchaseOrderWhereInput[]
+    OR?: PurchaseOrderWhereInput[]
+    NOT?: PurchaseOrderWhereInput | PurchaseOrderWhereInput[]
+    id?: IntFilter<"PurchaseOrder"> | number
+    cargo_box_id?: IntFilter<"PurchaseOrder"> | number
+    listing_id?: IntFilter<"PurchaseOrder"> | number
+    buyer_id?: IntFilter<"PurchaseOrder"> | number
+    seller_id?: IntFilter<"PurchaseOrder"> | number
+    price?: IntFilter<"PurchaseOrder"> | number
+    locked_amount?: IntFilter<"PurchaseOrder"> | number
+    export_tax?: IntFilter<"PurchaseOrder"> | number
+    import_tax?: IntFilter<"PurchaseOrder"> | number
+    status?: EnumPurchaseOrderStatusFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    created_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    settled_at?: DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
+    updated_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    cargo_box?: XOR<CargoBoxScalarRelationFilter, CargoBoxWhereInput>
+    listing?: XOR<MarketListingScalarRelationFilter, MarketListingWhereInput>
+    buyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    seller?: XOR<UserScalarRelationFilter, UserWhereInput>
+    shipment?: XOR<ShipCargoNullableScalarRelationFilter, ShipCargoWhereInput> | null
+  }
+
+  export type PurchaseOrderOrderByWithRelationInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+    status?: SortOrder
+    expires_at?: SortOrder
+    created_at?: SortOrder
+    settled_at?: SortOrderInput | SortOrder
+    updated_at?: SortOrder
+    cargo_box?: CargoBoxOrderByWithRelationInput
+    listing?: MarketListingOrderByWithRelationInput
+    buyer?: UserOrderByWithRelationInput
+    seller?: UserOrderByWithRelationInput
+    shipment?: ShipCargoOrderByWithRelationInput
+  }
+
+  export type PurchaseOrderWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    cargo_box_id?: number
+    listing_id?: number
+    AND?: PurchaseOrderWhereInput | PurchaseOrderWhereInput[]
+    OR?: PurchaseOrderWhereInput[]
+    NOT?: PurchaseOrderWhereInput | PurchaseOrderWhereInput[]
+    buyer_id?: IntFilter<"PurchaseOrder"> | number
+    seller_id?: IntFilter<"PurchaseOrder"> | number
+    price?: IntFilter<"PurchaseOrder"> | number
+    locked_amount?: IntFilter<"PurchaseOrder"> | number
+    export_tax?: IntFilter<"PurchaseOrder"> | number
+    import_tax?: IntFilter<"PurchaseOrder"> | number
+    status?: EnumPurchaseOrderStatusFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    created_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    settled_at?: DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
+    updated_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    cargo_box?: XOR<CargoBoxScalarRelationFilter, CargoBoxWhereInput>
+    listing?: XOR<MarketListingScalarRelationFilter, MarketListingWhereInput>
+    buyer?: XOR<UserScalarRelationFilter, UserWhereInput>
+    seller?: XOR<UserScalarRelationFilter, UserWhereInput>
+    shipment?: XOR<ShipCargoNullableScalarRelationFilter, ShipCargoWhereInput> | null
+  }, "id" | "cargo_box_id" | "listing_id">
+
+  export type PurchaseOrderOrderByWithAggregationInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+    status?: SortOrder
+    expires_at?: SortOrder
+    created_at?: SortOrder
+    settled_at?: SortOrderInput | SortOrder
+    updated_at?: SortOrder
+    _count?: PurchaseOrderCountOrderByAggregateInput
+    _avg?: PurchaseOrderAvgOrderByAggregateInput
+    _max?: PurchaseOrderMaxOrderByAggregateInput
+    _min?: PurchaseOrderMinOrderByAggregateInput
+    _sum?: PurchaseOrderSumOrderByAggregateInput
+  }
+
+  export type PurchaseOrderScalarWhereWithAggregatesInput = {
+    AND?: PurchaseOrderScalarWhereWithAggregatesInput | PurchaseOrderScalarWhereWithAggregatesInput[]
+    OR?: PurchaseOrderScalarWhereWithAggregatesInput[]
+    NOT?: PurchaseOrderScalarWhereWithAggregatesInput | PurchaseOrderScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    cargo_box_id?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    listing_id?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    buyer_id?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    seller_id?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    price?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    locked_amount?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    export_tax?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    import_tax?: IntWithAggregatesFilter<"PurchaseOrder"> | number
+    status?: EnumPurchaseOrderStatusWithAggregatesFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeWithAggregatesFilter<"PurchaseOrder"> | Date | string
+    created_at?: DateTimeWithAggregatesFilter<"PurchaseOrder"> | Date | string
+    settled_at?: DateTimeNullableWithAggregatesFilter<"PurchaseOrder"> | Date | string | null
+    updated_at?: DateTimeWithAggregatesFilter<"PurchaseOrder"> | Date | string
+  }
+
+  export type ShipWhereInput = {
+    AND?: ShipWhereInput | ShipWhereInput[]
+    OR?: ShipWhereInput[]
+    NOT?: ShipWhereInput | ShipWhereInput[]
+    id?: IntFilter<"Ship"> | number
+    type?: EnumShipTypeFilter<"Ship"> | $Enums.ShipType
+    size?: EnumShipSizeNullableFilter<"Ship"> | $Enums.ShipSize | null
+    owner_id?: IntNullableFilter<"Ship"> | number | null
+    origin_city?: StringFilter<"Ship"> | string
+    dest_city?: StringFilter<"Ship"> | string
+    status?: EnumShipStatusFilter<"Ship"> | $Enums.ShipStatus
+    capacity?: IntFilter<"Ship"> | number
+    departs_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    departed_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    arrives_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    rps_sequence?: StringNullableFilter<"Ship"> | string | null
+    is_bot_ship?: BoolFilter<"Ship"> | boolean
+    created_at?: DateTimeFilter<"Ship"> | Date | string
+    updated_at?: DateTimeFilter<"Ship"> | Date | string
+    owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    cargo?: ShipCargoListRelationFilter
+    attacks?: PirateAttackListRelationFilter
+  }
+
+  export type ShipOrderByWithRelationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    size?: SortOrderInput | SortOrder
+    owner_id?: SortOrderInput | SortOrder
+    origin_city?: SortOrder
+    dest_city?: SortOrder
+    status?: SortOrder
+    capacity?: SortOrder
+    departs_at?: SortOrderInput | SortOrder
+    departed_at?: SortOrderInput | SortOrder
+    arrives_at?: SortOrderInput | SortOrder
+    rps_sequence?: SortOrderInput | SortOrder
+    is_bot_ship?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    owner?: UserOrderByWithRelationInput
+    cargo?: ShipCargoOrderByRelationAggregateInput
+    attacks?: PirateAttackOrderByRelationAggregateInput
+    _relevance?: ShipOrderByRelevanceInput
+  }
+
+  export type ShipWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: ShipWhereInput | ShipWhereInput[]
+    OR?: ShipWhereInput[]
+    NOT?: ShipWhereInput | ShipWhereInput[]
+    type?: EnumShipTypeFilter<"Ship"> | $Enums.ShipType
+    size?: EnumShipSizeNullableFilter<"Ship"> | $Enums.ShipSize | null
+    owner_id?: IntNullableFilter<"Ship"> | number | null
+    origin_city?: StringFilter<"Ship"> | string
+    dest_city?: StringFilter<"Ship"> | string
+    status?: EnumShipStatusFilter<"Ship"> | $Enums.ShipStatus
+    capacity?: IntFilter<"Ship"> | number
+    departs_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    departed_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    arrives_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    rps_sequence?: StringNullableFilter<"Ship"> | string | null
+    is_bot_ship?: BoolFilter<"Ship"> | boolean
+    created_at?: DateTimeFilter<"Ship"> | Date | string
+    updated_at?: DateTimeFilter<"Ship"> | Date | string
+    owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    cargo?: ShipCargoListRelationFilter
+    attacks?: PirateAttackListRelationFilter
+  }, "id">
+
+  export type ShipOrderByWithAggregationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    size?: SortOrderInput | SortOrder
+    owner_id?: SortOrderInput | SortOrder
+    origin_city?: SortOrder
+    dest_city?: SortOrder
+    status?: SortOrder
+    capacity?: SortOrder
+    departs_at?: SortOrderInput | SortOrder
+    departed_at?: SortOrderInput | SortOrder
+    arrives_at?: SortOrderInput | SortOrder
+    rps_sequence?: SortOrderInput | SortOrder
+    is_bot_ship?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: ShipCountOrderByAggregateInput
+    _avg?: ShipAvgOrderByAggregateInput
+    _max?: ShipMaxOrderByAggregateInput
+    _min?: ShipMinOrderByAggregateInput
+    _sum?: ShipSumOrderByAggregateInput
+  }
+
+  export type ShipScalarWhereWithAggregatesInput = {
+    AND?: ShipScalarWhereWithAggregatesInput | ShipScalarWhereWithAggregatesInput[]
+    OR?: ShipScalarWhereWithAggregatesInput[]
+    NOT?: ShipScalarWhereWithAggregatesInput | ShipScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"Ship"> | number
+    type?: EnumShipTypeWithAggregatesFilter<"Ship"> | $Enums.ShipType
+    size?: EnumShipSizeNullableWithAggregatesFilter<"Ship"> | $Enums.ShipSize | null
+    owner_id?: IntNullableWithAggregatesFilter<"Ship"> | number | null
+    origin_city?: StringWithAggregatesFilter<"Ship"> | string
+    dest_city?: StringWithAggregatesFilter<"Ship"> | string
+    status?: EnumShipStatusWithAggregatesFilter<"Ship"> | $Enums.ShipStatus
+    capacity?: IntWithAggregatesFilter<"Ship"> | number
+    departs_at?: DateTimeNullableWithAggregatesFilter<"Ship"> | Date | string | null
+    departed_at?: DateTimeNullableWithAggregatesFilter<"Ship"> | Date | string | null
+    arrives_at?: DateTimeNullableWithAggregatesFilter<"Ship"> | Date | string | null
+    rps_sequence?: StringNullableWithAggregatesFilter<"Ship"> | string | null
+    is_bot_ship?: BoolWithAggregatesFilter<"Ship"> | boolean
+    created_at?: DateTimeWithAggregatesFilter<"Ship"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"Ship"> | Date | string
+  }
+
+  export type ShipCargoWhereInput = {
+    AND?: ShipCargoWhereInput | ShipCargoWhereInput[]
+    OR?: ShipCargoWhereInput[]
+    NOT?: ShipCargoWhereInput | ShipCargoWhereInput[]
+    id?: IntFilter<"ShipCargo"> | number
+    ship_id?: IntFilter<"ShipCargo"> | number
+    order_id?: IntFilter<"ShipCargo"> | number
+    cargo_box_id?: IntFilter<"ShipCargo"> | number
+    loaded_at?: DateTimeFilter<"ShipCargo"> | Date | string
+    ship?: XOR<ShipScalarRelationFilter, ShipWhereInput>
+    order?: XOR<PurchaseOrderScalarRelationFilter, PurchaseOrderWhereInput>
+    cargo_box?: XOR<CargoBoxScalarRelationFilter, CargoBoxWhereInput>
+  }
+
+  export type ShipCargoOrderByWithRelationInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+    loaded_at?: SortOrder
+    ship?: ShipOrderByWithRelationInput
+    order?: PurchaseOrderOrderByWithRelationInput
+    cargo_box?: CargoBoxOrderByWithRelationInput
+  }
+
+  export type ShipCargoWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    order_id?: number
+    AND?: ShipCargoWhereInput | ShipCargoWhereInput[]
+    OR?: ShipCargoWhereInput[]
+    NOT?: ShipCargoWhereInput | ShipCargoWhereInput[]
+    ship_id?: IntFilter<"ShipCargo"> | number
+    cargo_box_id?: IntFilter<"ShipCargo"> | number
+    loaded_at?: DateTimeFilter<"ShipCargo"> | Date | string
+    ship?: XOR<ShipScalarRelationFilter, ShipWhereInput>
+    order?: XOR<PurchaseOrderScalarRelationFilter, PurchaseOrderWhereInput>
+    cargo_box?: XOR<CargoBoxScalarRelationFilter, CargoBoxWhereInput>
+  }, "id" | "order_id">
+
+  export type ShipCargoOrderByWithAggregationInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+    loaded_at?: SortOrder
+    _count?: ShipCargoCountOrderByAggregateInput
+    _avg?: ShipCargoAvgOrderByAggregateInput
+    _max?: ShipCargoMaxOrderByAggregateInput
+    _min?: ShipCargoMinOrderByAggregateInput
+    _sum?: ShipCargoSumOrderByAggregateInput
+  }
+
+  export type ShipCargoScalarWhereWithAggregatesInput = {
+    AND?: ShipCargoScalarWhereWithAggregatesInput | ShipCargoScalarWhereWithAggregatesInput[]
+    OR?: ShipCargoScalarWhereWithAggregatesInput[]
+    NOT?: ShipCargoScalarWhereWithAggregatesInput | ShipCargoScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"ShipCargo"> | number
+    ship_id?: IntWithAggregatesFilter<"ShipCargo"> | number
+    order_id?: IntWithAggregatesFilter<"ShipCargo"> | number
+    cargo_box_id?: IntWithAggregatesFilter<"ShipCargo"> | number
+    loaded_at?: DateTimeWithAggregatesFilter<"ShipCargo"> | Date | string
+  }
+
+  export type PirateAttackWhereInput = {
+    AND?: PirateAttackWhereInput | PirateAttackWhereInput[]
+    OR?: PirateAttackWhereInput[]
+    NOT?: PirateAttackWhereInput | PirateAttackWhereInput[]
+    id?: IntFilter<"PirateAttack"> | number
+    attacker_id?: IntFilter<"PirateAttack"> | number
+    target_ship_id?: IntFilter<"PirateAttack"> | number
+    attacker_ship_size?: EnumShipSizeFilter<"PirateAttack"> | $Enums.ShipSize
+    attacker_rps?: StringFilter<"PirateAttack"> | string
+    defender_rps?: StringNullableFilter<"PirateAttack"> | string | null
+    result_detail?: StringNullableFilter<"PirateAttack"> | string | null
+    attacker_wins?: IntNullableFilter<"PirateAttack"> | number | null
+    defender_wins?: IntNullableFilter<"PirateAttack"> | number | null
+    draws?: IntNullableFilter<"PirateAttack"> | number | null
+    is_success?: BoolNullableFilter<"PirateAttack"> | boolean | null
+    fuel_cost?: IntFilter<"PirateAttack"> | number
+    credit_cost?: IntFilter<"PirateAttack"> | number
+    status?: EnumPirateAttackStatusFilter<"PirateAttack"> | $Enums.PirateAttackStatus
+    created_at?: DateTimeFilter<"PirateAttack"> | Date | string
+    resolved_at?: DateTimeNullableFilter<"PirateAttack"> | Date | string | null
+    attacker?: XOR<UserScalarRelationFilter, UserWhereInput>
+    target_ship?: XOR<ShipScalarRelationFilter, ShipWhereInput>
+  }
+
+  export type PirateAttackOrderByWithRelationInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_ship_size?: SortOrder
+    attacker_rps?: SortOrder
+    defender_rps?: SortOrderInput | SortOrder
+    result_detail?: SortOrderInput | SortOrder
+    attacker_wins?: SortOrderInput | SortOrder
+    defender_wins?: SortOrderInput | SortOrder
+    draws?: SortOrderInput | SortOrder
+    is_success?: SortOrderInput | SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    resolved_at?: SortOrderInput | SortOrder
+    attacker?: UserOrderByWithRelationInput
+    target_ship?: ShipOrderByWithRelationInput
+    _relevance?: PirateAttackOrderByRelevanceInput
+  }
+
+  export type PirateAttackWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: PirateAttackWhereInput | PirateAttackWhereInput[]
+    OR?: PirateAttackWhereInput[]
+    NOT?: PirateAttackWhereInput | PirateAttackWhereInput[]
+    attacker_id?: IntFilter<"PirateAttack"> | number
+    target_ship_id?: IntFilter<"PirateAttack"> | number
+    attacker_ship_size?: EnumShipSizeFilter<"PirateAttack"> | $Enums.ShipSize
+    attacker_rps?: StringFilter<"PirateAttack"> | string
+    defender_rps?: StringNullableFilter<"PirateAttack"> | string | null
+    result_detail?: StringNullableFilter<"PirateAttack"> | string | null
+    attacker_wins?: IntNullableFilter<"PirateAttack"> | number | null
+    defender_wins?: IntNullableFilter<"PirateAttack"> | number | null
+    draws?: IntNullableFilter<"PirateAttack"> | number | null
+    is_success?: BoolNullableFilter<"PirateAttack"> | boolean | null
+    fuel_cost?: IntFilter<"PirateAttack"> | number
+    credit_cost?: IntFilter<"PirateAttack"> | number
+    status?: EnumPirateAttackStatusFilter<"PirateAttack"> | $Enums.PirateAttackStatus
+    created_at?: DateTimeFilter<"PirateAttack"> | Date | string
+    resolved_at?: DateTimeNullableFilter<"PirateAttack"> | Date | string | null
+    attacker?: XOR<UserScalarRelationFilter, UserWhereInput>
+    target_ship?: XOR<ShipScalarRelationFilter, ShipWhereInput>
+  }, "id">
+
+  export type PirateAttackOrderByWithAggregationInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_ship_size?: SortOrder
+    attacker_rps?: SortOrder
+    defender_rps?: SortOrderInput | SortOrder
+    result_detail?: SortOrderInput | SortOrder
+    attacker_wins?: SortOrderInput | SortOrder
+    defender_wins?: SortOrderInput | SortOrder
+    draws?: SortOrderInput | SortOrder
+    is_success?: SortOrderInput | SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    resolved_at?: SortOrderInput | SortOrder
+    _count?: PirateAttackCountOrderByAggregateInput
+    _avg?: PirateAttackAvgOrderByAggregateInput
+    _max?: PirateAttackMaxOrderByAggregateInput
+    _min?: PirateAttackMinOrderByAggregateInput
+    _sum?: PirateAttackSumOrderByAggregateInput
+  }
+
+  export type PirateAttackScalarWhereWithAggregatesInput = {
+    AND?: PirateAttackScalarWhereWithAggregatesInput | PirateAttackScalarWhereWithAggregatesInput[]
+    OR?: PirateAttackScalarWhereWithAggregatesInput[]
+    NOT?: PirateAttackScalarWhereWithAggregatesInput | PirateAttackScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PirateAttack"> | number
+    attacker_id?: IntWithAggregatesFilter<"PirateAttack"> | number
+    target_ship_id?: IntWithAggregatesFilter<"PirateAttack"> | number
+    attacker_ship_size?: EnumShipSizeWithAggregatesFilter<"PirateAttack"> | $Enums.ShipSize
+    attacker_rps?: StringWithAggregatesFilter<"PirateAttack"> | string
+    defender_rps?: StringNullableWithAggregatesFilter<"PirateAttack"> | string | null
+    result_detail?: StringNullableWithAggregatesFilter<"PirateAttack"> | string | null
+    attacker_wins?: IntNullableWithAggregatesFilter<"PirateAttack"> | number | null
+    defender_wins?: IntNullableWithAggregatesFilter<"PirateAttack"> | number | null
+    draws?: IntNullableWithAggregatesFilter<"PirateAttack"> | number | null
+    is_success?: BoolNullableWithAggregatesFilter<"PirateAttack"> | boolean | null
+    fuel_cost?: IntWithAggregatesFilter<"PirateAttack"> | number
+    credit_cost?: IntWithAggregatesFilter<"PirateAttack"> | number
+    status?: EnumPirateAttackStatusWithAggregatesFilter<"PirateAttack"> | $Enums.PirateAttackStatus
+    created_at?: DateTimeWithAggregatesFilter<"PirateAttack"> | Date | string
+    resolved_at?: DateTimeNullableWithAggregatesFilter<"PirateAttack"> | Date | string | null
+  }
+
+  export type UserPortStorageWhereInput = {
+    AND?: UserPortStorageWhereInput | UserPortStorageWhereInput[]
+    OR?: UserPortStorageWhereInput[]
+    NOT?: UserPortStorageWhereInput | UserPortStorageWhereInput[]
+    id?: IntFilter<"UserPortStorage"> | number
+    user_id?: IntFilter<"UserPortStorage"> | number
+    city_key?: StringFilter<"UserPortStorage"> | string
+    max_slots?: IntFilter<"UserPortStorage"> | number
+    created_at?: DateTimeFilter<"UserPortStorage"> | Date | string
+    updated_at?: DateTimeFilter<"UserPortStorage"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type UserPortStorageOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    city_key?: SortOrder
+    max_slots?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    _relevance?: UserPortStorageOrderByRelevanceInput
+  }
+
+  export type UserPortStorageWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    user_id_city_key?: UserPortStorageUser_idCity_keyCompoundUniqueInput
+    AND?: UserPortStorageWhereInput | UserPortStorageWhereInput[]
+    OR?: UserPortStorageWhereInput[]
+    NOT?: UserPortStorageWhereInput | UserPortStorageWhereInput[]
+    user_id?: IntFilter<"UserPortStorage"> | number
+    city_key?: StringFilter<"UserPortStorage"> | string
+    max_slots?: IntFilter<"UserPortStorage"> | number
+    created_at?: DateTimeFilter<"UserPortStorage"> | Date | string
+    updated_at?: DateTimeFilter<"UserPortStorage"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "user_id_city_key">
+
+  export type UserPortStorageOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    city_key?: SortOrder
+    max_slots?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+    _count?: UserPortStorageCountOrderByAggregateInput
+    _avg?: UserPortStorageAvgOrderByAggregateInput
+    _max?: UserPortStorageMaxOrderByAggregateInput
+    _min?: UserPortStorageMinOrderByAggregateInput
+    _sum?: UserPortStorageSumOrderByAggregateInput
+  }
+
+  export type UserPortStorageScalarWhereWithAggregatesInput = {
+    AND?: UserPortStorageScalarWhereWithAggregatesInput | UserPortStorageScalarWhereWithAggregatesInput[]
+    OR?: UserPortStorageScalarWhereWithAggregatesInput[]
+    NOT?: UserPortStorageScalarWhereWithAggregatesInput | UserPortStorageScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"UserPortStorage"> | number
+    user_id?: IntWithAggregatesFilter<"UserPortStorage"> | number
+    city_key?: StringWithAggregatesFilter<"UserPortStorage"> | string
+    max_slots?: IntWithAggregatesFilter<"UserPortStorage"> | number
+    created_at?: DateTimeWithAggregatesFilter<"UserPortStorage"> | Date | string
+    updated_at?: DateTimeWithAggregatesFilter<"UserPortStorage"> | Date | string
+  }
+
+  export type NotificationWhereInput = {
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    id?: IntFilter<"Notification"> | number
+    user_id?: IntFilter<"Notification"> | number
+    type?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    body?: StringFilter<"Notification"> | string
+    metadata?: StringNullableFilter<"Notification"> | string | null
+    is_read?: BoolFilter<"Notification"> | boolean
+    created_at?: DateTimeFilter<"Notification"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type NotificationOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    is_read?: SortOrder
+    created_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+    _relevance?: NotificationOrderByRelevanceInput
+  }
+
+  export type NotificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    user_id?: IntFilter<"Notification"> | number
+    type?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    body?: StringFilter<"Notification"> | string
+    metadata?: StringNullableFilter<"Notification"> | string | null
+    is_read?: BoolFilter<"Notification"> | boolean
+    created_at?: DateTimeFilter<"Notification"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type NotificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
+    metadata?: SortOrderInput | SortOrder
+    is_read?: SortOrder
+    created_at?: SortOrder
+    _count?: NotificationCountOrderByAggregateInput
+    _avg?: NotificationAvgOrderByAggregateInput
+    _max?: NotificationMaxOrderByAggregateInput
+    _min?: NotificationMinOrderByAggregateInput
+    _sum?: NotificationSumOrderByAggregateInput
+  }
+
+  export type NotificationScalarWhereWithAggregatesInput = {
+    AND?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    OR?: NotificationScalarWhereWithAggregatesInput[]
+    NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"Notification"> | number
+    user_id?: IntWithAggregatesFilter<"Notification"> | number
+    type?: StringWithAggregatesFilter<"Notification"> | string
+    title?: StringWithAggregatesFilter<"Notification"> | string
+    body?: StringWithAggregatesFilter<"Notification"> | string
+    metadata?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    is_read?: BoolWithAggregatesFilter<"Notification"> | boolean
+    created_at?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+  }
+
+  export type PirateCooldownWhereInput = {
+    AND?: PirateCooldownWhereInput | PirateCooldownWhereInput[]
+    OR?: PirateCooldownWhereInput[]
+    NOT?: PirateCooldownWhereInput | PirateCooldownWhereInput[]
+    id?: IntFilter<"PirateCooldown"> | number
+    user_id?: IntFilter<"PirateCooldown"> | number
+    last_attack_at?: DateTimeFilter<"PirateCooldown"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PirateCooldownOrderByWithRelationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    last_attack_at?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type PirateCooldownWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    user_id?: number
+    AND?: PirateCooldownWhereInput | PirateCooldownWhereInput[]
+    OR?: PirateCooldownWhereInput[]
+    NOT?: PirateCooldownWhereInput | PirateCooldownWhereInput[]
+    last_attack_at?: DateTimeFilter<"PirateCooldown"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "user_id">
+
+  export type PirateCooldownOrderByWithAggregationInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    last_attack_at?: SortOrder
+    _count?: PirateCooldownCountOrderByAggregateInput
+    _avg?: PirateCooldownAvgOrderByAggregateInput
+    _max?: PirateCooldownMaxOrderByAggregateInput
+    _min?: PirateCooldownMinOrderByAggregateInput
+    _sum?: PirateCooldownSumOrderByAggregateInput
+  }
+
+  export type PirateCooldownScalarWhereWithAggregatesInput = {
+    AND?: PirateCooldownScalarWhereWithAggregatesInput | PirateCooldownScalarWhereWithAggregatesInput[]
+    OR?: PirateCooldownScalarWhereWithAggregatesInput[]
+    NOT?: PirateCooldownScalarWhereWithAggregatesInput | PirateCooldownScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PirateCooldown"> | number
+    user_id?: IntWithAggregatesFilter<"PirateCooldown"> | number
+    last_attack_at?: DateTimeWithAggregatesFilter<"PirateCooldown"> | Date | string
+  }
+
   export type UserCreateInput = {
     email: string
     password_hash: string
@@ -29589,6 +41441,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -29600,6 +41453,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -29620,6 +41481,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -29631,6 +41493,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -29650,6 +41520,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -29661,6 +41532,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -29681,6 +41560,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -29692,6 +41572,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -29712,6 +41600,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
   }
@@ -29733,6 +41622,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29755,6 +41645,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29785,6 +41676,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateInput = {
@@ -29814,6 +41706,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemUpdateInput = {
@@ -29842,6 +41735,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateInput = {
@@ -29871,6 +41765,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type ItemCreateManyInput = {
@@ -30401,9 +42296,13 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
     seller: UserCreateNestedOneWithoutSell_listingsInput
     buyer?: UserCreateNestedOneWithoutBuy_historyInput
     item: ItemCreateNestedOneWithoutMarket_listingsInput
+    cargo_box?: CargoBoxCreateNestedOneWithoutListingInput
+    purchase_order?: PurchaseOrderCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingUncheckedCreateInput = {
@@ -30422,6 +42321,10 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    purchase_order?: PurchaseOrderUncheckedCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingUpdateInput = {
@@ -30436,9 +42339,13 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
     buyer?: UserUpdateOneWithoutBuy_historyNestedInput
     item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
+    cargo_box?: CargoBoxUpdateOneWithoutListingNestedInput
+    purchase_order?: PurchaseOrderUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateInput = {
@@ -30457,6 +42364,10 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    purchase_order?: PurchaseOrderUncheckedUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingCreateManyInput = {
@@ -30475,6 +42386,9 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
   }
 
   export type MarketListingUpdateManyMutationInput = {
@@ -30489,6 +42403,8 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUncheckedUpdateManyInput = {
@@ -30507,6 +42423,9 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type OccupationCatalogCreateInput = {
@@ -31543,6 +43462,768 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CargoBoxCreateInput = {
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner: UserCreateNestedOneWithoutCargo_boxesInput
+    items?: CargoBoxItemCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUncheckedCreateInput = {
+    id?: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    items?: CargoBoxItemUncheckedCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingUncheckedCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderUncheckedCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoUncheckedCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUpdateInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutCargo_boxesNestedInput
+    items?: CargoBoxItemUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    owner_id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: CargoBoxItemUncheckedUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUncheckedUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUncheckedUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUncheckedUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxCreateManyInput = {
+    id?: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type CargoBoxUpdateManyMutationInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CargoBoxUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    owner_id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CargoBoxItemCreateInput = {
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    cargo_box: CargoBoxCreateNestedOneWithoutItemsInput
+    item: ItemCreateNestedOneWithoutCargo_box_itemsInput
+  }
+
+  export type CargoBoxItemUncheckedCreateInput = {
+    id?: number
+    cargo_box_id: number
+    item_id: number
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+  }
+
+  export type CargoBoxItemUpdateInput = {
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutItemsNestedInput
+    item?: ItemUpdateOneRequiredWithoutCargo_box_itemsNestedInput
+  }
+
+  export type CargoBoxItemUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    item_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CargoBoxItemCreateManyInput = {
+    id?: number
+    cargo_box_id: number
+    item_id: number
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+  }
+
+  export type CargoBoxItemUpdateManyMutationInput = {
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CargoBoxItemUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    item_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PurchaseOrderCreateInput = {
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    cargo_box: CargoBoxCreateNestedOneWithoutOrderInput
+    listing: MarketListingCreateNestedOneWithoutPurchase_orderInput
+    buyer: UserCreateNestedOneWithoutPurchase_orders_as_buyerInput
+    seller: UserCreateNestedOneWithoutPurchase_orders_as_sellerInput
+    shipment?: ShipCargoCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderUncheckedCreateInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    shipment?: ShipCargoUncheckedCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderUpdateInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutOrderNestedInput
+    listing?: MarketListingUpdateOneRequiredWithoutPurchase_orderNestedInput
+    buyer?: UserUpdateOneRequiredWithoutPurchase_orders_as_buyerNestedInput
+    seller?: UserUpdateOneRequiredWithoutPurchase_orders_as_sellerNestedInput
+    shipment?: ShipCargoUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    shipment?: ShipCargoUncheckedUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderCreateManyInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+  }
+
+  export type PurchaseOrderUpdateManyMutationInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PurchaseOrderUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCreateInput = {
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner?: UserCreateNestedOneWithoutOwned_shipsInput
+    cargo?: ShipCargoCreateNestedManyWithoutShipInput
+    attacks?: PirateAttackCreateNestedManyWithoutTarget_shipInput
+  }
+
+  export type ShipUncheckedCreateInput = {
+    id?: number
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    owner_id?: number | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    cargo?: ShipCargoUncheckedCreateNestedManyWithoutShipInput
+    attacks?: PirateAttackUncheckedCreateNestedManyWithoutTarget_shipInput
+  }
+
+  export type ShipUpdateInput = {
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutOwned_shipsNestedInput
+    cargo?: ShipCargoUpdateManyWithoutShipNestedInput
+    attacks?: PirateAttackUpdateManyWithoutTarget_shipNestedInput
+  }
+
+  export type ShipUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    owner_id?: NullableIntFieldUpdateOperationsInput | number | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo?: ShipCargoUncheckedUpdateManyWithoutShipNestedInput
+    attacks?: PirateAttackUncheckedUpdateManyWithoutTarget_shipNestedInput
+  }
+
+  export type ShipCreateManyInput = {
+    id?: number
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    owner_id?: number | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type ShipUpdateManyMutationInput = {
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    owner_id?: NullableIntFieldUpdateOperationsInput | number | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCargoCreateInput = {
+    loaded_at?: Date | string
+    ship: ShipCreateNestedOneWithoutCargoInput
+    order: PurchaseOrderCreateNestedOneWithoutShipmentInput
+    cargo_box: CargoBoxCreateNestedOneWithoutShip_cargoInput
+  }
+
+  export type ShipCargoUncheckedCreateInput = {
+    id?: number
+    ship_id: number
+    order_id: number
+    cargo_box_id: number
+    loaded_at?: Date | string
+  }
+
+  export type ShipCargoUpdateInput = {
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ship?: ShipUpdateOneRequiredWithoutCargoNestedInput
+    order?: PurchaseOrderUpdateOneRequiredWithoutShipmentNestedInput
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutShip_cargoNestedInput
+  }
+
+  export type ShipCargoUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    ship_id?: IntFieldUpdateOperationsInput | number
+    order_id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCargoCreateManyInput = {
+    id?: number
+    ship_id: number
+    order_id: number
+    cargo_box_id: number
+    loaded_at?: Date | string
+  }
+
+  export type ShipCargoUpdateManyMutationInput = {
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCargoUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    ship_id?: IntFieldUpdateOperationsInput | number
+    order_id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateAttackCreateInput = {
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+    attacker: UserCreateNestedOneWithoutPirate_attacksInput
+    target_ship: ShipCreateNestedOneWithoutAttacksInput
+  }
+
+  export type PirateAttackUncheckedCreateInput = {
+    id?: number
+    attacker_id: number
+    target_ship_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+  }
+
+  export type PirateAttackUpdateInput = {
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attacker?: UserUpdateOneRequiredWithoutPirate_attacksNestedInput
+    target_ship?: ShipUpdateOneRequiredWithoutAttacksNestedInput
+  }
+
+  export type PirateAttackUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    attacker_id?: IntFieldUpdateOperationsInput | number
+    target_ship_id?: IntFieldUpdateOperationsInput | number
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PirateAttackCreateManyInput = {
+    id?: number
+    attacker_id: number
+    target_ship_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+  }
+
+  export type PirateAttackUpdateManyMutationInput = {
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PirateAttackUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    attacker_id?: IntFieldUpdateOperationsInput | number
+    target_ship_id?: IntFieldUpdateOperationsInput | number
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type UserPortStorageCreateInput = {
+    city_key: string
+    max_slots?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    user: UserCreateNestedOneWithoutPort_storageInput
+  }
+
+  export type UserPortStorageUncheckedCreateInput = {
+    id?: number
+    user_id: number
+    city_key: string
+    max_slots?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPortStorageUpdateInput = {
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPort_storageNestedInput
+  }
+
+  export type UserPortStorageUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    user_id?: IntFieldUpdateOperationsInput | number
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPortStorageCreateManyInput = {
+    id?: number
+    user_id: number
+    city_key: string
+    max_slots?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPortStorageUpdateManyMutationInput = {
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPortStorageUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    user_id?: IntFieldUpdateOperationsInput | number
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationCreateInput = {
+    type: string
+    title: string
+    body: string
+    metadata?: string | null
+    is_read?: boolean
+    created_at?: Date | string
+    user: UserCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateInput = {
+    id?: number
+    user_id: number
+    type: string
+    title: string
+    body: string
+    metadata?: string | null
+    is_read?: boolean
+    created_at?: Date | string
+  }
+
+  export type NotificationUpdateInput = {
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    user_id?: IntFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationCreateManyInput = {
+    id?: number
+    user_id: number
+    type: string
+    title: string
+    body: string
+    metadata?: string | null
+    is_read?: boolean
+    created_at?: Date | string
+  }
+
+  export type NotificationUpdateManyMutationInput = {
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    user_id?: IntFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateCooldownCreateInput = {
+    last_attack_at: Date | string
+    user: UserCreateNestedOneWithoutPirate_cooldownInput
+  }
+
+  export type PirateCooldownUncheckedCreateInput = {
+    id?: number
+    user_id: number
+    last_attack_at: Date | string
+  }
+
+  export type PirateCooldownUpdateInput = {
+    last_attack_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPirate_cooldownNestedInput
+  }
+
+  export type PirateCooldownUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    user_id?: IntFieldUpdateOperationsInput | number
+    last_attack_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateCooldownCreateManyInput = {
+    id?: number
+    user_id: number
+    last_attack_at: Date | string
+  }
+
+  export type PirateCooldownUpdateManyMutationInput = {
+    last_attack_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateCooldownUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    user_id?: IntFieldUpdateOperationsInput | number
+    last_attack_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -31672,6 +44353,47 @@ export namespace Prisma {
     none?: PlayerDailyQuestWhereInput
   }
 
+  export type CargoBoxListRelationFilter = {
+    every?: CargoBoxWhereInput
+    some?: CargoBoxWhereInput
+    none?: CargoBoxWhereInput
+  }
+
+  export type PurchaseOrderListRelationFilter = {
+    every?: PurchaseOrderWhereInput
+    some?: PurchaseOrderWhereInput
+    none?: PurchaseOrderWhereInput
+  }
+
+  export type ShipListRelationFilter = {
+    every?: ShipWhereInput
+    some?: ShipWhereInput
+    none?: ShipWhereInput
+  }
+
+  export type UserPortStorageListRelationFilter = {
+    every?: UserPortStorageWhereInput
+    some?: UserPortStorageWhereInput
+    none?: UserPortStorageWhereInput
+  }
+
+  export type NotificationListRelationFilter = {
+    every?: NotificationWhereInput
+    some?: NotificationWhereInput
+    none?: NotificationWhereInput
+  }
+
+  export type PirateAttackListRelationFilter = {
+    every?: PirateAttackWhereInput
+    some?: PirateAttackWhereInput
+    none?: PirateAttackWhereInput
+  }
+
+  export type PirateCooldownNullableScalarRelationFilter = {
+    is?: PirateCooldownWhereInput | null
+    isNot?: PirateCooldownWhereInput | null
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -31709,6 +44431,30 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type CargoBoxOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PurchaseOrderOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ShipOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type UserPortStorageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NotificationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PirateAttackOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserOrderByRelevanceInput = {
     fields: UserOrderByRelevanceFieldEnum | UserOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -31733,6 +44479,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -31748,6 +44495,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -31768,6 +44516,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -31790,6 +44539,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -31805,6 +44555,7 @@ export namespace Prisma {
     secondary_job_level?: SortOrder
     secondary_job_skill_level?: SortOrder
     secondary_job_exp?: SortOrder
+    locked_money?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -31978,6 +44729,12 @@ export namespace Prisma {
     none?: DailyQuestRequirementWhereInput
   }
 
+  export type CargoBoxItemListRelationFilter = {
+    every?: CargoBoxItemWhereInput
+    some?: CargoBoxItemWhereInput
+    none?: CargoBoxItemWhereInput
+  }
+
   export type ItemOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -31991,6 +44748,10 @@ export namespace Prisma {
   }
 
   export type DailyQuestRequirementOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CargoBoxItemOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -32574,6 +45335,16 @@ export namespace Prisma {
     isNot?: UserWhereInput | null
   }
 
+  export type CargoBoxNullableScalarRelationFilter = {
+    is?: CargoBoxWhereInput | null
+    isNot?: CargoBoxWhereInput | null
+  }
+
+  export type PurchaseOrderNullableScalarRelationFilter = {
+    is?: PurchaseOrderWhereInput | null
+    isNot?: PurchaseOrderWhereInput | null
+  }
+
   export type MarketListingOrderByRelevanceInput = {
     fields: MarketListingOrderByRelevanceFieldEnum | MarketListingOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -32596,6 +45367,9 @@ export namespace Prisma {
     special_stat_2?: SortOrder
     special_stat_3?: SortOrder
     special_stat_4?: SortOrder
+    cargo_box_id?: SortOrder
+    is_cross_city?: SortOrder
+    origin_city?: SortOrder
   }
 
   export type MarketListingAvgOrderByAggregateInput = {
@@ -32606,6 +45380,7 @@ export namespace Prisma {
     quantity?: SortOrder
     price?: SortOrder
     enchant_level?: SortOrder
+    cargo_box_id?: SortOrder
   }
 
   export type MarketListingMaxOrderByAggregateInput = {
@@ -32624,6 +45399,9 @@ export namespace Prisma {
     special_stat_2?: SortOrder
     special_stat_3?: SortOrder
     special_stat_4?: SortOrder
+    cargo_box_id?: SortOrder
+    is_cross_city?: SortOrder
+    origin_city?: SortOrder
   }
 
   export type MarketListingMinOrderByAggregateInput = {
@@ -32642,6 +45420,9 @@ export namespace Prisma {
     special_stat_2?: SortOrder
     special_stat_3?: SortOrder
     special_stat_4?: SortOrder
+    cargo_box_id?: SortOrder
+    is_cross_city?: SortOrder
+    origin_city?: SortOrder
   }
 
   export type MarketListingSumOrderByAggregateInput = {
@@ -32652,6 +45433,7 @@ export namespace Prisma {
     quantity?: SortOrder
     price?: SortOrder
     enchant_level?: SortOrder
+    cargo_box_id?: SortOrder
   }
 
   export type EnumListingStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -33521,6 +46303,695 @@ export namespace Prisma {
     template_id?: SortOrder
   }
 
+  export type EnumCargoBoxSizeFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxSize | EnumCargoBoxSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxSize[]
+    notIn?: $Enums.CargoBoxSize[]
+    not?: NestedEnumCargoBoxSizeFilter<$PrismaModel> | $Enums.CargoBoxSize
+  }
+
+  export type EnumCargoBoxStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxStatus | EnumCargoBoxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxStatus[]
+    notIn?: $Enums.CargoBoxStatus[]
+    not?: NestedEnumCargoBoxStatusFilter<$PrismaModel> | $Enums.CargoBoxStatus
+  }
+
+  export type MarketListingNullableScalarRelationFilter = {
+    is?: MarketListingWhereInput | null
+    isNot?: MarketListingWhereInput | null
+  }
+
+  export type ShipCargoListRelationFilter = {
+    every?: ShipCargoWhereInput
+    some?: ShipCargoWhereInput
+    none?: ShipCargoWhereInput
+  }
+
+  export type ShipCargoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CargoBoxCountOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    size?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type CargoBoxAvgOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+  }
+
+  export type CargoBoxMaxOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    size?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type CargoBoxMinOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    size?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type CargoBoxSumOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+  }
+
+  export type EnumCargoBoxSizeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxSize | EnumCargoBoxSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxSize[]
+    notIn?: $Enums.CargoBoxSize[]
+    not?: NestedEnumCargoBoxSizeWithAggregatesFilter<$PrismaModel> | $Enums.CargoBoxSize
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCargoBoxSizeFilter<$PrismaModel>
+    _max?: NestedEnumCargoBoxSizeFilter<$PrismaModel>
+  }
+
+  export type EnumCargoBoxStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxStatus | EnumCargoBoxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxStatus[]
+    notIn?: $Enums.CargoBoxStatus[]
+    not?: NestedEnumCargoBoxStatusWithAggregatesFilter<$PrismaModel> | $Enums.CargoBoxStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCargoBoxStatusFilter<$PrismaModel>
+    _max?: NestedEnumCargoBoxStatusFilter<$PrismaModel>
+  }
+
+  export type CargoBoxScalarRelationFilter = {
+    is?: CargoBoxWhereInput
+    isNot?: CargoBoxWhereInput
+  }
+
+  export type CargoBoxItemOrderByRelevanceInput = {
+    fields: CargoBoxItemOrderByRelevanceFieldEnum | CargoBoxItemOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type CargoBoxItemCountOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_rarity?: SortOrder
+    equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
+  }
+
+  export type CargoBoxItemAvgOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+  }
+
+  export type CargoBoxItemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_rarity?: SortOrder
+    equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
+  }
+
+  export type CargoBoxItemMinOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_rarity?: SortOrder
+    equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+    special_stat_1?: SortOrder
+    special_stat_2?: SortOrder
+    special_stat_3?: SortOrder
+    special_stat_4?: SortOrder
+  }
+
+  export type CargoBoxItemSumOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    item_id?: SortOrder
+    quantity?: SortOrder
+    equipment_durability?: SortOrder
+    enchant_level?: SortOrder
+  }
+
+  export type EnumPurchaseOrderStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PurchaseOrderStatus | EnumPurchaseOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PurchaseOrderStatus[]
+    notIn?: $Enums.PurchaseOrderStatus[]
+    not?: NestedEnumPurchaseOrderStatusFilter<$PrismaModel> | $Enums.PurchaseOrderStatus
+  }
+
+  export type MarketListingScalarRelationFilter = {
+    is?: MarketListingWhereInput
+    isNot?: MarketListingWhereInput
+  }
+
+  export type ShipCargoNullableScalarRelationFilter = {
+    is?: ShipCargoWhereInput | null
+    isNot?: ShipCargoWhereInput | null
+  }
+
+  export type PurchaseOrderCountOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+    status?: SortOrder
+    expires_at?: SortOrder
+    created_at?: SortOrder
+    settled_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type PurchaseOrderAvgOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+  }
+
+  export type PurchaseOrderMaxOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+    status?: SortOrder
+    expires_at?: SortOrder
+    created_at?: SortOrder
+    settled_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type PurchaseOrderMinOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+    status?: SortOrder
+    expires_at?: SortOrder
+    created_at?: SortOrder
+    settled_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type PurchaseOrderSumOrderByAggregateInput = {
+    id?: SortOrder
+    cargo_box_id?: SortOrder
+    listing_id?: SortOrder
+    buyer_id?: SortOrder
+    seller_id?: SortOrder
+    price?: SortOrder
+    locked_amount?: SortOrder
+    export_tax?: SortOrder
+    import_tax?: SortOrder
+  }
+
+  export type EnumPurchaseOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PurchaseOrderStatus | EnumPurchaseOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PurchaseOrderStatus[]
+    notIn?: $Enums.PurchaseOrderStatus[]
+    not?: NestedEnumPurchaseOrderStatusWithAggregatesFilter<$PrismaModel> | $Enums.PurchaseOrderStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
+    _max?: NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
+  }
+
+  export type EnumShipTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipType | EnumShipTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipType[]
+    notIn?: $Enums.ShipType[]
+    not?: NestedEnumShipTypeFilter<$PrismaModel> | $Enums.ShipType
+  }
+
+  export type EnumShipSizeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShipSize[] | null
+    notIn?: $Enums.ShipSize[] | null
+    not?: NestedEnumShipSizeNullableFilter<$PrismaModel> | $Enums.ShipSize | null
+  }
+
+  export type EnumShipStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipStatus | EnumShipStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipStatus[]
+    notIn?: $Enums.ShipStatus[]
+    not?: NestedEnumShipStatusFilter<$PrismaModel> | $Enums.ShipStatus
+  }
+
+  export type ShipOrderByRelevanceInput = {
+    fields: ShipOrderByRelevanceFieldEnum | ShipOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type ShipCountOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    size?: SortOrder
+    owner_id?: SortOrder
+    origin_city?: SortOrder
+    dest_city?: SortOrder
+    status?: SortOrder
+    capacity?: SortOrder
+    departs_at?: SortOrder
+    departed_at?: SortOrder
+    arrives_at?: SortOrder
+    rps_sequence?: SortOrder
+    is_bot_ship?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ShipAvgOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    capacity?: SortOrder
+  }
+
+  export type ShipMaxOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    size?: SortOrder
+    owner_id?: SortOrder
+    origin_city?: SortOrder
+    dest_city?: SortOrder
+    status?: SortOrder
+    capacity?: SortOrder
+    departs_at?: SortOrder
+    departed_at?: SortOrder
+    arrives_at?: SortOrder
+    rps_sequence?: SortOrder
+    is_bot_ship?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ShipMinOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    size?: SortOrder
+    owner_id?: SortOrder
+    origin_city?: SortOrder
+    dest_city?: SortOrder
+    status?: SortOrder
+    capacity?: SortOrder
+    departs_at?: SortOrder
+    departed_at?: SortOrder
+    arrives_at?: SortOrder
+    rps_sequence?: SortOrder
+    is_bot_ship?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type ShipSumOrderByAggregateInput = {
+    id?: SortOrder
+    owner_id?: SortOrder
+    capacity?: SortOrder
+  }
+
+  export type EnumShipTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipType | EnumShipTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipType[]
+    notIn?: $Enums.ShipType[]
+    not?: NestedEnumShipTypeWithAggregatesFilter<$PrismaModel> | $Enums.ShipType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumShipTypeFilter<$PrismaModel>
+    _max?: NestedEnumShipTypeFilter<$PrismaModel>
+  }
+
+  export type EnumShipSizeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShipSize[] | null
+    notIn?: $Enums.ShipSize[] | null
+    not?: NestedEnumShipSizeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ShipSize | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumShipSizeNullableFilter<$PrismaModel>
+    _max?: NestedEnumShipSizeNullableFilter<$PrismaModel>
+  }
+
+  export type EnumShipStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipStatus | EnumShipStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipStatus[]
+    notIn?: $Enums.ShipStatus[]
+    not?: NestedEnumShipStatusWithAggregatesFilter<$PrismaModel> | $Enums.ShipStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumShipStatusFilter<$PrismaModel>
+    _max?: NestedEnumShipStatusFilter<$PrismaModel>
+  }
+
+  export type ShipScalarRelationFilter = {
+    is?: ShipWhereInput
+    isNot?: ShipWhereInput
+  }
+
+  export type PurchaseOrderScalarRelationFilter = {
+    is?: PurchaseOrderWhereInput
+    isNot?: PurchaseOrderWhereInput
+  }
+
+  export type ShipCargoCountOrderByAggregateInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+    loaded_at?: SortOrder
+  }
+
+  export type ShipCargoAvgOrderByAggregateInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+  }
+
+  export type ShipCargoMaxOrderByAggregateInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+    loaded_at?: SortOrder
+  }
+
+  export type ShipCargoMinOrderByAggregateInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+    loaded_at?: SortOrder
+  }
+
+  export type ShipCargoSumOrderByAggregateInput = {
+    id?: SortOrder
+    ship_id?: SortOrder
+    order_id?: SortOrder
+    cargo_box_id?: SortOrder
+  }
+
+  export type EnumShipSizeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipSize[]
+    notIn?: $Enums.ShipSize[]
+    not?: NestedEnumShipSizeFilter<$PrismaModel> | $Enums.ShipSize
+  }
+
+  export type BoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+  }
+
+  export type EnumPirateAttackStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PirateAttackStatus | EnumPirateAttackStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PirateAttackStatus[]
+    notIn?: $Enums.PirateAttackStatus[]
+    not?: NestedEnumPirateAttackStatusFilter<$PrismaModel> | $Enums.PirateAttackStatus
+  }
+
+  export type PirateAttackOrderByRelevanceInput = {
+    fields: PirateAttackOrderByRelevanceFieldEnum | PirateAttackOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type PirateAttackCountOrderByAggregateInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_ship_size?: SortOrder
+    attacker_rps?: SortOrder
+    defender_rps?: SortOrder
+    result_detail?: SortOrder
+    attacker_wins?: SortOrder
+    defender_wins?: SortOrder
+    draws?: SortOrder
+    is_success?: SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    resolved_at?: SortOrder
+  }
+
+  export type PirateAttackAvgOrderByAggregateInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_wins?: SortOrder
+    defender_wins?: SortOrder
+    draws?: SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+  }
+
+  export type PirateAttackMaxOrderByAggregateInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_ship_size?: SortOrder
+    attacker_rps?: SortOrder
+    defender_rps?: SortOrder
+    result_detail?: SortOrder
+    attacker_wins?: SortOrder
+    defender_wins?: SortOrder
+    draws?: SortOrder
+    is_success?: SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    resolved_at?: SortOrder
+  }
+
+  export type PirateAttackMinOrderByAggregateInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_ship_size?: SortOrder
+    attacker_rps?: SortOrder
+    defender_rps?: SortOrder
+    result_detail?: SortOrder
+    attacker_wins?: SortOrder
+    defender_wins?: SortOrder
+    draws?: SortOrder
+    is_success?: SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+    status?: SortOrder
+    created_at?: SortOrder
+    resolved_at?: SortOrder
+  }
+
+  export type PirateAttackSumOrderByAggregateInput = {
+    id?: SortOrder
+    attacker_id?: SortOrder
+    target_ship_id?: SortOrder
+    attacker_wins?: SortOrder
+    defender_wins?: SortOrder
+    draws?: SortOrder
+    fuel_cost?: SortOrder
+    credit_cost?: SortOrder
+  }
+
+  export type EnumShipSizeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipSize[]
+    notIn?: $Enums.ShipSize[]
+    not?: NestedEnumShipSizeWithAggregatesFilter<$PrismaModel> | $Enums.ShipSize
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumShipSizeFilter<$PrismaModel>
+    _max?: NestedEnumShipSizeFilter<$PrismaModel>
+  }
+
+  export type BoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+  }
+
+  export type EnumPirateAttackStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PirateAttackStatus | EnumPirateAttackStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PirateAttackStatus[]
+    notIn?: $Enums.PirateAttackStatus[]
+    not?: NestedEnumPirateAttackStatusWithAggregatesFilter<$PrismaModel> | $Enums.PirateAttackStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPirateAttackStatusFilter<$PrismaModel>
+    _max?: NestedEnumPirateAttackStatusFilter<$PrismaModel>
+  }
+
+  export type UserPortStorageOrderByRelevanceInput = {
+    fields: UserPortStorageOrderByRelevanceFieldEnum | UserPortStorageOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type UserPortStorageUser_idCity_keyCompoundUniqueInput = {
+    user_id: number
+    city_key: string
+  }
+
+  export type UserPortStorageCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    city_key?: SortOrder
+    max_slots?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserPortStorageAvgOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    max_slots?: SortOrder
+  }
+
+  export type UserPortStorageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    city_key?: SortOrder
+    max_slots?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserPortStorageMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    city_key?: SortOrder
+    max_slots?: SortOrder
+    created_at?: SortOrder
+    updated_at?: SortOrder
+  }
+
+  export type UserPortStorageSumOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    max_slots?: SortOrder
+  }
+
+  export type NotificationOrderByRelevanceInput = {
+    fields: NotificationOrderByRelevanceFieldEnum | NotificationOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type NotificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
+    metadata?: SortOrder
+    is_read?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type NotificationAvgOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+  }
+
+  export type NotificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
+    metadata?: SortOrder
+    is_read?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type NotificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
+    metadata?: SortOrder
+    is_read?: SortOrder
+    created_at?: SortOrder
+  }
+
+  export type NotificationSumOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+  }
+
+  export type PirateCooldownCountOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    last_attack_at?: SortOrder
+  }
+
+  export type PirateCooldownAvgOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+  }
+
+  export type PirateCooldownMaxOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    last_attack_at?: SortOrder
+  }
+
+  export type PirateCooldownMinOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+    last_attack_at?: SortOrder
+  }
+
+  export type PirateCooldownSumOrderByAggregateInput = {
+    id?: SortOrder
+    user_id?: SortOrder
+  }
+
   export type InventorySlotCreateNestedManyWithoutUserInput = {
     create?: XOR<InventorySlotCreateWithoutUserInput, InventorySlotUncheckedCreateWithoutUserInput> | InventorySlotCreateWithoutUserInput[] | InventorySlotUncheckedCreateWithoutUserInput[]
     connectOrCreate?: InventorySlotCreateOrConnectWithoutUserInput | InventorySlotCreateOrConnectWithoutUserInput[]
@@ -33584,6 +47055,61 @@ export namespace Prisma {
     connect?: PlayerDailyQuestWhereUniqueInput | PlayerDailyQuestWhereUniqueInput[]
   }
 
+  export type CargoBoxCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<CargoBoxCreateWithoutOwnerInput, CargoBoxUncheckedCreateWithoutOwnerInput> | CargoBoxCreateWithoutOwnerInput[] | CargoBoxUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutOwnerInput | CargoBoxCreateOrConnectWithoutOwnerInput[]
+    createMany?: CargoBoxCreateManyOwnerInputEnvelope
+    connect?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+  }
+
+  export type PurchaseOrderCreateNestedManyWithoutBuyerInput = {
+    create?: XOR<PurchaseOrderCreateWithoutBuyerInput, PurchaseOrderUncheckedCreateWithoutBuyerInput> | PurchaseOrderCreateWithoutBuyerInput[] | PurchaseOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutBuyerInput | PurchaseOrderCreateOrConnectWithoutBuyerInput[]
+    createMany?: PurchaseOrderCreateManyBuyerInputEnvelope
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+  }
+
+  export type PurchaseOrderCreateNestedManyWithoutSellerInput = {
+    create?: XOR<PurchaseOrderCreateWithoutSellerInput, PurchaseOrderUncheckedCreateWithoutSellerInput> | PurchaseOrderCreateWithoutSellerInput[] | PurchaseOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutSellerInput | PurchaseOrderCreateOrConnectWithoutSellerInput[]
+    createMany?: PurchaseOrderCreateManySellerInputEnvelope
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+  }
+
+  export type ShipCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<ShipCreateWithoutOwnerInput, ShipUncheckedCreateWithoutOwnerInput> | ShipCreateWithoutOwnerInput[] | ShipUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: ShipCreateOrConnectWithoutOwnerInput | ShipCreateOrConnectWithoutOwnerInput[]
+    createMany?: ShipCreateManyOwnerInputEnvelope
+    connect?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+  }
+
+  export type UserPortStorageCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserPortStorageCreateWithoutUserInput, UserPortStorageUncheckedCreateWithoutUserInput> | UserPortStorageCreateWithoutUserInput[] | UserPortStorageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPortStorageCreateOrConnectWithoutUserInput | UserPortStorageCreateOrConnectWithoutUserInput[]
+    createMany?: UserPortStorageCreateManyUserInputEnvelope
+    connect?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+  }
+
+  export type NotificationCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type PirateAttackCreateNestedManyWithoutAttackerInput = {
+    create?: XOR<PirateAttackCreateWithoutAttackerInput, PirateAttackUncheckedCreateWithoutAttackerInput> | PirateAttackCreateWithoutAttackerInput[] | PirateAttackUncheckedCreateWithoutAttackerInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutAttackerInput | PirateAttackCreateOrConnectWithoutAttackerInput[]
+    createMany?: PirateAttackCreateManyAttackerInputEnvelope
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+  }
+
+  export type PirateCooldownCreateNestedOneWithoutUserInput = {
+    create?: XOR<PirateCooldownCreateWithoutUserInput, PirateCooldownUncheckedCreateWithoutUserInput>
+    connectOrCreate?: PirateCooldownCreateOrConnectWithoutUserInput
+    connect?: PirateCooldownWhereUniqueInput
+  }
+
   export type InventorySlotUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<InventorySlotCreateWithoutUserInput, InventorySlotUncheckedCreateWithoutUserInput> | InventorySlotCreateWithoutUserInput[] | InventorySlotUncheckedCreateWithoutUserInput[]
     connectOrCreate?: InventorySlotCreateOrConnectWithoutUserInput | InventorySlotCreateOrConnectWithoutUserInput[]
@@ -33645,6 +47171,61 @@ export namespace Prisma {
     connectOrCreate?: PlayerDailyQuestCreateOrConnectWithoutUserInput | PlayerDailyQuestCreateOrConnectWithoutUserInput[]
     createMany?: PlayerDailyQuestCreateManyUserInputEnvelope
     connect?: PlayerDailyQuestWhereUniqueInput | PlayerDailyQuestWhereUniqueInput[]
+  }
+
+  export type CargoBoxUncheckedCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<CargoBoxCreateWithoutOwnerInput, CargoBoxUncheckedCreateWithoutOwnerInput> | CargoBoxCreateWithoutOwnerInput[] | CargoBoxUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutOwnerInput | CargoBoxCreateOrConnectWithoutOwnerInput[]
+    createMany?: CargoBoxCreateManyOwnerInputEnvelope
+    connect?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+  }
+
+  export type PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput = {
+    create?: XOR<PurchaseOrderCreateWithoutBuyerInput, PurchaseOrderUncheckedCreateWithoutBuyerInput> | PurchaseOrderCreateWithoutBuyerInput[] | PurchaseOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutBuyerInput | PurchaseOrderCreateOrConnectWithoutBuyerInput[]
+    createMany?: PurchaseOrderCreateManyBuyerInputEnvelope
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+  }
+
+  export type PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput = {
+    create?: XOR<PurchaseOrderCreateWithoutSellerInput, PurchaseOrderUncheckedCreateWithoutSellerInput> | PurchaseOrderCreateWithoutSellerInput[] | PurchaseOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutSellerInput | PurchaseOrderCreateOrConnectWithoutSellerInput[]
+    createMany?: PurchaseOrderCreateManySellerInputEnvelope
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+  }
+
+  export type ShipUncheckedCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<ShipCreateWithoutOwnerInput, ShipUncheckedCreateWithoutOwnerInput> | ShipCreateWithoutOwnerInput[] | ShipUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: ShipCreateOrConnectWithoutOwnerInput | ShipCreateOrConnectWithoutOwnerInput[]
+    createMany?: ShipCreateManyOwnerInputEnvelope
+    connect?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+  }
+
+  export type UserPortStorageUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<UserPortStorageCreateWithoutUserInput, UserPortStorageUncheckedCreateWithoutUserInput> | UserPortStorageCreateWithoutUserInput[] | UserPortStorageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPortStorageCreateOrConnectWithoutUserInput | UserPortStorageCreateOrConnectWithoutUserInput[]
+    createMany?: UserPortStorageCreateManyUserInputEnvelope
+    connect?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type PirateAttackUncheckedCreateNestedManyWithoutAttackerInput = {
+    create?: XOR<PirateAttackCreateWithoutAttackerInput, PirateAttackUncheckedCreateWithoutAttackerInput> | PirateAttackCreateWithoutAttackerInput[] | PirateAttackUncheckedCreateWithoutAttackerInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutAttackerInput | PirateAttackCreateOrConnectWithoutAttackerInput[]
+    createMany?: PirateAttackCreateManyAttackerInputEnvelope
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+  }
+
+  export type PirateCooldownUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<PirateCooldownCreateWithoutUserInput, PirateCooldownUncheckedCreateWithoutUserInput>
+    connectOrCreate?: PirateCooldownCreateOrConnectWithoutUserInput
+    connect?: PirateCooldownWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -33809,6 +47390,114 @@ export namespace Prisma {
     deleteMany?: PlayerDailyQuestScalarWhereInput | PlayerDailyQuestScalarWhereInput[]
   }
 
+  export type CargoBoxUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<CargoBoxCreateWithoutOwnerInput, CargoBoxUncheckedCreateWithoutOwnerInput> | CargoBoxCreateWithoutOwnerInput[] | CargoBoxUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutOwnerInput | CargoBoxCreateOrConnectWithoutOwnerInput[]
+    upsert?: CargoBoxUpsertWithWhereUniqueWithoutOwnerInput | CargoBoxUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: CargoBoxCreateManyOwnerInputEnvelope
+    set?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    disconnect?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    delete?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    connect?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    update?: CargoBoxUpdateWithWhereUniqueWithoutOwnerInput | CargoBoxUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: CargoBoxUpdateManyWithWhereWithoutOwnerInput | CargoBoxUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: CargoBoxScalarWhereInput | CargoBoxScalarWhereInput[]
+  }
+
+  export type PurchaseOrderUpdateManyWithoutBuyerNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutBuyerInput, PurchaseOrderUncheckedCreateWithoutBuyerInput> | PurchaseOrderCreateWithoutBuyerInput[] | PurchaseOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutBuyerInput | PurchaseOrderCreateOrConnectWithoutBuyerInput[]
+    upsert?: PurchaseOrderUpsertWithWhereUniqueWithoutBuyerInput | PurchaseOrderUpsertWithWhereUniqueWithoutBuyerInput[]
+    createMany?: PurchaseOrderCreateManyBuyerInputEnvelope
+    set?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    disconnect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    delete?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    update?: PurchaseOrderUpdateWithWhereUniqueWithoutBuyerInput | PurchaseOrderUpdateWithWhereUniqueWithoutBuyerInput[]
+    updateMany?: PurchaseOrderUpdateManyWithWhereWithoutBuyerInput | PurchaseOrderUpdateManyWithWhereWithoutBuyerInput[]
+    deleteMany?: PurchaseOrderScalarWhereInput | PurchaseOrderScalarWhereInput[]
+  }
+
+  export type PurchaseOrderUpdateManyWithoutSellerNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutSellerInput, PurchaseOrderUncheckedCreateWithoutSellerInput> | PurchaseOrderCreateWithoutSellerInput[] | PurchaseOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutSellerInput | PurchaseOrderCreateOrConnectWithoutSellerInput[]
+    upsert?: PurchaseOrderUpsertWithWhereUniqueWithoutSellerInput | PurchaseOrderUpsertWithWhereUniqueWithoutSellerInput[]
+    createMany?: PurchaseOrderCreateManySellerInputEnvelope
+    set?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    disconnect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    delete?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    update?: PurchaseOrderUpdateWithWhereUniqueWithoutSellerInput | PurchaseOrderUpdateWithWhereUniqueWithoutSellerInput[]
+    updateMany?: PurchaseOrderUpdateManyWithWhereWithoutSellerInput | PurchaseOrderUpdateManyWithWhereWithoutSellerInput[]
+    deleteMany?: PurchaseOrderScalarWhereInput | PurchaseOrderScalarWhereInput[]
+  }
+
+  export type ShipUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<ShipCreateWithoutOwnerInput, ShipUncheckedCreateWithoutOwnerInput> | ShipCreateWithoutOwnerInput[] | ShipUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: ShipCreateOrConnectWithoutOwnerInput | ShipCreateOrConnectWithoutOwnerInput[]
+    upsert?: ShipUpsertWithWhereUniqueWithoutOwnerInput | ShipUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: ShipCreateManyOwnerInputEnvelope
+    set?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    disconnect?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    delete?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    connect?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    update?: ShipUpdateWithWhereUniqueWithoutOwnerInput | ShipUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: ShipUpdateManyWithWhereWithoutOwnerInput | ShipUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: ShipScalarWhereInput | ShipScalarWhereInput[]
+  }
+
+  export type UserPortStorageUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserPortStorageCreateWithoutUserInput, UserPortStorageUncheckedCreateWithoutUserInput> | UserPortStorageCreateWithoutUserInput[] | UserPortStorageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPortStorageCreateOrConnectWithoutUserInput | UserPortStorageCreateOrConnectWithoutUserInput[]
+    upsert?: UserPortStorageUpsertWithWhereUniqueWithoutUserInput | UserPortStorageUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserPortStorageCreateManyUserInputEnvelope
+    set?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    disconnect?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    delete?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    connect?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    update?: UserPortStorageUpdateWithWhereUniqueWithoutUserInput | UserPortStorageUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserPortStorageUpdateManyWithWhereWithoutUserInput | UserPortStorageUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserPortStorageScalarWhereInput | UserPortStorageScalarWhereInput[]
+  }
+
+  export type NotificationUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type PirateAttackUpdateManyWithoutAttackerNestedInput = {
+    create?: XOR<PirateAttackCreateWithoutAttackerInput, PirateAttackUncheckedCreateWithoutAttackerInput> | PirateAttackCreateWithoutAttackerInput[] | PirateAttackUncheckedCreateWithoutAttackerInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutAttackerInput | PirateAttackCreateOrConnectWithoutAttackerInput[]
+    upsert?: PirateAttackUpsertWithWhereUniqueWithoutAttackerInput | PirateAttackUpsertWithWhereUniqueWithoutAttackerInput[]
+    createMany?: PirateAttackCreateManyAttackerInputEnvelope
+    set?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    disconnect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    delete?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    update?: PirateAttackUpdateWithWhereUniqueWithoutAttackerInput | PirateAttackUpdateWithWhereUniqueWithoutAttackerInput[]
+    updateMany?: PirateAttackUpdateManyWithWhereWithoutAttackerInput | PirateAttackUpdateManyWithWhereWithoutAttackerInput[]
+    deleteMany?: PirateAttackScalarWhereInput | PirateAttackScalarWhereInput[]
+  }
+
+  export type PirateCooldownUpdateOneWithoutUserNestedInput = {
+    create?: XOR<PirateCooldownCreateWithoutUserInput, PirateCooldownUncheckedCreateWithoutUserInput>
+    connectOrCreate?: PirateCooldownCreateOrConnectWithoutUserInput
+    upsert?: PirateCooldownUpsertWithoutUserInput
+    disconnect?: PirateCooldownWhereInput | boolean
+    delete?: PirateCooldownWhereInput | boolean
+    connect?: PirateCooldownWhereUniqueInput
+    update?: XOR<XOR<PirateCooldownUpdateToOneWithWhereWithoutUserInput, PirateCooldownUpdateWithoutUserInput>, PirateCooldownUncheckedUpdateWithoutUserInput>
+  }
+
   export type InventorySlotUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<InventorySlotCreateWithoutUserInput, InventorySlotUncheckedCreateWithoutUserInput> | InventorySlotCreateWithoutUserInput[] | InventorySlotUncheckedCreateWithoutUserInput[]
     connectOrCreate?: InventorySlotCreateOrConnectWithoutUserInput | InventorySlotCreateOrConnectWithoutUserInput[]
@@ -33935,6 +47624,114 @@ export namespace Prisma {
     deleteMany?: PlayerDailyQuestScalarWhereInput | PlayerDailyQuestScalarWhereInput[]
   }
 
+  export type CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<CargoBoxCreateWithoutOwnerInput, CargoBoxUncheckedCreateWithoutOwnerInput> | CargoBoxCreateWithoutOwnerInput[] | CargoBoxUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutOwnerInput | CargoBoxCreateOrConnectWithoutOwnerInput[]
+    upsert?: CargoBoxUpsertWithWhereUniqueWithoutOwnerInput | CargoBoxUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: CargoBoxCreateManyOwnerInputEnvelope
+    set?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    disconnect?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    delete?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    connect?: CargoBoxWhereUniqueInput | CargoBoxWhereUniqueInput[]
+    update?: CargoBoxUpdateWithWhereUniqueWithoutOwnerInput | CargoBoxUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: CargoBoxUpdateManyWithWhereWithoutOwnerInput | CargoBoxUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: CargoBoxScalarWhereInput | CargoBoxScalarWhereInput[]
+  }
+
+  export type PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutBuyerInput, PurchaseOrderUncheckedCreateWithoutBuyerInput> | PurchaseOrderCreateWithoutBuyerInput[] | PurchaseOrderUncheckedCreateWithoutBuyerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutBuyerInput | PurchaseOrderCreateOrConnectWithoutBuyerInput[]
+    upsert?: PurchaseOrderUpsertWithWhereUniqueWithoutBuyerInput | PurchaseOrderUpsertWithWhereUniqueWithoutBuyerInput[]
+    createMany?: PurchaseOrderCreateManyBuyerInputEnvelope
+    set?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    disconnect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    delete?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    update?: PurchaseOrderUpdateWithWhereUniqueWithoutBuyerInput | PurchaseOrderUpdateWithWhereUniqueWithoutBuyerInput[]
+    updateMany?: PurchaseOrderUpdateManyWithWhereWithoutBuyerInput | PurchaseOrderUpdateManyWithWhereWithoutBuyerInput[]
+    deleteMany?: PurchaseOrderScalarWhereInput | PurchaseOrderScalarWhereInput[]
+  }
+
+  export type PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutSellerInput, PurchaseOrderUncheckedCreateWithoutSellerInput> | PurchaseOrderCreateWithoutSellerInput[] | PurchaseOrderUncheckedCreateWithoutSellerInput[]
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutSellerInput | PurchaseOrderCreateOrConnectWithoutSellerInput[]
+    upsert?: PurchaseOrderUpsertWithWhereUniqueWithoutSellerInput | PurchaseOrderUpsertWithWhereUniqueWithoutSellerInput[]
+    createMany?: PurchaseOrderCreateManySellerInputEnvelope
+    set?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    disconnect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    delete?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    connect?: PurchaseOrderWhereUniqueInput | PurchaseOrderWhereUniqueInput[]
+    update?: PurchaseOrderUpdateWithWhereUniqueWithoutSellerInput | PurchaseOrderUpdateWithWhereUniqueWithoutSellerInput[]
+    updateMany?: PurchaseOrderUpdateManyWithWhereWithoutSellerInput | PurchaseOrderUpdateManyWithWhereWithoutSellerInput[]
+    deleteMany?: PurchaseOrderScalarWhereInput | PurchaseOrderScalarWhereInput[]
+  }
+
+  export type ShipUncheckedUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<ShipCreateWithoutOwnerInput, ShipUncheckedCreateWithoutOwnerInput> | ShipCreateWithoutOwnerInput[] | ShipUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: ShipCreateOrConnectWithoutOwnerInput | ShipCreateOrConnectWithoutOwnerInput[]
+    upsert?: ShipUpsertWithWhereUniqueWithoutOwnerInput | ShipUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: ShipCreateManyOwnerInputEnvelope
+    set?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    disconnect?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    delete?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    connect?: ShipWhereUniqueInput | ShipWhereUniqueInput[]
+    update?: ShipUpdateWithWhereUniqueWithoutOwnerInput | ShipUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: ShipUpdateManyWithWhereWithoutOwnerInput | ShipUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: ShipScalarWhereInput | ShipScalarWhereInput[]
+  }
+
+  export type UserPortStorageUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<UserPortStorageCreateWithoutUserInput, UserPortStorageUncheckedCreateWithoutUserInput> | UserPortStorageCreateWithoutUserInput[] | UserPortStorageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: UserPortStorageCreateOrConnectWithoutUserInput | UserPortStorageCreateOrConnectWithoutUserInput[]
+    upsert?: UserPortStorageUpsertWithWhereUniqueWithoutUserInput | UserPortStorageUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: UserPortStorageCreateManyUserInputEnvelope
+    set?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    disconnect?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    delete?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    connect?: UserPortStorageWhereUniqueInput | UserPortStorageWhereUniqueInput[]
+    update?: UserPortStorageUpdateWithWhereUniqueWithoutUserInput | UserPortStorageUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: UserPortStorageUpdateManyWithWhereWithoutUserInput | UserPortStorageUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: UserPortStorageScalarWhereInput | UserPortStorageScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput = {
+    create?: XOR<PirateAttackCreateWithoutAttackerInput, PirateAttackUncheckedCreateWithoutAttackerInput> | PirateAttackCreateWithoutAttackerInput[] | PirateAttackUncheckedCreateWithoutAttackerInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutAttackerInput | PirateAttackCreateOrConnectWithoutAttackerInput[]
+    upsert?: PirateAttackUpsertWithWhereUniqueWithoutAttackerInput | PirateAttackUpsertWithWhereUniqueWithoutAttackerInput[]
+    createMany?: PirateAttackCreateManyAttackerInputEnvelope
+    set?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    disconnect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    delete?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    update?: PirateAttackUpdateWithWhereUniqueWithoutAttackerInput | PirateAttackUpdateWithWhereUniqueWithoutAttackerInput[]
+    updateMany?: PirateAttackUpdateManyWithWhereWithoutAttackerInput | PirateAttackUpdateManyWithWhereWithoutAttackerInput[]
+    deleteMany?: PirateAttackScalarWhereInput | PirateAttackScalarWhereInput[]
+  }
+
+  export type PirateCooldownUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<PirateCooldownCreateWithoutUserInput, PirateCooldownUncheckedCreateWithoutUserInput>
+    connectOrCreate?: PirateCooldownCreateOrConnectWithoutUserInput
+    upsert?: PirateCooldownUpsertWithoutUserInput
+    disconnect?: PirateCooldownWhereInput | boolean
+    delete?: PirateCooldownWhereInput | boolean
+    connect?: PirateCooldownWhereUniqueInput
+    update?: XOR<XOR<PirateCooldownUpdateToOneWithWhereWithoutUserInput, PirateCooldownUpdateWithoutUserInput>, PirateCooldownUncheckedUpdateWithoutUserInput>
+  }
+
   export type ItemCreateNestedOneWithoutYielded_fromInput = {
     create?: XOR<ItemCreateWithoutYielded_fromInput, ItemUncheckedCreateWithoutYielded_fromInput>
     connectOrCreate?: ItemCreateOrConnectWithoutYielded_fromInput
@@ -33997,6 +47794,13 @@ export namespace Prisma {
     connect?: DailyQuestRequirementWhereUniqueInput | DailyQuestRequirementWhereUniqueInput[]
   }
 
+  export type CargoBoxItemCreateNestedManyWithoutItemInput = {
+    create?: XOR<CargoBoxItemCreateWithoutItemInput, CargoBoxItemUncheckedCreateWithoutItemInput> | CargoBoxItemCreateWithoutItemInput[] | CargoBoxItemUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutItemInput | CargoBoxItemCreateOrConnectWithoutItemInput[]
+    createMany?: CargoBoxItemCreateManyItemInputEnvelope
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+  }
+
   export type ItemUncheckedCreateNestedManyWithoutYield_itemInput = {
     create?: XOR<ItemCreateWithoutYield_itemInput, ItemUncheckedCreateWithoutYield_itemInput> | ItemCreateWithoutYield_itemInput[] | ItemUncheckedCreateWithoutYield_itemInput[]
     connectOrCreate?: ItemCreateOrConnectWithoutYield_itemInput | ItemCreateOrConnectWithoutYield_itemInput[]
@@ -34051,6 +47855,13 @@ export namespace Prisma {
     connectOrCreate?: DailyQuestRequirementCreateOrConnectWithoutItemInput | DailyQuestRequirementCreateOrConnectWithoutItemInput[]
     createMany?: DailyQuestRequirementCreateManyItemInputEnvelope
     connect?: DailyQuestRequirementWhereUniqueInput | DailyQuestRequirementWhereUniqueInput[]
+  }
+
+  export type CargoBoxItemUncheckedCreateNestedManyWithoutItemInput = {
+    create?: XOR<CargoBoxItemCreateWithoutItemInput, CargoBoxItemUncheckedCreateWithoutItemInput> | CargoBoxItemCreateWithoutItemInput[] | CargoBoxItemUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutItemInput | CargoBoxItemCreateOrConnectWithoutItemInput[]
+    createMany?: CargoBoxItemCreateManyItemInputEnvelope
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
   }
 
   export type EnumItemTypeFieldUpdateOperationsInput = {
@@ -34199,6 +48010,20 @@ export namespace Prisma {
     deleteMany?: DailyQuestRequirementScalarWhereInput | DailyQuestRequirementScalarWhereInput[]
   }
 
+  export type CargoBoxItemUpdateManyWithoutItemNestedInput = {
+    create?: XOR<CargoBoxItemCreateWithoutItemInput, CargoBoxItemUncheckedCreateWithoutItemInput> | CargoBoxItemCreateWithoutItemInput[] | CargoBoxItemUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutItemInput | CargoBoxItemCreateOrConnectWithoutItemInput[]
+    upsert?: CargoBoxItemUpsertWithWhereUniqueWithoutItemInput | CargoBoxItemUpsertWithWhereUniqueWithoutItemInput[]
+    createMany?: CargoBoxItemCreateManyItemInputEnvelope
+    set?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    disconnect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    delete?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    update?: CargoBoxItemUpdateWithWhereUniqueWithoutItemInput | CargoBoxItemUpdateWithWhereUniqueWithoutItemInput[]
+    updateMany?: CargoBoxItemUpdateManyWithWhereWithoutItemInput | CargoBoxItemUpdateManyWithWhereWithoutItemInput[]
+    deleteMany?: CargoBoxItemScalarWhereInput | CargoBoxItemScalarWhereInput[]
+  }
+
   export type ItemUncheckedUpdateManyWithoutYield_itemNestedInput = {
     create?: XOR<ItemCreateWithoutYield_itemInput, ItemUncheckedCreateWithoutYield_itemInput> | ItemCreateWithoutYield_itemInput[] | ItemUncheckedCreateWithoutYield_itemInput[]
     connectOrCreate?: ItemCreateOrConnectWithoutYield_itemInput | ItemCreateOrConnectWithoutYield_itemInput[]
@@ -34309,6 +48134,20 @@ export namespace Prisma {
     update?: DailyQuestRequirementUpdateWithWhereUniqueWithoutItemInput | DailyQuestRequirementUpdateWithWhereUniqueWithoutItemInput[]
     updateMany?: DailyQuestRequirementUpdateManyWithWhereWithoutItemInput | DailyQuestRequirementUpdateManyWithWhereWithoutItemInput[]
     deleteMany?: DailyQuestRequirementScalarWhereInput | DailyQuestRequirementScalarWhereInput[]
+  }
+
+  export type CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput = {
+    create?: XOR<CargoBoxItemCreateWithoutItemInput, CargoBoxItemUncheckedCreateWithoutItemInput> | CargoBoxItemCreateWithoutItemInput[] | CargoBoxItemUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutItemInput | CargoBoxItemCreateOrConnectWithoutItemInput[]
+    upsert?: CargoBoxItemUpsertWithWhereUniqueWithoutItemInput | CargoBoxItemUpsertWithWhereUniqueWithoutItemInput[]
+    createMany?: CargoBoxItemCreateManyItemInputEnvelope
+    set?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    disconnect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    delete?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    update?: CargoBoxItemUpdateWithWhereUniqueWithoutItemInput | CargoBoxItemUpdateWithWhereUniqueWithoutItemInput[]
+    updateMany?: CargoBoxItemUpdateManyWithWhereWithoutItemInput | CargoBoxItemUpdateManyWithWhereWithoutItemInput[]
+    deleteMany?: CargoBoxItemScalarWhereInput | CargoBoxItemScalarWhereInput[]
   }
 
   export type ItemCreateNestedOneWithoutRecipe_outputsInput = {
@@ -34587,6 +48426,24 @@ export namespace Prisma {
     connect?: ItemWhereUniqueInput
   }
 
+  export type CargoBoxCreateNestedOneWithoutListingInput = {
+    create?: XOR<CargoBoxCreateWithoutListingInput, CargoBoxUncheckedCreateWithoutListingInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutListingInput
+    connect?: CargoBoxWhereUniqueInput
+  }
+
+  export type PurchaseOrderCreateNestedOneWithoutListingInput = {
+    create?: XOR<PurchaseOrderCreateWithoutListingInput, PurchaseOrderUncheckedCreateWithoutListingInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutListingInput
+    connect?: PurchaseOrderWhereUniqueInput
+  }
+
+  export type PurchaseOrderUncheckedCreateNestedOneWithoutListingInput = {
+    create?: XOR<PurchaseOrderCreateWithoutListingInput, PurchaseOrderUncheckedCreateWithoutListingInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutListingInput
+    connect?: PurchaseOrderWhereUniqueInput
+  }
+
   export type EnumListingStatusFieldUpdateOperationsInput = {
     set?: $Enums.ListingStatus
   }
@@ -34615,6 +48472,36 @@ export namespace Prisma {
     upsert?: ItemUpsertWithoutMarket_listingsInput
     connect?: ItemWhereUniqueInput
     update?: XOR<XOR<ItemUpdateToOneWithWhereWithoutMarket_listingsInput, ItemUpdateWithoutMarket_listingsInput>, ItemUncheckedUpdateWithoutMarket_listingsInput>
+  }
+
+  export type CargoBoxUpdateOneWithoutListingNestedInput = {
+    create?: XOR<CargoBoxCreateWithoutListingInput, CargoBoxUncheckedCreateWithoutListingInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutListingInput
+    upsert?: CargoBoxUpsertWithoutListingInput
+    disconnect?: CargoBoxWhereInput | boolean
+    delete?: CargoBoxWhereInput | boolean
+    connect?: CargoBoxWhereUniqueInput
+    update?: XOR<XOR<CargoBoxUpdateToOneWithWhereWithoutListingInput, CargoBoxUpdateWithoutListingInput>, CargoBoxUncheckedUpdateWithoutListingInput>
+  }
+
+  export type PurchaseOrderUpdateOneWithoutListingNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutListingInput, PurchaseOrderUncheckedCreateWithoutListingInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutListingInput
+    upsert?: PurchaseOrderUpsertWithoutListingInput
+    disconnect?: PurchaseOrderWhereInput | boolean
+    delete?: PurchaseOrderWhereInput | boolean
+    connect?: PurchaseOrderWhereUniqueInput
+    update?: XOR<XOR<PurchaseOrderUpdateToOneWithWhereWithoutListingInput, PurchaseOrderUpdateWithoutListingInput>, PurchaseOrderUncheckedUpdateWithoutListingInput>
+  }
+
+  export type PurchaseOrderUncheckedUpdateOneWithoutListingNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutListingInput, PurchaseOrderUncheckedCreateWithoutListingInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutListingInput
+    upsert?: PurchaseOrderUpsertWithoutListingInput
+    disconnect?: PurchaseOrderWhereInput | boolean
+    delete?: PurchaseOrderWhereInput | boolean
+    connect?: PurchaseOrderWhereUniqueInput
+    update?: XOR<XOR<PurchaseOrderUpdateToOneWithWhereWithoutListingInput, PurchaseOrderUpdateWithoutListingInput>, PurchaseOrderUncheckedUpdateWithoutListingInput>
   }
 
   export type OccupationSkillBranchCatalogCreateNestedManyWithoutOccupationInput = {
@@ -34967,6 +48854,532 @@ export namespace Prisma {
     upsert?: DailyQuestTemplateUpsertWithoutPlayer_questsInput
     connect?: DailyQuestTemplateWhereUniqueInput
     update?: XOR<XOR<DailyQuestTemplateUpdateToOneWithWhereWithoutPlayer_questsInput, DailyQuestTemplateUpdateWithoutPlayer_questsInput>, DailyQuestTemplateUncheckedUpdateWithoutPlayer_questsInput>
+  }
+
+  export type UserCreateNestedOneWithoutCargo_boxesInput = {
+    create?: XOR<UserCreateWithoutCargo_boxesInput, UserUncheckedCreateWithoutCargo_boxesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCargo_boxesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type CargoBoxItemCreateNestedManyWithoutCargo_boxInput = {
+    create?: XOR<CargoBoxItemCreateWithoutCargo_boxInput, CargoBoxItemUncheckedCreateWithoutCargo_boxInput> | CargoBoxItemCreateWithoutCargo_boxInput[] | CargoBoxItemUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutCargo_boxInput | CargoBoxItemCreateOrConnectWithoutCargo_boxInput[]
+    createMany?: CargoBoxItemCreateManyCargo_boxInputEnvelope
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+  }
+
+  export type MarketListingCreateNestedOneWithoutCargo_boxInput = {
+    create?: XOR<MarketListingCreateWithoutCargo_boxInput, MarketListingUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: MarketListingCreateOrConnectWithoutCargo_boxInput
+    connect?: MarketListingWhereUniqueInput
+  }
+
+  export type PurchaseOrderCreateNestedOneWithoutCargo_boxInput = {
+    create?: XOR<PurchaseOrderCreateWithoutCargo_boxInput, PurchaseOrderUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutCargo_boxInput
+    connect?: PurchaseOrderWhereUniqueInput
+  }
+
+  export type ShipCargoCreateNestedManyWithoutCargo_boxInput = {
+    create?: XOR<ShipCargoCreateWithoutCargo_boxInput, ShipCargoUncheckedCreateWithoutCargo_boxInput> | ShipCargoCreateWithoutCargo_boxInput[] | ShipCargoUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutCargo_boxInput | ShipCargoCreateOrConnectWithoutCargo_boxInput[]
+    createMany?: ShipCargoCreateManyCargo_boxInputEnvelope
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+  }
+
+  export type CargoBoxItemUncheckedCreateNestedManyWithoutCargo_boxInput = {
+    create?: XOR<CargoBoxItemCreateWithoutCargo_boxInput, CargoBoxItemUncheckedCreateWithoutCargo_boxInput> | CargoBoxItemCreateWithoutCargo_boxInput[] | CargoBoxItemUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutCargo_boxInput | CargoBoxItemCreateOrConnectWithoutCargo_boxInput[]
+    createMany?: CargoBoxItemCreateManyCargo_boxInputEnvelope
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+  }
+
+  export type MarketListingUncheckedCreateNestedOneWithoutCargo_boxInput = {
+    create?: XOR<MarketListingCreateWithoutCargo_boxInput, MarketListingUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: MarketListingCreateOrConnectWithoutCargo_boxInput
+    connect?: MarketListingWhereUniqueInput
+  }
+
+  export type PurchaseOrderUncheckedCreateNestedOneWithoutCargo_boxInput = {
+    create?: XOR<PurchaseOrderCreateWithoutCargo_boxInput, PurchaseOrderUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutCargo_boxInput
+    connect?: PurchaseOrderWhereUniqueInput
+  }
+
+  export type ShipCargoUncheckedCreateNestedManyWithoutCargo_boxInput = {
+    create?: XOR<ShipCargoCreateWithoutCargo_boxInput, ShipCargoUncheckedCreateWithoutCargo_boxInput> | ShipCargoCreateWithoutCargo_boxInput[] | ShipCargoUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutCargo_boxInput | ShipCargoCreateOrConnectWithoutCargo_boxInput[]
+    createMany?: ShipCargoCreateManyCargo_boxInputEnvelope
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+  }
+
+  export type EnumCargoBoxSizeFieldUpdateOperationsInput = {
+    set?: $Enums.CargoBoxSize
+  }
+
+  export type EnumCargoBoxStatusFieldUpdateOperationsInput = {
+    set?: $Enums.CargoBoxStatus
+  }
+
+  export type UserUpdateOneRequiredWithoutCargo_boxesNestedInput = {
+    create?: XOR<UserCreateWithoutCargo_boxesInput, UserUncheckedCreateWithoutCargo_boxesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCargo_boxesInput
+    upsert?: UserUpsertWithoutCargo_boxesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCargo_boxesInput, UserUpdateWithoutCargo_boxesInput>, UserUncheckedUpdateWithoutCargo_boxesInput>
+  }
+
+  export type CargoBoxItemUpdateManyWithoutCargo_boxNestedInput = {
+    create?: XOR<CargoBoxItemCreateWithoutCargo_boxInput, CargoBoxItemUncheckedCreateWithoutCargo_boxInput> | CargoBoxItemCreateWithoutCargo_boxInput[] | CargoBoxItemUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutCargo_boxInput | CargoBoxItemCreateOrConnectWithoutCargo_boxInput[]
+    upsert?: CargoBoxItemUpsertWithWhereUniqueWithoutCargo_boxInput | CargoBoxItemUpsertWithWhereUniqueWithoutCargo_boxInput[]
+    createMany?: CargoBoxItemCreateManyCargo_boxInputEnvelope
+    set?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    disconnect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    delete?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    update?: CargoBoxItemUpdateWithWhereUniqueWithoutCargo_boxInput | CargoBoxItemUpdateWithWhereUniqueWithoutCargo_boxInput[]
+    updateMany?: CargoBoxItemUpdateManyWithWhereWithoutCargo_boxInput | CargoBoxItemUpdateManyWithWhereWithoutCargo_boxInput[]
+    deleteMany?: CargoBoxItemScalarWhereInput | CargoBoxItemScalarWhereInput[]
+  }
+
+  export type MarketListingUpdateOneWithoutCargo_boxNestedInput = {
+    create?: XOR<MarketListingCreateWithoutCargo_boxInput, MarketListingUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: MarketListingCreateOrConnectWithoutCargo_boxInput
+    upsert?: MarketListingUpsertWithoutCargo_boxInput
+    disconnect?: MarketListingWhereInput | boolean
+    delete?: MarketListingWhereInput | boolean
+    connect?: MarketListingWhereUniqueInput
+    update?: XOR<XOR<MarketListingUpdateToOneWithWhereWithoutCargo_boxInput, MarketListingUpdateWithoutCargo_boxInput>, MarketListingUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type PurchaseOrderUpdateOneWithoutCargo_boxNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutCargo_boxInput, PurchaseOrderUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutCargo_boxInput
+    upsert?: PurchaseOrderUpsertWithoutCargo_boxInput
+    disconnect?: PurchaseOrderWhereInput | boolean
+    delete?: PurchaseOrderWhereInput | boolean
+    connect?: PurchaseOrderWhereUniqueInput
+    update?: XOR<XOR<PurchaseOrderUpdateToOneWithWhereWithoutCargo_boxInput, PurchaseOrderUpdateWithoutCargo_boxInput>, PurchaseOrderUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoUpdateManyWithoutCargo_boxNestedInput = {
+    create?: XOR<ShipCargoCreateWithoutCargo_boxInput, ShipCargoUncheckedCreateWithoutCargo_boxInput> | ShipCargoCreateWithoutCargo_boxInput[] | ShipCargoUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutCargo_boxInput | ShipCargoCreateOrConnectWithoutCargo_boxInput[]
+    upsert?: ShipCargoUpsertWithWhereUniqueWithoutCargo_boxInput | ShipCargoUpsertWithWhereUniqueWithoutCargo_boxInput[]
+    createMany?: ShipCargoCreateManyCargo_boxInputEnvelope
+    set?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    disconnect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    delete?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    update?: ShipCargoUpdateWithWhereUniqueWithoutCargo_boxInput | ShipCargoUpdateWithWhereUniqueWithoutCargo_boxInput[]
+    updateMany?: ShipCargoUpdateManyWithWhereWithoutCargo_boxInput | ShipCargoUpdateManyWithWhereWithoutCargo_boxInput[]
+    deleteMany?: ShipCargoScalarWhereInput | ShipCargoScalarWhereInput[]
+  }
+
+  export type CargoBoxItemUncheckedUpdateManyWithoutCargo_boxNestedInput = {
+    create?: XOR<CargoBoxItemCreateWithoutCargo_boxInput, CargoBoxItemUncheckedCreateWithoutCargo_boxInput> | CargoBoxItemCreateWithoutCargo_boxInput[] | CargoBoxItemUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: CargoBoxItemCreateOrConnectWithoutCargo_boxInput | CargoBoxItemCreateOrConnectWithoutCargo_boxInput[]
+    upsert?: CargoBoxItemUpsertWithWhereUniqueWithoutCargo_boxInput | CargoBoxItemUpsertWithWhereUniqueWithoutCargo_boxInput[]
+    createMany?: CargoBoxItemCreateManyCargo_boxInputEnvelope
+    set?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    disconnect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    delete?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    connect?: CargoBoxItemWhereUniqueInput | CargoBoxItemWhereUniqueInput[]
+    update?: CargoBoxItemUpdateWithWhereUniqueWithoutCargo_boxInput | CargoBoxItemUpdateWithWhereUniqueWithoutCargo_boxInput[]
+    updateMany?: CargoBoxItemUpdateManyWithWhereWithoutCargo_boxInput | CargoBoxItemUpdateManyWithWhereWithoutCargo_boxInput[]
+    deleteMany?: CargoBoxItemScalarWhereInput | CargoBoxItemScalarWhereInput[]
+  }
+
+  export type MarketListingUncheckedUpdateOneWithoutCargo_boxNestedInput = {
+    create?: XOR<MarketListingCreateWithoutCargo_boxInput, MarketListingUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: MarketListingCreateOrConnectWithoutCargo_boxInput
+    upsert?: MarketListingUpsertWithoutCargo_boxInput
+    disconnect?: MarketListingWhereInput | boolean
+    delete?: MarketListingWhereInput | boolean
+    connect?: MarketListingWhereUniqueInput
+    update?: XOR<XOR<MarketListingUpdateToOneWithWhereWithoutCargo_boxInput, MarketListingUpdateWithoutCargo_boxInput>, MarketListingUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type PurchaseOrderUncheckedUpdateOneWithoutCargo_boxNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutCargo_boxInput, PurchaseOrderUncheckedCreateWithoutCargo_boxInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutCargo_boxInput
+    upsert?: PurchaseOrderUpsertWithoutCargo_boxInput
+    disconnect?: PurchaseOrderWhereInput | boolean
+    delete?: PurchaseOrderWhereInput | boolean
+    connect?: PurchaseOrderWhereUniqueInput
+    update?: XOR<XOR<PurchaseOrderUpdateToOneWithWhereWithoutCargo_boxInput, PurchaseOrderUpdateWithoutCargo_boxInput>, PurchaseOrderUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoUncheckedUpdateManyWithoutCargo_boxNestedInput = {
+    create?: XOR<ShipCargoCreateWithoutCargo_boxInput, ShipCargoUncheckedCreateWithoutCargo_boxInput> | ShipCargoCreateWithoutCargo_boxInput[] | ShipCargoUncheckedCreateWithoutCargo_boxInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutCargo_boxInput | ShipCargoCreateOrConnectWithoutCargo_boxInput[]
+    upsert?: ShipCargoUpsertWithWhereUniqueWithoutCargo_boxInput | ShipCargoUpsertWithWhereUniqueWithoutCargo_boxInput[]
+    createMany?: ShipCargoCreateManyCargo_boxInputEnvelope
+    set?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    disconnect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    delete?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    update?: ShipCargoUpdateWithWhereUniqueWithoutCargo_boxInput | ShipCargoUpdateWithWhereUniqueWithoutCargo_boxInput[]
+    updateMany?: ShipCargoUpdateManyWithWhereWithoutCargo_boxInput | ShipCargoUpdateManyWithWhereWithoutCargo_boxInput[]
+    deleteMany?: ShipCargoScalarWhereInput | ShipCargoScalarWhereInput[]
+  }
+
+  export type CargoBoxCreateNestedOneWithoutItemsInput = {
+    create?: XOR<CargoBoxCreateWithoutItemsInput, CargoBoxUncheckedCreateWithoutItemsInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutItemsInput
+    connect?: CargoBoxWhereUniqueInput
+  }
+
+  export type ItemCreateNestedOneWithoutCargo_box_itemsInput = {
+    create?: XOR<ItemCreateWithoutCargo_box_itemsInput, ItemUncheckedCreateWithoutCargo_box_itemsInput>
+    connectOrCreate?: ItemCreateOrConnectWithoutCargo_box_itemsInput
+    connect?: ItemWhereUniqueInput
+  }
+
+  export type CargoBoxUpdateOneRequiredWithoutItemsNestedInput = {
+    create?: XOR<CargoBoxCreateWithoutItemsInput, CargoBoxUncheckedCreateWithoutItemsInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutItemsInput
+    upsert?: CargoBoxUpsertWithoutItemsInput
+    connect?: CargoBoxWhereUniqueInput
+    update?: XOR<XOR<CargoBoxUpdateToOneWithWhereWithoutItemsInput, CargoBoxUpdateWithoutItemsInput>, CargoBoxUncheckedUpdateWithoutItemsInput>
+  }
+
+  export type ItemUpdateOneRequiredWithoutCargo_box_itemsNestedInput = {
+    create?: XOR<ItemCreateWithoutCargo_box_itemsInput, ItemUncheckedCreateWithoutCargo_box_itemsInput>
+    connectOrCreate?: ItemCreateOrConnectWithoutCargo_box_itemsInput
+    upsert?: ItemUpsertWithoutCargo_box_itemsInput
+    connect?: ItemWhereUniqueInput
+    update?: XOR<XOR<ItemUpdateToOneWithWhereWithoutCargo_box_itemsInput, ItemUpdateWithoutCargo_box_itemsInput>, ItemUncheckedUpdateWithoutCargo_box_itemsInput>
+  }
+
+  export type CargoBoxCreateNestedOneWithoutOrderInput = {
+    create?: XOR<CargoBoxCreateWithoutOrderInput, CargoBoxUncheckedCreateWithoutOrderInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutOrderInput
+    connect?: CargoBoxWhereUniqueInput
+  }
+
+  export type MarketListingCreateNestedOneWithoutPurchase_orderInput = {
+    create?: XOR<MarketListingCreateWithoutPurchase_orderInput, MarketListingUncheckedCreateWithoutPurchase_orderInput>
+    connectOrCreate?: MarketListingCreateOrConnectWithoutPurchase_orderInput
+    connect?: MarketListingWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutPurchase_orders_as_buyerInput = {
+    create?: XOR<UserCreateWithoutPurchase_orders_as_buyerInput, UserUncheckedCreateWithoutPurchase_orders_as_buyerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPurchase_orders_as_buyerInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutPurchase_orders_as_sellerInput = {
+    create?: XOR<UserCreateWithoutPurchase_orders_as_sellerInput, UserUncheckedCreateWithoutPurchase_orders_as_sellerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPurchase_orders_as_sellerInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ShipCargoCreateNestedOneWithoutOrderInput = {
+    create?: XOR<ShipCargoCreateWithoutOrderInput, ShipCargoUncheckedCreateWithoutOrderInput>
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutOrderInput
+    connect?: ShipCargoWhereUniqueInput
+  }
+
+  export type ShipCargoUncheckedCreateNestedOneWithoutOrderInput = {
+    create?: XOR<ShipCargoCreateWithoutOrderInput, ShipCargoUncheckedCreateWithoutOrderInput>
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutOrderInput
+    connect?: ShipCargoWhereUniqueInput
+  }
+
+  export type EnumPurchaseOrderStatusFieldUpdateOperationsInput = {
+    set?: $Enums.PurchaseOrderStatus
+  }
+
+  export type CargoBoxUpdateOneRequiredWithoutOrderNestedInput = {
+    create?: XOR<CargoBoxCreateWithoutOrderInput, CargoBoxUncheckedCreateWithoutOrderInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutOrderInput
+    upsert?: CargoBoxUpsertWithoutOrderInput
+    connect?: CargoBoxWhereUniqueInput
+    update?: XOR<XOR<CargoBoxUpdateToOneWithWhereWithoutOrderInput, CargoBoxUpdateWithoutOrderInput>, CargoBoxUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type MarketListingUpdateOneRequiredWithoutPurchase_orderNestedInput = {
+    create?: XOR<MarketListingCreateWithoutPurchase_orderInput, MarketListingUncheckedCreateWithoutPurchase_orderInput>
+    connectOrCreate?: MarketListingCreateOrConnectWithoutPurchase_orderInput
+    upsert?: MarketListingUpsertWithoutPurchase_orderInput
+    connect?: MarketListingWhereUniqueInput
+    update?: XOR<XOR<MarketListingUpdateToOneWithWhereWithoutPurchase_orderInput, MarketListingUpdateWithoutPurchase_orderInput>, MarketListingUncheckedUpdateWithoutPurchase_orderInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutPurchase_orders_as_buyerNestedInput = {
+    create?: XOR<UserCreateWithoutPurchase_orders_as_buyerInput, UserUncheckedCreateWithoutPurchase_orders_as_buyerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPurchase_orders_as_buyerInput
+    upsert?: UserUpsertWithoutPurchase_orders_as_buyerInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPurchase_orders_as_buyerInput, UserUpdateWithoutPurchase_orders_as_buyerInput>, UserUncheckedUpdateWithoutPurchase_orders_as_buyerInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutPurchase_orders_as_sellerNestedInput = {
+    create?: XOR<UserCreateWithoutPurchase_orders_as_sellerInput, UserUncheckedCreateWithoutPurchase_orders_as_sellerInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPurchase_orders_as_sellerInput
+    upsert?: UserUpsertWithoutPurchase_orders_as_sellerInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPurchase_orders_as_sellerInput, UserUpdateWithoutPurchase_orders_as_sellerInput>, UserUncheckedUpdateWithoutPurchase_orders_as_sellerInput>
+  }
+
+  export type ShipCargoUpdateOneWithoutOrderNestedInput = {
+    create?: XOR<ShipCargoCreateWithoutOrderInput, ShipCargoUncheckedCreateWithoutOrderInput>
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutOrderInput
+    upsert?: ShipCargoUpsertWithoutOrderInput
+    disconnect?: ShipCargoWhereInput | boolean
+    delete?: ShipCargoWhereInput | boolean
+    connect?: ShipCargoWhereUniqueInput
+    update?: XOR<XOR<ShipCargoUpdateToOneWithWhereWithoutOrderInput, ShipCargoUpdateWithoutOrderInput>, ShipCargoUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type ShipCargoUncheckedUpdateOneWithoutOrderNestedInput = {
+    create?: XOR<ShipCargoCreateWithoutOrderInput, ShipCargoUncheckedCreateWithoutOrderInput>
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutOrderInput
+    upsert?: ShipCargoUpsertWithoutOrderInput
+    disconnect?: ShipCargoWhereInput | boolean
+    delete?: ShipCargoWhereInput | boolean
+    connect?: ShipCargoWhereUniqueInput
+    update?: XOR<XOR<ShipCargoUpdateToOneWithWhereWithoutOrderInput, ShipCargoUpdateWithoutOrderInput>, ShipCargoUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type UserCreateNestedOneWithoutOwned_shipsInput = {
+    create?: XOR<UserCreateWithoutOwned_shipsInput, UserUncheckedCreateWithoutOwned_shipsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOwned_shipsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ShipCargoCreateNestedManyWithoutShipInput = {
+    create?: XOR<ShipCargoCreateWithoutShipInput, ShipCargoUncheckedCreateWithoutShipInput> | ShipCargoCreateWithoutShipInput[] | ShipCargoUncheckedCreateWithoutShipInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutShipInput | ShipCargoCreateOrConnectWithoutShipInput[]
+    createMany?: ShipCargoCreateManyShipInputEnvelope
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+  }
+
+  export type PirateAttackCreateNestedManyWithoutTarget_shipInput = {
+    create?: XOR<PirateAttackCreateWithoutTarget_shipInput, PirateAttackUncheckedCreateWithoutTarget_shipInput> | PirateAttackCreateWithoutTarget_shipInput[] | PirateAttackUncheckedCreateWithoutTarget_shipInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutTarget_shipInput | PirateAttackCreateOrConnectWithoutTarget_shipInput[]
+    createMany?: PirateAttackCreateManyTarget_shipInputEnvelope
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+  }
+
+  export type ShipCargoUncheckedCreateNestedManyWithoutShipInput = {
+    create?: XOR<ShipCargoCreateWithoutShipInput, ShipCargoUncheckedCreateWithoutShipInput> | ShipCargoCreateWithoutShipInput[] | ShipCargoUncheckedCreateWithoutShipInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutShipInput | ShipCargoCreateOrConnectWithoutShipInput[]
+    createMany?: ShipCargoCreateManyShipInputEnvelope
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+  }
+
+  export type PirateAttackUncheckedCreateNestedManyWithoutTarget_shipInput = {
+    create?: XOR<PirateAttackCreateWithoutTarget_shipInput, PirateAttackUncheckedCreateWithoutTarget_shipInput> | PirateAttackCreateWithoutTarget_shipInput[] | PirateAttackUncheckedCreateWithoutTarget_shipInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutTarget_shipInput | PirateAttackCreateOrConnectWithoutTarget_shipInput[]
+    createMany?: PirateAttackCreateManyTarget_shipInputEnvelope
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+  }
+
+  export type EnumShipTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ShipType
+  }
+
+  export type NullableEnumShipSizeFieldUpdateOperationsInput = {
+    set?: $Enums.ShipSize | null
+  }
+
+  export type EnumShipStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ShipStatus
+  }
+
+  export type UserUpdateOneWithoutOwned_shipsNestedInput = {
+    create?: XOR<UserCreateWithoutOwned_shipsInput, UserUncheckedCreateWithoutOwned_shipsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutOwned_shipsInput
+    upsert?: UserUpsertWithoutOwned_shipsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutOwned_shipsInput, UserUpdateWithoutOwned_shipsInput>, UserUncheckedUpdateWithoutOwned_shipsInput>
+  }
+
+  export type ShipCargoUpdateManyWithoutShipNestedInput = {
+    create?: XOR<ShipCargoCreateWithoutShipInput, ShipCargoUncheckedCreateWithoutShipInput> | ShipCargoCreateWithoutShipInput[] | ShipCargoUncheckedCreateWithoutShipInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutShipInput | ShipCargoCreateOrConnectWithoutShipInput[]
+    upsert?: ShipCargoUpsertWithWhereUniqueWithoutShipInput | ShipCargoUpsertWithWhereUniqueWithoutShipInput[]
+    createMany?: ShipCargoCreateManyShipInputEnvelope
+    set?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    disconnect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    delete?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    update?: ShipCargoUpdateWithWhereUniqueWithoutShipInput | ShipCargoUpdateWithWhereUniqueWithoutShipInput[]
+    updateMany?: ShipCargoUpdateManyWithWhereWithoutShipInput | ShipCargoUpdateManyWithWhereWithoutShipInput[]
+    deleteMany?: ShipCargoScalarWhereInput | ShipCargoScalarWhereInput[]
+  }
+
+  export type PirateAttackUpdateManyWithoutTarget_shipNestedInput = {
+    create?: XOR<PirateAttackCreateWithoutTarget_shipInput, PirateAttackUncheckedCreateWithoutTarget_shipInput> | PirateAttackCreateWithoutTarget_shipInput[] | PirateAttackUncheckedCreateWithoutTarget_shipInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutTarget_shipInput | PirateAttackCreateOrConnectWithoutTarget_shipInput[]
+    upsert?: PirateAttackUpsertWithWhereUniqueWithoutTarget_shipInput | PirateAttackUpsertWithWhereUniqueWithoutTarget_shipInput[]
+    createMany?: PirateAttackCreateManyTarget_shipInputEnvelope
+    set?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    disconnect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    delete?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    update?: PirateAttackUpdateWithWhereUniqueWithoutTarget_shipInput | PirateAttackUpdateWithWhereUniqueWithoutTarget_shipInput[]
+    updateMany?: PirateAttackUpdateManyWithWhereWithoutTarget_shipInput | PirateAttackUpdateManyWithWhereWithoutTarget_shipInput[]
+    deleteMany?: PirateAttackScalarWhereInput | PirateAttackScalarWhereInput[]
+  }
+
+  export type ShipCargoUncheckedUpdateManyWithoutShipNestedInput = {
+    create?: XOR<ShipCargoCreateWithoutShipInput, ShipCargoUncheckedCreateWithoutShipInput> | ShipCargoCreateWithoutShipInput[] | ShipCargoUncheckedCreateWithoutShipInput[]
+    connectOrCreate?: ShipCargoCreateOrConnectWithoutShipInput | ShipCargoCreateOrConnectWithoutShipInput[]
+    upsert?: ShipCargoUpsertWithWhereUniqueWithoutShipInput | ShipCargoUpsertWithWhereUniqueWithoutShipInput[]
+    createMany?: ShipCargoCreateManyShipInputEnvelope
+    set?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    disconnect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    delete?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    connect?: ShipCargoWhereUniqueInput | ShipCargoWhereUniqueInput[]
+    update?: ShipCargoUpdateWithWhereUniqueWithoutShipInput | ShipCargoUpdateWithWhereUniqueWithoutShipInput[]
+    updateMany?: ShipCargoUpdateManyWithWhereWithoutShipInput | ShipCargoUpdateManyWithWhereWithoutShipInput[]
+    deleteMany?: ShipCargoScalarWhereInput | ShipCargoScalarWhereInput[]
+  }
+
+  export type PirateAttackUncheckedUpdateManyWithoutTarget_shipNestedInput = {
+    create?: XOR<PirateAttackCreateWithoutTarget_shipInput, PirateAttackUncheckedCreateWithoutTarget_shipInput> | PirateAttackCreateWithoutTarget_shipInput[] | PirateAttackUncheckedCreateWithoutTarget_shipInput[]
+    connectOrCreate?: PirateAttackCreateOrConnectWithoutTarget_shipInput | PirateAttackCreateOrConnectWithoutTarget_shipInput[]
+    upsert?: PirateAttackUpsertWithWhereUniqueWithoutTarget_shipInput | PirateAttackUpsertWithWhereUniqueWithoutTarget_shipInput[]
+    createMany?: PirateAttackCreateManyTarget_shipInputEnvelope
+    set?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    disconnect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    delete?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    connect?: PirateAttackWhereUniqueInput | PirateAttackWhereUniqueInput[]
+    update?: PirateAttackUpdateWithWhereUniqueWithoutTarget_shipInput | PirateAttackUpdateWithWhereUniqueWithoutTarget_shipInput[]
+    updateMany?: PirateAttackUpdateManyWithWhereWithoutTarget_shipInput | PirateAttackUpdateManyWithWhereWithoutTarget_shipInput[]
+    deleteMany?: PirateAttackScalarWhereInput | PirateAttackScalarWhereInput[]
+  }
+
+  export type ShipCreateNestedOneWithoutCargoInput = {
+    create?: XOR<ShipCreateWithoutCargoInput, ShipUncheckedCreateWithoutCargoInput>
+    connectOrCreate?: ShipCreateOrConnectWithoutCargoInput
+    connect?: ShipWhereUniqueInput
+  }
+
+  export type PurchaseOrderCreateNestedOneWithoutShipmentInput = {
+    create?: XOR<PurchaseOrderCreateWithoutShipmentInput, PurchaseOrderUncheckedCreateWithoutShipmentInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutShipmentInput
+    connect?: PurchaseOrderWhereUniqueInput
+  }
+
+  export type CargoBoxCreateNestedOneWithoutShip_cargoInput = {
+    create?: XOR<CargoBoxCreateWithoutShip_cargoInput, CargoBoxUncheckedCreateWithoutShip_cargoInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutShip_cargoInput
+    connect?: CargoBoxWhereUniqueInput
+  }
+
+  export type ShipUpdateOneRequiredWithoutCargoNestedInput = {
+    create?: XOR<ShipCreateWithoutCargoInput, ShipUncheckedCreateWithoutCargoInput>
+    connectOrCreate?: ShipCreateOrConnectWithoutCargoInput
+    upsert?: ShipUpsertWithoutCargoInput
+    connect?: ShipWhereUniqueInput
+    update?: XOR<XOR<ShipUpdateToOneWithWhereWithoutCargoInput, ShipUpdateWithoutCargoInput>, ShipUncheckedUpdateWithoutCargoInput>
+  }
+
+  export type PurchaseOrderUpdateOneRequiredWithoutShipmentNestedInput = {
+    create?: XOR<PurchaseOrderCreateWithoutShipmentInput, PurchaseOrderUncheckedCreateWithoutShipmentInput>
+    connectOrCreate?: PurchaseOrderCreateOrConnectWithoutShipmentInput
+    upsert?: PurchaseOrderUpsertWithoutShipmentInput
+    connect?: PurchaseOrderWhereUniqueInput
+    update?: XOR<XOR<PurchaseOrderUpdateToOneWithWhereWithoutShipmentInput, PurchaseOrderUpdateWithoutShipmentInput>, PurchaseOrderUncheckedUpdateWithoutShipmentInput>
+  }
+
+  export type CargoBoxUpdateOneRequiredWithoutShip_cargoNestedInput = {
+    create?: XOR<CargoBoxCreateWithoutShip_cargoInput, CargoBoxUncheckedCreateWithoutShip_cargoInput>
+    connectOrCreate?: CargoBoxCreateOrConnectWithoutShip_cargoInput
+    upsert?: CargoBoxUpsertWithoutShip_cargoInput
+    connect?: CargoBoxWhereUniqueInput
+    update?: XOR<XOR<CargoBoxUpdateToOneWithWhereWithoutShip_cargoInput, CargoBoxUpdateWithoutShip_cargoInput>, CargoBoxUncheckedUpdateWithoutShip_cargoInput>
+  }
+
+  export type UserCreateNestedOneWithoutPirate_attacksInput = {
+    create?: XOR<UserCreateWithoutPirate_attacksInput, UserUncheckedCreateWithoutPirate_attacksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPirate_attacksInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ShipCreateNestedOneWithoutAttacksInput = {
+    create?: XOR<ShipCreateWithoutAttacksInput, ShipUncheckedCreateWithoutAttacksInput>
+    connectOrCreate?: ShipCreateOrConnectWithoutAttacksInput
+    connect?: ShipWhereUniqueInput
+  }
+
+  export type EnumShipSizeFieldUpdateOperationsInput = {
+    set?: $Enums.ShipSize
+  }
+
+  export type NullableBoolFieldUpdateOperationsInput = {
+    set?: boolean | null
+  }
+
+  export type EnumPirateAttackStatusFieldUpdateOperationsInput = {
+    set?: $Enums.PirateAttackStatus
+  }
+
+  export type UserUpdateOneRequiredWithoutPirate_attacksNestedInput = {
+    create?: XOR<UserCreateWithoutPirate_attacksInput, UserUncheckedCreateWithoutPirate_attacksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPirate_attacksInput
+    upsert?: UserUpsertWithoutPirate_attacksInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPirate_attacksInput, UserUpdateWithoutPirate_attacksInput>, UserUncheckedUpdateWithoutPirate_attacksInput>
+  }
+
+  export type ShipUpdateOneRequiredWithoutAttacksNestedInput = {
+    create?: XOR<ShipCreateWithoutAttacksInput, ShipUncheckedCreateWithoutAttacksInput>
+    connectOrCreate?: ShipCreateOrConnectWithoutAttacksInput
+    upsert?: ShipUpsertWithoutAttacksInput
+    connect?: ShipWhereUniqueInput
+    update?: XOR<XOR<ShipUpdateToOneWithWhereWithoutAttacksInput, ShipUpdateWithoutAttacksInput>, ShipUncheckedUpdateWithoutAttacksInput>
+  }
+
+  export type UserCreateNestedOneWithoutPort_storageInput = {
+    create?: XOR<UserCreateWithoutPort_storageInput, UserUncheckedCreateWithoutPort_storageInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPort_storageInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutPort_storageNestedInput = {
+    create?: XOR<UserCreateWithoutPort_storageInput, UserUncheckedCreateWithoutPort_storageInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPort_storageInput
+    upsert?: UserUpsertWithoutPort_storageInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPort_storageInput, UserUpdateWithoutPort_storageInput>, UserUncheckedUpdateWithoutPort_storageInput>
+  }
+
+  export type UserCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    upsert?: UserUpsertWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type UserCreateNestedOneWithoutPirate_cooldownInput = {
+    create?: XOR<UserCreateWithoutPirate_cooldownInput, UserUncheckedCreateWithoutPirate_cooldownInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPirate_cooldownInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutPirate_cooldownNestedInput = {
+    create?: XOR<UserCreateWithoutPirate_cooldownInput, UserUncheckedCreateWithoutPirate_cooldownInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPirate_cooldownInput
+    upsert?: UserUpsertWithoutPirate_cooldownInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPirate_cooldownInput, UserUpdateWithoutPirate_cooldownInput>, UserUncheckedUpdateWithoutPirate_cooldownInput>
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -35409,6 +49822,155 @@ export namespace Prisma {
     _max?: NestedBigIntFilter<$PrismaModel>
   }
 
+  export type NestedEnumCargoBoxSizeFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxSize | EnumCargoBoxSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxSize[]
+    notIn?: $Enums.CargoBoxSize[]
+    not?: NestedEnumCargoBoxSizeFilter<$PrismaModel> | $Enums.CargoBoxSize
+  }
+
+  export type NestedEnumCargoBoxStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxStatus | EnumCargoBoxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxStatus[]
+    notIn?: $Enums.CargoBoxStatus[]
+    not?: NestedEnumCargoBoxStatusFilter<$PrismaModel> | $Enums.CargoBoxStatus
+  }
+
+  export type NestedEnumCargoBoxSizeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxSize | EnumCargoBoxSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxSize[]
+    notIn?: $Enums.CargoBoxSize[]
+    not?: NestedEnumCargoBoxSizeWithAggregatesFilter<$PrismaModel> | $Enums.CargoBoxSize
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCargoBoxSizeFilter<$PrismaModel>
+    _max?: NestedEnumCargoBoxSizeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumCargoBoxStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CargoBoxStatus | EnumCargoBoxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.CargoBoxStatus[]
+    notIn?: $Enums.CargoBoxStatus[]
+    not?: NestedEnumCargoBoxStatusWithAggregatesFilter<$PrismaModel> | $Enums.CargoBoxStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCargoBoxStatusFilter<$PrismaModel>
+    _max?: NestedEnumCargoBoxStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPurchaseOrderStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PurchaseOrderStatus | EnumPurchaseOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PurchaseOrderStatus[]
+    notIn?: $Enums.PurchaseOrderStatus[]
+    not?: NestedEnumPurchaseOrderStatusFilter<$PrismaModel> | $Enums.PurchaseOrderStatus
+  }
+
+  export type NestedEnumPurchaseOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PurchaseOrderStatus | EnumPurchaseOrderStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PurchaseOrderStatus[]
+    notIn?: $Enums.PurchaseOrderStatus[]
+    not?: NestedEnumPurchaseOrderStatusWithAggregatesFilter<$PrismaModel> | $Enums.PurchaseOrderStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
+    _max?: NestedEnumPurchaseOrderStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumShipTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipType | EnumShipTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipType[]
+    notIn?: $Enums.ShipType[]
+    not?: NestedEnumShipTypeFilter<$PrismaModel> | $Enums.ShipType
+  }
+
+  export type NestedEnumShipSizeNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShipSize[] | null
+    notIn?: $Enums.ShipSize[] | null
+    not?: NestedEnumShipSizeNullableFilter<$PrismaModel> | $Enums.ShipSize | null
+  }
+
+  export type NestedEnumShipStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipStatus | EnumShipStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipStatus[]
+    notIn?: $Enums.ShipStatus[]
+    not?: NestedEnumShipStatusFilter<$PrismaModel> | $Enums.ShipStatus
+  }
+
+  export type NestedEnumShipTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipType | EnumShipTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipType[]
+    notIn?: $Enums.ShipType[]
+    not?: NestedEnumShipTypeWithAggregatesFilter<$PrismaModel> | $Enums.ShipType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumShipTypeFilter<$PrismaModel>
+    _max?: NestedEnumShipTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumShipSizeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShipSize[] | null
+    notIn?: $Enums.ShipSize[] | null
+    not?: NestedEnumShipSizeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ShipSize | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumShipSizeNullableFilter<$PrismaModel>
+    _max?: NestedEnumShipSizeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumShipStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipStatus | EnumShipStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipStatus[]
+    notIn?: $Enums.ShipStatus[]
+    not?: NestedEnumShipStatusWithAggregatesFilter<$PrismaModel> | $Enums.ShipStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumShipStatusFilter<$PrismaModel>
+    _max?: NestedEnumShipStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumShipSizeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipSize[]
+    notIn?: $Enums.ShipSize[]
+    not?: NestedEnumShipSizeFilter<$PrismaModel> | $Enums.ShipSize
+  }
+
+  export type NestedBoolNullableFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableFilter<$PrismaModel> | boolean | null
+  }
+
+  export type NestedEnumPirateAttackStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.PirateAttackStatus | EnumPirateAttackStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PirateAttackStatus[]
+    notIn?: $Enums.PirateAttackStatus[]
+    not?: NestedEnumPirateAttackStatusFilter<$PrismaModel> | $Enums.PirateAttackStatus
+  }
+
+  export type NestedEnumShipSizeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShipSize | EnumShipSizeFieldRefInput<$PrismaModel>
+    in?: $Enums.ShipSize[]
+    notIn?: $Enums.ShipSize[]
+    not?: NestedEnumShipSizeWithAggregatesFilter<$PrismaModel> | $Enums.ShipSize
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumShipSizeFilter<$PrismaModel>
+    _max?: NestedEnumShipSizeFilter<$PrismaModel>
+  }
+
+  export type NestedBoolNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel> | null
+    not?: NestedBoolNullableWithAggregatesFilter<$PrismaModel> | boolean | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedBoolNullableFilter<$PrismaModel>
+    _max?: NestedBoolNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPirateAttackStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PirateAttackStatus | EnumPirateAttackStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.PirateAttackStatus[]
+    notIn?: $Enums.PirateAttackStatus[]
+    not?: NestedEnumPirateAttackStatusWithAggregatesFilter<$PrismaModel> | $Enums.PirateAttackStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPirateAttackStatusFilter<$PrismaModel>
+    _max?: NestedEnumPirateAttackStatusFilter<$PrismaModel>
+  }
+
   export type InventorySlotCreateWithoutUserInput = {
     slot: number
     quantity?: number
@@ -35493,8 +50055,12 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
     buyer?: UserCreateNestedOneWithoutBuy_historyInput
     item: ItemCreateNestedOneWithoutMarket_listingsInput
+    cargo_box?: CargoBoxCreateNestedOneWithoutListingInput
+    purchase_order?: PurchaseOrderCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingUncheckedCreateWithoutSellerInput = {
@@ -35512,6 +50078,10 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    purchase_order?: PurchaseOrderUncheckedCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingCreateOrConnectWithoutSellerInput = {
@@ -35536,8 +50106,12 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
     seller: UserCreateNestedOneWithoutSell_listingsInput
     item: ItemCreateNestedOneWithoutMarket_listingsInput
+    cargo_box?: CargoBoxCreateNestedOneWithoutListingInput
+    purchase_order?: PurchaseOrderCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingUncheckedCreateWithoutBuyerInput = {
@@ -35555,6 +50129,10 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    purchase_order?: PurchaseOrderUncheckedCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingCreateOrConnectWithoutBuyerInput = {
@@ -35712,6 +50290,285 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CargoBoxCreateWithoutOwnerInput = {
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    items?: CargoBoxItemCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUncheckedCreateWithoutOwnerInput = {
+    id?: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    items?: CargoBoxItemUncheckedCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingUncheckedCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderUncheckedCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoUncheckedCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxCreateOrConnectWithoutOwnerInput = {
+    where: CargoBoxWhereUniqueInput
+    create: XOR<CargoBoxCreateWithoutOwnerInput, CargoBoxUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type CargoBoxCreateManyOwnerInputEnvelope = {
+    data: CargoBoxCreateManyOwnerInput | CargoBoxCreateManyOwnerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PurchaseOrderCreateWithoutBuyerInput = {
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    cargo_box: CargoBoxCreateNestedOneWithoutOrderInput
+    listing: MarketListingCreateNestedOneWithoutPurchase_orderInput
+    seller: UserCreateNestedOneWithoutPurchase_orders_as_sellerInput
+    shipment?: ShipCargoCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderUncheckedCreateWithoutBuyerInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    shipment?: ShipCargoUncheckedCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderCreateOrConnectWithoutBuyerInput = {
+    where: PurchaseOrderWhereUniqueInput
+    create: XOR<PurchaseOrderCreateWithoutBuyerInput, PurchaseOrderUncheckedCreateWithoutBuyerInput>
+  }
+
+  export type PurchaseOrderCreateManyBuyerInputEnvelope = {
+    data: PurchaseOrderCreateManyBuyerInput | PurchaseOrderCreateManyBuyerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PurchaseOrderCreateWithoutSellerInput = {
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    cargo_box: CargoBoxCreateNestedOneWithoutOrderInput
+    listing: MarketListingCreateNestedOneWithoutPurchase_orderInput
+    buyer: UserCreateNestedOneWithoutPurchase_orders_as_buyerInput
+    shipment?: ShipCargoCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderUncheckedCreateWithoutSellerInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    shipment?: ShipCargoUncheckedCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderCreateOrConnectWithoutSellerInput = {
+    where: PurchaseOrderWhereUniqueInput
+    create: XOR<PurchaseOrderCreateWithoutSellerInput, PurchaseOrderUncheckedCreateWithoutSellerInput>
+  }
+
+  export type PurchaseOrderCreateManySellerInputEnvelope = {
+    data: PurchaseOrderCreateManySellerInput | PurchaseOrderCreateManySellerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ShipCreateWithoutOwnerInput = {
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    cargo?: ShipCargoCreateNestedManyWithoutShipInput
+    attacks?: PirateAttackCreateNestedManyWithoutTarget_shipInput
+  }
+
+  export type ShipUncheckedCreateWithoutOwnerInput = {
+    id?: number
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    cargo?: ShipCargoUncheckedCreateNestedManyWithoutShipInput
+    attacks?: PirateAttackUncheckedCreateNestedManyWithoutTarget_shipInput
+  }
+
+  export type ShipCreateOrConnectWithoutOwnerInput = {
+    where: ShipWhereUniqueInput
+    create: XOR<ShipCreateWithoutOwnerInput, ShipUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type ShipCreateManyOwnerInputEnvelope = {
+    data: ShipCreateManyOwnerInput | ShipCreateManyOwnerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserPortStorageCreateWithoutUserInput = {
+    city_key: string
+    max_slots?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPortStorageUncheckedCreateWithoutUserInput = {
+    id?: number
+    city_key: string
+    max_slots?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPortStorageCreateOrConnectWithoutUserInput = {
+    where: UserPortStorageWhereUniqueInput
+    create: XOR<UserPortStorageCreateWithoutUserInput, UserPortStorageUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserPortStorageCreateManyUserInputEnvelope = {
+    data: UserPortStorageCreateManyUserInput | UserPortStorageCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type NotificationCreateWithoutUserInput = {
+    type: string
+    title: string
+    body: string
+    metadata?: string | null
+    is_read?: boolean
+    created_at?: Date | string
+  }
+
+  export type NotificationUncheckedCreateWithoutUserInput = {
+    id?: number
+    type: string
+    title: string
+    body: string
+    metadata?: string | null
+    is_read?: boolean
+    created_at?: Date | string
+  }
+
+  export type NotificationCreateOrConnectWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationCreateManyUserInputEnvelope = {
+    data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PirateAttackCreateWithoutAttackerInput = {
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+    target_ship: ShipCreateNestedOneWithoutAttacksInput
+  }
+
+  export type PirateAttackUncheckedCreateWithoutAttackerInput = {
+    id?: number
+    target_ship_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+  }
+
+  export type PirateAttackCreateOrConnectWithoutAttackerInput = {
+    where: PirateAttackWhereUniqueInput
+    create: XOR<PirateAttackCreateWithoutAttackerInput, PirateAttackUncheckedCreateWithoutAttackerInput>
+  }
+
+  export type PirateAttackCreateManyAttackerInputEnvelope = {
+    data: PirateAttackCreateManyAttackerInput | PirateAttackCreateManyAttackerInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PirateCooldownCreateWithoutUserInput = {
+    last_attack_at: Date | string
+  }
+
+  export type PirateCooldownUncheckedCreateWithoutUserInput = {
+    id?: number
+    last_attack_at: Date | string
+  }
+
+  export type PirateCooldownCreateOrConnectWithoutUserInput = {
+    where: PirateCooldownWhereUniqueInput
+    create: XOR<PirateCooldownCreateWithoutUserInput, PirateCooldownUncheckedCreateWithoutUserInput>
+  }
+
   export type InventorySlotUpsertWithWhereUniqueWithoutUserInput = {
     where: InventorySlotWhereUniqueInput
     update: XOR<InventorySlotUpdateWithoutUserInput, InventorySlotUncheckedUpdateWithoutUserInput>
@@ -35814,6 +50671,9 @@ export namespace Prisma {
     special_stat_2?: StringNullableFilter<"MarketListing"> | string | null
     special_stat_3?: StringNullableFilter<"MarketListing"> | string | null
     special_stat_4?: StringNullableFilter<"MarketListing"> | string | null
+    cargo_box_id?: IntNullableFilter<"MarketListing"> | number | null
+    is_cross_city?: BoolFilter<"MarketListing"> | boolean
+    origin_city?: StringNullableFilter<"MarketListing"> | string | null
   }
 
   export type MarketListingUpsertWithWhereUniqueWithoutBuyerInput = {
@@ -35982,6 +50842,239 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"PlayerDailyQuest"> | Date | string
   }
 
+  export type CargoBoxUpsertWithWhereUniqueWithoutOwnerInput = {
+    where: CargoBoxWhereUniqueInput
+    update: XOR<CargoBoxUpdateWithoutOwnerInput, CargoBoxUncheckedUpdateWithoutOwnerInput>
+    create: XOR<CargoBoxCreateWithoutOwnerInput, CargoBoxUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type CargoBoxUpdateWithWhereUniqueWithoutOwnerInput = {
+    where: CargoBoxWhereUniqueInput
+    data: XOR<CargoBoxUpdateWithoutOwnerInput, CargoBoxUncheckedUpdateWithoutOwnerInput>
+  }
+
+  export type CargoBoxUpdateManyWithWhereWithoutOwnerInput = {
+    where: CargoBoxScalarWhereInput
+    data: XOR<CargoBoxUpdateManyMutationInput, CargoBoxUncheckedUpdateManyWithoutOwnerInput>
+  }
+
+  export type CargoBoxScalarWhereInput = {
+    AND?: CargoBoxScalarWhereInput | CargoBoxScalarWhereInput[]
+    OR?: CargoBoxScalarWhereInput[]
+    NOT?: CargoBoxScalarWhereInput | CargoBoxScalarWhereInput[]
+    id?: IntFilter<"CargoBox"> | number
+    owner_id?: IntFilter<"CargoBox"> | number
+    size?: EnumCargoBoxSizeFilter<"CargoBox"> | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFilter<"CargoBox"> | $Enums.CargoBoxStatus
+    created_at?: DateTimeFilter<"CargoBox"> | Date | string
+    updated_at?: DateTimeFilter<"CargoBox"> | Date | string
+  }
+
+  export type PurchaseOrderUpsertWithWhereUniqueWithoutBuyerInput = {
+    where: PurchaseOrderWhereUniqueInput
+    update: XOR<PurchaseOrderUpdateWithoutBuyerInput, PurchaseOrderUncheckedUpdateWithoutBuyerInput>
+    create: XOR<PurchaseOrderCreateWithoutBuyerInput, PurchaseOrderUncheckedCreateWithoutBuyerInput>
+  }
+
+  export type PurchaseOrderUpdateWithWhereUniqueWithoutBuyerInput = {
+    where: PurchaseOrderWhereUniqueInput
+    data: XOR<PurchaseOrderUpdateWithoutBuyerInput, PurchaseOrderUncheckedUpdateWithoutBuyerInput>
+  }
+
+  export type PurchaseOrderUpdateManyWithWhereWithoutBuyerInput = {
+    where: PurchaseOrderScalarWhereInput
+    data: XOR<PurchaseOrderUpdateManyMutationInput, PurchaseOrderUncheckedUpdateManyWithoutBuyerInput>
+  }
+
+  export type PurchaseOrderScalarWhereInput = {
+    AND?: PurchaseOrderScalarWhereInput | PurchaseOrderScalarWhereInput[]
+    OR?: PurchaseOrderScalarWhereInput[]
+    NOT?: PurchaseOrderScalarWhereInput | PurchaseOrderScalarWhereInput[]
+    id?: IntFilter<"PurchaseOrder"> | number
+    cargo_box_id?: IntFilter<"PurchaseOrder"> | number
+    listing_id?: IntFilter<"PurchaseOrder"> | number
+    buyer_id?: IntFilter<"PurchaseOrder"> | number
+    seller_id?: IntFilter<"PurchaseOrder"> | number
+    price?: IntFilter<"PurchaseOrder"> | number
+    locked_amount?: IntFilter<"PurchaseOrder"> | number
+    export_tax?: IntFilter<"PurchaseOrder"> | number
+    import_tax?: IntFilter<"PurchaseOrder"> | number
+    status?: EnumPurchaseOrderStatusFilter<"PurchaseOrder"> | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    created_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+    settled_at?: DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
+    updated_at?: DateTimeFilter<"PurchaseOrder"> | Date | string
+  }
+
+  export type PurchaseOrderUpsertWithWhereUniqueWithoutSellerInput = {
+    where: PurchaseOrderWhereUniqueInput
+    update: XOR<PurchaseOrderUpdateWithoutSellerInput, PurchaseOrderUncheckedUpdateWithoutSellerInput>
+    create: XOR<PurchaseOrderCreateWithoutSellerInput, PurchaseOrderUncheckedCreateWithoutSellerInput>
+  }
+
+  export type PurchaseOrderUpdateWithWhereUniqueWithoutSellerInput = {
+    where: PurchaseOrderWhereUniqueInput
+    data: XOR<PurchaseOrderUpdateWithoutSellerInput, PurchaseOrderUncheckedUpdateWithoutSellerInput>
+  }
+
+  export type PurchaseOrderUpdateManyWithWhereWithoutSellerInput = {
+    where: PurchaseOrderScalarWhereInput
+    data: XOR<PurchaseOrderUpdateManyMutationInput, PurchaseOrderUncheckedUpdateManyWithoutSellerInput>
+  }
+
+  export type ShipUpsertWithWhereUniqueWithoutOwnerInput = {
+    where: ShipWhereUniqueInput
+    update: XOR<ShipUpdateWithoutOwnerInput, ShipUncheckedUpdateWithoutOwnerInput>
+    create: XOR<ShipCreateWithoutOwnerInput, ShipUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type ShipUpdateWithWhereUniqueWithoutOwnerInput = {
+    where: ShipWhereUniqueInput
+    data: XOR<ShipUpdateWithoutOwnerInput, ShipUncheckedUpdateWithoutOwnerInput>
+  }
+
+  export type ShipUpdateManyWithWhereWithoutOwnerInput = {
+    where: ShipScalarWhereInput
+    data: XOR<ShipUpdateManyMutationInput, ShipUncheckedUpdateManyWithoutOwnerInput>
+  }
+
+  export type ShipScalarWhereInput = {
+    AND?: ShipScalarWhereInput | ShipScalarWhereInput[]
+    OR?: ShipScalarWhereInput[]
+    NOT?: ShipScalarWhereInput | ShipScalarWhereInput[]
+    id?: IntFilter<"Ship"> | number
+    type?: EnumShipTypeFilter<"Ship"> | $Enums.ShipType
+    size?: EnumShipSizeNullableFilter<"Ship"> | $Enums.ShipSize | null
+    owner_id?: IntNullableFilter<"Ship"> | number | null
+    origin_city?: StringFilter<"Ship"> | string
+    dest_city?: StringFilter<"Ship"> | string
+    status?: EnumShipStatusFilter<"Ship"> | $Enums.ShipStatus
+    capacity?: IntFilter<"Ship"> | number
+    departs_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    departed_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    arrives_at?: DateTimeNullableFilter<"Ship"> | Date | string | null
+    rps_sequence?: StringNullableFilter<"Ship"> | string | null
+    is_bot_ship?: BoolFilter<"Ship"> | boolean
+    created_at?: DateTimeFilter<"Ship"> | Date | string
+    updated_at?: DateTimeFilter<"Ship"> | Date | string
+  }
+
+  export type UserPortStorageUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserPortStorageWhereUniqueInput
+    update: XOR<UserPortStorageUpdateWithoutUserInput, UserPortStorageUncheckedUpdateWithoutUserInput>
+    create: XOR<UserPortStorageCreateWithoutUserInput, UserPortStorageUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserPortStorageUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserPortStorageWhereUniqueInput
+    data: XOR<UserPortStorageUpdateWithoutUserInput, UserPortStorageUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserPortStorageUpdateManyWithWhereWithoutUserInput = {
+    where: UserPortStorageScalarWhereInput
+    data: XOR<UserPortStorageUpdateManyMutationInput, UserPortStorageUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserPortStorageScalarWhereInput = {
+    AND?: UserPortStorageScalarWhereInput | UserPortStorageScalarWhereInput[]
+    OR?: UserPortStorageScalarWhereInput[]
+    NOT?: UserPortStorageScalarWhereInput | UserPortStorageScalarWhereInput[]
+    id?: IntFilter<"UserPortStorage"> | number
+    user_id?: IntFilter<"UserPortStorage"> | number
+    city_key?: StringFilter<"UserPortStorage"> | string
+    max_slots?: IntFilter<"UserPortStorage"> | number
+    created_at?: DateTimeFilter<"UserPortStorage"> | Date | string
+    updated_at?: DateTimeFilter<"UserPortStorage"> | Date | string
+  }
+
+  export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutUserInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type NotificationScalarWhereInput = {
+    AND?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    OR?: NotificationScalarWhereInput[]
+    NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    id?: IntFilter<"Notification"> | number
+    user_id?: IntFilter<"Notification"> | number
+    type?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    body?: StringFilter<"Notification"> | string
+    metadata?: StringNullableFilter<"Notification"> | string | null
+    is_read?: BoolFilter<"Notification"> | boolean
+    created_at?: DateTimeFilter<"Notification"> | Date | string
+  }
+
+  export type PirateAttackUpsertWithWhereUniqueWithoutAttackerInput = {
+    where: PirateAttackWhereUniqueInput
+    update: XOR<PirateAttackUpdateWithoutAttackerInput, PirateAttackUncheckedUpdateWithoutAttackerInput>
+    create: XOR<PirateAttackCreateWithoutAttackerInput, PirateAttackUncheckedCreateWithoutAttackerInput>
+  }
+
+  export type PirateAttackUpdateWithWhereUniqueWithoutAttackerInput = {
+    where: PirateAttackWhereUniqueInput
+    data: XOR<PirateAttackUpdateWithoutAttackerInput, PirateAttackUncheckedUpdateWithoutAttackerInput>
+  }
+
+  export type PirateAttackUpdateManyWithWhereWithoutAttackerInput = {
+    where: PirateAttackScalarWhereInput
+    data: XOR<PirateAttackUpdateManyMutationInput, PirateAttackUncheckedUpdateManyWithoutAttackerInput>
+  }
+
+  export type PirateAttackScalarWhereInput = {
+    AND?: PirateAttackScalarWhereInput | PirateAttackScalarWhereInput[]
+    OR?: PirateAttackScalarWhereInput[]
+    NOT?: PirateAttackScalarWhereInput | PirateAttackScalarWhereInput[]
+    id?: IntFilter<"PirateAttack"> | number
+    attacker_id?: IntFilter<"PirateAttack"> | number
+    target_ship_id?: IntFilter<"PirateAttack"> | number
+    attacker_ship_size?: EnumShipSizeFilter<"PirateAttack"> | $Enums.ShipSize
+    attacker_rps?: StringFilter<"PirateAttack"> | string
+    defender_rps?: StringNullableFilter<"PirateAttack"> | string | null
+    result_detail?: StringNullableFilter<"PirateAttack"> | string | null
+    attacker_wins?: IntNullableFilter<"PirateAttack"> | number | null
+    defender_wins?: IntNullableFilter<"PirateAttack"> | number | null
+    draws?: IntNullableFilter<"PirateAttack"> | number | null
+    is_success?: BoolNullableFilter<"PirateAttack"> | boolean | null
+    fuel_cost?: IntFilter<"PirateAttack"> | number
+    credit_cost?: IntFilter<"PirateAttack"> | number
+    status?: EnumPirateAttackStatusFilter<"PirateAttack"> | $Enums.PirateAttackStatus
+    created_at?: DateTimeFilter<"PirateAttack"> | Date | string
+    resolved_at?: DateTimeNullableFilter<"PirateAttack"> | Date | string | null
+  }
+
+  export type PirateCooldownUpsertWithoutUserInput = {
+    update: XOR<PirateCooldownUpdateWithoutUserInput, PirateCooldownUncheckedUpdateWithoutUserInput>
+    create: XOR<PirateCooldownCreateWithoutUserInput, PirateCooldownUncheckedCreateWithoutUserInput>
+    where?: PirateCooldownWhereInput
+  }
+
+  export type PirateCooldownUpdateToOneWithWhereWithoutUserInput = {
+    where?: PirateCooldownWhereInput
+    data: XOR<PirateCooldownUpdateWithoutUserInput, PirateCooldownUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PirateCooldownUpdateWithoutUserInput = {
+    last_attack_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateCooldownUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    last_attack_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ItemCreateWithoutYielded_fromInput = {
     name: string
     type: $Enums.ItemType
@@ -36007,6 +51100,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutYielded_fromInput = {
@@ -36035,6 +51129,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutYielded_fromInput = {
@@ -36067,6 +51162,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutYield_itemInput = {
@@ -36095,6 +51191,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutYield_itemInput = {
@@ -36241,8 +51338,12 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
     seller: UserCreateNestedOneWithoutSell_listingsInput
     buyer?: UserCreateNestedOneWithoutBuy_historyInput
+    cargo_box?: CargoBoxCreateNestedOneWithoutListingInput
+    purchase_order?: PurchaseOrderCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingUncheckedCreateWithoutItemInput = {
@@ -36260,6 +51361,10 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    purchase_order?: PurchaseOrderUncheckedCreateNestedOneWithoutListingInput
   }
 
   export type MarketListingCreateOrConnectWithoutItemInput = {
@@ -36332,6 +51437,41 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CargoBoxItemCreateWithoutItemInput = {
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    cargo_box: CargoBoxCreateNestedOneWithoutItemsInput
+  }
+
+  export type CargoBoxItemUncheckedCreateWithoutItemInput = {
+    id?: number
+    cargo_box_id: number
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+  }
+
+  export type CargoBoxItemCreateOrConnectWithoutItemInput = {
+    where: CargoBoxItemWhereUniqueInput
+    create: XOR<CargoBoxItemCreateWithoutItemInput, CargoBoxItemUncheckedCreateWithoutItemInput>
+  }
+
+  export type CargoBoxItemCreateManyItemInputEnvelope = {
+    data: CargoBoxItemCreateManyItemInput | CargoBoxItemCreateManyItemInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ItemUpsertWithoutYielded_fromInput = {
     update: XOR<ItemUpdateWithoutYielded_fromInput, ItemUncheckedUpdateWithoutYielded_fromInput>
     create: XOR<ItemCreateWithoutYielded_fromInput, ItemUncheckedCreateWithoutYielded_fromInput>
@@ -36368,6 +51508,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutYielded_fromInput = {
@@ -36396,6 +51537,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUpsertWithWhereUniqueWithoutYield_itemInput = {
@@ -36582,6 +51724,39 @@ export namespace Prisma {
     quantity?: IntFilter<"DailyQuestRequirement"> | number
   }
 
+  export type CargoBoxItemUpsertWithWhereUniqueWithoutItemInput = {
+    where: CargoBoxItemWhereUniqueInput
+    update: XOR<CargoBoxItemUpdateWithoutItemInput, CargoBoxItemUncheckedUpdateWithoutItemInput>
+    create: XOR<CargoBoxItemCreateWithoutItemInput, CargoBoxItemUncheckedCreateWithoutItemInput>
+  }
+
+  export type CargoBoxItemUpdateWithWhereUniqueWithoutItemInput = {
+    where: CargoBoxItemWhereUniqueInput
+    data: XOR<CargoBoxItemUpdateWithoutItemInput, CargoBoxItemUncheckedUpdateWithoutItemInput>
+  }
+
+  export type CargoBoxItemUpdateManyWithWhereWithoutItemInput = {
+    where: CargoBoxItemScalarWhereInput
+    data: XOR<CargoBoxItemUpdateManyMutationInput, CargoBoxItemUncheckedUpdateManyWithoutItemInput>
+  }
+
+  export type CargoBoxItemScalarWhereInput = {
+    AND?: CargoBoxItemScalarWhereInput | CargoBoxItemScalarWhereInput[]
+    OR?: CargoBoxItemScalarWhereInput[]
+    NOT?: CargoBoxItemScalarWhereInput | CargoBoxItemScalarWhereInput[]
+    id?: IntFilter<"CargoBoxItem"> | number
+    cargo_box_id?: IntFilter<"CargoBoxItem"> | number
+    item_id?: IntFilter<"CargoBoxItem"> | number
+    quantity?: IntFilter<"CargoBoxItem"> | number
+    equipment_rarity?: EnumEquipmentRarityNullableFilter<"CargoBoxItem"> | $Enums.EquipmentRarity | null
+    equipment_durability?: FloatNullableFilter<"CargoBoxItem"> | number | null
+    enchant_level?: IntFilter<"CargoBoxItem"> | number
+    special_stat_1?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_2?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_3?: StringNullableFilter<"CargoBoxItem"> | string | null
+    special_stat_4?: StringNullableFilter<"CargoBoxItem"> | string | null
+  }
+
   export type ItemCreateWithoutRecipe_outputsInput = {
     name: string
     type: $Enums.ItemType
@@ -36607,6 +51782,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutRecipe_outputsInput = {
@@ -36635,6 +51811,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutRecipe_outputsInput = {
@@ -36720,6 +51897,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutRecipe_outputsInput = {
@@ -36748,6 +51926,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type RecipeIngredientUpsertWithWhereUniqueWithoutRecipeInput = {
@@ -36831,6 +52010,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutRecipe_ingredientsInput = {
@@ -36859,6 +52039,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutRecipe_ingredientsInput = {
@@ -36932,6 +52113,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutRecipe_ingredientsInput = {
@@ -36960,6 +52142,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type UserCreateWithoutRecipe_unlocksInput = {
@@ -36979,6 +52162,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -36989,6 +52173,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRecipe_unlocksInput = {
@@ -37009,6 +52201,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -37019,6 +52212,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRecipe_unlocksInput = {
@@ -37078,6 +52279,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -37088,6 +52290,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRecipe_unlocksInput = {
@@ -37108,6 +52318,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -37118,6 +52329,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type RecipeUpsertWithoutUnlocked_byInput = {
@@ -37167,6 +52386,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     work_orders?: WorkOrderCreateNestedManyWithoutUserInput
@@ -37177,6 +52397,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInventoryInput = {
@@ -37197,6 +52425,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
@@ -37207,6 +52436,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInventoryInput = {
@@ -37239,6 +52476,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutInventory_slotsInput = {
@@ -37267,6 +52505,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutInventory_slotsInput = {
@@ -37302,6 +52541,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
@@ -37312,6 +52552,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInventoryInput = {
@@ -37332,6 +52580,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
@@ -37342,6 +52591,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ItemUpsertWithoutInventory_slotsInput = {
@@ -37380,6 +52637,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutInventory_slotsInput = {
@@ -37408,6 +52666,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type UserCreateWithoutEquipmentsInput = {
@@ -37427,6 +52686,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -37437,6 +52697,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEquipmentsInput = {
@@ -37457,6 +52725,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -37467,6 +52736,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEquipmentsInput = {
@@ -37499,6 +52776,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientCreateNestedManyWithoutItemInput
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutEquipped_onInput = {
@@ -37527,6 +52805,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUncheckedCreateNestedManyWithoutItemInput
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutEquipped_onInput = {
@@ -37562,6 +52841,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -37572,6 +52852,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEquipmentsInput = {
@@ -37592,6 +52880,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -37602,6 +52891,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ItemUpsertWithoutEquipped_onInput = {
@@ -37640,6 +52937,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUpdateManyWithoutItemNestedInput
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutEquipped_onInput = {
@@ -37668,6 +52966,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUncheckedUpdateManyWithoutItemNestedInput
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type UserCreateWithoutWork_ordersInput = {
@@ -37687,6 +52986,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -37697,6 +52997,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWork_ordersInput = {
@@ -37717,6 +53025,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -37727,6 +53036,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWork_ordersInput = {
@@ -37759,6 +53076,7 @@ export namespace Prisma {
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutWork_ordersInput = {
@@ -37787,6 +53105,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutWork_ordersInput = {
@@ -37822,6 +53141,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -37832,6 +53152,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWork_ordersInput = {
@@ -37852,6 +53180,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -37862,6 +53191,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ItemUpsertWithoutWork_ordersInput = {
@@ -37900,6 +53237,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutWork_ordersInput = {
@@ -37928,6 +53266,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type UserCreateWithoutSell_listingsInput = {
@@ -37947,6 +53286,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -37957,6 +53297,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSell_listingsInput = {
@@ -37977,6 +53325,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -37987,6 +53336,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSell_listingsInput = {
@@ -38011,6 +53368,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -38021,6 +53379,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBuy_historyInput = {
@@ -38041,6 +53407,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -38051,6 +53418,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBuy_historyInput = {
@@ -38083,6 +53458,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutMarket_listingsInput = {
@@ -38111,11 +53487,78 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
     quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutMarket_listingsInput = {
     where: ItemWhereUniqueInput
     create: XOR<ItemCreateWithoutMarket_listingsInput, ItemUncheckedCreateWithoutMarket_listingsInput>
+  }
+
+  export type CargoBoxCreateWithoutListingInput = {
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner: UserCreateNestedOneWithoutCargo_boxesInput
+    items?: CargoBoxItemCreateNestedManyWithoutCargo_boxInput
+    order?: PurchaseOrderCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUncheckedCreateWithoutListingInput = {
+    id?: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    items?: CargoBoxItemUncheckedCreateNestedManyWithoutCargo_boxInput
+    order?: PurchaseOrderUncheckedCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoUncheckedCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxCreateOrConnectWithoutListingInput = {
+    where: CargoBoxWhereUniqueInput
+    create: XOR<CargoBoxCreateWithoutListingInput, CargoBoxUncheckedCreateWithoutListingInput>
+  }
+
+  export type PurchaseOrderCreateWithoutListingInput = {
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    cargo_box: CargoBoxCreateNestedOneWithoutOrderInput
+    buyer: UserCreateNestedOneWithoutPurchase_orders_as_buyerInput
+    seller: UserCreateNestedOneWithoutPurchase_orders_as_sellerInput
+    shipment?: ShipCargoCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderUncheckedCreateWithoutListingInput = {
+    id?: number
+    cargo_box_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    shipment?: ShipCargoUncheckedCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderCreateOrConnectWithoutListingInput = {
+    where: PurchaseOrderWhereUniqueInput
+    create: XOR<PurchaseOrderCreateWithoutListingInput, PurchaseOrderUncheckedCreateWithoutListingInput>
   }
 
   export type UserUpsertWithoutSell_listingsInput = {
@@ -38146,6 +53589,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -38156,6 +53600,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSell_listingsInput = {
@@ -38176,6 +53628,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -38186,6 +53639,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutBuy_historyInput = {
@@ -38216,6 +53677,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -38226,6 +53688,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBuy_historyInput = {
@@ -38246,6 +53716,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -38256,6 +53727,14 @@ export namespace Prisma {
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ItemUpsertWithoutMarket_listingsInput = {
@@ -38294,6 +53773,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutMarket_listingsInput = {
@@ -38322,6 +53802,85 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type CargoBoxUpsertWithoutListingInput = {
+    update: XOR<CargoBoxUpdateWithoutListingInput, CargoBoxUncheckedUpdateWithoutListingInput>
+    create: XOR<CargoBoxCreateWithoutListingInput, CargoBoxUncheckedCreateWithoutListingInput>
+    where?: CargoBoxWhereInput
+  }
+
+  export type CargoBoxUpdateToOneWithWhereWithoutListingInput = {
+    where?: CargoBoxWhereInput
+    data: XOR<CargoBoxUpdateWithoutListingInput, CargoBoxUncheckedUpdateWithoutListingInput>
+  }
+
+  export type CargoBoxUpdateWithoutListingInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutCargo_boxesNestedInput
+    items?: CargoBoxItemUpdateManyWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateWithoutListingInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    owner_id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: CargoBoxItemUncheckedUpdateManyWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUncheckedUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUncheckedUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type PurchaseOrderUpsertWithoutListingInput = {
+    update: XOR<PurchaseOrderUpdateWithoutListingInput, PurchaseOrderUncheckedUpdateWithoutListingInput>
+    create: XOR<PurchaseOrderCreateWithoutListingInput, PurchaseOrderUncheckedCreateWithoutListingInput>
+    where?: PurchaseOrderWhereInput
+  }
+
+  export type PurchaseOrderUpdateToOneWithWhereWithoutListingInput = {
+    where?: PurchaseOrderWhereInput
+    data: XOR<PurchaseOrderUpdateWithoutListingInput, PurchaseOrderUncheckedUpdateWithoutListingInput>
+  }
+
+  export type PurchaseOrderUpdateWithoutListingInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutOrderNestedInput
+    buyer?: UserUpdateOneRequiredWithoutPurchase_orders_as_buyerNestedInput
+    seller?: UserUpdateOneRequiredWithoutPurchase_orders_as_sellerNestedInput
+    shipment?: ShipCargoUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateWithoutListingInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    shipment?: ShipCargoUncheckedUpdateOneWithoutOrderNestedInput
   }
 
   export type OccupationSkillBranchCatalogCreateWithoutOccupationInput = {
@@ -38560,6 +54119,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -38570,6 +54130,14 @@ export namespace Prisma {
     equipments?: UserEquipmentCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutJob_progressInput = {
@@ -38590,6 +54158,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -38600,6 +54169,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutJob_progressInput = {
@@ -38664,6 +54241,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -38674,6 +54252,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutJob_progressInput = {
@@ -38694,6 +54280,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -38704,6 +54291,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type OccupationCatalogUpsertWithoutJob_progressInput = {
@@ -38758,6 +54353,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -38768,6 +54364,14 @@ export namespace Prisma {
     equipments?: UserEquipmentCreateNestedManyWithoutUserInput
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSkill_progressInput = {
@@ -38788,6 +54392,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -38798,6 +54403,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSkill_progressInput = {
@@ -38862,6 +54475,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -38872,6 +54486,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSkill_progressInput = {
@@ -38892,6 +54514,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -38902,6 +54525,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type OccupationCatalogUpsertWithoutSkill_progressInput = {
@@ -39074,6 +54705,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientCreateNestedManyWithoutItemInput
     market_listings?: MarketListingCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemCreateNestedManyWithoutItemInput
   }
 
   export type ItemUncheckedCreateWithoutQuest_requirementsInput = {
@@ -39102,6 +54734,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUncheckedCreateNestedManyWithoutItemInput
     market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
     equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
+    cargo_box_items?: CargoBoxItemUncheckedCreateNestedManyWithoutItemInput
   }
 
   export type ItemCreateOrConnectWithoutQuest_requirementsInput = {
@@ -39181,6 +54814,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUpdateManyWithoutItemNestedInput
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutQuest_requirementsInput = {
@@ -39209,6 +54843,7 @@ export namespace Prisma {
     recipe_ingredients?: RecipeIngredientUncheckedUpdateManyWithoutItemNestedInput
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type UserCreateWithoutDaily_questsInput = {
@@ -39228,6 +54863,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotCreateNestedManyWithoutUserInput
@@ -39238,6 +54874,14 @@ export namespace Prisma {
     equipments?: UserEquipmentCreateNestedManyWithoutUserInput
     job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDaily_questsInput = {
@@ -39258,6 +54902,7 @@ export namespace Prisma {
     secondary_job_level?: number
     secondary_job_skill_level?: number
     secondary_job_exp?: number
+    locked_money?: number
     created_at?: Date | string
     updated_at?: Date | string
     inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
@@ -39268,6 +54913,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
     job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
     skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDaily_questsInput = {
@@ -39333,6 +54986,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUpdateManyWithoutUserNestedInput
@@ -39343,6 +54997,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
     job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDaily_questsInput = {
@@ -39363,6 +55025,7 @@ export namespace Prisma {
     secondary_job_level?: IntFieldUpdateOperationsInput | number
     secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
     secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
@@ -39373,6 +55036,14 @@ export namespace Prisma {
     equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
     job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
     skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type DailyQuestTemplateUpsertWithoutPlayer_questsInput = {
@@ -39409,6 +55080,2465 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
     requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type UserCreateWithoutCargo_boxesInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCargo_boxesInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCargo_boxesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCargo_boxesInput, UserUncheckedCreateWithoutCargo_boxesInput>
+  }
+
+  export type CargoBoxItemCreateWithoutCargo_boxInput = {
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    item: ItemCreateNestedOneWithoutCargo_box_itemsInput
+  }
+
+  export type CargoBoxItemUncheckedCreateWithoutCargo_boxInput = {
+    id?: number
+    item_id: number
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+  }
+
+  export type CargoBoxItemCreateOrConnectWithoutCargo_boxInput = {
+    where: CargoBoxItemWhereUniqueInput
+    create: XOR<CargoBoxItemCreateWithoutCargo_boxInput, CargoBoxItemUncheckedCreateWithoutCargo_boxInput>
+  }
+
+  export type CargoBoxItemCreateManyCargo_boxInputEnvelope = {
+    data: CargoBoxItemCreateManyCargo_boxInput | CargoBoxItemCreateManyCargo_boxInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type MarketListingCreateWithoutCargo_boxInput = {
+    quantity: number
+    price: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    status?: $Enums.ListingStatus
+    created_at?: Date | string
+    sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    seller: UserCreateNestedOneWithoutSell_listingsInput
+    buyer?: UserCreateNestedOneWithoutBuy_historyInput
+    item: ItemCreateNestedOneWithoutMarket_listingsInput
+    purchase_order?: PurchaseOrderCreateNestedOneWithoutListingInput
+  }
+
+  export type MarketListingUncheckedCreateWithoutCargo_boxInput = {
+    id?: number
+    seller_id: number
+    buyer_id?: number | null
+    item_id: number
+    quantity: number
+    price: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    status?: $Enums.ListingStatus
+    created_at?: Date | string
+    sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    purchase_order?: PurchaseOrderUncheckedCreateNestedOneWithoutListingInput
+  }
+
+  export type MarketListingCreateOrConnectWithoutCargo_boxInput = {
+    where: MarketListingWhereUniqueInput
+    create: XOR<MarketListingCreateWithoutCargo_boxInput, MarketListingUncheckedCreateWithoutCargo_boxInput>
+  }
+
+  export type PurchaseOrderCreateWithoutCargo_boxInput = {
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    listing: MarketListingCreateNestedOneWithoutPurchase_orderInput
+    buyer: UserCreateNestedOneWithoutPurchase_orders_as_buyerInput
+    seller: UserCreateNestedOneWithoutPurchase_orders_as_sellerInput
+    shipment?: ShipCargoCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderUncheckedCreateWithoutCargo_boxInput = {
+    id?: number
+    listing_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    shipment?: ShipCargoUncheckedCreateNestedOneWithoutOrderInput
+  }
+
+  export type PurchaseOrderCreateOrConnectWithoutCargo_boxInput = {
+    where: PurchaseOrderWhereUniqueInput
+    create: XOR<PurchaseOrderCreateWithoutCargo_boxInput, PurchaseOrderUncheckedCreateWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoCreateWithoutCargo_boxInput = {
+    loaded_at?: Date | string
+    ship: ShipCreateNestedOneWithoutCargoInput
+    order: PurchaseOrderCreateNestedOneWithoutShipmentInput
+  }
+
+  export type ShipCargoUncheckedCreateWithoutCargo_boxInput = {
+    id?: number
+    ship_id: number
+    order_id: number
+    loaded_at?: Date | string
+  }
+
+  export type ShipCargoCreateOrConnectWithoutCargo_boxInput = {
+    where: ShipCargoWhereUniqueInput
+    create: XOR<ShipCargoCreateWithoutCargo_boxInput, ShipCargoUncheckedCreateWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoCreateManyCargo_boxInputEnvelope = {
+    data: ShipCargoCreateManyCargo_boxInput | ShipCargoCreateManyCargo_boxInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutCargo_boxesInput = {
+    update: XOR<UserUpdateWithoutCargo_boxesInput, UserUncheckedUpdateWithoutCargo_boxesInput>
+    create: XOR<UserCreateWithoutCargo_boxesInput, UserUncheckedCreateWithoutCargo_boxesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCargo_boxesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCargo_boxesInput, UserUncheckedUpdateWithoutCargo_boxesInput>
+  }
+
+  export type UserUpdateWithoutCargo_boxesInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCargo_boxesInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type CargoBoxItemUpsertWithWhereUniqueWithoutCargo_boxInput = {
+    where: CargoBoxItemWhereUniqueInput
+    update: XOR<CargoBoxItemUpdateWithoutCargo_boxInput, CargoBoxItemUncheckedUpdateWithoutCargo_boxInput>
+    create: XOR<CargoBoxItemCreateWithoutCargo_boxInput, CargoBoxItemUncheckedCreateWithoutCargo_boxInput>
+  }
+
+  export type CargoBoxItemUpdateWithWhereUniqueWithoutCargo_boxInput = {
+    where: CargoBoxItemWhereUniqueInput
+    data: XOR<CargoBoxItemUpdateWithoutCargo_boxInput, CargoBoxItemUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type CargoBoxItemUpdateManyWithWhereWithoutCargo_boxInput = {
+    where: CargoBoxItemScalarWhereInput
+    data: XOR<CargoBoxItemUpdateManyMutationInput, CargoBoxItemUncheckedUpdateManyWithoutCargo_boxInput>
+  }
+
+  export type MarketListingUpsertWithoutCargo_boxInput = {
+    update: XOR<MarketListingUpdateWithoutCargo_boxInput, MarketListingUncheckedUpdateWithoutCargo_boxInput>
+    create: XOR<MarketListingCreateWithoutCargo_boxInput, MarketListingUncheckedCreateWithoutCargo_boxInput>
+    where?: MarketListingWhereInput
+  }
+
+  export type MarketListingUpdateToOneWithWhereWithoutCargo_boxInput = {
+    where?: MarketListingWhereInput
+    data: XOR<MarketListingUpdateWithoutCargo_boxInput, MarketListingUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type MarketListingUpdateWithoutCargo_boxInput = {
+    quantity?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
+    buyer?: UserUpdateOneWithoutBuy_historyNestedInput
+    item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
+    purchase_order?: PurchaseOrderUpdateOneWithoutListingNestedInput
+  }
+
+  export type MarketListingUncheckedUpdateWithoutCargo_boxInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: NullableIntFieldUpdateOperationsInput | number | null
+    item_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    purchase_order?: PurchaseOrderUncheckedUpdateOneWithoutListingNestedInput
+  }
+
+  export type PurchaseOrderUpsertWithoutCargo_boxInput = {
+    update: XOR<PurchaseOrderUpdateWithoutCargo_boxInput, PurchaseOrderUncheckedUpdateWithoutCargo_boxInput>
+    create: XOR<PurchaseOrderCreateWithoutCargo_boxInput, PurchaseOrderUncheckedCreateWithoutCargo_boxInput>
+    where?: PurchaseOrderWhereInput
+  }
+
+  export type PurchaseOrderUpdateToOneWithWhereWithoutCargo_boxInput = {
+    where?: PurchaseOrderWhereInput
+    data: XOR<PurchaseOrderUpdateWithoutCargo_boxInput, PurchaseOrderUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type PurchaseOrderUpdateWithoutCargo_boxInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    listing?: MarketListingUpdateOneRequiredWithoutPurchase_orderNestedInput
+    buyer?: UserUpdateOneRequiredWithoutPurchase_orders_as_buyerNestedInput
+    seller?: UserUpdateOneRequiredWithoutPurchase_orders_as_sellerNestedInput
+    shipment?: ShipCargoUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateWithoutCargo_boxInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    shipment?: ShipCargoUncheckedUpdateOneWithoutOrderNestedInput
+  }
+
+  export type ShipCargoUpsertWithWhereUniqueWithoutCargo_boxInput = {
+    where: ShipCargoWhereUniqueInput
+    update: XOR<ShipCargoUpdateWithoutCargo_boxInput, ShipCargoUncheckedUpdateWithoutCargo_boxInput>
+    create: XOR<ShipCargoCreateWithoutCargo_boxInput, ShipCargoUncheckedCreateWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoUpdateWithWhereUniqueWithoutCargo_boxInput = {
+    where: ShipCargoWhereUniqueInput
+    data: XOR<ShipCargoUpdateWithoutCargo_boxInput, ShipCargoUncheckedUpdateWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoUpdateManyWithWhereWithoutCargo_boxInput = {
+    where: ShipCargoScalarWhereInput
+    data: XOR<ShipCargoUpdateManyMutationInput, ShipCargoUncheckedUpdateManyWithoutCargo_boxInput>
+  }
+
+  export type ShipCargoScalarWhereInput = {
+    AND?: ShipCargoScalarWhereInput | ShipCargoScalarWhereInput[]
+    OR?: ShipCargoScalarWhereInput[]
+    NOT?: ShipCargoScalarWhereInput | ShipCargoScalarWhereInput[]
+    id?: IntFilter<"ShipCargo"> | number
+    ship_id?: IntFilter<"ShipCargo"> | number
+    order_id?: IntFilter<"ShipCargo"> | number
+    cargo_box_id?: IntFilter<"ShipCargo"> | number
+    loaded_at?: DateTimeFilter<"ShipCargo"> | Date | string
+  }
+
+  export type CargoBoxCreateWithoutItemsInput = {
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner: UserCreateNestedOneWithoutCargo_boxesInput
+    listing?: MarketListingCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUncheckedCreateWithoutItemsInput = {
+    id?: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    listing?: MarketListingUncheckedCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderUncheckedCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoUncheckedCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxCreateOrConnectWithoutItemsInput = {
+    where: CargoBoxWhereUniqueInput
+    create: XOR<CargoBoxCreateWithoutItemsInput, CargoBoxUncheckedCreateWithoutItemsInput>
+  }
+
+  export type ItemCreateWithoutCargo_box_itemsInput = {
+    name: string
+    type: $Enums.ItemType
+    equipment_slot?: $Enums.EquipmentSlot | null
+    effect_key?: string | null
+    effect_value?: number | null
+    effect_value2?: number | null
+    buy_price?: number | null
+    sell_price?: number | null
+    kcal?: number | null
+    buff_pct?: number | null
+    buff_mins?: number | null
+    max_stack?: number
+    grow_mins?: number | null
+    yield_qty?: number | null
+    exp_value?: number
+    icon?: string
+    yield_item?: ItemCreateNestedOneWithoutYielded_fromInput
+    yielded_from?: ItemCreateNestedManyWithoutYield_itemInput
+    inventory_slots?: InventorySlotCreateNestedManyWithoutItemInput
+    work_orders?: WorkOrderCreateNestedManyWithoutItemInput
+    recipe_outputs?: RecipeCreateNestedManyWithoutOutput_itemInput
+    recipe_ingredients?: RecipeIngredientCreateNestedManyWithoutItemInput
+    market_listings?: MarketListingCreateNestedManyWithoutItemInput
+    equipped_on?: UserEquipmentCreateNestedManyWithoutItemInput
+    quest_requirements?: DailyQuestRequirementCreateNestedManyWithoutItemInput
+  }
+
+  export type ItemUncheckedCreateWithoutCargo_box_itemsInput = {
+    id?: number
+    name: string
+    type: $Enums.ItemType
+    equipment_slot?: $Enums.EquipmentSlot | null
+    effect_key?: string | null
+    effect_value?: number | null
+    effect_value2?: number | null
+    buy_price?: number | null
+    sell_price?: number | null
+    kcal?: number | null
+    buff_pct?: number | null
+    buff_mins?: number | null
+    max_stack?: number
+    grow_mins?: number | null
+    yield_item_id?: number | null
+    yield_qty?: number | null
+    exp_value?: number
+    icon?: string
+    yielded_from?: ItemUncheckedCreateNestedManyWithoutYield_itemInput
+    inventory_slots?: InventorySlotUncheckedCreateNestedManyWithoutItemInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutItemInput
+    recipe_outputs?: RecipeUncheckedCreateNestedManyWithoutOutput_itemInput
+    recipe_ingredients?: RecipeIngredientUncheckedCreateNestedManyWithoutItemInput
+    market_listings?: MarketListingUncheckedCreateNestedManyWithoutItemInput
+    equipped_on?: UserEquipmentUncheckedCreateNestedManyWithoutItemInput
+    quest_requirements?: DailyQuestRequirementUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type ItemCreateOrConnectWithoutCargo_box_itemsInput = {
+    where: ItemWhereUniqueInput
+    create: XOR<ItemCreateWithoutCargo_box_itemsInput, ItemUncheckedCreateWithoutCargo_box_itemsInput>
+  }
+
+  export type CargoBoxUpsertWithoutItemsInput = {
+    update: XOR<CargoBoxUpdateWithoutItemsInput, CargoBoxUncheckedUpdateWithoutItemsInput>
+    create: XOR<CargoBoxCreateWithoutItemsInput, CargoBoxUncheckedCreateWithoutItemsInput>
+    where?: CargoBoxWhereInput
+  }
+
+  export type CargoBoxUpdateToOneWithWhereWithoutItemsInput = {
+    where?: CargoBoxWhereInput
+    data: XOR<CargoBoxUpdateWithoutItemsInput, CargoBoxUncheckedUpdateWithoutItemsInput>
+  }
+
+  export type CargoBoxUpdateWithoutItemsInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutCargo_boxesNestedInput
+    listing?: MarketListingUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateWithoutItemsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    owner_id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    listing?: MarketListingUncheckedUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUncheckedUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUncheckedUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type ItemUpsertWithoutCargo_box_itemsInput = {
+    update: XOR<ItemUpdateWithoutCargo_box_itemsInput, ItemUncheckedUpdateWithoutCargo_box_itemsInput>
+    create: XOR<ItemCreateWithoutCargo_box_itemsInput, ItemUncheckedCreateWithoutCargo_box_itemsInput>
+    where?: ItemWhereInput
+  }
+
+  export type ItemUpdateToOneWithWhereWithoutCargo_box_itemsInput = {
+    where?: ItemWhereInput
+    data: XOR<ItemUpdateWithoutCargo_box_itemsInput, ItemUncheckedUpdateWithoutCargo_box_itemsInput>
+  }
+
+  export type ItemUpdateWithoutCargo_box_itemsInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumItemTypeFieldUpdateOperationsInput | $Enums.ItemType
+    equipment_slot?: NullableEnumEquipmentSlotFieldUpdateOperationsInput | $Enums.EquipmentSlot | null
+    effect_key?: NullableStringFieldUpdateOperationsInput | string | null
+    effect_value?: NullableFloatFieldUpdateOperationsInput | number | null
+    effect_value2?: NullableFloatFieldUpdateOperationsInput | number | null
+    buy_price?: NullableIntFieldUpdateOperationsInput | number | null
+    sell_price?: NullableIntFieldUpdateOperationsInput | number | null
+    kcal?: NullableIntFieldUpdateOperationsInput | number | null
+    buff_pct?: NullableFloatFieldUpdateOperationsInput | number | null
+    buff_mins?: NullableIntFieldUpdateOperationsInput | number | null
+    max_stack?: IntFieldUpdateOperationsInput | number
+    grow_mins?: NullableIntFieldUpdateOperationsInput | number | null
+    yield_qty?: NullableIntFieldUpdateOperationsInput | number | null
+    exp_value?: FloatFieldUpdateOperationsInput | number
+    icon?: StringFieldUpdateOperationsInput | string
+    yield_item?: ItemUpdateOneWithoutYielded_fromNestedInput
+    yielded_from?: ItemUpdateManyWithoutYield_itemNestedInput
+    inventory_slots?: InventorySlotUpdateManyWithoutItemNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutItemNestedInput
+    recipe_outputs?: RecipeUpdateManyWithoutOutput_itemNestedInput
+    recipe_ingredients?: RecipeIngredientUpdateManyWithoutItemNestedInput
+    market_listings?: MarketListingUpdateManyWithoutItemNestedInput
+    equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
+    quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+  }
+
+  export type ItemUncheckedUpdateWithoutCargo_box_itemsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    type?: EnumItemTypeFieldUpdateOperationsInput | $Enums.ItemType
+    equipment_slot?: NullableEnumEquipmentSlotFieldUpdateOperationsInput | $Enums.EquipmentSlot | null
+    effect_key?: NullableStringFieldUpdateOperationsInput | string | null
+    effect_value?: NullableFloatFieldUpdateOperationsInput | number | null
+    effect_value2?: NullableFloatFieldUpdateOperationsInput | number | null
+    buy_price?: NullableIntFieldUpdateOperationsInput | number | null
+    sell_price?: NullableIntFieldUpdateOperationsInput | number | null
+    kcal?: NullableIntFieldUpdateOperationsInput | number | null
+    buff_pct?: NullableFloatFieldUpdateOperationsInput | number | null
+    buff_mins?: NullableIntFieldUpdateOperationsInput | number | null
+    max_stack?: IntFieldUpdateOperationsInput | number
+    grow_mins?: NullableIntFieldUpdateOperationsInput | number | null
+    yield_item_id?: NullableIntFieldUpdateOperationsInput | number | null
+    yield_qty?: NullableIntFieldUpdateOperationsInput | number | null
+    exp_value?: FloatFieldUpdateOperationsInput | number
+    icon?: StringFieldUpdateOperationsInput | string
+    yielded_from?: ItemUncheckedUpdateManyWithoutYield_itemNestedInput
+    inventory_slots?: InventorySlotUncheckedUpdateManyWithoutItemNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutItemNestedInput
+    recipe_outputs?: RecipeUncheckedUpdateManyWithoutOutput_itemNestedInput
+    recipe_ingredients?: RecipeIngredientUncheckedUpdateManyWithoutItemNestedInput
+    market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
+    equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
+    quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type CargoBoxCreateWithoutOrderInput = {
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner: UserCreateNestedOneWithoutCargo_boxesInput
+    items?: CargoBoxItemCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUncheckedCreateWithoutOrderInput = {
+    id?: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    items?: CargoBoxItemUncheckedCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingUncheckedCreateNestedOneWithoutCargo_boxInput
+    ship_cargo?: ShipCargoUncheckedCreateNestedManyWithoutCargo_boxInput
+  }
+
+  export type CargoBoxCreateOrConnectWithoutOrderInput = {
+    where: CargoBoxWhereUniqueInput
+    create: XOR<CargoBoxCreateWithoutOrderInput, CargoBoxUncheckedCreateWithoutOrderInput>
+  }
+
+  export type MarketListingCreateWithoutPurchase_orderInput = {
+    quantity: number
+    price: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    status?: $Enums.ListingStatus
+    created_at?: Date | string
+    sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+    seller: UserCreateNestedOneWithoutSell_listingsInput
+    buyer?: UserCreateNestedOneWithoutBuy_historyInput
+    item: ItemCreateNestedOneWithoutMarket_listingsInput
+    cargo_box?: CargoBoxCreateNestedOneWithoutListingInput
+  }
+
+  export type MarketListingUncheckedCreateWithoutPurchase_orderInput = {
+    id?: number
+    seller_id: number
+    buyer_id?: number | null
+    item_id: number
+    quantity: number
+    price: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    status?: $Enums.ListingStatus
+    created_at?: Date | string
+    sold_at?: Date | string | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
+  }
+
+  export type MarketListingCreateOrConnectWithoutPurchase_orderInput = {
+    where: MarketListingWhereUniqueInput
+    create: XOR<MarketListingCreateWithoutPurchase_orderInput, MarketListingUncheckedCreateWithoutPurchase_orderInput>
+  }
+
+  export type UserCreateWithoutPurchase_orders_as_buyerInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPurchase_orders_as_buyerInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPurchase_orders_as_buyerInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPurchase_orders_as_buyerInput, UserUncheckedCreateWithoutPurchase_orders_as_buyerInput>
+  }
+
+  export type UserCreateWithoutPurchase_orders_as_sellerInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPurchase_orders_as_sellerInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPurchase_orders_as_sellerInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPurchase_orders_as_sellerInput, UserUncheckedCreateWithoutPurchase_orders_as_sellerInput>
+  }
+
+  export type ShipCargoCreateWithoutOrderInput = {
+    loaded_at?: Date | string
+    ship: ShipCreateNestedOneWithoutCargoInput
+    cargo_box: CargoBoxCreateNestedOneWithoutShip_cargoInput
+  }
+
+  export type ShipCargoUncheckedCreateWithoutOrderInput = {
+    id?: number
+    ship_id: number
+    cargo_box_id: number
+    loaded_at?: Date | string
+  }
+
+  export type ShipCargoCreateOrConnectWithoutOrderInput = {
+    where: ShipCargoWhereUniqueInput
+    create: XOR<ShipCargoCreateWithoutOrderInput, ShipCargoUncheckedCreateWithoutOrderInput>
+  }
+
+  export type CargoBoxUpsertWithoutOrderInput = {
+    update: XOR<CargoBoxUpdateWithoutOrderInput, CargoBoxUncheckedUpdateWithoutOrderInput>
+    create: XOR<CargoBoxCreateWithoutOrderInput, CargoBoxUncheckedCreateWithoutOrderInput>
+    where?: CargoBoxWhereInput
+  }
+
+  export type CargoBoxUpdateToOneWithWhereWithoutOrderInput = {
+    where?: CargoBoxWhereInput
+    data: XOR<CargoBoxUpdateWithoutOrderInput, CargoBoxUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type CargoBoxUpdateWithoutOrderInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutCargo_boxesNestedInput
+    items?: CargoBoxItemUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateWithoutOrderInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    owner_id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: CargoBoxItemUncheckedUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUncheckedUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUncheckedUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type MarketListingUpsertWithoutPurchase_orderInput = {
+    update: XOR<MarketListingUpdateWithoutPurchase_orderInput, MarketListingUncheckedUpdateWithoutPurchase_orderInput>
+    create: XOR<MarketListingCreateWithoutPurchase_orderInput, MarketListingUncheckedCreateWithoutPurchase_orderInput>
+    where?: MarketListingWhereInput
+  }
+
+  export type MarketListingUpdateToOneWithWhereWithoutPurchase_orderInput = {
+    where?: MarketListingWhereInput
+    data: XOR<MarketListingUpdateWithoutPurchase_orderInput, MarketListingUncheckedUpdateWithoutPurchase_orderInput>
+  }
+
+  export type MarketListingUpdateWithoutPurchase_orderInput = {
+    quantity?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
+    buyer?: UserUpdateOneWithoutBuy_historyNestedInput
+    item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
+    cargo_box?: CargoBoxUpdateOneWithoutListingNestedInput
+  }
+
+  export type MarketListingUncheckedUpdateWithoutPurchase_orderInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: NullableIntFieldUpdateOperationsInput | number | null
+    item_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    status?: EnumListingStatusFieldUpdateOperationsInput | $Enums.ListingStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    sold_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type UserUpsertWithoutPurchase_orders_as_buyerInput = {
+    update: XOR<UserUpdateWithoutPurchase_orders_as_buyerInput, UserUncheckedUpdateWithoutPurchase_orders_as_buyerInput>
+    create: XOR<UserCreateWithoutPurchase_orders_as_buyerInput, UserUncheckedCreateWithoutPurchase_orders_as_buyerInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPurchase_orders_as_buyerInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPurchase_orders_as_buyerInput, UserUncheckedUpdateWithoutPurchase_orders_as_buyerInput>
+  }
+
+  export type UserUpdateWithoutPurchase_orders_as_buyerInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPurchase_orders_as_buyerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutPurchase_orders_as_sellerInput = {
+    update: XOR<UserUpdateWithoutPurchase_orders_as_sellerInput, UserUncheckedUpdateWithoutPurchase_orders_as_sellerInput>
+    create: XOR<UserCreateWithoutPurchase_orders_as_sellerInput, UserUncheckedCreateWithoutPurchase_orders_as_sellerInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPurchase_orders_as_sellerInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPurchase_orders_as_sellerInput, UserUncheckedUpdateWithoutPurchase_orders_as_sellerInput>
+  }
+
+  export type UserUpdateWithoutPurchase_orders_as_sellerInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPurchase_orders_as_sellerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type ShipCargoUpsertWithoutOrderInput = {
+    update: XOR<ShipCargoUpdateWithoutOrderInput, ShipCargoUncheckedUpdateWithoutOrderInput>
+    create: XOR<ShipCargoCreateWithoutOrderInput, ShipCargoUncheckedCreateWithoutOrderInput>
+    where?: ShipCargoWhereInput
+  }
+
+  export type ShipCargoUpdateToOneWithWhereWithoutOrderInput = {
+    where?: ShipCargoWhereInput
+    data: XOR<ShipCargoUpdateWithoutOrderInput, ShipCargoUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type ShipCargoUpdateWithoutOrderInput = {
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ship?: ShipUpdateOneRequiredWithoutCargoNestedInput
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutShip_cargoNestedInput
+  }
+
+  export type ShipCargoUncheckedUpdateWithoutOrderInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    ship_id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateWithoutOwned_shipsInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutOwned_shipsInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutOwned_shipsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutOwned_shipsInput, UserUncheckedCreateWithoutOwned_shipsInput>
+  }
+
+  export type ShipCargoCreateWithoutShipInput = {
+    loaded_at?: Date | string
+    order: PurchaseOrderCreateNestedOneWithoutShipmentInput
+    cargo_box: CargoBoxCreateNestedOneWithoutShip_cargoInput
+  }
+
+  export type ShipCargoUncheckedCreateWithoutShipInput = {
+    id?: number
+    order_id: number
+    cargo_box_id: number
+    loaded_at?: Date | string
+  }
+
+  export type ShipCargoCreateOrConnectWithoutShipInput = {
+    where: ShipCargoWhereUniqueInput
+    create: XOR<ShipCargoCreateWithoutShipInput, ShipCargoUncheckedCreateWithoutShipInput>
+  }
+
+  export type ShipCargoCreateManyShipInputEnvelope = {
+    data: ShipCargoCreateManyShipInput | ShipCargoCreateManyShipInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PirateAttackCreateWithoutTarget_shipInput = {
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+    attacker: UserCreateNestedOneWithoutPirate_attacksInput
+  }
+
+  export type PirateAttackUncheckedCreateWithoutTarget_shipInput = {
+    id?: number
+    attacker_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+  }
+
+  export type PirateAttackCreateOrConnectWithoutTarget_shipInput = {
+    where: PirateAttackWhereUniqueInput
+    create: XOR<PirateAttackCreateWithoutTarget_shipInput, PirateAttackUncheckedCreateWithoutTarget_shipInput>
+  }
+
+  export type PirateAttackCreateManyTarget_shipInputEnvelope = {
+    data: PirateAttackCreateManyTarget_shipInput | PirateAttackCreateManyTarget_shipInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutOwned_shipsInput = {
+    update: XOR<UserUpdateWithoutOwned_shipsInput, UserUncheckedUpdateWithoutOwned_shipsInput>
+    create: XOR<UserCreateWithoutOwned_shipsInput, UserUncheckedCreateWithoutOwned_shipsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutOwned_shipsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutOwned_shipsInput, UserUncheckedUpdateWithoutOwned_shipsInput>
+  }
+
+  export type UserUpdateWithoutOwned_shipsInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutOwned_shipsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type ShipCargoUpsertWithWhereUniqueWithoutShipInput = {
+    where: ShipCargoWhereUniqueInput
+    update: XOR<ShipCargoUpdateWithoutShipInput, ShipCargoUncheckedUpdateWithoutShipInput>
+    create: XOR<ShipCargoCreateWithoutShipInput, ShipCargoUncheckedCreateWithoutShipInput>
+  }
+
+  export type ShipCargoUpdateWithWhereUniqueWithoutShipInput = {
+    where: ShipCargoWhereUniqueInput
+    data: XOR<ShipCargoUpdateWithoutShipInput, ShipCargoUncheckedUpdateWithoutShipInput>
+  }
+
+  export type ShipCargoUpdateManyWithWhereWithoutShipInput = {
+    where: ShipCargoScalarWhereInput
+    data: XOR<ShipCargoUpdateManyMutationInput, ShipCargoUncheckedUpdateManyWithoutShipInput>
+  }
+
+  export type PirateAttackUpsertWithWhereUniqueWithoutTarget_shipInput = {
+    where: PirateAttackWhereUniqueInput
+    update: XOR<PirateAttackUpdateWithoutTarget_shipInput, PirateAttackUncheckedUpdateWithoutTarget_shipInput>
+    create: XOR<PirateAttackCreateWithoutTarget_shipInput, PirateAttackUncheckedCreateWithoutTarget_shipInput>
+  }
+
+  export type PirateAttackUpdateWithWhereUniqueWithoutTarget_shipInput = {
+    where: PirateAttackWhereUniqueInput
+    data: XOR<PirateAttackUpdateWithoutTarget_shipInput, PirateAttackUncheckedUpdateWithoutTarget_shipInput>
+  }
+
+  export type PirateAttackUpdateManyWithWhereWithoutTarget_shipInput = {
+    where: PirateAttackScalarWhereInput
+    data: XOR<PirateAttackUpdateManyMutationInput, PirateAttackUncheckedUpdateManyWithoutTarget_shipInput>
+  }
+
+  export type ShipCreateWithoutCargoInput = {
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner?: UserCreateNestedOneWithoutOwned_shipsInput
+    attacks?: PirateAttackCreateNestedManyWithoutTarget_shipInput
+  }
+
+  export type ShipUncheckedCreateWithoutCargoInput = {
+    id?: number
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    owner_id?: number | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    attacks?: PirateAttackUncheckedCreateNestedManyWithoutTarget_shipInput
+  }
+
+  export type ShipCreateOrConnectWithoutCargoInput = {
+    where: ShipWhereUniqueInput
+    create: XOR<ShipCreateWithoutCargoInput, ShipUncheckedCreateWithoutCargoInput>
+  }
+
+  export type PurchaseOrderCreateWithoutShipmentInput = {
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+    cargo_box: CargoBoxCreateNestedOneWithoutOrderInput
+    listing: MarketListingCreateNestedOneWithoutPurchase_orderInput
+    buyer: UserCreateNestedOneWithoutPurchase_orders_as_buyerInput
+    seller: UserCreateNestedOneWithoutPurchase_orders_as_sellerInput
+  }
+
+  export type PurchaseOrderUncheckedCreateWithoutShipmentInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+  }
+
+  export type PurchaseOrderCreateOrConnectWithoutShipmentInput = {
+    where: PurchaseOrderWhereUniqueInput
+    create: XOR<PurchaseOrderCreateWithoutShipmentInput, PurchaseOrderUncheckedCreateWithoutShipmentInput>
+  }
+
+  export type CargoBoxCreateWithoutShip_cargoInput = {
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner: UserCreateNestedOneWithoutCargo_boxesInput
+    items?: CargoBoxItemCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderCreateNestedOneWithoutCargo_boxInput
+  }
+
+  export type CargoBoxUncheckedCreateWithoutShip_cargoInput = {
+    id?: number
+    owner_id: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+    items?: CargoBoxItemUncheckedCreateNestedManyWithoutCargo_boxInput
+    listing?: MarketListingUncheckedCreateNestedOneWithoutCargo_boxInput
+    order?: PurchaseOrderUncheckedCreateNestedOneWithoutCargo_boxInput
+  }
+
+  export type CargoBoxCreateOrConnectWithoutShip_cargoInput = {
+    where: CargoBoxWhereUniqueInput
+    create: XOR<CargoBoxCreateWithoutShip_cargoInput, CargoBoxUncheckedCreateWithoutShip_cargoInput>
+  }
+
+  export type ShipUpsertWithoutCargoInput = {
+    update: XOR<ShipUpdateWithoutCargoInput, ShipUncheckedUpdateWithoutCargoInput>
+    create: XOR<ShipCreateWithoutCargoInput, ShipUncheckedCreateWithoutCargoInput>
+    where?: ShipWhereInput
+  }
+
+  export type ShipUpdateToOneWithWhereWithoutCargoInput = {
+    where?: ShipWhereInput
+    data: XOR<ShipUpdateWithoutCargoInput, ShipUncheckedUpdateWithoutCargoInput>
+  }
+
+  export type ShipUpdateWithoutCargoInput = {
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutOwned_shipsNestedInput
+    attacks?: PirateAttackUpdateManyWithoutTarget_shipNestedInput
+  }
+
+  export type ShipUncheckedUpdateWithoutCargoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    owner_id?: NullableIntFieldUpdateOperationsInput | number | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    attacks?: PirateAttackUncheckedUpdateManyWithoutTarget_shipNestedInput
+  }
+
+  export type PurchaseOrderUpsertWithoutShipmentInput = {
+    update: XOR<PurchaseOrderUpdateWithoutShipmentInput, PurchaseOrderUncheckedUpdateWithoutShipmentInput>
+    create: XOR<PurchaseOrderCreateWithoutShipmentInput, PurchaseOrderUncheckedCreateWithoutShipmentInput>
+    where?: PurchaseOrderWhereInput
+  }
+
+  export type PurchaseOrderUpdateToOneWithWhereWithoutShipmentInput = {
+    where?: PurchaseOrderWhereInput
+    data: XOR<PurchaseOrderUpdateWithoutShipmentInput, PurchaseOrderUncheckedUpdateWithoutShipmentInput>
+  }
+
+  export type PurchaseOrderUpdateWithoutShipmentInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutOrderNestedInput
+    listing?: MarketListingUpdateOneRequiredWithoutPurchase_orderNestedInput
+    buyer?: UserUpdateOneRequiredWithoutPurchase_orders_as_buyerNestedInput
+    seller?: UserUpdateOneRequiredWithoutPurchase_orders_as_sellerNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateWithoutShipmentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CargoBoxUpsertWithoutShip_cargoInput = {
+    update: XOR<CargoBoxUpdateWithoutShip_cargoInput, CargoBoxUncheckedUpdateWithoutShip_cargoInput>
+    create: XOR<CargoBoxCreateWithoutShip_cargoInput, CargoBoxUncheckedCreateWithoutShip_cargoInput>
+    where?: CargoBoxWhereInput
+  }
+
+  export type CargoBoxUpdateToOneWithWhereWithoutShip_cargoInput = {
+    where?: CargoBoxWhereInput
+    data: XOR<CargoBoxUpdateWithoutShip_cargoInput, CargoBoxUncheckedUpdateWithoutShip_cargoInput>
+  }
+
+  export type CargoBoxUpdateWithoutShip_cargoInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneRequiredWithoutCargo_boxesNestedInput
+    items?: CargoBoxItemUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUpdateOneWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateWithoutShip_cargoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    owner_id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: CargoBoxItemUncheckedUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUncheckedUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUncheckedUpdateOneWithoutCargo_boxNestedInput
+  }
+
+  export type UserCreateWithoutPirate_attacksInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPirate_attacksInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPirate_attacksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPirate_attacksInput, UserUncheckedCreateWithoutPirate_attacksInput>
+  }
+
+  export type ShipCreateWithoutAttacksInput = {
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    owner?: UserCreateNestedOneWithoutOwned_shipsInput
+    cargo?: ShipCargoCreateNestedManyWithoutShipInput
+  }
+
+  export type ShipUncheckedCreateWithoutAttacksInput = {
+    id?: number
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    owner_id?: number | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+    cargo?: ShipCargoUncheckedCreateNestedManyWithoutShipInput
+  }
+
+  export type ShipCreateOrConnectWithoutAttacksInput = {
+    where: ShipWhereUniqueInput
+    create: XOR<ShipCreateWithoutAttacksInput, ShipUncheckedCreateWithoutAttacksInput>
+  }
+
+  export type UserUpsertWithoutPirate_attacksInput = {
+    update: XOR<UserUpdateWithoutPirate_attacksInput, UserUncheckedUpdateWithoutPirate_attacksInput>
+    create: XOR<UserCreateWithoutPirate_attacksInput, UserUncheckedCreateWithoutPirate_attacksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPirate_attacksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPirate_attacksInput, UserUncheckedUpdateWithoutPirate_attacksInput>
+  }
+
+  export type UserUpdateWithoutPirate_attacksInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPirate_attacksInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type ShipUpsertWithoutAttacksInput = {
+    update: XOR<ShipUpdateWithoutAttacksInput, ShipUncheckedUpdateWithoutAttacksInput>
+    create: XOR<ShipCreateWithoutAttacksInput, ShipUncheckedCreateWithoutAttacksInput>
+    where?: ShipWhereInput
+  }
+
+  export type ShipUpdateToOneWithWhereWithoutAttacksInput = {
+    where?: ShipWhereInput
+    data: XOR<ShipUpdateWithoutAttacksInput, ShipUncheckedUpdateWithoutAttacksInput>
+  }
+
+  export type ShipUpdateWithoutAttacksInput = {
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    owner?: UserUpdateOneWithoutOwned_shipsNestedInput
+    cargo?: ShipCargoUpdateManyWithoutShipNestedInput
+  }
+
+  export type ShipUncheckedUpdateWithoutAttacksInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    owner_id?: NullableIntFieldUpdateOperationsInput | number | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo?: ShipCargoUncheckedUpdateManyWithoutShipNestedInput
+  }
+
+  export type UserCreateWithoutPort_storageInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPort_storageInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPort_storageInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPort_storageInput, UserUncheckedCreateWithoutPort_storageInput>
+  }
+
+  export type UserUpsertWithoutPort_storageInput = {
+    update: XOR<UserUpdateWithoutPort_storageInput, UserUncheckedUpdateWithoutPort_storageInput>
+    create: XOR<UserCreateWithoutPort_storageInput, UserUncheckedCreateWithoutPort_storageInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPort_storageInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPort_storageInput, UserUncheckedUpdateWithoutPort_storageInput>
+  }
+
+  export type UserUpdateWithoutPort_storageInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPort_storageInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutNotificationsInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutNotificationsInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+    pirate_cooldown?: PirateCooldownUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutNotificationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+  }
+
+  export type UserUpsertWithoutNotificationsInput = {
+    update: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type UserUpdateWithoutNotificationsInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutNotificationsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
+    pirate_cooldown?: PirateCooldownUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutPirate_cooldownInput = {
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackCreateNestedManyWithoutAttackerInput
+  }
+
+  export type UserUncheckedCreateWithoutPirate_cooldownInput = {
+    id?: number
+    email: string
+    password_hash: string
+    role?: $Enums.UserRole
+    money?: number
+    hunger?: number
+    hunger_updated_at?: Date | string
+    satiety_buff?: number
+    buff_expires_at?: Date | string | null
+    city_key?: string | null
+    city_selected_at?: Date | string | null
+    first_job_level?: number
+    first_job_skill_level?: number
+    first_job_exp?: number
+    secondary_job_level?: number
+    secondary_job_skill_level?: number
+    secondary_job_exp?: number
+    locked_money?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+    inventory?: InventorySlotUncheckedCreateNestedManyWithoutUserInput
+    work_orders?: WorkOrderUncheckedCreateNestedManyWithoutUserInput
+    sell_listings?: MarketListingUncheckedCreateNestedManyWithoutSellerInput
+    buy_history?: MarketListingUncheckedCreateNestedManyWithoutBuyerInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedCreateNestedManyWithoutUserInput
+    equipments?: UserEquipmentUncheckedCreateNestedManyWithoutUserInput
+    job_progress?: UserJobProgressUncheckedCreateNestedManyWithoutUserInput
+    skill_progress?: UserSkillProgressUncheckedCreateNestedManyWithoutUserInput
+    daily_quests?: PlayerDailyQuestUncheckedCreateNestedManyWithoutUserInput
+    cargo_boxes?: CargoBoxUncheckedCreateNestedManyWithoutOwnerInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedCreateNestedManyWithoutBuyerInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedCreateNestedManyWithoutSellerInput
+    owned_ships?: ShipUncheckedCreateNestedManyWithoutOwnerInput
+    port_storage?: UserPortStorageUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    pirate_attacks?: PirateAttackUncheckedCreateNestedManyWithoutAttackerInput
+  }
+
+  export type UserCreateOrConnectWithoutPirate_cooldownInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPirate_cooldownInput, UserUncheckedCreateWithoutPirate_cooldownInput>
+  }
+
+  export type UserUpsertWithoutPirate_cooldownInput = {
+    update: XOR<UserUpdateWithoutPirate_cooldownInput, UserUncheckedUpdateWithoutPirate_cooldownInput>
+    create: XOR<UserCreateWithoutPirate_cooldownInput, UserUncheckedCreateWithoutPirate_cooldownInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPirate_cooldownInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPirate_cooldownInput, UserUncheckedUpdateWithoutPirate_cooldownInput>
+  }
+
+  export type UserUpdateWithoutPirate_cooldownInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUpdateManyWithoutAttackerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPirate_cooldownInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    password_hash?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    money?: IntFieldUpdateOperationsInput | number
+    hunger?: FloatFieldUpdateOperationsInput | number
+    hunger_updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    satiety_buff?: FloatFieldUpdateOperationsInput | number
+    buff_expires_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    city_key?: NullableStringFieldUpdateOperationsInput | string | null
+    city_selected_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    first_job_level?: IntFieldUpdateOperationsInput | number
+    first_job_skill_level?: IntFieldUpdateOperationsInput | number
+    first_job_exp?: IntFieldUpdateOperationsInput | number
+    secondary_job_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_skill_level?: IntFieldUpdateOperationsInput | number
+    secondary_job_exp?: IntFieldUpdateOperationsInput | number
+    locked_money?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    inventory?: InventorySlotUncheckedUpdateManyWithoutUserNestedInput
+    work_orders?: WorkOrderUncheckedUpdateManyWithoutUserNestedInput
+    sell_listings?: MarketListingUncheckedUpdateManyWithoutSellerNestedInput
+    buy_history?: MarketListingUncheckedUpdateManyWithoutBuyerNestedInput
+    recipe_unlocks?: UserRecipeUnlockUncheckedUpdateManyWithoutUserNestedInput
+    equipments?: UserEquipmentUncheckedUpdateManyWithoutUserNestedInput
+    job_progress?: UserJobProgressUncheckedUpdateManyWithoutUserNestedInput
+    skill_progress?: UserSkillProgressUncheckedUpdateManyWithoutUserNestedInput
+    daily_quests?: PlayerDailyQuestUncheckedUpdateManyWithoutUserNestedInput
+    cargo_boxes?: CargoBoxUncheckedUpdateManyWithoutOwnerNestedInput
+    purchase_orders_as_buyer?: PurchaseOrderUncheckedUpdateManyWithoutBuyerNestedInput
+    purchase_orders_as_seller?: PurchaseOrderUncheckedUpdateManyWithoutSellerNestedInput
+    owned_ships?: ShipUncheckedUpdateManyWithoutOwnerNestedInput
+    port_storage?: UserPortStorageUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    pirate_attacks?: PirateAttackUncheckedUpdateManyWithoutAttackerNestedInput
   }
 
   export type InventorySlotCreateManyUserInput = {
@@ -39453,6 +57583,9 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
   }
 
   export type MarketListingCreateManyBuyerInput = {
@@ -39470,6 +57603,9 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
   }
 
   export type UserRecipeUnlockCreateManyUserInput = {
@@ -39520,6 +57656,99 @@ export namespace Prisma {
     completed?: boolean
     completed_at?: Date | string | null
     created_at?: Date | string
+  }
+
+  export type CargoBoxCreateManyOwnerInput = {
+    id?: number
+    size: $Enums.CargoBoxSize
+    status?: $Enums.CargoBoxStatus
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type PurchaseOrderCreateManyBuyerInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    seller_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+  }
+
+  export type PurchaseOrderCreateManySellerInput = {
+    id?: number
+    cargo_box_id: number
+    listing_id: number
+    buyer_id: number
+    price: number
+    locked_amount: number
+    export_tax?: number
+    import_tax?: number
+    status?: $Enums.PurchaseOrderStatus
+    expires_at: Date | string
+    created_at?: Date | string
+    settled_at?: Date | string | null
+    updated_at?: Date | string
+  }
+
+  export type ShipCreateManyOwnerInput = {
+    id?: number
+    type: $Enums.ShipType
+    size?: $Enums.ShipSize | null
+    origin_city: string
+    dest_city: string
+    status?: $Enums.ShipStatus
+    capacity: number
+    departs_at?: Date | string | null
+    departed_at?: Date | string | null
+    arrives_at?: Date | string | null
+    rps_sequence?: string | null
+    is_bot_ship?: boolean
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type UserPortStorageCreateManyUserInput = {
+    id?: number
+    city_key: string
+    max_slots?: number
+    created_at?: Date | string
+    updated_at?: Date | string
+  }
+
+  export type NotificationCreateManyUserInput = {
+    id?: number
+    type: string
+    title: string
+    body: string
+    metadata?: string | null
+    is_read?: boolean
+    created_at?: Date | string
+  }
+
+  export type PirateAttackCreateManyAttackerInput = {
+    id?: number
+    target_ship_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
   }
 
   export type InventorySlotUpdateWithoutUserInput = {
@@ -39613,8 +57842,12 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
     buyer?: UserUpdateOneWithoutBuy_historyNestedInput
     item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
+    cargo_box?: CargoBoxUpdateOneWithoutListingNestedInput
+    purchase_order?: PurchaseOrderUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateWithoutSellerInput = {
@@ -39632,6 +57865,10 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    purchase_order?: PurchaseOrderUncheckedUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateManyWithoutSellerInput = {
@@ -39649,6 +57886,9 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MarketListingUpdateWithoutBuyerInput = {
@@ -39663,8 +57903,12 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
     item?: ItemUpdateOneRequiredWithoutMarket_listingsNestedInput
+    cargo_box?: CargoBoxUpdateOneWithoutListingNestedInput
+    purchase_order?: PurchaseOrderUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateWithoutBuyerInput = {
@@ -39682,6 +57926,10 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    purchase_order?: PurchaseOrderUncheckedUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateManyWithoutBuyerInput = {
@@ -39699,6 +57947,9 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserRecipeUnlockUpdateWithoutUserInput = {
@@ -39846,6 +58097,294 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CargoBoxUpdateWithoutOwnerInput = {
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: CargoBoxItemUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateWithoutOwnerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: CargoBoxItemUncheckedUpdateManyWithoutCargo_boxNestedInput
+    listing?: MarketListingUncheckedUpdateOneWithoutCargo_boxNestedInput
+    order?: PurchaseOrderUncheckedUpdateOneWithoutCargo_boxNestedInput
+    ship_cargo?: ShipCargoUncheckedUpdateManyWithoutCargo_boxNestedInput
+  }
+
+  export type CargoBoxUncheckedUpdateManyWithoutOwnerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    size?: EnumCargoBoxSizeFieldUpdateOperationsInput | $Enums.CargoBoxSize
+    status?: EnumCargoBoxStatusFieldUpdateOperationsInput | $Enums.CargoBoxStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PurchaseOrderUpdateWithoutBuyerInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutOrderNestedInput
+    listing?: MarketListingUpdateOneRequiredWithoutPurchase_orderNestedInput
+    seller?: UserUpdateOneRequiredWithoutPurchase_orders_as_sellerNestedInput
+    shipment?: ShipCargoUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateWithoutBuyerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    shipment?: ShipCargoUncheckedUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateManyWithoutBuyerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    seller_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PurchaseOrderUpdateWithoutSellerInput = {
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutOrderNestedInput
+    listing?: MarketListingUpdateOneRequiredWithoutPurchase_orderNestedInput
+    buyer?: UserUpdateOneRequiredWithoutPurchase_orders_as_buyerNestedInput
+    shipment?: ShipCargoUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateWithoutSellerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    shipment?: ShipCargoUncheckedUpdateOneWithoutOrderNestedInput
+  }
+
+  export type PurchaseOrderUncheckedUpdateManyWithoutSellerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    listing_id?: IntFieldUpdateOperationsInput | number
+    buyer_id?: IntFieldUpdateOperationsInput | number
+    price?: IntFieldUpdateOperationsInput | number
+    locked_amount?: IntFieldUpdateOperationsInput | number
+    export_tax?: IntFieldUpdateOperationsInput | number
+    import_tax?: IntFieldUpdateOperationsInput | number
+    status?: EnumPurchaseOrderStatusFieldUpdateOperationsInput | $Enums.PurchaseOrderStatus
+    expires_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    settled_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipUpdateWithoutOwnerInput = {
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo?: ShipCargoUpdateManyWithoutShipNestedInput
+    attacks?: PirateAttackUpdateManyWithoutTarget_shipNestedInput
+  }
+
+  export type ShipUncheckedUpdateWithoutOwnerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    cargo?: ShipCargoUncheckedUpdateManyWithoutShipNestedInput
+    attacks?: PirateAttackUncheckedUpdateManyWithoutTarget_shipNestedInput
+  }
+
+  export type ShipUncheckedUpdateManyWithoutOwnerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: EnumShipTypeFieldUpdateOperationsInput | $Enums.ShipType
+    size?: NullableEnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize | null
+    origin_city?: StringFieldUpdateOperationsInput | string
+    dest_city?: StringFieldUpdateOperationsInput | string
+    status?: EnumShipStatusFieldUpdateOperationsInput | $Enums.ShipStatus
+    capacity?: IntFieldUpdateOperationsInput | number
+    departs_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    departed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    arrives_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    rps_sequence?: NullableStringFieldUpdateOperationsInput | string | null
+    is_bot_ship?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPortStorageUpdateWithoutUserInput = {
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPortStorageUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserPortStorageUncheckedUpdateManyWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    city_key?: StringFieldUpdateOperationsInput | string
+    max_slots?: IntFieldUpdateOperationsInput | number
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUpdateWithoutUserInput = {
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    metadata?: NullableStringFieldUpdateOperationsInput | string | null
+    is_read?: BoolFieldUpdateOperationsInput | boolean
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateAttackUpdateWithoutAttackerInput = {
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    target_ship?: ShipUpdateOneRequiredWithoutAttacksNestedInput
+  }
+
+  export type PirateAttackUncheckedUpdateWithoutAttackerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    target_ship_id?: IntFieldUpdateOperationsInput | number
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PirateAttackUncheckedUpdateManyWithoutAttackerInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    target_ship_id?: IntFieldUpdateOperationsInput | number
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type ItemCreateManyYield_itemInput = {
     id?: number
     name: string
@@ -39922,6 +58461,9 @@ export namespace Prisma {
     special_stat_2?: string | null
     special_stat_3?: string | null
     special_stat_4?: string | null
+    cargo_box_id?: number | null
+    is_cross_city?: boolean
+    origin_city?: string | null
   }
 
   export type UserEquipmentCreateManyItemInput = {
@@ -39943,6 +58485,19 @@ export namespace Prisma {
     id?: number
     template_id: number
     quantity?: number
+  }
+
+  export type CargoBoxItemCreateManyItemInput = {
+    id?: number
+    cargo_box_id: number
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
   }
 
   export type ItemUpdateWithoutYield_itemInput = {
@@ -39970,6 +58525,7 @@ export namespace Prisma {
     market_listings?: MarketListingUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateWithoutYield_itemInput = {
@@ -39998,6 +58554,7 @@ export namespace Prisma {
     market_listings?: MarketListingUncheckedUpdateManyWithoutItemNestedInput
     equipped_on?: UserEquipmentUncheckedUpdateManyWithoutItemNestedInput
     quest_requirements?: DailyQuestRequirementUncheckedUpdateManyWithoutItemNestedInput
+    cargo_box_items?: CargoBoxItemUncheckedUpdateManyWithoutItemNestedInput
   }
 
   export type ItemUncheckedUpdateManyWithoutYield_itemInput = {
@@ -40155,8 +58712,12 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
     seller?: UserUpdateOneRequiredWithoutSell_listingsNestedInput
     buyer?: UserUpdateOneWithoutBuy_historyNestedInput
+    cargo_box?: CargoBoxUpdateOneWithoutListingNestedInput
+    purchase_order?: PurchaseOrderUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateWithoutItemInput = {
@@ -40174,6 +58735,10 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
+    purchase_order?: PurchaseOrderUncheckedUpdateOneWithoutListingNestedInput
   }
 
   export type MarketListingUncheckedUpdateManyWithoutItemInput = {
@@ -40191,6 +58756,9 @@ export namespace Prisma {
     special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
     special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box_id?: NullableIntFieldUpdateOperationsInput | number | null
+    is_cross_city?: BoolFieldUpdateOperationsInput | boolean
+    origin_city?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserEquipmentUpdateWithoutItemInput = {
@@ -40252,6 +58820,44 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     template_id?: IntFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type CargoBoxItemUpdateWithoutItemInput = {
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutItemsNestedInput
+  }
+
+  export type CargoBoxItemUncheckedUpdateWithoutItemInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CargoBoxItemUncheckedUpdateManyWithoutItemInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type RecipeIngredientCreateManyRecipeInput = {
@@ -40481,6 +59087,182 @@ export namespace Prisma {
     completed?: BoolFieldUpdateOperationsInput | boolean
     completed_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CargoBoxItemCreateManyCargo_boxInput = {
+    id?: number
+    item_id: number
+    quantity: number
+    equipment_rarity?: $Enums.EquipmentRarity | null
+    equipment_durability?: number | null
+    enchant_level?: number
+    special_stat_1?: string | null
+    special_stat_2?: string | null
+    special_stat_3?: string | null
+    special_stat_4?: string | null
+  }
+
+  export type ShipCargoCreateManyCargo_boxInput = {
+    id?: number
+    ship_id: number
+    order_id: number
+    loaded_at?: Date | string
+  }
+
+  export type CargoBoxItemUpdateWithoutCargo_boxInput = {
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+    item?: ItemUpdateOneRequiredWithoutCargo_box_itemsNestedInput
+  }
+
+  export type CargoBoxItemUncheckedUpdateWithoutCargo_boxInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    item_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type CargoBoxItemUncheckedUpdateManyWithoutCargo_boxInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    item_id?: IntFieldUpdateOperationsInput | number
+    quantity?: IntFieldUpdateOperationsInput | number
+    equipment_rarity?: NullableEnumEquipmentRarityFieldUpdateOperationsInput | $Enums.EquipmentRarity | null
+    equipment_durability?: NullableFloatFieldUpdateOperationsInput | number | null
+    enchant_level?: IntFieldUpdateOperationsInput | number
+    special_stat_1?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_2?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_3?: NullableStringFieldUpdateOperationsInput | string | null
+    special_stat_4?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type ShipCargoUpdateWithoutCargo_boxInput = {
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    ship?: ShipUpdateOneRequiredWithoutCargoNestedInput
+    order?: PurchaseOrderUpdateOneRequiredWithoutShipmentNestedInput
+  }
+
+  export type ShipCargoUncheckedUpdateWithoutCargo_boxInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    ship_id?: IntFieldUpdateOperationsInput | number
+    order_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCargoUncheckedUpdateManyWithoutCargo_boxInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    ship_id?: IntFieldUpdateOperationsInput | number
+    order_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCargoCreateManyShipInput = {
+    id?: number
+    order_id: number
+    cargo_box_id: number
+    loaded_at?: Date | string
+  }
+
+  export type PirateAttackCreateManyTarget_shipInput = {
+    id?: number
+    attacker_id: number
+    attacker_ship_size: $Enums.ShipSize
+    attacker_rps: string
+    defender_rps?: string | null
+    result_detail?: string | null
+    attacker_wins?: number | null
+    defender_wins?: number | null
+    draws?: number | null
+    is_success?: boolean | null
+    fuel_cost: number
+    credit_cost: number
+    status?: $Enums.PirateAttackStatus
+    created_at?: Date | string
+    resolved_at?: Date | string | null
+  }
+
+  export type ShipCargoUpdateWithoutShipInput = {
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: PurchaseOrderUpdateOneRequiredWithoutShipmentNestedInput
+    cargo_box?: CargoBoxUpdateOneRequiredWithoutShip_cargoNestedInput
+  }
+
+  export type ShipCargoUncheckedUpdateWithoutShipInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    order_id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ShipCargoUncheckedUpdateManyWithoutShipInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    order_id?: IntFieldUpdateOperationsInput | number
+    cargo_box_id?: IntFieldUpdateOperationsInput | number
+    loaded_at?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PirateAttackUpdateWithoutTarget_shipInput = {
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attacker?: UserUpdateOneRequiredWithoutPirate_attacksNestedInput
+  }
+
+  export type PirateAttackUncheckedUpdateWithoutTarget_shipInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    attacker_id?: IntFieldUpdateOperationsInput | number
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PirateAttackUncheckedUpdateManyWithoutTarget_shipInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    attacker_id?: IntFieldUpdateOperationsInput | number
+    attacker_ship_size?: EnumShipSizeFieldUpdateOperationsInput | $Enums.ShipSize
+    attacker_rps?: StringFieldUpdateOperationsInput | string
+    defender_rps?: NullableStringFieldUpdateOperationsInput | string | null
+    result_detail?: NullableStringFieldUpdateOperationsInput | string | null
+    attacker_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    defender_wins?: NullableIntFieldUpdateOperationsInput | number | null
+    draws?: NullableIntFieldUpdateOperationsInput | number | null
+    is_success?: NullableBoolFieldUpdateOperationsInput | boolean | null
+    fuel_cost?: IntFieldUpdateOperationsInput | number
+    credit_cost?: IntFieldUpdateOperationsInput | number
+    status?: EnumPirateAttackStatusFieldUpdateOperationsInput | $Enums.PirateAttackStatus
+    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
+    resolved_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 
