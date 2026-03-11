@@ -40,26 +40,26 @@ export const getUnreadCount = async (req: AuthRequest, res: Response): Promise<v
     }
 };
 
-/** POST /game/notifications/read */
+/** POST /game/notifications/read/:id */
 export const markAsRead = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const userId = req.userId!;
-        const { ids } = req.body as { ids: number[] };
+        const id = parseInt(req.params.id);
 
-        if (!ids || !Array.isArray(ids) || ids.length === 0) {
-            res.status(400).json({ error: "ids array is required" });
+        if (!id || isNaN(id)) {
+            res.status(400).json({ error: "valid notification id is required" });
             return;
         }
 
         await prisma.notification.updateMany({
-            where: { id: { in: ids }, user_id: userId },
+            where: { id, user_id: userId },
             data: { is_read: true },
         });
 
         res.json({ success: true });
     } catch (err: any) {
         console.error("markAsRead error:", err);
-        res.status(500).json({ error: "Failed to mark notifications as read" });
+        res.status(500).json({ error: "Failed to mark notification as read" });
     }
 };
 

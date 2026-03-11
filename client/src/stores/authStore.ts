@@ -251,7 +251,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ isLoading: true });
         try {
             const { data } = await api.get('/auth/me');
-            console.log('Fetched user data:', data);
             set({ user: normalizeUserJobFields(data.user), isLoading: false });
         } catch {
             sessionStorage.removeItem('fc_token');

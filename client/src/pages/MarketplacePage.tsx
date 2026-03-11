@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
     Clock3,
     Filter,
@@ -10,9 +11,16 @@ import {
     ShoppingCart,
     Tag,
     Store,
+    Package,
+    Ship,
+    Anchor,
+    ChevronDown,
+    ChevronUp,
+    Bot,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useGameStore } from '../stores/gameStore';
+import { useShipmentStore } from '../stores/shipmentStore';
 import { renderItemIcon } from '../lib/itemVisual';
 import { getEquipmentRarityColor, type EquipmentRarity } from '../lib/equipmentRarity';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +29,7 @@ import TopNavBar from '../components/TopNavBar';
 type SortMode = 'PRICE_ASC' | 'PRICE_DESC' | 'NEWEST' | 'QTY_DESC';
 type ItemTypeFilter = 'ALL' | 'SEED' | 'RAW' | 'INGREDIENT' | 'MEAL' | 'EQUIPMENT';
 type RarityFilter = 'ALL' | EquipmentRarity;
-type MarketplaceTab = 'MARKET' | 'NPC_SHOP';
+type MarketplaceTab = 'WORLD_MARKET' | 'CITY_MARKET' | 'NPC_SHOP';
 
 const itemTypeOptions: ItemTypeFilter[] = ['ALL', 'SEED', 'RAW', 'INGREDIENT', 'MEAL', 'EQUIPMENT'];
 const rarityOptions: RarityFilter[] = ['ALL', 'NORMAL', 'RARE', 'EPIC', 'LEGENDARY'];
@@ -43,12 +51,22 @@ const MarketplacePage = () => {
         fetchShop,
         fetchRecipeShop,
         buyListing,
+        buyCargoListing,
         buyFromShop,
         sellToShop,
         buyRecipeUnlock,
         createListing,
         cancelListing,
     } = useGameStore();
+
+    const {
+        cargoBoxes,
+        fetchCargoBoxes,
+        sellCargoListing,
+    } = useShipmentStore();
+
+    const [cargoSellBoxId, setCargoSellBoxId] = useState<number | null>(null);
+    const [cargoSellPriceInput, setCargoSellPriceInput] = useState('100');
 
     const [search, setSearch] = useState('');
     const [typeFilter, setTypeFilter] = useState<ItemTypeFilter>('ALL');
@@ -59,10 +77,11 @@ const MarketplacePage = () => {
     const [maxPriceInput, setMaxPriceInput] = useState('');
     const [showAffordableOnly, setShowAffordableOnly] = useState(false);
     const [sortMode, setSortMode] = useState<SortMode>('PRICE_ASC');
-    const [activeTab, setActiveTab] = useState<MarketplaceTab>('MARKET');
+    const [activeTab, setActiveTab] = useState<MarketplaceTab>('CITY_MARKET');
 
     const [marketBuyQty, setMarketBuyQty] = useState<Record<number, number>>({});
     const [shopBuyQty, setShopBuyQty] = useState<Record<number, number>>({});
+    const [expandedCargoBoxId, setExpandedCargoBoxId] = useState<number | null>(null);
     const [npcSellSlotId, setNpcSellSlotId] = useState<number | null>(null);
     const [npcSellQtyInput, setNpcSellQtyInput] = useState('1');
     const [sellSlotId, setSellSlotId] = useState<number | null>(null);
@@ -83,6 +102,8 @@ const MarketplacePage = () => {
         onConfirm: null,
     });
 
+    const navigate = useNavigate();
+
     const refreshMarketNow = () => {
         setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         void Promise.all([fetchMarket(), fetchInventory(), fetchSalesHistory()]);
@@ -94,7 +115,7 @@ const MarketplacePage = () => {
     };
 
     const refreshNow = () => {
-        if (activeTab === 'MARKET') {
+        if (activeTab !== 'NPC_SHOP') {
             refreshMarketNow();
             return;
         }
@@ -102,34 +123,46 @@ const MarketplacePage = () => {
     };
 
     useEffect(() => {
-        if (activeTab === 'MARKET') {
+        if (activeTab === 'WORLD_MARKET') {
+            void fetchCargoBoxes();
+        }
+        if (activeTab !== 'NPC_SHOP') {
             refreshMarketNow();
         } else {
             refreshNpcShopNow(npcShopCityFilter || undefined);
         }
 
         const interval = setInterval(() => {
-            if (activeTab === 'MARKET') {
+            if (activeTab !== 'NPC_SHOP') {
                 refreshMarketNow();
                 return;
             }
             refreshNpcShopNow(npcShopCityFilter || undefined);
-        }, 5000);
+        }, 30_000);
 
         return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, npcShopCityFilter, fetchInventory, fetchMarket, fetchRecipeShop, fetchSalesHistory, fetchShop]);
 
     const ownListings = useMemo(
-        () => marketListings.filter((l) => l.seller_id === user?.id).sort((a, b) => b.id - a.id),
-        [marketListings, user?.id]
+        () => marketListings
+            .filter((l) => l.seller_id === user?.id)
+            .filter((l) => activeTab === 'WORLD_MARKET' ? l.is_cross_city === true : !l.is_cross_city)
+            .sort((a, b) => b.id - a.id),
+        [activeTab, marketListings, user?.id]
     );
 
     const cityOptions = useMemo(() => {
         const unique = new Map<string, string>();
         for (const listing of marketListings) {
-            if (!listing.seller.city_key) continue;
-            unique.set(listing.seller.city_key, listing.seller.city_name ?? listing.seller.city_key);
+            if (listing.is_cross_city) {
+                // For world market, filter key is origin_city
+                if (!listing.origin_city) continue;
+                unique.set(listing.origin_city, listing.origin_city);
+            } else {
+                if (!listing.seller.city_key) continue;
+                unique.set(listing.seller.city_key, listing.seller.city_name ?? listing.seller.city_key);
+            }
         }
 
         return [{ key: 'ALL', name: t('common.all') }, ...Array.from(unique.entries()).map(([key, name]) => ({ key, name }))];
@@ -143,19 +176,46 @@ const MarketplacePage = () => {
 
         const filtered = marketListings
             .filter((l) => l.seller_id !== user?.id)
+            // Tab-based filter
+            .filter((l) => {
+                if (activeTab === 'WORLD_MARKET') {
+                    if (!l.is_cross_city) return false;
+                    // Always show cargo box listings (even same-city origin — buyer gets direct delivery)
+                    if (l.cargo_box != null) return true;
+                    // Regular cross-city items: hide if origin is the buyer's own city
+                    return !user?.city_key || !l.origin_city || l.origin_city !== user.city_key;
+                }
+                if (activeTab === 'CITY_MARKET') {
+                    if (!l.is_cross_city) {
+                        // Show all same-city listings, or only buyer's city if buyer has one
+                        return !user?.city_key || l.seller.city_key === user.city_key;
+                    }
+                    return false;
+                }
+                return false;
+            })
             .filter((l) => {
                 if (!keyword) return true;
                 const sellerName = l.seller.email.split('@')[0] ?? l.seller.email;
-                const cityName = (l.seller.city_name ?? l.seller.city_key ?? '').toLowerCase();
+                const cityName = (l.seller.city_name ?? l.seller.city_key ?? l.origin_city ?? '').toLowerCase();
+                const originCity = (l.origin_city ?? '').toLowerCase();
+                // For cross-city cargo: also search inside cargo box items
+                const cargoItemNames = l.cargo_box?.items.map((i) => i.item_name.toLowerCase()).join(' ') ?? '';
                 return (
                     l.item.name.toLowerCase().includes(keyword) ||
                     sellerName.toLowerCase().includes(keyword) ||
-                    cityName.includes(keyword)
+                    cityName.includes(keyword) ||
+                    originCity.includes(keyword) ||
+                    cargoItemNames.includes(keyword)
                 );
             })
-            .filter((l) => (typeFilter === 'ALL' ? true : l.item.type === typeFilter))
-            .filter((l) => (rarityFilter === 'ALL' ? true : (l.equipment_rarity ?? 'NORMAL') === rarityFilter))
-            .filter((l) => (cityFilter === 'ALL' ? true : (l.seller.city_key ?? 'UNKNOWN') === cityFilter))
+            .filter((l) => (typeFilter === 'ALL' ? true : l.cargo_box != null ? true : l.item.type === typeFilter))
+            .filter((l) => (rarityFilter === 'ALL' ? true : l.cargo_box != null ? true : (l.equipment_rarity ?? 'NORMAL') === rarityFilter))
+            .filter((l) => (cityFilter === 'ALL' ? true : (
+                activeTab === 'WORLD_MARKET'
+                    ? (l.origin_city ?? 'UNKNOWN') === cityFilter
+                    : (l.seller.city_key ?? 'UNKNOWN') === cityFilter
+            )))
             .filter((l) => {
                 if (minPrice !== null && Number.isFinite(minPrice) && l.price < minPrice) return false;
                 if (maxPrice !== null && Number.isFinite(maxPrice) && l.price > maxPrice) return false;
@@ -176,7 +236,7 @@ const MarketplacePage = () => {
         });
 
         return sorted;
-    }, [cityFilter, marketBuyQty, marketListings, maxPrice, minPrice, rarityFilter, search, showAffordableOnly, sortMode, typeFilter, user]);
+    }, [activeTab, cityFilter, marketBuyQty, marketListings, maxPrice, minPrice, rarityFilter, search, showAffordableOnly, sortMode, typeFilter, user]);
 
     const npcSellableSlots = useMemo(
         () => inventory.filter((s) => s.item && s.quantity > 0 && (s.item.sell_price ?? 0) > 0).sort((a, b) => a.slot - b.slot),
@@ -292,12 +352,12 @@ const MarketplacePage = () => {
                 >
                     <button
                         type="button"
-                        onClick={() => setActiveTab('MARKET')}
+                        onClick={() => setActiveTab('WORLD_MARKET')}
                         style={{
                             borderRadius: '0.58rem',
                             border: 'none',
-                            background: activeTab === 'MARKET' ? 'rgba(245,158,11,0.22)' : 'transparent',
-                            color: activeTab === 'MARKET' ? '#fef3c7' : 'rgba(226,232,240,0.65)',
+                            background: activeTab === 'WORLD_MARKET' ? 'rgba(56,189,248,0.22)' : 'transparent',
+                            color: activeTab === 'WORLD_MARKET' ? '#bae6fd' : 'rgba(226,232,240,0.65)',
                             fontSize: '0.75rem',
                             fontWeight: 700,
                             padding: '0.4rem 0.7rem',
@@ -307,7 +367,26 @@ const MarketplacePage = () => {
                             gap: '0.35rem',
                         }}
                     >
-                        <ShoppingCart size={13} /> {t('marketplace.tabs.market')}
+                        <Ship size={13} /> {t('marketplace.tabs.world_market')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('CITY_MARKET')}
+                        style={{
+                            borderRadius: '0.58rem',
+                            border: 'none',
+                            background: activeTab === 'CITY_MARKET' ? 'rgba(245,158,11,0.22)' : 'transparent',
+                            color: activeTab === 'CITY_MARKET' ? '#fef3c7' : 'rgba(226,232,240,0.65)',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            padding: '0.4rem 0.7rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                        }}
+                    >
+                        <ShoppingCart size={13} /> {t('marketplace.tabs.city_market')}
                     </button>
                     <button
                         type="button"
@@ -330,11 +409,13 @@ const MarketplacePage = () => {
                     </button>
                 </div>
 
-                {activeTab === 'MARKET' ? (
+                {activeTab !== 'NPC_SHOP' ? (
                 <>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.8rem', marginBottom: '0.8rem' }}>
                     <div style={statCardStyle}>
-                        <div style={statLabelStyle}>{t('marketplace.stats.listed_items')}</div>
+                        <div style={statLabelStyle}>
+                            {activeTab === 'WORLD_MARKET' ? t('marketplace.stats.world_listings') : t('marketplace.stats.city_listings')}
+                        </div>
                         <div style={statValueStyle}>{listings.length.toLocaleString()}</div>
                     </div>
                     <div style={statCardStyle}>
@@ -355,8 +436,10 @@ const MarketplacePage = () => {
                     <section className="glass-card" style={{ padding: '1rem', border: '1px solid rgba(245,158,11,0.22)', background: 'rgba(22,13,5,0.75)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                             <h2 style={{ margin: 0, fontSize: '0.98rem', display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
-                                <ShoppingCart size={15} />
-                                {t('marketplace.player_listings', { count: listings.length })}
+                                {activeTab === 'WORLD_MARKET' ? <Ship size={15} /> : <ShoppingCart size={15} />}
+                                {activeTab === 'WORLD_MARKET'
+                                    ? t('marketplace.world_market_listings', { count: listings.length })
+                                    : t('marketplace.city_market_listings', { count: listings.length })}
                             </h2>
                             <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.56)', display: 'inline-flex', alignItems: 'center', gap: '0.28rem' }}>
                                 <Clock3 size={12} /> {t('marketplace.auto_refresh_desc')}
@@ -443,6 +526,166 @@ const MarketplacePage = () => {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', maxHeight: '65vh', overflowY: 'auto', paddingRight: '0.2rem' }}>
                             {listings.map((listing) => {
+                                const isCrossCity = listing.is_cross_city === true;
+                                const cargoBox = listing.cargo_box ?? null;
+
+                                // ── Cargo Box Listing ─────────────────────────
+                                if (isCrossCity && cargoBox) {
+                                    const isExpanded = expandedCargoBoxId === listing.id;
+                                    const sellerName = listing.is_bot_listing
+                                        ? listing.seller.email.split('@')[0]
+                                        : (listing.seller.email.split('@')[0] ?? listing.seller.email);
+                                    const originCityName = listing.origin_city ?? 'Unknown';
+                                    const isSameCityOrigin = !!user?.city_key && user.city_key === listing.origin_city;
+                                    const canAfford = !!user && user.money >= listing.price;
+
+                                    return (
+                                        <motion.div
+                                            key={listing.id}
+                                            initial={{ opacity: 0, y: 8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            style={{
+                                                border: '1px solid rgba(251,191,36,0.35)',
+                                                borderRadius: '0.9rem',
+                                                padding: '0.78rem',
+                                                background: 'linear-gradient(135deg, rgba(30,19,0,0.9), rgba(10,5,0,0.95))',
+                                                boxShadow: '0 10px 25px rgba(5,2,0,0.45)',
+                                            }}
+                                        >
+                                            {/* Header row */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.6rem', alignItems: 'start' }}>
+                                                <div>
+                                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                                                        <Package size={16} color="#fbbf24" />
+                                                        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#fbbf24' }}>
+                                                            Cargo Box ({cargoBox.size})
+                                                        </span>
+                                                        {listing.is_bot_listing && (
+                                                            <span style={{
+                                                                display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                                                                fontSize: '0.65rem', fontWeight: 700,
+                                                                background: 'rgba(148,163,184,0.2)', border: '1px solid rgba(148,163,184,0.4)',
+                                                                borderRadius: '0.3rem', padding: '0.1rem 0.35rem', color: '#94a3b8',
+                                                            }}>
+                                                                <Bot size={10} /> BOT
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ marginTop: '0.3rem', display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                                        <span style={metaPillStyle}><Store size={11} /> {sellerName}</span>
+                                                        <span style={{
+                                                            ...metaPillStyle,
+                                                            borderColor: isSameCityOrigin ? 'rgba(134,239,172,0.4)' : 'rgba(148,163,184,0.24)',
+                                                            background: isSameCityOrigin ? 'rgba(16,185,129,0.15)' : 'rgba(148,163,184,0.12)',
+                                                            color: isSameCityOrigin ? '#86efac' : 'rgba(226,232,240,0.9)',
+                                                        }}>
+                                                            <Ship size={11} />
+                                                            {isSameCityOrigin
+                                                                ? t('marketplace.cargo_from_same_city')
+                                                                : t('marketplace.cargo_from_other_city', { city: originCityName })}
+                                                        </span>
+                                                        <span style={metaPillStyle}><Package size={11} /> {cargoBox.item_count} items</span>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem' }}>
+                                                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: canAfford ? '#86efac' : '#fda4af' }}>
+                                                        {listing.price.toLocaleString()} {t('common.credits')}
+                                                    </div>
+                                                    <button
+                                                        disabled={!canAfford}
+                                                        onClick={() => {
+                                                            const itemLines = cargoBox.items
+                                                                .map((i) => `  • ${i.item_name} x${i.quantity}${i.rarity && i.rarity !== 'NORMAL' ? ` (${i.rarity})` : ''}${i.enchant_level > 0 ? ` +${i.enchant_level}` : ''}`)
+                                                                .join('\n');
+                                                            const confirmDesc = isSameCityOrigin
+                                                                ? `ซื้อ Cargo Box (${cargoBox.size}) จาก ${originCityName}?\n\nของจะเข้ากระเป๋าทันที ไม่ต้องรอเรือ\n\nสินค้า:\n${itemLines}\n\nราคา: ${listing.price.toLocaleString()} เครดิต + ภาษีในเมือง`
+                                                                : `ซื้อ Cargo Box (${cargoBox.size}) จาก ${originCityName}?\n\nของจะถูกส่งมาที่ท่าเรือเมืองคุณ ไปรับที่หน้า Port\n\nสินค้า:\n${itemLines}\n\nราคา: ${listing.price.toLocaleString()} เครดิต + ภาษีนำเข้า`;
+                                                            askConfirm(
+                                                                isSameCityOrigin ? 'Buy Direct (Same City)' : 'Buy Cargo Box',
+                                                                confirmDesc,
+                                                                isSameCityOrigin ? t('marketplace.buy_direct') : t('marketplace.buy_cargo'),
+                                                                () => { void buyCargoListing(listing.id); },
+                                                            );
+                                                        }}
+                                                        style={{
+                                                            border: `1px solid ${isSameCityOrigin ? 'rgba(52,211,153,0.4)' : 'rgba(251,191,36,0.4)'}`,
+                                                            background: canAfford
+                                                                ? isSameCityOrigin
+                                                                    ? 'linear-gradient(135deg,rgba(16,185,129,0.25),rgba(52,211,153,0.16))'
+                                                                    : 'linear-gradient(135deg,rgba(251,191,36,0.22),rgba(245,158,11,0.14))'
+                                                                : 'rgba(100,116,139,0.18)',
+                                                            color: canAfford ? (isSameCityOrigin ? '#d1fae5' : '#fde68a') : '#94a3b8',
+                                                            borderRadius: '0.6rem',
+                                                            padding: '0.42rem 0.8rem',
+                                                            cursor: canAfford ? 'pointer' : 'not-allowed',
+                                                            fontSize: '0.78rem',
+                                                            fontWeight: 700,
+                                                            whiteSpace: 'nowrap',
+                                                        }}
+                                                    >
+                                                        <ShoppingCart size={12} style={{ marginRight: '0.3rem', verticalAlign: 'middle' }} />
+                                                        {isSameCityOrigin ? t('marketplace.buy_direct') : t('marketplace.buy_cargo')}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Expand / collapse contents */}
+                                            <button
+                                                onClick={() => setExpandedCargoBoxId(isExpanded ? null : listing.id)}
+                                                style={{
+                                                    marginTop: '0.55rem', width: '100%', background: 'rgba(255,255,255,0.04)',
+                                                    border: '1px solid rgba(255,255,255,0.1)', borderRadius: '0.5rem',
+                                                    color: 'rgba(255,255,255,0.65)', fontSize: '0.71rem', fontWeight: 600,
+                                                    cursor: 'pointer', padding: '0.28rem 0',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem',
+                                                }}
+                                            >
+                                                {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                                {isExpanded ? 'Hide Contents' : `View ${cargoBox.items.length} item type(s) inside`}
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {isExpanded && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.28rem' }}>
+                                                            {cargoBox.items.map((ci) => (
+                                                                <div
+                                                                    key={ci.id}
+                                                                    style={{
+                                                                        display: 'flex', alignItems: 'center', gap: '0.45rem',
+                                                                        background: 'rgba(255,255,255,0.04)', borderRadius: '0.45rem', padding: '0.3rem 0.5rem',
+                                                                    }}
+                                                                >
+                                                                    <img
+                                                                        src={`/items/${ci.item_icon}.png`}
+                                                                        alt={ci.item_name}
+                                                                        style={{ width: 18, height: 18, objectFit: 'contain' }}
+                                                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                                                                    />
+                                                                    <span style={{ fontSize: '0.75rem', color: ci.rarity && ci.rarity !== 'NORMAL' ? getEquipmentRarityColor(ci.rarity as EquipmentRarity) : '#e2e8f0', fontWeight: 600 }}>
+                                                                        {ci.item_name}
+                                                                        {ci.rarity && ci.rarity !== 'NORMAL' ? ` (${ci.rarity})` : ''}
+                                                                        {ci.enchant_level > 0 ? ` +${ci.enchant_level}` : ''}
+                                                                    </span>
+                                                                    <span style={{ marginLeft: 'auto', fontSize: '0.73rem', color: '#fbbf24', fontWeight: 700 }}>
+                                                                        x{ci.quantity}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </motion.div>
+                                    );
+                                }
+
+                                // ── Regular (same-city) Listing ───────────────
                                 const qty = Math.max(1, Math.min(listing.quantity, marketBuyQty[listing.id] ?? 1));
                                 const totalPrice = qty * listing.price;
                                 const sellerName = listing.seller.email.split('@')[0] ?? listing.seller.email;
@@ -548,6 +791,128 @@ const MarketplacePage = () => {
                     </section>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', position: 'sticky', top: '5.3rem' }}>
+                        {activeTab === 'WORLD_MARKET' && (
+                            <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(56,189,248,0.3)', background: 'rgba(22,13,5,0.8)' }}>
+                                <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', color: '#38bdf8' }}>
+                                    <Anchor size={15} /> {t('marketplace.go_to_port')}
+                                </h3>
+                                <p style={{ margin: '0 0 0.6rem', fontSize: '0.73rem', color: 'rgba(226,232,240,0.75)', lineHeight: 1.5 }}>
+                                    ซื้อสินค้าจากต่างเมืองแล้วให้ไปรับของที่ท่าเรือหลังจากสินค้าถูกส่งมาถึง
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/port')}
+                                    style={{
+                                        width: '100%',
+                                        border: '1px solid rgba(56,189,248,0.35)',
+                                        background: 'linear-gradient(135deg, rgba(14,165,233,0.2), rgba(56,189,248,0.12))',
+                                        color: '#bae6fd',
+                                        borderRadius: '0.6rem',
+                                        padding: '0.5rem 0.7rem',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 700,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.4rem',
+                                    }}
+                                >
+                                    <Anchor size={14} /> {t('marketplace.go_to_port')}
+                                </button>
+                            </section>
+                        )}
+                        {activeTab === 'WORLD_MARKET' ? (
+                        <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(56,189,248,0.25)', background: 'rgba(30,19,10,0.65)' }}>
+                            <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem', color: '#38bdf8' }}>
+                                <Package size={15} /> ลิสต์ Cargo Box ขายตลาดโลก
+                            </h3>
+                            <p style={{ margin: '0 0 0.55rem', fontSize: '0.71rem', color: 'rgba(148,163,184,0.9)', lineHeight: 1.5 }}>
+                                เฉพาะ Cargo Box ที่ seal แล้ว (PACKED) เท่านั้นที่วางขายบนตลาดโลกได้
+                            </p>
+
+                            {cargoBoxes.filter((b) => b.status === 'PACKED').length === 0 ? (
+                                <div style={{ fontSize: '0.74rem', color: 'rgba(148,163,184,0.7)', padding: '0.5rem 0', textAlign: 'center' }}>
+                                    ไม่มี Cargo Box ที่ seal แล้ว<br />
+                                    <span style={{ fontSize: '0.68rem', color: 'rgba(148,163,184,0.5)' }}>ไปที่หน้า Cargo เพื่อ pack และ seal กล่อง</span>
+                                </div>
+                            ) : (
+                            <div style={{ display: 'grid', gap: '0.45rem' }}>
+                                <select
+                                    value={cargoSellBoxId ?? ''}
+                                    onChange={(e) => setCargoSellBoxId(e.target.value ? Number(e.target.value) : null)}
+                                    style={inputStyle}
+                                >
+                                    <option value="">เลือก Cargo Box (PACKED)</option>
+                                    {cargoBoxes
+                                        .filter((b) => b.status === 'PACKED')
+                                        .map((box) => (
+                                            <option key={box.id} value={box.id}>
+                                                Box #{box.id} [{box.size}] — {box.items.reduce((s, i) => s + i.quantity, 0)} ชิ้น ({box.items.length} ประเภท)
+                                            </option>
+                                        ))}
+                                </select>
+
+                                {cargoSellBoxId && (() => {
+                                    const box = cargoBoxes.find((b) => b.id === cargoSellBoxId);
+                                    return box ? (
+                                        <div style={{ border: '1px solid rgba(56,189,248,0.22)', borderRadius: '0.65rem', background: 'rgba(5,2,0,0.5)', padding: '0.48rem 0.55rem', fontSize: '0.7rem', color: '#bae6fd' }}>
+                                            <div style={{ fontWeight: 700, marginBottom: '0.3rem' }}>Box #{box.id} [{box.size}]</div>
+                                            {box.items.map((item) => (
+                                                <div key={item.id} style={{ color: 'rgba(226,232,240,0.8)' }}>• {item.item.name} x{item.quantity}</div>
+                                            ))}
+                                        </div>
+                                    ) : null;
+                                })()}
+
+                                <input
+                                    value={cargoSellPriceInput}
+                                    onChange={(e) => setCargoSellPriceInput(e.target.value)}
+                                    type="number"
+                                    min={1}
+                                    placeholder="ราคาทั้งกล่อง (credits)"
+                                    style={inputStyle}
+                                />
+
+                                <button
+                                    disabled={!cargoSellBoxId || Number(cargoSellPriceInput) <= 0}
+                                    onClick={() => {
+                                        if (!cargoSellBoxId) return;
+                                        const price = Math.max(1, Math.floor(Number(cargoSellPriceInput || 1)));
+                                        const box = cargoBoxes.find((b) => b.id === cargoSellBoxId);
+                                        askConfirm(
+                                            'ลิสต์ Cargo Box บนตลาดโลก',
+                                            `วาง Cargo Box #${cargoSellBoxId} [${box?.size}] ขายในตลาดโลก\n\nผู้ซื้อจากต่างเมืองจะสั่งซื้อและรับของที่ท่าเรือ\n\nราคา: ${formatCredits(price)}`,
+                                            'ลิสต์บนตลาดโลก',
+                                            async () => {
+                                                const r = await sellCargoListing(cargoSellBoxId, price);
+                                                if (!r.ok) {
+                                                    askConfirm('เกิดข้อผิดพลาด', r.error || 'ไม่สามารถลิสต์ได้', 'ตกลง', () => {});
+                                                } else {
+                                                    setCargoSellBoxId(null);
+                                                    setCargoSellPriceInput('100');
+                                                    void fetchCargoBoxes();
+                                                }
+                                            }
+                                        );
+                                    }}
+                                    style={{
+                                        border: '1px solid rgba(56,189,248,0.35)',
+                                        background: cargoSellBoxId ? 'linear-gradient(135deg, rgba(14,165,233,0.25), rgba(56,189,248,0.12))' : 'rgba(100,116,139,0.18)',
+                                        color: cargoSellBoxId ? '#bae6fd' : '#94a3b8',
+                                        borderRadius: '0.65rem',
+                                        padding: '0.48rem 0.65rem',
+                                        cursor: cargoSellBoxId ? 'pointer' : 'not-allowed',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 700,
+                                    }}
+                                >
+                                    <Ship size={13} style={{ display: 'inline', marginRight: '0.3rem' }} /> ลิสต์บนตลาดโลก
+                                </button>
+                            </div>
+                            )}
+                        </section>
+                        ) : (
                         <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(251,191,36,0.25)', background: 'rgba(30,19,10,0.65)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
                                 <Tag size={15} /> {t('marketplace.sell_from_inventory')}
@@ -670,6 +1035,7 @@ const MarketplacePage = () => {
                                 </button>
                             </div>
                         </section>
+                        )}
 
                         <section className="glass-card" style={{ padding: '0.9rem', border: '1px solid rgba(56,189,248,0.24)', background: 'rgba(22,13,5,0.75)' }}>
                             <h3 style={{ margin: 0, marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.9rem' }}>
@@ -692,28 +1058,36 @@ const MarketplacePage = () => {
                                     >
                                         <div style={{ minWidth: 0 }}>
                                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.42rem' }}>
-                                                {renderItemIcon(listing.item, 18)}
+                                                {listing.cargo_box ? <Package size={18} color="#fbbf24" /> : renderItemIcon(listing.item, 18)}
                                                 <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#e2e8f0' }}>
-                                                    {listing.item.name}
-                                                    {listing.equipment_rarity ? ` (${t(`common.rarity_labels.${listing.equipment_rarity.toUpperCase()}`)})` : ''}
+                                                    {listing.cargo_box
+                                                        ? `Cargo Box [${listing.cargo_box.size}]`
+                                                        : listing.item.name + (listing.equipment_rarity ? ` (${t(`common.rarity_labels.${listing.equipment_rarity.toUpperCase()}`)})` : '')}
                                                 </div>
                                             </div>
                                             <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.6)' }}>
-                                                {listing.quantity} x {listing.price} = {(listing.quantity * listing.price).toLocaleString()}
+                                                {listing.cargo_box
+                                                    ? `${listing.cargo_box.item_count} ชิ้น — ราคา ${listing.price.toLocaleString()} credits`
+                                                    : `${listing.quantity} x ${listing.price} = ${(listing.quantity * listing.price).toLocaleString()}`}
                                             </div>
                                         </div>
                                         <button
                                             onClick={() => {
-                                                const totalValue = listing.quantity * listing.price;
+                                                const isCargoBox = listing.cargo_box != null;
+                                                const totalValue = isCargoBox ? listing.price : listing.quantity * listing.price;
                                                 askConfirm(
                                                     t('marketplace.confirm_cancel_title'),
                                                     `${t('marketplace.confirm_cancel_desc')}\n\n` +
-                                                    `${t('marketplace.item')}: ${listing.item.name}${listing.equipment_rarity ? ` (${t(`common.rarity_labels.${listing.equipment_rarity.toUpperCase()}`)})` : ''}\n` +
-                                                    `${t('marketplace.listing_id')}: #${listing.id}\n` +
-                                                    `${t('marketplace.quantity')}: ${listing.quantity.toLocaleString()}\n` +
-                                                    `${t('marketplace.unit_price')}: ${formatCredits(listing.price)}\n` +
-                                                    `${t('marketplace.listing_value')}: ${formatCredits(totalValue)}\n\n` +
-                                                    `${t('marketplace.after_cancel_desc')}`,
+                                                    (isCargoBox
+                                                        ? `Cargo Box [${listing.cargo_box!.size}] — ${listing.cargo_box!.item_count} ชิ้น\n` +
+                                                          `Listing #${listing.id}\nราคา: ${formatCredits(listing.price)}\n\n` +
+                                                          `${t('marketplace.after_cancel_desc')}`
+                                                        : `${t('marketplace.item')}: ${listing.item.name}${listing.equipment_rarity ? ` (${t(`common.rarity_labels.${listing.equipment_rarity.toUpperCase()}`)})` : ''}\n` +
+                                                          `${t('marketplace.listing_id')}: #${listing.id}\n` +
+                                                          `${t('marketplace.quantity')}: ${listing.quantity.toLocaleString()}\n` +
+                                                          `${t('marketplace.unit_price')}: ${formatCredits(listing.price)}\n` +
+                                                          `${t('marketplace.listing_value')}: ${formatCredits(totalValue)}\n\n` +
+                                                          `${t('marketplace.after_cancel_desc')}`),
                                                     t('marketplace.cancel_listing'),
                                                     () => {
                                                         void cancelListing(listing.id);

@@ -4,14 +4,16 @@ import { Anchor, PackageCheck } from 'lucide-react';
 import { useShipmentStore } from '../stores/shipmentStore';
 import { renderItemIcon } from '../lib/itemVisual';
 import TopNavBar from '../components/TopNavBar';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const PortPage = () => {
     const { portBoxes, fetchPort, claimCargo } = useShipmentStore();
     const [msg, setMsg] = useState<string | null>(null);
+    const [claimTarget, setClaimTarget] = useState<{ id: number; source: string; size: string; items: { name: string; qty: number }[] } | null>(null);
 
     useEffect(() => {
         fetchPort();
-        const iv = setInterval(fetchPort, 5000);
+        const iv = setInterval(fetchPort, 20_000);
         return () => clearInterval(iv);
     }, []);
 
@@ -21,6 +23,7 @@ const PortPage = () => {
         const r = await claimCargo(boxId);
         if (!r.ok) showMsg(r.error || 'Failed');
         else showMsg('Cargo claimed to inventory!');
+        setClaimTarget(null);
     };
 
     const tradeBoxes = portBoxes.filter((b) => b.source_type === 'trade');
@@ -29,6 +32,23 @@ const PortPage = () => {
     return (
         <div className="bg-forge" style={pageStyle}>
             <TopNavBar />
+
+            {/* Claim confirm dialog */}
+            <ConfirmDialog
+                open={claimTarget !== null}
+                title={claimTarget?.source === 'pirate' ? '☠️ Claim Pirate Loot' : '📦 Claim Trade Cargo'}
+                variant={claimTarget?.source === 'pirate' ? 'warning' : 'default'}
+                description={claimTarget?.source === 'pirate'
+                    ? 'Claim this pirate loot to your inventory?'
+                    : 'Move this trade cargo from port storage to your inventory?'}
+                details={[
+                    { label: 'Box', value: `#${claimTarget?.id} [${claimTarget?.size}]` },
+                    ...(claimTarget?.items ?? []).map((it) => ({ label: it.name, value: `×${it.qty}` })),
+                ]}
+                confirmLabel="Claim"
+                onConfirm={() => handleClaim(claimTarget!.id)}
+                onCancel={() => setClaimTarget(null)}
+            />
 
             <AnimatePresence>
                 {msg && (
@@ -68,7 +88,10 @@ const PortPage = () => {
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={() => handleClaim(box.id)} style={claimBtn}>
+                                <button
+                                    onClick={() => setClaimTarget({ id: box.id, source: box.source_type, size: box.size, items: box.items.map((bi) => ({ name: bi.item.name, qty: bi.quantity })) })}
+                                    style={claimBtn}
+                                >
                                     <PackageCheck size={14} /> Claim to Inventory
                                 </button>
                             </div>
@@ -97,7 +120,10 @@ const PortPage = () => {
                                         </div>
                                     ))}
                                 </div>
-                                <button onClick={() => handleClaim(box.id)} style={{ ...claimBtn, borderColor: 'rgba(239,68,68,0.35)', background: 'linear-gradient(135deg, rgba(180,30,30,0.5), rgba(220,38,38,0.35))' }}>
+                                <button
+                                    onClick={() => setClaimTarget({ id: box.id, source: box.source_type, size: box.size, items: box.items.map((bi) => ({ name: bi.item.name, qty: bi.quantity })) })}
+                                    style={{ ...claimBtn, borderColor: 'rgba(239,68,68,0.35)', background: 'linear-gradient(135deg, rgba(180,30,30,0.5), rgba(220,38,38,0.35))' }}
+                                >
                                     <PackageCheck size={14} /> Claim Loot
                                 </button>
                             </div>

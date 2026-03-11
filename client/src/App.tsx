@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useAuthStore } from './stores/authStore';
+
+// Eager-load login (first paint) — lazy-load everything else for faster initial bundle
 import LoginPage from './pages/LoginPage';
-import ClassSelection from './pages/ClassSelection';
-import DashboardPage from './pages/DashboardPage';
-import MarketplacePage from './pages/MarketplacePage';
-import QuestPage from './pages/QuestPage';
-import CargoPage from './pages/CargoPage';
-import PortPage from './pages/PortPage';
-import WorldMapPage from './pages/WorldMapPage';
+const ClassSelection = lazy(() => import('./pages/ClassSelection'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const MarketplacePage = lazy(() => import('./pages/MarketplacePage'));
+const QuestPage = lazy(() => import('./pages/QuestPage'));
+const CargoPage = lazy(() => import('./pages/CargoPage'));
+const PortPage = lazy(() => import('./pages/PortPage'));
+const WorldMapPage = lazy(() => import('./pages/WorldMapPage'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, user } = useAuthStore();
@@ -36,8 +38,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AnimatePresence mode="wait">
-        <Routes>
+      <Suspense fallback={<div className="flex items-center justify-center h-screen text-white">Loading...</div>}>
+        <AnimatePresence mode="wait">
+          <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route
             path="/select-class"
@@ -97,7 +100,8 @@ function App() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AnimatePresence>
+        </AnimatePresence>
+      </Suspense>
     </BrowserRouter>
   );
 }

@@ -88,6 +88,23 @@ export interface WorkOrder {
     item: Item;
 }
 
+export interface CargoBoxItemDetail {
+    id: number;
+    item_id: number;
+    quantity: number;
+    rarity: EquipmentRarity | null;
+    enchant_level: number;
+    item_name: string;
+    item_icon: string;
+}
+
+export interface CargoBoxDetail {
+    id: number;
+    size: 'S' | 'M' | 'L';
+    item_count: number;
+    items: CargoBoxItemDetail[];
+}
+
 export interface MarketListing {
     id: number;
     seller_id: number;
@@ -97,6 +114,12 @@ export interface MarketListing {
     status: string;
     created_at: string;
     equipment_rarity?: EquipmentRarity | null;
+    // Cross-city / cargo box fields
+    is_cross_city?: boolean;
+    cargo_box_id?: number | null;
+    origin_city?: string | null;
+    is_bot_listing?: boolean;
+    cargo_box?: CargoBoxDetail | null;
     item: Item;
     seller: {
         id: number;
@@ -104,6 +127,7 @@ export interface MarketListing {
         role: string;
         city_key?: string | null;
         city_name?: string | null;
+        is_bot?: boolean;
     };
 }
 
@@ -253,6 +277,10 @@ interface GameState {
     fetchRecipeShop: () => Promise<void>;
     fetchEquipmentBoxInfo: () => Promise<void>;
     fetchRuntimeConfig: () => Promise<void>;
+    /** Fetch only the data needed to render the dashboard immediately (inventory + work orders + config) */
+    fetchCritical: () => Promise<void>;
+    /** Fetch all remaining non-critical data in the background */
+    fetchBackground: () => Promise<void>;
     fetchAll: () => Promise<void>;
 
     eatItem: (slotId: number) => Promise<void>;
@@ -274,6 +302,7 @@ interface GameState {
     repairEquipment: (slotKey: string | number) => Promise<void>;
     createListing: (slotId: number, quantity: number, price: number) => Promise<void>;
     buyListing: (listingId: number, quantity?: number) => Promise<void>;
+    buyCargoListing: (listingId: number) => Promise<void>;
     cancelListing: (listingId: number) => Promise<void>;
     enchantAttempt: (inventorySlotId: number) => Promise<{ ok: boolean; success?: boolean; newLevel?: number; destroyed?: boolean; specialStatAdded?: string | null; error?: string }>;
 
@@ -444,6 +473,35 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     },
 
+    fetchCritical: async () => {
+        set({ isLoading: true });
+        const authUser = useAuthStore.getState().user;
+        if (authUser) {
+            set({
+                hunger: authUser.hunger,
+                hungerUpdatedAt: Date.now(),
+                durabilityUpdatedAt: Date.now(),
+            });
+        }
+        await Promise.all([
+            get().fetchInventory(),
+            get().fetchWorkOrders(),
+            get().fetchRuntimeConfig(),
+        ]);
+        set({ isLoading: false });
+    },
+
+    fetchBackground: async () => {
+        await Promise.all([
+            get().fetchMarket(),
+            get().fetchSalesHistory(),
+            get().fetchShop(),
+            get().fetchRecipes(),
+            get().fetchRecipeShop(),
+            get().fetchEquipmentBoxInfo(),
+        ]);
+    },
+
     fetchAll: async () => {
         set({ isLoading: true });
         const authUser = useAuthStore.getState().user;
@@ -479,7 +537,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 buffExpiresAt: data.user.buff_expires_at ? new Date(data.user.buff_expires_at).getTime() : null,
                 actionMessage: data.message,
             });
-            useAuthStore.getState().fetchMe();
+            await useAuthStore.getState().fetchMe();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to eat' });
         }
@@ -508,7 +566,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             // Update user state (money, hunger, levels)
             mergeAuthUser(data.user);
             // Re-fetch shop in case occupation state changed
-            get().fetchShop();
+            await get().fetchShop();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to buy' });
         }
@@ -568,8 +626,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 quantity,
             });
             set({ actionMessage: data.message });
-            get().fetchInventory();
-            get().fetchWorkOrders();
+            await Promise.all([get().fetchInventory(), get().fetchWorkOrders()]);
             return {
                 ok: true,
                 message: data.message,
@@ -596,8 +653,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 quantity: 1,
             });
             set({ actionMessage: data.message });
-            get().fetchWorkOrders();
-            useAuthStore.getState().fetchMe();
+            await Promise.all([get().fetchWorkOrders(), useAuthStore.getState().fetchMe()]);
             return {
                 ok: true,
                 message: data.message,
@@ -623,8 +679,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 selectedIngredients,
             });
             set({ actionMessage: data.message });
-            get().fetchInventory();
-            get().fetchWorkOrders();
+            await Promise.all([get().fetchInventory(), get().fetchWorkOrders()]);
             return {
                 ok: true,
                 message: data.message,
@@ -649,12 +704,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                 inventory: data.slots,
                 actionMessage: data.message,
             });
-            get().fetchWorkOrders();
-
-            // Update user state (levels, exp) after collecting work
             if (data.user) {
                 mergeAuthUser(data.user);
             }
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to collect' });
         }
@@ -667,10 +720,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                 inventory: data.slots ?? get().inventory,
                 actionMessage: data.message,
             });
-            get().fetchWorkOrders();
             if (data.user) {
                 mergeAuthUser(data.user);
             }
+            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to collect ready work' });
         }
@@ -697,7 +750,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to equip item' });
         }
@@ -711,7 +763,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to unequip item' });
         }
@@ -725,7 +776,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to organize inventory' });
         }
@@ -739,7 +789,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to discard item' });
         }
@@ -767,7 +816,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 equipment: data.equipment ?? get().equipment,
                 actionMessage: data.message,
             });
-            await get().fetchWorkOrders();
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to repair equipment' });
         }
@@ -777,14 +825,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         try {
             const { data } = await api.post('/game/market/sell', { slotId, quantity, price });
             set({ actionMessage: data.message });
-            get().fetchInventory();
-            get().fetchMarket();
-            get().fetchSalesHistory();
-
-            // Update user state (levels, exp)
             if (data.user) {
                 mergeAuthUser(data.user);
             }
+            await Promise.all([get().fetchInventory(), get().fetchMarket(), get().fetchSalesHistory()]);
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to create listing' });
         }
@@ -794,16 +838,31 @@ export const useGameStore = create<GameState>((set, get) => ({
         try {
             const { data } = await api.post(`/game/market/buy/${listingId}`, { quantity });
             set({ actionMessage: data.message });
-            get().fetchInventory();
-            get().fetchMarket();
-            get().fetchSalesHistory();
-
-            // Update user state (money)
             if (data.user) {
                 mergeAuthUser(data.user);
             }
+            await Promise.all([get().fetchInventory(), get().fetchMarket(), get().fetchSalesHistory()]);
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to buy listing' });
+        }
+    },
+
+    buyCargoListing: async (listingId) => {
+        try {
+            const { data } = await api.post(`/game/market/buy-cargo/${listingId}`);
+            if (data.sameCityPurchase) {
+                set({ actionMessage: 'ซื้อสำเร็จ! ของเข้ากระเป๋าทันที' });
+                await Promise.all([get().fetchInventory(), get().fetchMarket()]);
+            } else if (data.instantDelivered) {
+                set({ actionMessage: 'สั่งซื้อสำเร็จ! ของถึงท่าเรือแล้ว ไปรับที่ Port ได้เลย' });
+                await get().fetchMarket();
+            } else {
+                set({ actionMessage: 'สร้างคำสั่งซื้อแล้ว! รอผู้ขายนำขึ้นเรือ' });
+                await get().fetchMarket();
+            }
+            useAuthStore.getState().fetchMe();
+        } catch (err: any) {
+            set({ actionMessage: err.response?.data?.error || 'Failed to buy cargo listing' });
         }
     },
 
@@ -814,8 +873,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 inventory: data.slots ?? get().inventory,
                 actionMessage: data.message,
             });
-            get().fetchMarket();
-            get().fetchSalesHistory();
+            await Promise.all([get().fetchMarket(), get().fetchSalesHistory()]);
         } catch (err: any) {
             set({ actionMessage: err.response?.data?.error || 'Failed to cancel listing' });
         }
@@ -824,8 +882,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     enchantAttempt: async (inventorySlotId) => {
         try {
             const { data } = await api.post('/game/enchant/attempt', { inventorySlotId });
-            await get().fetchInventory();
-            useAuthStore.getState().fetchMe();
+            await Promise.all([get().fetchInventory(), useAuthStore.getState().fetchMe()]);
             return { ok: true, success: data.success, newLevel: data.newLevel, destroyed: data.destroyed, specialStatAdded: data.specialStatAdded };
         } catch (err: any) {
             const errorMessage = err.response?.data?.error || 'Enchant attempt failed';

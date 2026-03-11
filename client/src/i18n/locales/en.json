@@ -2,7 +2,10 @@
   "nav": {
     "dashboard": "Dashboard",
     "marketplace": "Marketplace",
-    "quests": "Daily Quests"
+    "quests": "Daily Quests",
+    "cargo": "Cargo Inventory",
+    "port": "Port",
+    "worldMap": "World Map"
   },
   "common": {
     "loading": "Loading...",
@@ -107,11 +110,15 @@
   "marketplace": {
     "title": "Marketplace Hub",
     "tabs": {
+      "world_market": "World Market",
+      "city_market": "City Market",
       "market": "Market",
       "npc_shop": "NPC Shop",
       "equipment_shop": "Equipment Shop"
     },
     "stats": {
+      "world_listings": "World Listings",
+      "city_listings": "City Listings",
       "listed_items": "Listed Items",
       "my_listings": "My Active Listings",
       "recent_sales": "Recent Sales",
@@ -120,6 +127,13 @@
       "recipe_scrolls": "Recipe Scrolls",
       "money": "Money"
     },
+    "world_market_listings": "World Market — Cargo Boxes ({{count}})",
+    "city_market_listings": "City Market — Items ({{count}})",
+    "buy_direct": "Buy Direct",
+    "buy_cargo": "Buy Cargo",
+    "cargo_from_same_city": "Same city — direct purchase",
+    "cargo_from_other_city": "From {{city}} — shipped to your port",
+    "go_to_port": "Go to Port",
     "player_listings": "Player Listings ({{count}})",
     "other_player_listings": "Other Player Listings",
     "auto_refresh_desc": "auto refresh every 5s",

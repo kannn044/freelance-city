@@ -63,7 +63,22 @@ async function departPublicShips() {
         include: { cargo: { include: { order: true } } },
     });
 
+    let departedCount = 0;
+    let skippedCount = 0;
+
     for (const ship of readyShips) {
+        const nextDepart = new Date(now.getTime() + SHIP_CONFIG.public.departureIntervalMin * 60 * 1000);
+
+        // Skip ships with no cargo — just reschedule to next interval
+        if (ship.cargo.length === 0) {
+            await prisma.ship.update({
+                where: { id: ship.id },
+                data: { departs_at: nextDepart },
+            });
+            skippedCount++;
+            continue;
+        }
+
         const travelTime = getTravelTimeSeconds(ship.origin_city, ship.dest_city);
         const arrivesAt = new Date(now.getTime() + travelTime * 1000);
 
@@ -92,7 +107,6 @@ async function departPublicShips() {
             }
 
             // Create replacement docked ship for the same route
-            const nextDepart = new Date(now.getTime() + SHIP_CONFIG.public.departureIntervalMin * 60 * 1000);
             await tx.ship.create({
                 data: {
                     type: "PUBLIC",
@@ -104,10 +118,12 @@ async function departPublicShips() {
                 },
             });
         });
+
+        departedCount++;
     }
 
-    if (readyShips.length > 0) {
-        console.log(`[ShipCron] Departed ${readyShips.length} public ships`);
+    if (departedCount > 0 || skippedCount > 0) {
+        console.log(`[ShipCron] Departed ${departedCount} public ships, skipped ${skippedCount} empty ships (rescheduled)`);
     }
 }
 

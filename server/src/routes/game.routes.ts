@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { getInventory, eatItem, equipItem, unequipItem, organizeInventory, discardItem, getRepairCost, repairEquipment } from "../controllers/inventory.controller";
+// Note: authMiddleware is already applied globally via router.use() below.
+// Do NOT add authMiddleware to individual routes — it would run twice.
 import { getWorkOrders, startWork, collectWork, collectReadyWork, cancelWork } from "../controllers/workspace.controller";
 import {
 	getListings,
@@ -135,9 +137,9 @@ router.get("/shop/recipes", getRecipeShop);
 router.post("/shop/recipes/buy", buyRecipeUnlock);
 
 // ─── Enchantment ─────────────────────────────────────
-router.post("/enchant/attempt",         authMiddleware, attemptEnchantController);
-router.get("/enchant/preview/:slotId",  authMiddleware, getEnchantPreviewController);
-router.get("/enchant/configs",          authMiddleware, getEnchantConfigsController);
+router.post("/enchant/attempt",         attemptEnchantController);
+router.get("/enchant/preview/:slotId",  getEnchantPreviewController);
+router.get("/enchant/configs",          getEnchantConfigsController);
 router.get("/recipes", getRecipes);
 
 // ─── Daily Quests ────────────────────────────────────

@@ -115,7 +115,8 @@ const DashboardPage = () => {
         equipment,
         tickHunger,
         tickDurability,
-        fetchAll,
+        fetchCritical,
+        fetchBackground,
         fetchWorkOrders,
         actionMessage,
         clearMessage
@@ -198,9 +199,15 @@ const DashboardPage = () => {
     useEffect(() => {
         const init = async () => {
             try {
+                // 1. Fetch user profile first so hunger/city is known
                 await fetchMe();
-                await fetchAll();
-                await fetchGovernance();
+                // 2. Fetch critical data (inventory + work orders + config) for fast render
+                await fetchCritical();
+                // 3. Load governance and background data in parallel — non-blocking
+                Promise.all([
+                    fetchBackground(),
+                    fetchGovernance(),
+                ]).catch(() => {});
             } catch {
                 navigate('/');
             }

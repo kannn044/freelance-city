@@ -85,6 +85,7 @@ export interface WorldMapShip {
     origin_city: string;
     dest_city: string;
     status: string;
+    departs_at?: string | null;
     departed_at?: string | null;
     arrives_at?: string | null;
     cargo_count: number;
@@ -222,6 +223,9 @@ export const useShipmentStore = create<ShipmentState>((set, get) => ({
         try {
             await api.post('/game/market/sell-cargo', { cargoBoxId: boxId, price });
             await get().fetchCargoBoxes();
+            // Also refresh market listings so own listings appear immediately
+            const { useGameStore } = await import('./gameStore');
+            await useGameStore.getState().fetchMarket();
             return { ok: true };
         } catch (err: any) {
             return { ok: false, error: err.response?.data?.error || 'Failed' };

@@ -7,6 +7,16 @@ import { useShipmentStore } from '../stores/shipmentStore';
 import { renderItemIcon } from '../lib/itemVisual';
 import { CARGO_BOX_CONFIG } from '../../../shared/gameConfig';
 import TopNavBar from '../components/TopNavBar';
+import ConfirmDialog from '../components/ConfirmDialog';
+
+type ConfirmAction =
+    | { type: 'BUY_BOX'; size: BoxSize }
+    | { type: 'SEAL'; boxId: number; itemCount: number }
+    | { type: 'DISCARD'; boxId: number; size: string; itemCount: number }
+    | { type: 'UNPACK'; boxId: number; boxItemId: number; qty: number; itemName: string }
+    | { type: 'CANCEL_ORDER'; orderId: number }
+    | { type: 'LOAD_SHIP'; orderId: number; shipId: number; destCity: string }
+    | null;
 
 type BoxSize = 'S' | 'M' | 'L';
 
@@ -37,6 +47,7 @@ const CargoPage = () => {
     const [sellBoxId, setSellBoxId] = useState<number | null>(null);
     const [sellPrice, setSellPrice] = useState('');
     const [msg, setMsg] = useState<string | null>(null);
+    const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
     useEffect(() => {
         fetchCargoBoxes();
@@ -46,7 +57,7 @@ const CargoPage = () => {
         const iv = setInterval(() => {
             fetchOrders();
             fetchPublicSchedule();
-        }, 5000);
+        }, 20_000);
         return () => clearInterval(iv);
     }, []);
 
@@ -58,29 +69,37 @@ const CargoPage = () => {
         else { showMsg('Cargo box purchased!'); fetchInventory(); }
     };
 
+    const handleConfirm = async () => {
+        if (!confirmAction) return;
+        const a = confirmAction;
+        setConfirmAction(null);
+        if (a.type === 'BUY_BOX') {
+            await handleBuyBox(a.size);
+        } else if (a.type === 'SEAL') {
+            const r = await finalizeCargo(a.boxId);
+            if (!r.ok) showMsg(r.error || 'Failed'); else showMsg('Cargo sealed!');
+        } else if (a.type === 'DISCARD') {
+            const r = await discardCargo(a.boxId);
+            if (!r.ok) showMsg(r.error || 'Failed');
+            else { showMsg('Discarded & items returned.'); fetchInventory(); setSelectedBoxId(null); }
+        } else if (a.type === 'UNPACK') {
+            const r = await unpackCargo(a.boxId, a.boxItemId, a.qty);
+            if (!r.ok) showMsg(r.error || 'Failed');
+            else { showMsg('Unpacked!'); fetchInventory(); }
+        } else if (a.type === 'CANCEL_ORDER') {
+            const r = await cancelOrder(a.orderId);
+            if (!r.ok) showMsg(r.error || 'Failed'); else showMsg('Order cancelled.');
+        } else if (a.type === 'LOAD_SHIP') {
+            const r = await loadPublicShip(a.orderId, a.shipId);
+            if (!r.ok) showMsg(r.error || 'Failed'); else showMsg('Loaded onto public ship!');
+        }
+    };
+
     const handlePack = async (boxId: number) => {
         if (!packSlotId) return;
         const r = await packCargo(boxId, packSlotId, packQty);
         if (!r.ok) showMsg(r.error || 'Failed');
         else { showMsg('Packed!'); fetchInventory(); setPackSlotId(null); setPackQty(1); }
-    };
-
-    const handleUnpack = async (boxId: number, boxItemId: number, qty: number) => {
-        const r = await unpackCargo(boxId, boxItemId, qty);
-        if (!r.ok) showMsg(r.error || 'Failed');
-        else { showMsg('Unpacked!'); fetchInventory(); }
-    };
-
-    const handleFinalize = async (boxId: number) => {
-        const r = await finalizeCargo(boxId);
-        if (!r.ok) showMsg(r.error || 'Failed');
-        else showMsg('Cargo sealed!');
-    };
-
-    const handleDiscard = async (boxId: number) => {
-        const r = await discardCargo(boxId);
-        if (!r.ok) showMsg(r.error || 'Failed');
-        else { showMsg('Discarded & items returned.'); fetchInventory(); setSelectedBoxId(null); }
     };
 
     const handleSell = async () => {
@@ -90,25 +109,68 @@ const CargoPage = () => {
         else { showMsg('Listed on marketplace!'); setSellBoxId(null); setSellPrice(''); }
     };
 
-    const handleCancelOrder = async (orderId: number) => {
-        const r = await cancelOrder(orderId);
-        if (!r.ok) showMsg(r.error || 'Failed');
-        else showMsg('Order cancelled.');
-    };
-
-    const handleLoadPublic = async (orderId: number, shipId: number) => {
-        const r = await loadPublicShip(orderId, shipId);
-        if (!r.ok) showMsg(r.error || 'Failed');
-        else showMsg('Loaded onto public ship!');
-    };
-
-    const selectedBox = cargoBoxes.find((b) => b.id === selectedBoxId);
+    const ACTIVE_BOX_STATUSES = ['EMPTY', 'PACKING', 'PACKED', 'LISTED'] as const;
+    const activeBoxes = cargoBoxes.filter((b) => ACTIVE_BOX_STATUSES.includes(b.status as any));
+    const selectedBox = activeBoxes.find((b) => b.id === selectedBoxId);
     const myBuyOrders = orders.filter((o) => o.buyer_id === user?.id);
     const mySellOrders = orders.filter((o) => o.seller_id === user?.id);
 
     return (
         <div className="bg-forge" style={pageStyle}>
             <TopNavBar />
+
+            {/* Confirm dialog */}
+            <ConfirmDialog
+                open={confirmAction !== null}
+                title={
+                    confirmAction?.type === 'BUY_BOX' ? `Buy Cargo Box [${confirmAction.size}]` :
+                    confirmAction?.type === 'SEAL' ? 'Seal Cargo Box' :
+                    confirmAction?.type === 'DISCARD' ? 'Discard Cargo Box' :
+                    confirmAction?.type === 'UNPACK' ? 'Unpack Item' :
+                    confirmAction?.type === 'CANCEL_ORDER' ? 'Cancel Order' :
+                    confirmAction?.type === 'LOAD_SHIP' ? 'Load onto Public Ship' : 'Confirm'
+                }
+                variant={
+                    confirmAction?.type === 'DISCARD' ? 'danger' :
+                    confirmAction?.type === 'CANCEL_ORDER' ? 'danger' : 'default'
+                }
+                description={
+                    confirmAction?.type === 'DISCARD' ? 'All items will be returned to your inventory. The box will be destroyed.' :
+                    confirmAction?.type === 'SEAL' ? 'Once sealed, no items can be added or removed until unsealed.' :
+                    confirmAction?.type === 'CANCEL_ORDER' ? 'The order will be cancelled and locked funds returned.' : undefined
+                }
+                details={
+                    confirmAction?.type === 'BUY_BOX' ? [
+                        { label: 'Size', value: confirmAction.size },
+                        { label: 'Capacity', value: `${CARGO_BOX_CONFIG.sizes[confirmAction.size].capacity} slots` },
+                        { label: 'Cost', value: `${CARGO_BOX_CONFIG.sizes[confirmAction.size].price}₵` },
+                        { label: 'Boxes owned', value: `${cargoBoxes.length} / ${CARGO_BOX_CONFIG.maxBoxesPerPlayer}` },
+                    ] :
+                    confirmAction?.type === 'SEAL' ? [
+                        { label: 'Box ID', value: `#${confirmAction.boxId}` },
+                        { label: 'Items packed', value: confirmAction.itemCount },
+                    ] :
+                    confirmAction?.type === 'DISCARD' ? [
+                        { label: 'Box ID', value: `#${confirmAction.boxId}` },
+                        { label: 'Size', value: confirmAction.size },
+                        { label: 'Items inside', value: confirmAction.itemCount },
+                    ] :
+                    confirmAction?.type === 'UNPACK' ? [
+                        { label: 'Item', value: confirmAction.itemName },
+                        { label: 'Qty', value: confirmAction.qty },
+                    ] :
+                    confirmAction?.type === 'CANCEL_ORDER' ? [
+                        { label: 'Order ID', value: `#${confirmAction.orderId}` },
+                    ] :
+                    confirmAction?.type === 'LOAD_SHIP' ? [
+                        { label: 'Order ID', value: `#${confirmAction.orderId}` },
+                        { label: 'Destination', value: confirmAction.destCity },
+                    ] : []
+                }
+                confirmLabel={confirmAction?.type === 'DISCARD' ? '🗑 Discard' : confirmAction?.type === 'CANCEL_ORDER' ? 'Cancel Order' : 'Confirm'}
+                onConfirm={handleConfirm}
+                onCancel={() => setConfirmAction(null)}
+            />
 
             <AnimatePresence>
                 {msg && (
@@ -148,7 +210,7 @@ const CargoPage = () => {
                                 {(['S', 'M', 'L'] as const).map((size) => {
                                     const cfg = CARGO_BOX_CONFIG.sizes[size];
                                     return (
-                                        <button key={size} onClick={() => handleBuyBox(size)} style={buyBoxBtn}>
+                                        <button key={size} onClick={() => setConfirmAction({ type: 'BUY_BOX', size })} style={buyBoxBtn}>
                                             <strong>{size}</strong>
                                             <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>
                                                 {cfg.capacity} slots &middot; {cfg.price}&#x20B5;
@@ -158,8 +220,8 @@ const CargoPage = () => {
                                 })}
                             </div>
 
-                            <h3 style={sectionTitle}>My Boxes ({cargoBoxes.length}/{CARGO_BOX_CONFIG.maxBoxesPerPlayer})</h3>
-                            {cargoBoxes.map((box) => (
+                            <h3 style={sectionTitle}>My Boxes ({activeBoxes.length}/{CARGO_BOX_CONFIG.maxBoxesPerPlayer})</h3>
+                            {activeBoxes.map((box) => (
                                 <div
                                     key={box.id}
                                     onClick={() => setSelectedBoxId(box.id)}
@@ -204,7 +266,7 @@ const CargoPage = () => {
                                                     {bi.item.name} x{bi.quantity}
                                                 </span>
                                                 {(selectedBox.status === 'EMPTY' || selectedBox.status === 'PACKING' || selectedBox.status === 'PACKED') && (
-                                                    <button onClick={() => handleUnpack(selectedBox.id, bi.id, bi.quantity)} style={smallBtn}>
+                                                    <button onClick={() => setConfirmAction({ type: 'UNPACK', boxId: selectedBox.id, boxItemId: bi.id, qty: bi.quantity, itemName: bi.item.name })} style={smallBtn}>
                                                         Unpack
                                                     </button>
                                                 )}
@@ -255,7 +317,7 @@ const CargoPage = () => {
                                     {/* Action buttons */}
                                     <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                                         {selectedBox.status === 'PACKING' && selectedBox.items.length > 0 && (
-                                            <button onClick={() => handleFinalize(selectedBox.id)} style={primaryBtn}>
+                                            <button onClick={() => setConfirmAction({ type: 'SEAL', boxId: selectedBox.id, itemCount: selectedBox.items.length })} style={primaryBtn}>
                                                 <Lock size={14} /> Seal Cargo
                                             </button>
                                         )}
@@ -265,7 +327,7 @@ const CargoPage = () => {
                                             </button>
                                         )}
                                         {(selectedBox.status === 'EMPTY' || selectedBox.status === 'PACKING' || selectedBox.status === 'PACKED') && (
-                                            <button onClick={() => handleDiscard(selectedBox.id)} style={dangerBtn}>
+                                            <button onClick={() => setConfirmAction({ type: 'DISCARD', boxId: selectedBox.id, size: selectedBox.size, itemCount: selectedBox.items.length })} style={dangerBtn}>
                                                 <Trash2 size={14} /> Discard
                                             </button>
                                         )}
@@ -304,7 +366,7 @@ const CargoPage = () => {
                                                 {matchingShips.map((ship) => (
                                                     <button
                                                         key={ship.id}
-                                                        onClick={() => handleLoadPublic(order.id, ship.id)}
+                                                        onClick={() => setConfirmAction({ type: 'LOAD_SHIP', orderId: order.id, shipId: ship.id, destCity: ship.dest_city })}
                                                         style={smallBtn}
                                                     >
                                                         <ArrowRight size={12} /> {ship.dest_city}
@@ -341,7 +403,7 @@ const CargoPage = () => {
                                         Price: {order.price}&#x20B5; · Locked: {order.locked_amount}&#x20B5;
                                     </div>
                                     {order.status === 'PENDING' && (
-                                        <button onClick={() => handleCancelOrder(order.id)} style={{ ...dangerBtn, marginTop: '0.4rem' }}>
+                                        <button onClick={() => setConfirmAction({ type: 'CANCEL_ORDER', orderId: order.id })} style={{ ...dangerBtn, marginTop: '0.4rem' }}>
                                             Cancel
                                         </button>
                                     )}

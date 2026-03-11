@@ -291,29 +291,138 @@ export async function reconcileWorkspaceOrderPausesForUser(
 
     const now = Date.now();
 
+    // ─── Batch prefetch: fetch all city rules + equipment + inventory once ───
+
+    // 1. Fetch all rules for this city in one query
+    const allCityRules = await db.$queryRaw<WorkspaceRuleRow[]>`
+        SELECT
+            id, city_key, job_slot, work_type, workspace_mode,
+            matcher_type, matcher_value, required_item_name,
+            must_be_equipped, error_code, error_message
+        FROM city_workspace_rules
+        WHERE city_key = ${cityKey}
+          AND is_enabled = 1
+        ORDER BY id ASC
+    `;
+
+    // Short-circuit: if no rules, nothing to pause/unpause
+    if (allCityRules.length === 0) {
+        // Unpause any previously paused orders since rules are gone
+        const pausedOrders = orders.filter((o) => Boolean(o.paused_at));
+        for (const order of pausedOrders) {
+            const pausedAtMs = new Date(order.paused_at!).getTime();
+            const deltaMs = Math.max(0, now - pausedAtMs);
+            const nextStarted = new Date(new Date(order.started_at).getTime() + deltaMs);
+            const nextCompletes = new Date(new Date(order.completes_at).getTime() + deltaMs);
+            await db.$executeRaw`
+                UPDATE work_orders
+                SET started_at = ${nextStarted},
+                    completes_at = ${nextCompletes},
+                    paused_at = NULL
+                WHERE id = ${order.id}
+            `;
+        }
+        return;
+    }
+
+    // 2. Collect all unique required item names across all rules
+    const requiredItemNames = [...new Set(allCityRules.map((r) => normalize(r.required_item_name).toLowerCase()))];
+
+    // 3. Fetch equipped items for this user (with durability) in one query
+    type EquippedRow = { item_name_lc: string; durability: number };
+    const equippedRows = await db.$queryRaw<EquippedRow[]>`
+        SELECT LOWER(i.name) as item_name_lc, COALESCE(ue.durability, 0) as durability
+        FROM user_equipments ue
+        INNER JOIN items i ON i.id = ue.item_id
+        WHERE ue.user_id = ${userId}
+    `;
+    const equippedNames = new Set(equippedRows.map((r) => r.item_name_lc));
+    const usableEquippedNames = new Set(
+        equippedRows.filter((r) => r.durability > 0).map((r) => r.item_name_lc),
+    );
+
+    // 4. Fetch relevant inventory items in one query
+    type InvRow = { item_name_lc: string };
+    const invRows = requiredItemNames.length > 0
+        ? await db.$queryRaw<InvRow[]>`
+            SELECT LOWER(i.name) as item_name_lc
+            FROM inventory_slots s
+            INNER JOIN items i ON i.id = s.item_id
+            WHERE s.user_id = ${userId}
+              AND s.quantity > 0
+              AND LOWER(i.name) IN (${Prisma.join(requiredItemNames)})
+            GROUP BY LOWER(i.name)
+          `
+        : [];
+    const inventoryNames = new Set(invRows.map((r) => r.item_name_lc));
+
+    // 5. Inline validate using pre-fetched data (no extra DB calls)
+    function validateWithCachedData(ctx: WorkspaceRequirementContext): WorkspaceRequirementValidationResult {
+        const relevantRules = allCityRules.filter(
+            (r) => r.job_slot === ctx.jobSlot && r.work_type === ctx.workType,
+        );
+        if (relevantRules.length === 0) return { ok: true };
+
+        for (const rule of relevantRules) {
+            const scopeMode = normalizeUpper(rule.workspace_mode);
+            if (scopeMode && scopeMode !== normalizeUpper(ctx.workspaceMode)) continue;
+            if (!matcherMatches(rule, ctx)) continue;
+
+            const requiredItemName = normalize(rule.required_item_name);
+            const requiredLc = requiredItemName.toLowerCase();
+            const mustBeEquipped = Boolean(Number(rule.must_be_equipped));
+
+            if (mustBeEquipped) {
+                if (!usableEquippedNames.has(requiredLc)) {
+                    return {
+                        ok: false,
+                        statusCode: 400,
+                        errorCode: normalizeUpper(rule.error_code) || "WORKSPACE_REQUIREMENT_FAILED",
+                        errorMessage: normalize(rule.error_message) || "Workspace requirement failed",
+                        requiredItemName,
+                        mustBeEquipped,
+                        matchedRuleId: Number(rule.id),
+                    };
+                }
+                continue;
+            }
+
+            if (equippedNames.has(requiredLc)) continue;
+
+            if (!inventoryNames.has(requiredLc)) {
+                return {
+                    ok: false,
+                    statusCode: 400,
+                    errorCode: normalizeUpper(rule.error_code) || "WORKSPACE_REQUIREMENT_FAILED",
+                    errorMessage: normalize(rule.error_message) || "Workspace requirement failed",
+                    requiredItemName,
+                    mustBeEquipped,
+                    matchedRuleId: Number(rule.id),
+                };
+            }
+        }
+        return { ok: true };
+    }
+
+    // 6. Process each order and collect DB updates
     for (const order of orders) {
         const ctx = resolveOrderRequirementContext(cityKey, order);
-        const validation = await validateWorkspaceRequirements(
-            {
-                userId,
-                cityKey,
-                jobSlot: ctx.jobSlot,
-                workType: ctx.workType,
-                workspaceMode: ctx.workspaceMode,
-                itemId: order.item_id,
-                itemName: order.item_name,
-                itemType: order.item_type,
-                recipeId: order.recipe_id,
-            },
-            db,
-        );
+        const validation = validateWithCachedData({
+            userId,
+            cityKey,
+            jobSlot: ctx.jobSlot,
+            workType: ctx.workType,
+            workspaceMode: ctx.workspaceMode,
+            itemId: order.item_id,
+            itemName: order.item_name,
+            itemType: order.item_type,
+            recipeId: order.recipe_id,
+        });
 
-        const shouldPause = !validation.ok && validation.mustBeEquipped;
+        const shouldPause = !validation.ok && (validation as any).mustBeEquipped;
         const isPaused = Boolean(order.paused_at);
 
-        if (!shouldPause && !isPaused) {
-            continue;
-        }
+        if (!shouldPause && !isPaused) continue;
 
         const pausedAtMs = order.paused_at ? new Date(order.paused_at).getTime() : now;
         const deltaMs = Math.max(0, now - pausedAtMs);

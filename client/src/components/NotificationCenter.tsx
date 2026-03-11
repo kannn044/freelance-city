@@ -1,8 +1,34 @@
 import { useEffect, useState, useRef, type CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useShipmentStore } from '../stores/shipmentStore';
+import type { Notification } from '../stores/shipmentStore';
+
+const NOTIFICATION_ROUTES: Record<string, string> = {
+    SHIP_DEPARTED:           '/cargo',
+    SHIP_ARRIVED:            '/port',
+    SETTLEMENT_COMPLETE:     '/dashboard',
+    ORDER_CREATED:           '/cargo',
+    ORDER_CANCELLED_TIMEOUT: '/marketplace',
+    PIRATE_VICTIM_BUYER:     '/port',
+    PIRATE_DEFEND_LOSE:      '/port',
+    PIRATE_ATTACK_WIN:       '/port',
+    PIRATE_DEFEND_WIN:       '/dashboard',
+    PIRATE_ATTACK_LOSE:      '/dashboard',
+};
+
+function getNotificationRoute(n: Notification): string | null {
+    try {
+        if (n.metadata) {
+            const meta = JSON.parse(n.metadata);
+            if (meta.link) return meta.link as string;
+        }
+    } catch { /* ignore */ }
+    return NOTIFICATION_ROUTES[n.type] ?? null;
+}
 
 const NotificationCenter = () => {
+    const navigate = useNavigate();
     const {
         notifications,
         unreadCount,
@@ -61,15 +87,21 @@ const NotificationCenter = () => {
                                 No notifications
                             </div>
                         )}
-                        {notifications.map((n) => (
+                        {notifications.map((n) => {
+                            const route = getNotificationRoute(n);
+                            const clickable = !!route;
+                            return (
                             <div
                                 key={n.id}
-                                onClick={() => { if (!n.is_read) markNotificationRead(n.id); }}
+                                onClick={() => {
+                                    if (!n.is_read) markNotificationRead(n.id);
+                                    if (route) { setOpen(false); navigate(route); }
+                                }}
                                 style={{
                                     padding: '0.4rem 0.5rem',
                                     borderBottom: '1px solid rgba(148,163,184,0.1)',
                                     background: n.is_read ? 'transparent' : 'rgba(56,189,248,0.06)',
-                                    cursor: n.is_read ? 'default' : 'pointer',
+                                    cursor: clickable ? 'pointer' : 'default',
                                     borderRadius: '0.3rem',
                                 }}
                             >
@@ -86,7 +118,8 @@ const NotificationCenter = () => {
                                     {new Date(n.created_at).toLocaleString()}
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}

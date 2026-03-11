@@ -1107,9 +1107,12 @@ async function rescheduleFerrumMiningQueueAfterCancel(userId: number, db: DbClie
  */
 export const getWorkOrders = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        await syncHunger(req.userId!);
-        const cityProfile = await getUserCityProfile(req.userId!);
-        await syncDurability(req.userId!);
+        // Run hunger sync, city profile fetch, and durability sync in parallel
+        const [, cityProfile] = await Promise.all([
+            syncHunger(req.userId!),
+            getUserCityProfile(req.userId!),
+            syncDurability(req.userId!),
+        ]);
         await reconcileWorkspaceOrderPausesForUser(req.userId!, cityProfile.city_key);
 
         const orders = await prisma.workOrder.findMany({

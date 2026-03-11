@@ -22,15 +22,19 @@ const allowedOrigins = Array.from(new Set([...defaultCorsOrigins, ...envCorsOrig
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
-// Request logger (debug)
-app.use((req, res, next) => {
-    console.log(`[REQ] ${req.method} ${req.url}`);
-    const start = Date.now();
-    res.on('finish', () => {
-        console.log(`[RES] ${req.method} ${req.url} -> ${res.statusCode} (${Date.now() - start}ms)`);
+// Request logger (only in development)
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        const start = Date.now();
+        res.on('finish', () => {
+            const duration = Date.now() - start;
+            if (duration > 500) {
+                console.log(`[SLOW] ${req.method} ${req.url} -> ${res.statusCode} (${duration}ms)`);
+            }
+        });
+        next();
     });
-    next();
-});
+}
 
 // Routes
 app.use("/auth", authRoutes);
@@ -45,8 +49,13 @@ app.get("/health", (_req, res) => {
 app.listen(PORT, async () => {
     console.log(`Server running on http://localhost:${PORT}`);
     marketBotService.start();
-    await initPublicShips();
+    // Always start crons first so ships can depart even if DB init fails on startup
     startShipmentCrons();
+    try {
+        await initPublicShips();
+    } catch (e) {
+        console.error("[Startup] initPublicShips failed — crons are still running and will recover:", e);
+    }
 });
 
 export default app;

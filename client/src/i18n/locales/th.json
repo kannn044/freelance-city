@@ -2,7 +2,10 @@
   "nav": {
     "dashboard": "แดชบอร์ด",
     "marketplace": "ตลาด",
-    "quests": "เควสประจำวัน"
+    "quests": "เควสประจำวัน",
+    "cargo": "สินค้าคงคลัง",
+    "port": "ท่าเรือ",
+    "worldMap": "แผนที่โลก"
   },
   "common": {
     "loading": "กำลังโหลด...",
@@ -107,11 +110,15 @@
   "marketplace": {
     "title": "ศูนย์กลางการค้า",
     "tabs": {
+      "world_market": "ตลาดโลก",
+      "city_market": "ตลาดเมือง",
       "market": "ตลาดผู้เล่น",
       "npc_shop": "ร้านค้า NPC",
       "equipment_shop": "ร้านอุปกรณ์สุ่ม"
     },
     "stats": {
+      "world_listings": "สินค้าตลาดโลก",
+      "city_listings": "สินค้าตลาดเมือง",
       "listed_items": "ไอเทมในตลาด",
       "my_listings": "รายการขายของฉัน",
       "recent_sales": "ยอดขายล่าสุด",
@@ -120,6 +127,13 @@
       "recipe_scrolls": "คัมภีร์สูตร",
       "money": "เงินคงเหลือ"
     },
+    "world_market_listings": "ตลาดโลก — Cargo Box ({{count}})",
+    "city_market_listings": "ตลาดเมือง — ไอเทม ({{count}})",
+    "buy_direct": "ซื้อตรง",
+    "buy_cargo": "ซื้อ Cargo",
+    "cargo_from_same_city": "เมืองเดียวกัน — รับของทันที",
+    "cargo_from_other_city": "จาก {{city}} — ส่งมาที่ท่าเรือ",
+    "go_to_port": "ไปที่ท่าเรือ",
     "player_listings": "รายการขายของผู้เล่น ({{count}})",
     "other_player_listings": "รายการขายจากผู้เล่นอื่น",
     "auto_refresh_desc": "รีเฟรชอัตโนมัติทุก 5 วินาที",

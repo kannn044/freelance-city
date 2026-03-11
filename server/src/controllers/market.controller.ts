@@ -17,6 +17,11 @@ let marketListingRarityColumnEnsured = false;
 let listingsCache: { data: any; expiresAt: number } | null = null;
 const LISTINGS_CACHE_TTL_MS = 5000; // 5 seconds
 
+/** Invalidate the listings cache (call after mutations from other controllers) */
+export function invalidateListingsCache() {
+    listingsCache = null;
+}
+
 async function ensureMarketListingRarityColumn() {
     if (marketListingRarityColumnEnsured) return;
 
@@ -185,6 +190,9 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
             status: string;
             created_at: Date;
             equipment_rarity: string | null;
+            is_cross_city: number | boolean;
+            cargo_box_id: number | null;
+            origin_city: string | null;
             // item fields
             i_id: number;
             i_name: string;
@@ -213,6 +221,7 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
             SELECT
                 ml.id, ml.seller_id, ml.item_id, ml.quantity, ml.price, ml.status,
                 ml.created_at, ml.equipment_rarity,
+                ml.is_cross_city, ml.cargo_box_id, ml.origin_city,
                 i.id AS i_id, i.name AS i_name, i.type AS i_type,
                 i.equipment_slot AS i_equipment_slot,
                 i.effect_key AS i_effect_key, i.effect_value AS i_effect_value,
@@ -231,41 +240,119 @@ export const getListings = async (_req: AuthRequest, res: Response): Promise<voi
             ORDER BY ml.created_at DESC
         `);
 
-        const payload = rows.map((r) => ({
-            id: Number(r.id),
-            seller_id: Number(r.seller_id),
-            item_id: Number(r.item_id),
-            quantity: Number(r.quantity),
-            price: Number(r.price),
-            status: r.status,
-            created_at: r.created_at,
-            equipment_rarity: r.equipment_rarity ?? null,
-            item: {
-                id: Number(r.i_id),
-                name: r.i_name,
-                type: r.i_type,
-                equipment_slot: r.i_equipment_slot ?? null,
-                effect_key: r.i_effect_key ?? null,
-                effect_value: r.i_effect_value != null ? Number(r.i_effect_value) : null,
-                effect_value2: r.i_effect_value2 != null ? Number(r.i_effect_value2) : null,
-                buy_price: r.i_buy_price != null ? Number(r.i_buy_price) : null,
-                sell_price: r.i_sell_price != null ? Number(r.i_sell_price) : null,
-                kcal: r.i_kcal != null ? Number(r.i_kcal) : null,
-                buff_pct: r.i_buff_pct != null ? Number(r.i_buff_pct) : null,
-                buff_mins: r.i_buff_mins != null ? Number(r.i_buff_mins) : null,
-                max_stack: Number(r.i_max_stack),
-                grow_mins: r.i_grow_mins != null ? Number(r.i_grow_mins) : null,
-                icon: r.i_icon,
-                exp_value: Number(r.i_exp_value),
-            },
-            seller: {
-                id: Number(r.s_id),
-                email: r.s_email,
-                role: r.s_role,
-                city_key: r.city_key ?? null,
-                city_name: r.city_name ?? null,
-            },
-        }));
+        // ── Cargo box details for cross-city listings ────
+        const crossCityBoxIds = rows
+            .filter((r) => r.is_cross_city && r.cargo_box_id != null)
+            .map((r) => Number(r.cargo_box_id));
+
+        type CargoBoxItemRow = {
+            cargo_box_id: number;
+            cb_id: number;
+            cb_size: string;
+            cbi_id: number;
+            cbi_item_id: number;
+            cbi_quantity: number;
+            cbi_rarity: string | null;
+            cbi_enchant: number;
+            item_name: string;
+            item_icon: string;
+        };
+
+        const cargoBoxMap = new Map<number, {
+            size: string;
+            items: Array<{ id: number; item_id: number; quantity: number; rarity: string | null; enchant_level: number; item_name: string; item_icon: string }>;
+        }>();
+
+        if (crossCityBoxIds.length > 0) {
+            const boxRows = await prisma.$queryRawUnsafe<CargoBoxItemRow[]>(`
+                SELECT
+                    cb.id AS cb_id, cb.size AS cb_size,
+                    cbi.id AS cbi_id, cbi.cargo_box_id, cbi.item_id AS cbi_item_id,
+                    cbi.quantity AS cbi_quantity,
+                    cbi.equipment_rarity AS cbi_rarity,
+                    cbi.enchant_level AS cbi_enchant,
+                    i.name AS item_name, i.icon AS item_icon
+                FROM cargo_boxes cb
+                JOIN cargo_box_items cbi ON cbi.cargo_box_id = cb.id
+                JOIN items i ON i.id = cbi.item_id
+                WHERE cb.id IN (${crossCityBoxIds.join(",")})
+            `);
+
+            for (const br of boxRows) {
+                const boxId = Number(br.cargo_box_id);
+                if (!cargoBoxMap.has(boxId)) {
+                    cargoBoxMap.set(boxId, { size: br.cb_size, items: [] });
+                }
+                cargoBoxMap.get(boxId)!.items.push({
+                    id: Number(br.cbi_id),
+                    item_id: Number(br.cbi_item_id),
+                    quantity: Number(br.cbi_quantity),
+                    rarity: br.cbi_rarity ?? null,
+                    enchant_level: Number(br.cbi_enchant),
+                    item_name: br.item_name,
+                    item_icon: br.item_icon,
+                });
+            }
+        }
+        // ────────────────────────────────────────────────
+
+        const payload = rows.map((r) => {
+            const isCrossCity = Boolean(r.is_cross_city);
+            const cargoBoxId = r.cargo_box_id != null ? Number(r.cargo_box_id) : null;
+            const isBotListing = r.s_email.endsWith("@npc.market");
+            const boxDetail = isCrossCity && cargoBoxId != null
+                ? cargoBoxMap.get(cargoBoxId) ?? null
+                : null;
+
+            return {
+                id: Number(r.id),
+                seller_id: Number(r.seller_id),
+                item_id: Number(r.item_id),
+                quantity: Number(r.quantity),
+                price: Number(r.price),
+                status: r.status,
+                created_at: r.created_at,
+                equipment_rarity: r.equipment_rarity ?? null,
+                is_cross_city: isCrossCity,
+                cargo_box_id: cargoBoxId,
+                origin_city: r.origin_city ?? null,
+                is_bot_listing: isBotListing,
+                cargo_box: boxDetail
+                    ? {
+                        id: cargoBoxId,
+                        size: boxDetail.size,
+                        item_count: boxDetail.items.reduce((s, i) => s + i.quantity, 0),
+                        items: boxDetail.items,
+                    }
+                    : null,
+                item: {
+                    id: Number(r.i_id),
+                    name: r.i_name,
+                    type: r.i_type,
+                    equipment_slot: r.i_equipment_slot ?? null,
+                    effect_key: r.i_effect_key ?? null,
+                    effect_value: r.i_effect_value != null ? Number(r.i_effect_value) : null,
+                    effect_value2: r.i_effect_value2 != null ? Number(r.i_effect_value2) : null,
+                    buy_price: r.i_buy_price != null ? Number(r.i_buy_price) : null,
+                    sell_price: r.i_sell_price != null ? Number(r.i_sell_price) : null,
+                    kcal: r.i_kcal != null ? Number(r.i_kcal) : null,
+                    buff_pct: r.i_buff_pct != null ? Number(r.i_buff_pct) : null,
+                    buff_mins: r.i_buff_mins != null ? Number(r.i_buff_mins) : null,
+                    max_stack: Number(r.i_max_stack),
+                    grow_mins: r.i_grow_mins != null ? Number(r.i_grow_mins) : null,
+                    icon: r.i_icon,
+                    exp_value: Number(r.i_exp_value),
+                },
+                seller: {
+                    id: Number(r.s_id),
+                    email: r.s_email,
+                    role: r.s_role,
+                    city_key: r.city_key ?? null,
+                    city_name: r.city_name ?? null,
+                    is_bot: isBotListing,
+                },
+            };
+        });
 
         const responseData = { listings: payload };
         listingsCache = { data: responseData, expiresAt: Date.now() + LISTINGS_CACHE_TTL_MS };

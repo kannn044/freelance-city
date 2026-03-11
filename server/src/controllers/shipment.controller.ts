@@ -3,9 +3,135 @@ import { prisma } from "../lib/prisma";
 import { CARGO_BOX_CONFIG, SHIP_CONFIG, PURCHASE_ORDER_TIMEOUT_MIN } from "../../../shared/gameConfig";
 import { getTravelTimeSeconds } from "../../../shared/mapData";
 import { createNotificationTx } from "../services/notification.service";
+import { computeMarketTradeTaxTx, applyMarketTradeTaxTx } from "../services/city.service";
+import { invalidateListingsCache } from "./market.controller";
 
 interface AuthRequest extends Request {
     userId?: number;
+}
+
+// ─── Bot Ship Helpers ────────────────────────────────────
+
+const BOT_EMAIL_SUFFIX = "@npc.market";
+
+// ─── Inventory Helper ────────────────────────────────────
+
+/**
+ * Places items from a cargo box's items list directly into a user's inventory.
+ * Returns an error string if inventory is full, or null on success.
+ */
+async function unpackCargoBoxItemsToInventoryTx(
+    tx: any,
+    userId: number,
+    cargoItems: Array<{
+        item_id: number;
+        quantity: number;
+        equipment_rarity?: string | null;
+        equipment_durability?: number | null;
+        enchant_level: number;
+        special_stat_1?: string | null;
+        special_stat_2?: string | null;
+        special_stat_3?: string | null;
+        special_stat_4?: string | null;
+        item: { max_stack: number };
+    }>,
+): Promise<string | null> {
+    const slots = await tx.inventorySlot.findMany({
+        where: { user_id: userId },
+        orderBy: { slot: "asc" },
+    });
+
+    for (const cargoItem of cargoItems) {
+        let remaining = cargoItem.quantity;
+        const maxStack = cargoItem.item.max_stack;
+
+        // Fill existing stacks first
+        for (const slot of slots) {
+            if (remaining <= 0) break;
+            if (slot.item_id !== cargoItem.item_id) continue;
+            if ((slot.equipment_rarity ?? null) !== (cargoItem.equipment_rarity ?? null)) continue;
+            const canAdd = Math.min(maxStack - slot.quantity, remaining);
+            if (canAdd <= 0) continue;
+            await tx.inventorySlot.update({ where: { id: slot.id }, data: { quantity: slot.quantity + canAdd } });
+            slot.quantity += canAdd;
+            remaining -= canAdd;
+        }
+
+        // Use empty slots
+        for (const slot of slots) {
+            if (remaining <= 0) break;
+            if (slot.item_id !== null) continue;
+            const put = Math.min(maxStack, remaining);
+            await tx.inventorySlot.update({
+                where: { id: slot.id },
+                data: {
+                    item_id: cargoItem.item_id,
+                    quantity: put,
+                    equipment_rarity: cargoItem.equipment_rarity ?? null,
+                    equipment_durability: cargoItem.equipment_durability ?? null,
+                    enchant_level: cargoItem.enchant_level,
+                    special_stat_1: cargoItem.special_stat_1 ?? null,
+                    special_stat_2: cargoItem.special_stat_2 ?? null,
+                    special_stat_3: cargoItem.special_stat_3 ?? null,
+                    special_stat_4: cargoItem.special_stat_4 ?? null,
+                },
+            });
+            slot.item_id = cargoItem.item_id;
+            slot.quantity = put;
+            remaining -= put;
+        }
+
+        if (remaining > 0) return "Not enough inventory space";
+    }
+    return null;
+}
+
+/**
+ * Snaps to the nearest future 5-minute boundary.
+ */
+function nextPublicSlot(fromNow: Date = new Date()): Date {
+    const ms = fromNow.getTime();
+    const interval = SHIP_CONFIG.public.departureIntervalMin * 60_000;
+    return new Date(Math.ceil(ms / interval) * interval);
+}
+
+/**
+ * Finds an existing DOCKED bot public ship on the given route with spare capacity,
+ * or creates a new one snapped to the next 5-minute departure slot.
+ */
+async function findOrCreateBotPublicShipTx(
+    tx: any,
+    originCity: string,
+    destCity: string,
+) {
+    const existing = await tx.ship.findFirst({
+        where: {
+            type: "PUBLIC",
+            origin_city: originCity,
+            dest_city: destCity,
+            status: "DOCKED",
+            is_bot_ship: true,
+            departs_at: { gt: new Date() },
+        },
+        include: { _count: { select: { cargo: true } } },
+        orderBy: { departs_at: "asc" },
+    });
+
+    if (existing && existing._count.cargo < existing.capacity) {
+        return existing;
+    }
+
+    return tx.ship.create({
+        data: {
+            type: "PUBLIC",
+            origin_city: originCity,
+            dest_city: destCity,
+            status: "DOCKED",
+            capacity: SHIP_CONFIG.public.capacity,
+            is_bot_ship: true,
+            departs_at: nextPublicSlot(),
+        },
+    });
 }
 
 // ─── Purchase Orders ─────────────────────────────────────
@@ -29,9 +155,48 @@ export const buyCargoListing = async (req: AuthRequest, res: Response): Promise<
 
             const buyer = await tx.user.findUniqueOrThrow({ where: { id: userId } });
 
+            // ── Same-city direct purchase ────────────────────────────
+            // If buyer is already in the same city as the seller, unpack the
+            // cargo box items directly into the buyer's inventory (no ship needed).
             if (buyer.city_key === listing.origin_city) {
-                return { error: "Use same-city marketplace for items from your own city" };
+                const cargoBox = await tx.cargoBox.findUnique({
+                    where: { id: listing.cargo_box_id! },
+                    include: { items: { include: { item: true } } },
+                });
+
+                if (!cargoBox) return { error: "Cargo box not found" };
+
+                const tax = await computeMarketTradeTaxTx(tx, listing.seller_id, userId, listing.price);
+
+                if (buyer.money < tax.buyerPays) {
+                    return { error: `Not enough credits. Need ${tax.buyerPays}` };
+                }
+
+                const unpackError = await unpackCargoBoxItemsToInventoryTx(tx, userId, cargoBox.items);
+                if (unpackError) return { error: unpackError };
+
+                // Deduct from buyer
+                await tx.user.update({ where: { id: userId }, data: { money: { decrement: tax.buyerPays } } });
+
+                // Pay seller
+                await tx.user.update({ where: { id: listing.seller_id }, data: { money: { increment: tax.sellerReceives } } });
+
+                await applyMarketTradeTaxTx(tx, tax);
+
+                // Mark listing and cargo box as done
+                await tx.marketListing.update({
+                    where: { id: listingId },
+                    data: { status: "SOLD", buyer_id: userId, sold_at: new Date() },
+                });
+
+                await tx.cargoBox.update({
+                    where: { id: listing.cargo_box_id! },
+                    data: { status: "CLAIMED" },
+                });
+
+                return { sameCityPurchase: true };
             }
+            // ─────────────────────────────────────────────────────────
 
             // Check port storage capacity
             const buyerCity = buyer.city_key!;
@@ -103,14 +268,144 @@ export const buyCargoListing = async (req: AuthRequest, res: Response): Promise<
                 },
             });
 
-            // Notify seller
+            // ── Bot instant delivery ─────────────────────────────────
+            // Bot sellers deliver instantly: skip shipping, go straight to AT_PORT
+            // and settle the payment immediately.
+            const isBotSeller = listing.seller.email.endsWith(BOT_EMAIL_SUFFIX);
+            if (isBotSeller) {
+                // Compute taxes for cross-city delivery
+                const sellerCityState = await tx.cityState.findUnique({ where: { city_key: listing.origin_city! } });
+                const buyerCityState = await tx.cityState.findUnique({ where: { city_key: buyer.city_key! } });
+                const exportTaxBp = sellerCityState?.export_tax_bp ?? 300;
+                const importTaxBp = buyerCityState?.import_tax_bp ?? 300;
+                const exportTax = Math.floor(listing.price * exportTaxBp / 10000);
+                const importTax = Math.floor(listing.price * importTaxBp / 10000);
+                const sellerReceives = listing.price - exportTax;
+
+                // Settle money: buyer already had money locked, now finalise
+                // Refund over-estimated lock vs actual import tax
+                const actualLock = listing.price + importTax;
+                const lockDiff = lockedAmount - actualLock;
+                if (lockDiff > 0) {
+                    await tx.user.update({ where: { id: userId }, data: { money: { increment: lockDiff }, locked_money: { decrement: lockDiff } } });
+                }
+                // Finalise locked money (keep only what we need)
+                await tx.user.update({
+                    where: { id: userId },
+                    data: { locked_money: { decrement: actualLock } },
+                });
+
+                // Pay seller
+                await tx.user.update({ where: { id: listing.seller_id }, data: { money: { increment: sellerReceives } } });
+
+                // Tax to treasuries
+                if (sellerCityState) {
+                    await tx.cityState.update({ where: { city_key: sellerCityState.city_key }, data: { treasury: { increment: exportTax } } });
+                }
+                if (buyerCityState) {
+                    await tx.cityState.update({ where: { city_key: buyerCityState.city_key }, data: { treasury: { increment: importTax } } });
+                }
+
+                // Finalise order as delivered
+                await tx.purchaseOrder.update({
+                    where: { id: order.id },
+                    data: {
+                        status: "DELIVERED",
+                        export_tax: exportTax,
+                        import_tax: importTax,
+                        locked_amount: actualLock,
+                        settled_at: new Date(),
+                    },
+                });
+
+                await tx.cargoBox.update({
+                    where: { id: listing.cargo_box_id! },
+                    data: { status: "AT_PORT" },
+                });
+
+                // Notify buyer to claim at port
+                await createNotificationTx(tx, userId, "SHIP_ARRIVED",
+                    "Cargo delivered! Visit Port to claim.",
+                    `Your order #${order.id} has arrived at your city port. Go to Port to claim your items.`,
+                    { orderId: order.id },
+                );
+
+                // Notify seller
+                await createNotificationTx(tx, listing.seller_id, "SETTLEMENT_COMPLETE",
+                    "Bot order settled",
+                    `A bot order for Cargo Box #${listing.cargo_box_id} was instantly delivered. You received ${sellerReceives} credits.`,
+                    { orderId: order.id },
+                );
+
+                return { order: { ...order, status: "DELIVERED" }, instantDelivered: true };
+            }
+            // ────────────────────────────────────────────────────────
+
+            // Notify seller (human seller path)
             await createNotificationTx(tx, listing.seller_id, "ORDER_CREATED",
                 "New order received",
-                `A buyer purchased your Cargo Box #${listing.cargo_box_id}. Ship within ${PURCHASE_ORDER_TIMEOUT_MIN} minutes!`,
+                `A buyer purchased your Cargo Box #${listing.cargo_box_id}. Your cargo will be loaded on the next public ship.`,
                 { orderId: order.id, cargoBoxId: listing.cargo_box_id },
             );
 
-            return { order };
+            // ── Auto-load onto public ship ───────────────────────────
+            // Find a docked public ship for this route, or create one
+            const buyerDestCity = buyer.city_key!;
+            const sellerOriginCity = listing.origin_city!;
+
+            let publicShip = await tx.ship.findFirst({
+                where: {
+                    type: "PUBLIC",
+                    status: "DOCKED",
+                    origin_city: sellerOriginCity,
+                    dest_city: buyerDestCity,
+                },
+                include: { _count: { select: { cargo: true } } },
+                orderBy: { departs_at: "asc" },
+            });
+
+            if (!publicShip || publicShip._count.cargo >= publicShip.capacity) {
+                // Create a new public ship on this route
+                publicShip = await tx.ship.create({
+                    data: {
+                        type: "PUBLIC",
+                        origin_city: sellerOriginCity,
+                        dest_city: buyerDestCity,
+                        status: "DOCKED",
+                        capacity: SHIP_CONFIG.public.capacity,
+                        departs_at: nextPublicSlot(),
+                    },
+                    include: { _count: { select: { cargo: true } } },
+                });
+            }
+
+            // Load cargo onto the ship
+            await tx.shipCargo.create({
+                data: {
+                    ship_id: publicShip.id,
+                    order_id: order.id,
+                    cargo_box_id: listing.cargo_box_id!,
+                },
+            });
+
+            await tx.purchaseOrder.update({
+                where: { id: order.id },
+                data: { status: "SHIPPING" },
+            });
+
+            await tx.cargoBox.update({
+                where: { id: listing.cargo_box_id! },
+                data: { status: "ON_SHIP" },
+            });
+
+            await createNotificationTx(tx, buyer.id, "SHIP_DEPARTED",
+                "Order loaded on public ship",
+                `Your order #${order.id} has been auto-loaded onto a public ship. It will depart soon!`,
+                { orderId: order.id, shipId: publicShip.id },
+            );
+            // ────────────────────────────────────────────────────────
+
+            return { order: { ...order, status: "SHIPPING" } };
         });
 
         if ("error" in result) {
@@ -118,7 +413,15 @@ export const buyCargoListing = async (req: AuthRequest, res: Response): Promise<
             return;
         }
 
-        res.json({ order: result.order });
+        if ("sameCityPurchase" in result && result.sameCityPurchase) {
+            res.json({ sameCityPurchase: true, message: "Items unpacked directly to your inventory!" });
+            return;
+        }
+
+        res.json({
+            order: result.order,
+            instantDelivered: (result as any).instantDelivered ?? false,
+        });
     } catch (err: any) {
         console.error("buyCargoListing error:", err);
         res.status(500).json({ error: "Failed to buy cargo listing" });
@@ -178,6 +481,7 @@ export const sellCargoListing = async (req: AuthRequest, res: Response): Promise
             return;
         }
 
+        invalidateListingsCache(); // Ensure fresh data on next market fetch
         res.json({ listing: result.listing });
     } catch (err: any) {
         console.error("sellCargoListing error:", err);
@@ -626,6 +930,7 @@ export const getWorldMapShips = async (_req: AuthRequest, res: Response): Promis
                 departs_at: s.departs_at,
                 cargo_count: s._count.cargo,
                 is_bot_ship: s.is_bot_ship,
+                bot_marker: s.is_bot_ship,
                 owner_id: s.owner_id,
             })),
             server_time: new Date().toISOString(),

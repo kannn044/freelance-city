@@ -21,6 +21,14 @@
 11. [Notification Center](#11-notification-center)
 12. [World Map UI](#12-world-map-ui)
 13. [Market Bot Adaptation](#13-market-bot-adaptation)
+    - [13.1 Design Principles](#131-design-principles)
+    - [13.2 Bot Cargo Box Selling Flow](#132-bot-cargo-box-selling-flow)
+    - [13.3 Bot Public Ship Booking](#133-bot-public-ship-booking-on-purchase-order-created)
+    - [13.4 Public Ship Schedule Logic](#134-public-ship-schedule-logic-helper)
+    - [13.5 World Map — Bot Ship Marker](#135-world-map--bot-ship-marker)
+    - [13.6 Cargo Box Detail — Player View](#136-cargo-box-detail--player-view)
+    - [13.7 MarketBotService Config Additions](#137-marketbotservice-config-additions)
+    - [13.8 Bot Buying Flow (unchanged)](#138-bot-buying-flow-unchanged)
 14. [Fuel Cell Item](#14-fuel-cell-item)
 15. [API Endpoints](#15-api-endpoints)
 16. [Client Pages & Components](#16-client-pages--components)
@@ -1037,26 +1045,219 @@ export const shippingRoutes = [
 
 ## 13. Market Bot Adaptation
 
-### 13.1 Bot Selling Flow (Cross-City)
+### 13.1 Design Principles
 
-Bot จะทำตาม flow เดียวกับผู้เล่น:
+| Principle | Detail |
+|-----------|--------|
+| **Items sold** | Reuse `sellItemNames` config list — same items the bot already sells same-city |
+| **Origin city** | Each bot's already-assigned `city_key` (randomised at bot creation) |
+| **Ship type** | **Public ship only** (free, no Fuel Cell) — bot never rents private ships |
+| **Ship timing** | Bot books the **next available scheduled public-ship slot** for its city; it does NOT create an instant-departure ship |
+| **World-map marker** | Bot ships appear with a **distinct bot marker** (e.g. different flag color / "BOT" badge) so players can recognise them but cannot attack them (`is_bot_ship = true`) |
+| **Pirate immunity** | `is_bot_ship = true` → pirate attack endpoint rejects the target |
+
+---
+
+### 13.2 Bot Cargo Box Selling Flow
 
 ```
-1. Bot สร้าง Cargo Box (size ตาม quantity)
-2. Bot แพ็คสินค้าลงกล่อง
-3. Bot ลง marketplace (cross-city)
-4. เมื่อมี order → Bot rent private ship (is_bot_ship=true)
-5. Bot load cargo → dispatch ทันที
-6. เรือ bot โดนปล้นไม่ได้ (is_bot_ship=true → ไม่แสดงบน world map หรือแสดงแต่ block attack)
+tick (sellChancePerTick rolled)
+   │
+   ├─ 1. [generateBotCargoListings()]
+   │      a. Pick bot users (ensureBotUsers)
+   │      b. For each bot, if it has no LISTED cargo box:
+   │           i.  Pick a random subset of sellItemNames
+   │           ii. Choose CargoBox size:
+   │                  qty ≤ 5  → S (price 50)
+   │                  qty ≤ 10 → M (price 100)
+   │                  qty ≤ 15 → L (price 200)
+   │           iii. Create CargoBox (status=PACKED, is_bot_box=true)
+   │                Create CargoBoxItems (item+qty, no rarity/enchant)
+   │           iv. Create MarketListing (is_cross_city=true, origin_city=bot.city_key)
+   │                CargoBox status → LISTED
+   │
+   └─ 2. [OLD generateBotListings()] — still runs for same-city listings (unchanged)
 ```
 
-### 13.2 Bot Buying Flow
+> **Max active bot cargo listings**: governed by `maxActiveBotCargoListingsTotal` config key  
+> **Cooldown**: `botCargoCooldownMs` (default: same as `sellFeedCooldownMs`)  
+> **Purge on refresh**: existing LISTED bot cargo boxes (no active order) are pruned before creating new batch (same pattern as same-city listings)
 
-Bot ยังซื้อ same-city เหมือนเดิม ไม่ซื้อ cross-city (ทำให้ง่าย)
+---
 
-### 13.3 Bot Fuel Cell
+### 13.3 Bot Public Ship Booking (on Purchase Order Created)
 
-Bot ที่ Voltara สามารถ "สร้าง" Fuel Cell ให้ตัวเองได้ (special logic เพื่อไม่ให้ economy พัง)
+When a player buys a bot cargo box (`POST /game/market/buy-cargo/:listingId`), the server:
+
+```
+1. Create PurchaseOrder (status=PENDING) — same as player-seller flow
+2. Immediately call botBookPublicShip(order):
+     a. Find the next DOCKED public Ship WHERE:
+           origin_city = bot.city_key
+           dest_city   = buyer.city_key
+           status      = DOCKED
+           departs_at  > NOW()
+        ORDER BY departs_at ASC LIMIT 1
+     b. If no ship found → create one with departs_at = nextPublicSlot(bot.city_key, dest)
+        (nextPublicSlot rounds up to next 5-minute boundary from NOW())
+     c. Load CargoBox onto that ship (ShipCargo record)
+     d. CargoBox status → ON_SHIP
+     e. PurchaseOrder status → SHIPPING
+     f. Ship.is_bot_ship = true
+     g. Notify seller-bot & buyer
+```
+
+> The 10-minute `expires_at` order timeout cron skips SHIPPING orders (same as normal flow).  
+> The bot fires `botBookPublicShip` synchronously within the buy-cargo transaction so there is no window where the order is PENDING without a ship.
+
+---
+
+### 13.4 Public Ship Schedule Logic (Helper)
+
+```typescript
+// server/src/lib/shipUtils.ts (new helper)
+
+/**
+ * Returns the next departure DateTime for a public ship on origin→dest route.
+ * Snaps to the nearest future 5-minute boundary.
+ */
+function nextPublicSlot(fromNow: Date = new Date()): Date {
+  const ms = fromNow.getTime();
+  const interval = SHIP_CONFIG.public.departureIntervalMin * 60_000; // 5 min
+  return new Date(Math.ceil(ms / interval) * interval);
+}
+
+/**
+ * Finds or creates a DOCKED public ship for the given route with capacity.
+ * Used exclusively by marketBotService when a bot order is placed.
+ */
+async function findOrCreateBotPublicShip(
+  originCity: string,
+  destCity: string,
+  tx: PrismaTransaction
+): Promise<Ship> {
+  // 1. Try to find existing DOCKED public ship on same route with free capacity
+  const existingShip = await tx.ship.findFirst({
+    where: {
+      type: "PUBLIC",
+      origin_city: originCity,
+      dest_city: destCity,
+      status: "DOCKED",
+      is_bot_ship: true,
+      departs_at: { gt: new Date() },
+    },
+    include: { _count: { select: { cargo: true } } },
+    orderBy: { departs_at: "asc" },
+  });
+
+  if (existingShip && existingShip._count.cargo < existingShip.capacity) {
+    return existingShip;
+  }
+
+  // 2. Create a new public bot ship
+  return tx.ship.create({
+    data: {
+      type: "PUBLIC",
+      origin_city: originCity,
+      dest_city: destCity,
+      status: "DOCKED",
+      capacity: SHIP_CONFIG.public.capacity,
+      is_bot_ship: true,
+      departs_at: nextPublicSlot(),
+    },
+  });
+}
+```
+
+---
+
+### 13.5 World Map — Bot Ship Marker
+
+`GET /game/world-map/ships` response adds:
+
+```json
+{
+  "id": 42,
+  "type": "PUBLIC",
+  "is_bot_ship": true,
+  "origin_city": "AGRARIA",
+  "dest_city": "FERRUM",
+  "departs_at": "2026-03-11T12:05:00Z",
+  "arrives_at":  "2026-03-11T12:15:00Z",
+  "progress": 0.34,
+  "cargo_count": 2,
+  "bot_marker": true       // ← client uses this to render distinct bot flag
+}
+```
+
+Client (`WorldMapPage.tsx`) checks `ship.bot_marker`:
+- **true** → render bot ship icon (e.g. grey flag, label "BOT", no click-to-attack option)
+- **false** → render normal player ship (existing behavior)
+
+---
+
+### 13.6 Cargo Box Detail — Player View
+
+When a player browses the marketplace they can inspect a bot cargo box:
+
+```
+GET /game/market  (response for cross-city listings, is_bot = true)
+{
+  "id": 55,
+  "is_cross_city": true,
+  "is_bot_listing": true,
+  "price": 480,
+  "origin_city": "FERRUM",
+  "seller_name": "Kawin Rattanakorn (Bot)",
+  "cargo_box": {
+    "id": 10,
+    "size": "M",
+    "item_count": 7,
+    "items": [
+      { "item_name": "Iron Ore",    "quantity": 5, "icon": "iron-ore"    },
+      { "item_name": "Coal",        "quantity": 2, "icon": "coal"        }
+    ]
+  }
+}
+```
+
+- `is_bot_listing` flag lets the client display a "Bot Seller" badge
+- Items inside: **no rarity, enchant, or durability** (raw materials only)
+- Player can inspect all items before buying (same `cargo_box.items` array)
+
+---
+
+### 13.7 MarketBotService Config Additions
+
+```typescript
+// Add to MarketBotConfig interface & DEFAULT_CONFIG:
+botCargoEnabled: boolean;               // master switch for bot cargo listings
+botCargoTickChance: number;             // 0..1, chance per tick to generate bot cargo
+maxBotCargoListingsTotal: number;       // global cap on active bot cargo listings
+botCargoBoxSize: "S" | "M" | "L" | "AUTO";  // AUTO = pick by quantity
+botCargoItemsPerBox: { min: number; max: number };  // how many item TYPES per box
+botCargoQtyPerItem: { min: number; max: number };   // qty per item inside box
+botCargoPriceRatio: { min: number; max: number };   // vs reference buy_price sum
+botCargoCooldownMs: number;             // min ms between cargo batch refreshes
+```
+
+Default values:
+```typescript
+botCargoEnabled: true,
+botCargoTickChance: 0.3,
+maxBotCargoListingsTotal: 20,
+botCargoBoxSize: "AUTO",
+botCargoItemsPerBox: { min: 1, max: 3 },
+botCargoQtyPerItem: { min: 2, max: 8 },
+botCargoPriceRatio: { min: 0.9, max: 1.3 },
+botCargoCooldownMs: 5 * 60 * 1000, // 5 minutes
+```
+
+---
+
+### 13.8 Bot Buying Flow (unchanged)
+
+Bot ยังซื้อ same-city เหมือนเดิม — ไม่ซื้อ cross-city cargo boxes (เพื่อความเรียบง่าย)
 
 ---
 

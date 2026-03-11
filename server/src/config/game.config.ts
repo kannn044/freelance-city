@@ -206,6 +206,30 @@ export interface MarketBotTuningConfig {
     maxActiveBotListingsTotal: number;
     /** Hard cap for total bot seller accounts. */
     maxBotUsers: number;
+
+    // ─── Bot Cargo Listings ───────────────────────────
+    /** Enable bot cargo box cross-city listings. */
+    botCargoEnabled: boolean;
+    /** Chance (0..1) per tick that bot generates cargo box listings. */
+    botCargoTickChance: number;
+    /** Hard cap on total active bot cargo listings in market. */
+    maxBotCargoListingsTotal: number;
+    /** Box size to use: AUTO picks by quantity, else fixed size. */
+    botCargoBoxSize: "S" | "M" | "L" | "AUTO";
+    /** Min number of distinct item types packed into one bot cargo box. */
+    botCargoItemsPerBoxMin: number;
+    /** Max number of distinct item types packed into one bot cargo box. */
+    botCargoItemsPerBoxMax: number;
+    /** Min quantity of each item type inside a bot cargo box. */
+    botCargoQtyPerItemMin: number;
+    /** Max quantity of each item type inside a bot cargo box. */
+    botCargoQtyPerItemMax: number;
+    /** Min price ratio vs sum of reference buy prices of box contents. */
+    botCargoPriceRatioMin: number;
+    /** Max price ratio vs sum of reference buy prices of box contents. */
+    botCargoPriceRatioMax: number;
+    /** Min ms between bot cargo batch refreshes. */
+    botCargoCooldownMs: number;
 }
 
 /**
@@ -256,6 +280,19 @@ export const MARKET_BOT_CONFIG: MarketBotTuningConfig = {
     maxActiveBotListingsTotal: 300,
     // Cap number of NPC seller accounts.
     maxBotUsers: 200,
+
+    // Bot cargo (cross-city) listing simulation.
+    botCargoEnabled: true,
+    botCargoTickChance: 0.3,
+    maxBotCargoListingsTotal: 20,
+    botCargoBoxSize: "AUTO",
+    botCargoItemsPerBoxMin: 1,
+    botCargoItemsPerBoxMax: 3,
+    botCargoQtyPerItemMin: 2,
+    botCargoQtyPerItemMax: 8,
+    botCargoPriceRatioMin: 0.9,
+    botCargoPriceRatioMax: 1.3,
+    botCargoCooldownMs: 5 * 60 * 1000, // 5 minutes
 };
 
 // ─── First-job Skill Tree ──────────────────────────────
