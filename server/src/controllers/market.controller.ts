@@ -511,7 +511,7 @@ export const buyListing = async (req: AuthRequest, res: Response): Promise<void>
             res.status(400).json({ error: "Invalid listing ID" });
             return;
         }
-        const listingId = parseInt(req.params.listingId);
+        const listingId = parseInt(String(req.params.listingId));
 
         const listing = await prisma.marketListing.findFirst({
             where: { id: listingId, status: "ACTIVE" },
@@ -694,7 +694,7 @@ export const cancelListing = async (req: AuthRequest, res: Response): Promise<vo
             return;
         }
 
-        const listingId = parseInt(req.params.listingId);
+        const listingId = parseInt(String(req.params.listingId));
 
         const listing = await prisma.marketListing.findFirst({
             where: {

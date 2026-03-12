@@ -1832,7 +1832,7 @@ export const collectWork = async (req: AuthRequest, res: Response): Promise<void
             res.status(400).json({ error: "Invalid order ID" });
             return;
         }
-        const orderId = parseInt(req.params.orderId);
+        const orderId = parseInt(String(req.params.orderId));
 
         const result = await collectSingleReadyOrder(req.userId!, orderId);
 
@@ -1985,7 +1985,7 @@ export const cancelWork = async (req: AuthRequest, res: Response): Promise<void>
             return;
         }
 
-        const orderId = parseInt(req.params.orderId);
+        const orderId = parseInt(String(req.params.orderId));
         if (!Number.isInteger(orderId) || orderId <= 0) {
             res.status(400).json({ error: "Invalid order ID" });
             return;

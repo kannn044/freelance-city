@@ -605,7 +605,7 @@ export const eatItem = async (req: AuthRequest, res: Response): Promise<void> =>
             res.status(400).json({ error: "Invalid slot ID" });
             return;
         }
-        const slotId = parseInt(req.params.slotId);
+        const slotId = parseInt(String(req.params.slotId));
         const slot = await prisma.inventorySlot.findFirst({
             where: { id: slotId, user_id: req.userId! },
             include: { item: true },

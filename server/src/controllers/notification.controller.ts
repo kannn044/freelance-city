@@ -44,7 +44,7 @@ export const getUnreadCount = async (req: AuthRequest, res: Response): Promise<v
 export const markAsRead = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const userId = req.userId!;
-        const id = parseInt(req.params.id);
+        const id = parseInt(String(req.params.id));
 
         if (!id || isNaN(id)) {
             res.status(400).json({ error: "valid notification id is required" });
