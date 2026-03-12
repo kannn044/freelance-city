@@ -37,7 +37,7 @@ function App() {
   }, [token, user, fetchMe]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/freelancecity">
       <Suspense fallback={<div className="flex items-center justify-center h-screen text-white">Loading...</div>}>
         <AnimatePresence mode="wait">
           <Routes>
