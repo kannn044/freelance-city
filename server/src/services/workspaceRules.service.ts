@@ -344,15 +344,15 @@ export async function reconcileWorkspaceOrderPausesForUser(
     // 4. Fetch relevant inventory items in one query
     type InvRow = { item_name_lc: string };
     const invRows = requiredItemNames.length > 0
-        ? await db.$queryRaw<InvRow[]>`
+        ? await db.$queryRawUnsafe<InvRow[]>(`
             SELECT LOWER(i.name) as item_name_lc
             FROM inventory_slots s
             INNER JOIN items i ON i.id = s.item_id
-            WHERE s.user_id = ${userId}
+            WHERE s.user_id = ?
               AND s.quantity > 0
-              AND LOWER(i.name) IN (${Prisma.join(requiredItemNames)})
+              AND LOWER(i.name) IN (${requiredItemNames.map(n => `'${n.replace(/'/g, "''")}'`).join(", ")})
             GROUP BY LOWER(i.name)
-          `
+          `, userId)
         : [];
     const inventoryNames = new Set(invRows.map((r) => r.item_name_lc));
 
