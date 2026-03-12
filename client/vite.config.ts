@@ -12,4 +12,7 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, '../shared'),
     },
   },
+  preview: {
+    allowedHosts: ['poc.moph.go.th'],
+  },
 })
